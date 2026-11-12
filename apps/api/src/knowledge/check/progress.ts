@@ -1,4 +1,10 @@
-import { type CheckProgressEvent, pageProgressOutcomes, progressFailures } from '@arca/domain';
+import {
+  type CheckProgressEvent,
+  checkStatuses,
+  maxCheckItemKeyLength,
+  pageProgressOutcomes,
+  progressFailures,
+} from '@arca/domain';
 import type { Database } from '@arca/db';
 import { checkProgress } from '@arca/db/knowledge-schema';
 import { asc, eq, sql } from 'drizzle-orm';
@@ -19,8 +25,8 @@ export interface CheckProgressStore {
 }
 
 /**
- * The most events one start records: two per cited page, one per model call and a handful of
- * stages.
+ * The most events one start records: two per cited page, one per model call, a handful of stages,
+ * and at most one item event per item for each of the two model calls a check may take.
  */
 export const maxProgressEvents = 1_000;
 
@@ -37,6 +43,11 @@ const storedEvent = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
   z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({
+    kind: z.literal('item'),
+    key: z.string().max(maxCheckItemKeyLength),
+    status: z.enum(checkStatuses),
+  }),
   z.strictObject({
     kind: z.literal('usage'),
     model: z.string().regex(/^[a-z0-9.-]{1,100}$/u),

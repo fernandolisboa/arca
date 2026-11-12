@@ -10,7 +10,10 @@ import {
 } from '../../../src/knowledge/check/fetcher.js';
 import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
-import { memoryCheckProgressStore } from '../../../src/knowledge/check/progress.js';
+import {
+  type CheckProgressStore,
+  memoryCheckProgressStore,
+} from '../../../src/knowledge/check/progress.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects } from '../../../src/knowledge/versions.js';
 import { type CheckCase, type Snapshot, officialHosts } from './cases.js';
@@ -81,9 +84,9 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
 export function recordingPages(checker: RuleChecker) {
   const sent: string[] = [];
   const recording: RuleChecker = {
-    check(request) {
+    check(request, onEntry) {
       sent.push(...request.pages.map(({ text }) => text));
-      return checker.check(request);
+      return checker.check(request, onEntry);
     },
   };
   return { checker: recording, sent: () => sent.join('\n') };
@@ -97,6 +100,7 @@ export async function checkCase(
   checker: RuleCheckerChoice,
   logger: Logger = silentLogger,
   locator: PassageLocator = scriptedLocator,
+  progress: CheckProgressStore = memoryCheckProgressStore(),
 ): Promise<CheckReport> {
   const store = memoryCheckReportStore();
   const check = createVersionCheck({
@@ -106,7 +110,7 @@ export async function checkCase(
     checker,
     locator,
     store,
-    progress: memoryCheckProgressStore(),
+    progress,
     logger,
     now: () => performance.now(),
   });

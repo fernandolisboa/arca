@@ -29,9 +29,11 @@ export interface RuleCheckRequest {
  * The `RuleChecker` port (ADR-0027): answers, per item, whether the official pages it cites match
  * the rule. Its reply is untrusted data the API parses against the closed answer schema; an adapter
  * throws a `RuleCheckerError` that carries a fixed code and nothing of the request or the reply.
+ * As the answer arrives, an adapter hands each entry of its `items` to `onEntry` once that entry is
+ * complete, in order and once per call: untrusted too, and never a substitute for the reply.
  */
 export interface RuleChecker {
-  check(request: RuleCheckRequest): Promise<ModelReply>;
+  check(request: RuleCheckRequest, onEntry?: (entry: unknown) => void): Promise<ModelReply>;
 }
 
 /** A checker and what its reports are stored under. */

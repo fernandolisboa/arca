@@ -1,4 +1,5 @@
 import type { CheckProgress } from '@arca/api-contract/client';
+import { type ReportItem, shownPoints } from './step-checks.js';
 
 export const checkRunSteps = ['read', 'locate', 'compare', 'report'] as const;
 export type CheckRunStep = (typeof checkRunSteps)[number];
@@ -42,5 +43,34 @@ export function checkRunStepStatuses(
     locate: statusOf('locate'),
     compare: statusOf('compare'),
     report: statusOf('report'),
+  };
+}
+
+/** A check's items as the comparison step shows them while it runs. */
+export interface CheckRunItemsView {
+  /** The answered items, as results with no quote, note or reason until the report is stored. */
+  readonly answered: readonly ReportItem[];
+  /** The item the check is waiting on, while it runs. */
+  readonly next: CheckProgress['items'][number] | undefined;
+  /** How many items are still awaited after `next`. */
+  readonly left: number;
+}
+
+/**
+ * The answered items in the version's order, the first one still awaited while the check runs,
+ * and how many follow it. A scripted match is a test's, so it shows as not confirmed.
+ */
+export function checkRunItems(
+  progress: Pick<CheckProgress, 'items' | 'scripted' | 'state'>,
+): CheckRunItemsView {
+  const answered: ReportItem[] = progress.items.flatMap(({ status, ...item }) =>
+    status === null ? [] : [{ ...item, status, quotes: [], note: null, reason: null }],
+  );
+  const waiting = progress.items.filter(({ status }) => status === null);
+  const [next] = progress.state === 'running' ? waiting : [];
+  return {
+    answered: shownPoints({ items: answered, scripted: progress.scripted }),
+    next,
+    left: waiting.length - (next === undefined ? 0 : 1),
   };
 }

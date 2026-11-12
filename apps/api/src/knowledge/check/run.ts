@@ -27,7 +27,7 @@ import type { Logger } from '@arca/telemetry';
 import { type ModelReply, loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
 import { guideContent } from '../version-content.js';
 import { addressesAsRead } from './answer-text.js';
-import { parseCheckAnswer } from './answer.js';
+import { parseCheckAnswer, parseCheckAnswerEntry } from './answer.js';
 import {
   type RuleCheckRequest,
   type RuleCheckerChoice,
@@ -290,14 +290,47 @@ export function createVersionCheck({
     return { page: { ...page, text, excerpt: true }, picked: true };
   };
 
+  /**
+   * Records each answer entry the checker hands on, verified as the report will verify it: key and
+   * status only. A key no item has is skipped, and a key answered twice in one call could not be
+   * checked, as in the report, and is recorded so once whatever the model repeats. A call records
+   * at most one event per item, so what a model writes cannot crowd the start's other events out.
+   * Each call starts afresh.
+   */
+  const itemRecorder = (
+    items: readonly CheckItem[],
+    pages: ReadonlyMap<string, ReadPage>,
+    record: Recorder,
+    written: Promise<void>[],
+  ) => {
+    const byKey = new Map(items.map((item) => [item.key, item]));
+    const answered = new Set<string>();
+    const repeated = new Set<string>();
+    let recorded = 0;
+    return (entry: unknown) => {
+      const answer = parseCheckAnswerEntry(entry);
+      const item = answer === undefined ? undefined : byKey.get(answer.key);
+      if (answer === undefined || item === undefined) return;
+      if (repeated.has(item.key) || recorded >= items.length) return;
+      recorded += 1;
+      const [verified] = answered.has(item.key) ? [] : verifyAnswers([item], [answer], pages);
+      (answered.has(item.key) ? repeated : answered).add(item.key);
+      written.push(
+        record({ kind: 'item', key: item.key, status: verified?.status ?? 'could_not_check' }),
+      );
+    };
+  };
+
   const ask = async (
     request: RuleCheckRequest,
     record: Recorder,
+    onCall: () => (entry: unknown) => void,
   ): Promise<readonly CheckAnswer[]> =>
     parsedWithOneRetry(
       async () => {
+        const onEntry = onCall();
         const answered = await loggedModelCall(
-          () => checker.check(request),
+          () => checker.check(request, onEntry),
           { route, logger, now },
           (error) =>
             error instanceof RuleCheckerError
@@ -372,6 +405,8 @@ export function createVersionCheck({
     // With no page text nothing could match, so no model call is paid for.
     if (pagesToSend.length > 0) {
       await record({ kind: 'comparing' });
+      const written: Promise<void>[] = [];
+      let calls = 0;
       try {
         answers = await ask(
           {
@@ -381,10 +416,16 @@ export function createVersionCheck({
             guide: guide === undefined ? null : guideContent(guide.guide),
           },
           record,
+          // A retry records the comparison again, so the screen drops the first call's answers.
+          () => {
+            if (calls++ > 0) written.push(record({ kind: 'comparing' }));
+            return itemRecorder(items, pages, record, written);
+          },
         );
       } catch (error) {
         failure = error instanceof RuleCheckerError ? error.code : 'check_failed';
       }
+      await Promise.all(written);
     }
 
     const checked = verifyAnswers(items, answers, pages);

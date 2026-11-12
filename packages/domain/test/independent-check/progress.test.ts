@@ -33,6 +33,7 @@ const empty: CheckProgress = {
   pageCount: null,
   pages: [],
   locatedPages: null,
+  items: [],
   failure: null,
   cost: null,
 };
@@ -163,6 +164,87 @@ describe('checkProgress', () => {
       { state: 'finished', stage: 'reading', ...counted, cost: { kind: 'unknown' } },
     ],
   ])('shows %s', (_, events, reported, time, expected) => {
-    expect(checkProgress(start, events, reported, time, prices)).toEqual({ ...empty, ...expected });
+    expect(checkProgress(start, events, reported, time, prices, [])).toEqual({
+      ...empty,
+      ...expected,
+    });
+  });
+
+  describe('items', () => {
+    const items = [
+      { key: 'requirement:means', kind: 'requirement', title: 'Means' },
+      { key: 'cost:fee', kind: 'cost', title: 'Fee' },
+    ] as const;
+    const item = (key: string, status: 'matches' | 'differs' | 'could_not_check') =>
+      ({ kind: 'item', key, status }) satisfies CheckProgressEvent;
+    const statusesOf = (events: CheckProgressEvent[]) =>
+      checkProgress(start, events, false, now, prices, items).items.map(({ key, status }) => [
+        key,
+        status,
+      ]);
+
+    it('lists every item in its order, each awaited until answered', () => {
+      expect(
+        checkProgress(start, [started, { kind: 'comparing' }], false, now, prices, items).items,
+      ).toEqual([
+        { key: 'requirement:means', kind: 'requirement', title: 'Means', status: null },
+        { key: 'cost:fee', kind: 'cost', title: 'Fee', status: null },
+      ]);
+    });
+
+    it.each<[string, CheckProgressEvent[], [string, string | null][]]>([
+      [
+        'an answered item',
+        [{ kind: 'comparing' }, item('cost:fee', 'differs')],
+        [
+          ['requirement:means', null],
+          ['cost:fee', 'differs'],
+        ],
+      ],
+      [
+        'the latest answer of an item asked for again',
+        [item('requirement:means', 'matches'), item('requirement:means', 'could_not_check')],
+        [
+          ['requirement:means', 'could_not_check'],
+          ['cost:fee', null],
+        ],
+      ],
+      [
+        'nothing of a comparison asked for again, until it answers',
+        [
+          { kind: 'comparing' },
+          item('requirement:means', 'matches'),
+          { kind: 'comparing' },
+          item('cost:fee', 'differs'),
+        ],
+        [
+          ['requirement:means', null],
+          ['cost:fee', 'differs'],
+        ],
+      ],
+      [
+        'nothing of a key no item has',
+        [item('requirement:other', 'matches')],
+        [
+          ['requirement:means', null],
+          ['cost:fee', null],
+        ],
+      ],
+    ])('shows %s', (_, events, expected) => {
+      expect(statusesOf(events)).toEqual(expected);
+    });
+
+    it('keeps the stage where the items land', () => {
+      expect(
+        checkProgress(
+          start,
+          [started, { kind: 'comparing' }, item('cost:fee', 'matches')],
+          false,
+          now,
+          prices,
+          items,
+        ).stage,
+      ).toBe('comparing');
+    });
   });
 });

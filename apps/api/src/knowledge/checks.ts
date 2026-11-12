@@ -56,10 +56,13 @@ export type RequestedCheckOutcome =
   | { readonly ok: true; readonly started: boolean }
   | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' | 'check_not_started' };
 
+/** A check's progress, and whether the scripted checker writes this environment's answers. */
+export type ShownProgress = CheckProgress & { readonly scripted: boolean };
+
 export type ProgressOutcome =
   | {
       readonly ok: true;
-      readonly progress: CheckProgress | null;
+      readonly progress: ShownProgress | null;
       /** What the version's newest check with a report that did not fail cost, in millionths of a dollar, if priced. */
       readonly lastCostMicroUsd: number | null;
     }
@@ -169,7 +172,8 @@ export function createVersionChecks({
     },
 
     async progress(routeId, number) {
-      if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
+      const found = subject(routeId, number);
+      if (found === undefined) return { ok: false, reason: 'not_found' };
       const own = ofVersion(routeId, number);
       const [recent, stored] = await Promise.all([starts.recent(), reports.list()]);
       const newest = newestStart(own(recent));
@@ -190,7 +194,17 @@ export function createVersionChecks({
       const reported = stored.some(({ startId }) => startId === newest.id);
       return {
         ok: true,
-        progress: checkProgress(newest, events, reported, now(), checkModelPrices),
+        progress: {
+          ...checkProgress(
+            newest,
+            events,
+            reported,
+            now(),
+            checkModelPrices,
+            checkItems(found.entry),
+          ),
+          scripted: checker.model === scriptedCheckerModel,
+        },
         lastCostMicroUsd,
       };
     },

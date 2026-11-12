@@ -329,6 +329,7 @@ export {
   type CheckProgressEvent,
   type CheckProgressStage,
   type CheckProgressState,
+  type ItemProgress,
   type PageProgress,
   type PageProgressOutcome,
   type ProgressFailure,
