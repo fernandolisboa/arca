@@ -13,6 +13,7 @@ import { readAnthropicApiKey } from '../../../src/config.js';
 import { claudeRuleChecker } from '../../../src/knowledge/check/claude-checker.js';
 import { claudePassageLocator } from '../../../src/knowledge/check/claude-locator.js';
 import { httpsSourceFetcher } from '../../../src/knowledge/check/fetcher.js';
+import { noPageCopies } from '../../../src/knowledge/check/page-copies.js';
 import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
@@ -167,6 +168,7 @@ it('checks the newest version of every bundled route against its live official p
     subject: createCheckSubjects(),
     guide: countryGuide,
     fetcher: httpsSourceFetcher(),
+    copies: noPageCopies,
     checker: { checker, model: ruleCheckModel, promptVersion: ruleCheckPromptVersion },
     locator,
     store,

@@ -17,6 +17,7 @@ import { readBlobStore } from '../src/config.js';
 import {
   memoryObjectStorage,
   objectUrlMinutes,
+  readablePathname,
   unconnectedObjectStorage,
 } from '../src/vault/object-storage.js';
 import { objectStorageFor } from '../src/vault/storage-environment.js';
@@ -75,6 +76,21 @@ describe('the in-memory object store', () => {
     await store.delete([pathname, 'documents/missing']);
     expect(store.receive(pathname, token, randomBytes(8))).toBe(false);
     expect(await store.digest(pathname)).toBeUndefined();
+  });
+});
+
+describe('reading an object on the server', () => {
+  it('reads only a correction file, never ciphertext or a path that leaves corrections/', async () => {
+    const store = memoryObjectStorage();
+    for (const pathname of [
+      'documents/8f0e7c1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b',
+      'corrections/../documents/8f0e7c1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b',
+      'https://example.com/corrections/8f0e7c1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b',
+    ]) {
+      expect(readablePathname(pathname)).toBe(false);
+      await expect(store.read(pathname, 10)).rejects.toThrow();
+    }
+    expect(readablePathname('corrections/8f0e7c1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b')).toBe(true);
   });
 });
 

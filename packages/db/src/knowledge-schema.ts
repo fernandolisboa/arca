@@ -522,7 +522,8 @@ export const correctionUpload = knowledge.table(
 
 /**
  * A request's sources, up to five: an `https` link, pasted text or an uploaded file, all leads
- * only (ADR-0029). A file source names its upload, which no other source names.
+ * only (ADR-0029). A file source names its upload, which no other source names, and may name the
+ * official page it is a copy of, which the independent check reads when it cannot read the page.
  */
 export const correctionSource = knowledge.table(
   'correction_source',
@@ -533,6 +534,7 @@ export const correctionSource = knowledge.table(
     url: text('url'),
     text: text('text'),
     uploadId: uuid('upload_id'),
+    pageUrl: text('page_url'),
   },
   (table) => [
     primaryKey({ name: 'correction_source_pkey', columns: [table.requestId, table.position] }),
@@ -552,11 +554,14 @@ export const correctionSource = knowledge.table(
       'correction_source_shape',
       sql`CASE ${table.kind}
         WHEN 'link' THEN ${table.text} IS NULL AND ${table.uploadId} IS NULL
+          AND ${table.pageUrl} IS NULL
           AND ${table.url} ~ '^https://[^[:space:]]+$' AND char_length(${table.url}) <= 2048
         WHEN 'text' THEN ${table.url} IS NULL AND ${table.uploadId} IS NULL
-          AND char_length(${table.text}) BETWEEN 1 AND 20000
+          AND ${table.pageUrl} IS NULL AND char_length(${table.text}) BETWEEN 1 AND 20000
         WHEN 'file' THEN ${table.url} IS NULL AND ${table.text} IS NULL
           AND ${table.uploadId} IS NOT NULL
+          AND (${table.pageUrl} IS NULL OR (${table.pageUrl} ~ '^https://[^[:space:]]+$'
+            AND char_length(${table.pageUrl}) <= 2048))
         ELSE false END`,
     ),
     pgPolicy('correction_source_insert_by_definer', {

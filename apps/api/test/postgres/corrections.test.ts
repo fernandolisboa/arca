@@ -15,6 +15,7 @@ import type { RateLimiter } from '../../src/auth/rate-limit.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
+import { storedPageCopies } from '../../src/knowledge/check/page-copies.js';
 import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
@@ -35,7 +36,9 @@ const identity = (number: number, corrects?: number): VersionIdentity => ({
   hash: String(number).repeat(64),
 });
 const identities = [identity(1), identity(2, 1)];
+const citedPage = 'https://gov.example/law';
 const view = {
+  sources: [{ id: 'law', url: citedPage }],
   requirements: [{ id: 'income', title: 'Renda mínima' }],
   assessments: [],
   dependents: [],
@@ -139,8 +142,8 @@ async function uploaded(
   return uploadId;
 }
 
-const withFile = (uploadId: string) => ({
-  sources: [...filed.sources, { kind: 'file', uploadId }],
+const withFile = (uploadId: string, pageUrl: string | null = null) => ({
+  sources: [...filed.sources, { kind: 'file', uploadId, pageUrl }],
 });
 
 const filed = {
@@ -371,7 +374,7 @@ describe('files on a correction request (ADR-0029)', () => {
     const [request] = (await listed(granted)).requests;
     expect(request?.sources).toEqual([
       ...filed.sources,
-      { kind: 'file', mediaType: 'application/pdf', size: pdf.length },
+      { kind: 'file', mediaType: 'application/pdf', size: pdf.length, pageUrl: null },
     ]);
     for (const admin of [owner, granted]) {
       const link = await setup(admin).fileUrl(id, 2);
@@ -475,12 +478,52 @@ describe('files on a correction request (ADR-0029)', () => {
     expect((await setup(owner).presign(pathname)).status).toBe(404);
   });
 
+  it('files a copy of a page the version cites, lists it, and gives the check its newest copy', async () => {
+    const older = new TextEncoder().encode('Article 3. Means of EUR 800 a month.');
+    const newer = new TextEncoder().encode('Article 3. Means of EUR 920 a month.');
+    for (const bytes of [older, newer]) {
+      const uploadId = await uploaded(bytes, { mediaType: 'text/plain' });
+      expect((await setup(owner).file(withFile(uploadId, citedPage))).status).toBe(200);
+    }
+    const [newest] = (await listed(granted)).requests;
+    expect(newest?.sources.at(-1)).toEqual({
+      kind: 'file',
+      mediaType: 'text/plain',
+      size: newer.length,
+      pageUrl: citedPage,
+    });
+    const copies = storedPageCopies({ db: () => testDatabase.jobsDb, storage: objects });
+    expect(await copies.read(citedPage)).toEqual({
+      text: 'Article 3. Means of EUR 920 a month.',
+      cut: false,
+    });
+    expect(await copies.read('https://gov.example/other')).toBeUndefined();
+  });
+
+  it('reads no copy whose stored bytes differ from its upload', async () => {
+    const bytes = new TextEncoder().encode('Article 3. Means of EUR 920 a month.');
+    const uploadId = await uploaded(bytes, { mediaType: 'text/plain' });
+    expect((await setup(owner).file(withFile(uploadId, citedPage))).status).toBe(200);
+    const copies = storedPageCopies({
+      db: () => testDatabase.jobsDb,
+      storage: { read: () => Promise.resolve(new TextEncoder().encode('Article 3. EUR 1.')) },
+    });
+    expect(await copies.read(citedPage)).toBeUndefined();
+  });
+
+  it('answers 404 for a copy of a page the version does not cite, storing nothing', async () => {
+    const uploadId = await uploaded(pdf);
+    const response = await setup(owner).file(withFile(uploadId, 'https://gov.example/other'));
+    expect(response.status).toBe(404);
+    expect((await listed(owner)).requests).toEqual([]);
+  });
+
   it('refuses a file named twice in one request with 400', async () => {
     const uploadId = await uploaded(pdf);
     const twice = {
       sources: [
-        { kind: 'file', uploadId },
-        { kind: 'file', uploadId },
+        { kind: 'file', uploadId, pageUrl: null },
+        { kind: 'file', uploadId, pageUrl: null },
       ],
     };
     expect((await setup(owner).file(twice)).status).toBe(400);
@@ -672,6 +715,30 @@ describe('the request tables (ADR-0029)', () => {
       );
     await expect(attach(owner)).rejects.toMatchObject({ cause: { code: '42501' } });
     await expect(attach(member)).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+
+  it('refuse a copy on a request filed in an earlier transaction, from another account’s upload or on a grant', async () => {
+    const id = await fileOne();
+    const uploadId = await uploaded(pdf);
+    const attach = (accountId: string, basis: string) =>
+      withIdentity(testDatabase.apiDb, { accountId }, (tx) =>
+        tx.execute(
+          sql`SELECT knowledge.attach_correction_file_with_page(${id}, 2, ${uploadId}, ${citedPage}, ${basis})`,
+        ),
+      );
+    await expect(attach(owner, 'owner_list')).rejects.toMatchObject({ cause: { code: '42501' } });
+    await expect(attach(member, 'owner_list')).rejects.toMatchObject({ cause: { code: '42501' } });
+    await expect(attach(owner, 'grant')).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+
+  it('refuse listing file sources to an account with no admin basis', async () => {
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: member }, (tx) =>
+        tx.execute(
+          sql`SELECT * FROM knowledge.correction_file_sources('qm-sample', 1, 'grant', ${randomUUID()}::uuid)`,
+        ),
+      ),
+    ).rejects.toMatchObject({ cause: { code: '42501' } });
   });
 
   it('let app_jobs read and delete only the author’s own requests, with their sources', async () => {

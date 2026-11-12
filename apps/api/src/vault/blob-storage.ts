@@ -1,7 +1,13 @@
 import { del, get, issueSignedToken, presignUrl } from '@vercel/blob';
 import { handleUploadPresigned } from '@vercel/blob/client';
 import { DocumentUploadUrlResponse } from '@arca/api-contract/routes';
-import { digestOf, objectUrlMinutes, type ObjectStorage } from './object-storage.js';
+import {
+  bytesWithin,
+  digestOf,
+  objectUrlMinutes,
+  readablePathname,
+  type ObjectStorage,
+} from './object-storage.js';
 
 /** The environment's private Vercel Blob store, reached with Vercel's OIDC token (spec 0005, R3). */
 export interface BlobStore {
@@ -43,6 +49,13 @@ export function blobObjectStorage({ storeId, webhookPublicKey }: BlobStore): Obj
       const found = await get(pathname, { access: 'private', storeId, useCache: false });
       if (found?.statusCode !== 200) return undefined;
       return digestOf(found.stream);
+    },
+
+    async read(pathname, maxBytes) {
+      if (!readablePathname(pathname)) throw new Error('not a correction file');
+      const found = await get(pathname, { access: 'private', storeId, useCache: false });
+      if (found?.statusCode !== 200) return undefined;
+      return bytesWithin(found.stream, maxBytes);
     },
 
     async downloadUrl(pathname) {

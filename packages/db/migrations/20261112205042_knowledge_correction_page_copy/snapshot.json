@@ -1,0 +1,79 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "7c6abb7d-7cf2-476e-8676-1a964e9d6f22",
+  "prevIds": [
+    "3346f232-8b9f-4a8c-b8de-cc38aa1e5bc4"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_source",
+        "page_url"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_source.page_url",
+        "n|col|knowledge.correction_source.page_url",
+        "e|col|knowledge.correction_source.page_url"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_source.correction_source_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.kind",
+        "n|col|knowledge.correction_source.text",
+        "n|col|knowledge.correction_source.upload_id",
+        "n|col|knowledge.correction_source.page_url",
+        "n|col|knowledge.correction_source.url",
+        "e|col|knowledge.correction_source.kind",
+        "e|col|knowledge.correction_source.text",
+        "e|col|knowledge.correction_source.upload_id",
+        "e|col|knowledge.correction_source.url"
+      ],
+      "sqlHash": "da7ee54e48547ff1"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "page_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_source\",\"correction_source_shape\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'link' THEN \"text\" IS NULL AND \"upload_id\" IS NULL\n          AND \"page_url\" IS NULL\n          AND \"url\" ~ '^https://[^[:space:]]+$' AND char_length(\"url\") <= 2048\n        WHEN 'text' THEN \"url\" IS NULL AND \"upload_id\" IS NULL\n          AND \"page_url\" IS NULL AND char_length(\"text\") BETWEEN 1 AND 20000\n        WHEN 'file' THEN \"url\" IS NULL AND \"text\" IS NULL\n          AND \"upload_id\" IS NOT NULL\n          AND (\"page_url\" IS NULL OR (\"page_url\" ~ '^https://[^[:space:]]+$'\n            AND char_length(\"page_url\") <= 2048))\n        ELSE false END"
+      }
+    }
+  ]
+}

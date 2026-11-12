@@ -41,6 +41,7 @@ import {
   type RuleCheckerFailure,
 } from './checker.js';
 import { type FetchOutcome, type SourceFetcher, fetchLimits, textDigest } from './fetcher.js';
+import type { PageCopies } from './page-copies.js';
 import {
   type PassageLocateRequest,
   type PassageLocator,
@@ -63,6 +64,8 @@ export interface VersionCheckSettings {
   readonly subject: (routeId: string, number: number) => CheckSubject | undefined;
   readonly guide: (country: string) => CountryGuideEntry | undefined;
   readonly fetcher: SourceFetcher;
+  /** Copies of cited pages attached to correction requests, read where a page cannot be. */
+  readonly copies: PageCopies;
   readonly checker: RuleCheckerChoice;
   /** Picks the passages of each long page that the checker reads. */
   readonly locator: PassageLocator;
@@ -100,7 +103,11 @@ interface FetchedPage {
   readonly url: string;
   /** The machine-readable address read in its place, or null when the page itself was read. */
   readonly machineReadableUrl: string | null;
+  /** Whether the text is a copy attached to a correction request, read since the page failed. */
+  readonly fromCopy: boolean;
   readonly read: FetchOutcome;
+  /** The final status of the page's own fetch, also when a copy was read in its place. */
+  readonly status: number | null;
   readonly durationMs: number;
 }
 
@@ -236,13 +243,14 @@ function fetchLogOf(
   fetched: readonly FetchedPage[],
   sent: ReadonlyMap<string, ReadPage>,
 ): FetchLogEntry[] {
-  return fetched.map(({ url, machineReadableUrl, read, durationMs }) => {
+  return fetched.map(({ url, machineReadableUrl, fromCopy, read, status, durationMs }) => {
     const page = sent.get(url);
     return {
       url,
       machineReadableUrl,
+      fromCopy,
       outcome: read.ok ? 'read' : read.failure,
-      status: read.status,
+      status,
       durationMs,
       sha256: page === undefined ? null : textDigest(page.text),
       cut: page?.cut ?? false,
@@ -263,6 +271,7 @@ export function createVersionCheck({
   subject: subjectOf,
   guide: guideOf,
   fetcher,
+  copies,
   checker: { checker, model, promptVersion },
   locator,
   store,
@@ -312,22 +321,36 @@ export function createVersionCheck({
       // fails, the page is not tried, so its items could not be checked, with the reason.
       const machineReadableUrl = addresses.get(url) ?? null;
       const started = now();
-      const read =
+      const live =
         machineReadableUrl === null
           ? await fetcher.fetch(url, hosts)
           : await readAddress(machineReadableUrl, hosts);
       // Official sites fail often and the report keeps each failure, so the log line is a code.
-      if (!read.ok) logger.info({ route, errorCode: `check_fetch_${read.failure}` });
+      if (!live.ok) logger.info({ route, errorCode: `check_fetch_${live.failure}` });
+      // A page the check cannot read is read from the copy an owner-list admin attached, if any;
+      // the log then names no address, since the text came from neither. A page off the pinned
+      // official hosts never is, so a copy cannot make an unofficial page count as official.
+      const copy =
+        live.ok || live.failure === 'refused_url'
+          ? undefined
+          : await copies.read(url).catch(() => {
+              logger.error({ route, errorCode: 'check_copy_failed' });
+              return undefined;
+            });
+      const read: FetchOutcome =
+        copy === undefined ? live : { ok: true, status: live.status ?? 0, ...copy, chain: [url] };
       await record({
         kind: 'page',
         url,
         outcome: read.ok ? 'read' : read.failure,
-        status: read.status,
+        status: live.status,
       });
       fetched.push({
         url,
-        machineReadableUrl,
+        machineReadableUrl: copy === undefined ? machineReadableUrl : null,
+        fromCopy: copy !== undefined,
         read,
+        status: live.status,
         durationMs: Math.max(0, Math.round(now() - started)),
       });
     }

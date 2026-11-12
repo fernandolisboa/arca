@@ -14,6 +14,25 @@ export const objectHeadBytes = 1024;
 /** The media type of document ciphertext, the only type a vault upload may have. */
 export const ciphertextType = 'application/octet-stream';
 
+/** Whether the server may read an object: a correction file, never document ciphertext. */
+export const readablePathname = (pathname: string) =>
+  /^corrections\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(pathname);
+
+/** A stream's bytes, or undefined once they run past `maxBytes`. */
+export async function bytesWithin(
+  chunks: AsyncIterable<Uint8Array>,
+  maxBytes: number,
+): Promise<Uint8Array | undefined> {
+  const read: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of chunks) {
+    size += chunk.length;
+    if (size > maxBytes) return undefined;
+    read.push(chunk);
+  }
+  return Buffer.concat(read);
+}
+
 /** The SHA-256 and first bytes of a stream of chunks, as `digest` answers. */
 export async function digestOf(
   chunks: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
@@ -53,6 +72,12 @@ export interface ObjectStorage {
   ) => Promise<DocumentUploadUrlResponse>;
   /** The object's size, SHA-256 and first bytes, or undefined when nothing is stored there. */
   readonly digest: (pathname: string) => Promise<StoredObject | undefined>;
+  /**
+   * The object's bytes, or undefined when nothing is stored there or it runs past `maxBytes`. Only
+   * correction files are read on the server, which stores document ciphertext without reading it;
+   * any other pathname is refused.
+   */
+  readonly read: (pathname: string, maxBytes: number) => Promise<Uint8Array | undefined>;
   /** A URL that reads the object for 5 minutes, served as an attachment with `nosniff`. */
   readonly downloadUrl: (pathname: string) => Promise<string>;
   /** Deletes the objects; a missing one is not an error. */
@@ -69,6 +94,7 @@ export const unconnectedObjectStorage: ObjectStorage = {
   },
   presignUpload: () => Promise.reject(new Error('no object store is connected')),
   digest: () => Promise.reject(new Error('no object store is connected')),
+  read: () => Promise.reject(new Error('no object store is connected')),
   downloadUrl: () => Promise.reject(new Error('no object store is connected')),
   delete: (pathnames) =>
     pathnames.length === 0
@@ -124,6 +150,11 @@ export function memoryObjectStorage(
     digest: (pathname) => {
       const bytes = objects.get(pathname);
       return bytes === undefined ? Promise.resolve(undefined) : digestOf([bytes]);
+    },
+    read: (pathname, maxBytes) => {
+      if (!readablePathname(pathname)) return Promise.reject(new Error('not a correction file'));
+      const bytes = objects.get(pathname);
+      return Promise.resolve(bytes === undefined || bytes.length > maxBytes ? undefined : bytes);
     },
     downloadUrl: (pathname) => Promise.resolve(grant(downloads, pathname, 0)),
     delete: (pathnames) => {
