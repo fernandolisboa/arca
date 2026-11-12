@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { card, signedIn } from './case-accounts.js';
+import { addPerson, person, signedIn } from './case-accounts.js';
 import { linkAccounts, resetRateLimits } from './postgres/accounts.js';
 import { watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
@@ -26,9 +26,12 @@ test('starts a case, adds people, shares a child with a member and tells them', 
   await page.getByRole('button', { name: 'Começar o caso' }).click();
   await expect(page.getByText('Ana (você)')).toBeVisible();
 
-  await page.getByLabel('Nome', { exact: true }).fill('Criança');
-  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
-  await expect(card(page, 'Criança').getByText('Sem conta')).toBeVisible();
+  // The tree is the first layout; the cards and the list show the same people.
+  await expect(page.getByRole('button', { name: 'Ver em árvore' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect((await addPerson(page, 'Criança')).getByText('Sem conta')).toBeVisible();
 
   // The relative joins as the invites screen would add them (spec 0007, R2).
   const joined = await page.request.post(`${databaseServer.origin}/v1/case/members`, {
@@ -38,16 +41,20 @@ test('starts a case, adds people, shares a child with a member and tells them', 
   expect(joined.status()).toBe(200);
   await page.reload();
   await expect(page.getByText('Bruno entrou no caso.')).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Entram no planejamento' })
+      .getByRole('button', { name: 'Criança', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Entendi' }).click();
-  await expect(card(page, 'Bruno').getByText('Participante do caso')).toBeVisible();
+  await expect((await person(page, 'Bruno')).getByText('Participante do caso')).toBeVisible();
 
   // A person added once someone else is in the case opens the sharing question, none checked.
-  await page.getByLabel('Nome', { exact: true }).fill('Avó');
-  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
-  await expect(card(page, 'Avó').getByText('Quem pode ver os dados de Avó?')).toBeVisible();
-  await expect(card(page, 'Avó').getByLabel('Bruno').first()).not.toBeChecked();
+  const grandmother = await addPerson(page, 'Avó');
+  await expect(grandmother.getByText('Quem pode ver os dados de Avó?')).toBeVisible();
+  await expect(grandmother.getByLabel('Bruno').first()).not.toBeChecked();
 
-  const child = card(page, 'Criança');
+  const child = await person(page, 'Criança');
   await child.getByRole('button', { name: 'Compartilhamento' }).click();
   await child
     .getByRole('group', { name: /^Dados pessoais/ })
@@ -58,20 +65,36 @@ test('starts a case, adds people, shares a child with a member and tells them', 
     child.getByText('Quem vê os dados: Bruno. Quem vê as finanças: só você.'),
   ).toBeVisible();
 
-  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
-  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
-  await expect(page.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
-  await expect(child.getByText('Filha ou filho de Ana')).toBeVisible();
-  // Either end may be the one the viewer keeps.
-  await page.getByLabel('Pessoa', { exact: true }).selectOption({ label: 'Bruno' });
-  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
-  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
-  await expect(page.getByText('Bruno é mãe ou pai de Criança')).toBeVisible();
+  await child
+    .getByLabel('Vínculo', { exact: true })
+    .selectOption({ label: 'Criança é filha ou filho de' });
+  await child.getByLabel('Com quem').selectOption({ label: 'Ana' });
+  await child.getByRole('button', { name: 'Anotar vínculo' }).click();
+  await expect(child.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
+  // Either end may be the one the viewer keeps: Bruno keeps himself.
+  await child.getByLabel('Com quem').selectOption({ label: 'Bruno' });
+  await child.getByRole('button', { name: 'Anotar vínculo' }).click();
+  await expect(child.getByText('Bruno é mãe ou pai de Criança')).toBeVisible();
+
+  // The cards show the relationships on each person; the choice of layout stays on the device.
+  await page.getByRole('button', { name: 'Ver em cartões' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Criança', exact: true }),
+  ).toHaveAccessibleDescription(/^Filha ou filho de Ana · Filha ou filho de Bruno/);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Ver em cartões' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Ver em árvore' }).click();
 
   await relativePage.goto(`${databaseServer.origin}/family`);
-  await expect(card(relativePage, 'Criança').getByText('Você vê os dados.')).toBeVisible();
+  await expect(
+    (await person(relativePage, 'Criança')).getByText('Você vê os dados.'),
+  ).toBeVisible();
 
   // Revoking shows the relative a notice on their next visit.
+  await person(page, 'Criança');
   await child.getByRole('button', { name: 'Compartilhamento' }).click();
   await child
     .getByRole('group', { name: /^Dados pessoais/ })
