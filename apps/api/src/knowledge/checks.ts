@@ -67,7 +67,10 @@ export interface ListedCheck {
 
 /** The independent check as the activation screen reaches it (ADR-0027). */
 export interface VersionChecks {
-  /** Starts a check for every proposed route version that is due; answers how many started. */
+  /**
+   * Starts a check for every proposed route version that is due and not superseded; answers how
+   * many started.
+   */
   readonly start: () => Promise<number>;
   /** An admin's own start of one route version, in any state and whatever its reports say. */
   readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
@@ -132,7 +135,9 @@ export function createVersionChecks({
 
   return {
     async start() {
-      const proposed = (await versions.list()).filter(({ state }) => state === 'proposed');
+      const proposed = (await versions.list()).filter(
+        ({ state, superseded }) => state === 'proposed' && !superseded,
+      );
       const started = await starts.begin(
         proposed.map(({ routeId, number, hash, country }) => ({
           routeId,

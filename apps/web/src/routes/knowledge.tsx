@@ -130,7 +130,9 @@ function Knowledge() {
     ...versions.data.comparisons.map((version) => comparisonItem(version, words)),
     ...all.map((version) => routeItem(version, words)),
   ];
-  const proposed = all.filter(({ state }) => state === 'proposed');
+  const allProposed = all.filter(({ state }) => state === 'proposed');
+  const proposed = allProposed.filter((version) => !version.superseded);
+  const superseded = allProposed.filter((version) => version.superseded);
   const ordered = reviewOrder(proposed, words.country);
   const first = ordered[0]?.versions[0];
   // A country whose last proposed version was decided drops out of the filter.
@@ -147,7 +149,7 @@ function Knowledge() {
     <Page title={title} lead={t('knowledge.lead')} wide>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
-          <CheckedBatch versions={all} words={words} />
+          <CheckedBatch versions={proposed} words={words} />
           <ProposedVersions
             groups={reviewOrder(
               proposed.filter((version) => passes(filter, version)),
@@ -190,6 +192,13 @@ function Knowledge() {
             onPick={setPicked}
             words={words}
           />
+          {superseded.length > 0 && (
+            <SupersededVersions
+              versions={superseded.map((version) => routeItem(version, words))}
+              onPick={setPicked}
+              words={words}
+            />
+          )}
           {others.length > 0 && (
             <VersionList title={t('knowledge.others')} versions={others} onPick={setPicked} />
           )}
@@ -308,6 +317,7 @@ function ProposedVersions({
         {groups.length > 0 && (
           <p className="text-small text-muted">{t('knowledge.review.order')}</p>
         )}
+        {groups.length > 0 && <NeedHints words={words} />}
       </div>
       {filters}
       {groups.length === 0 && comparisons.length === 0 && (
@@ -413,28 +423,7 @@ function ProposedVersions({
           words={words}
         >
           {comparisons.map((version) => (
-            <li key={pickedKey(version.picked)}>
-              <button
-                type="button"
-                className={rowButton}
-                onClick={() => {
-                  onPick(version.picked);
-                }}
-              >
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-medium">
-                    {t('knowledge.versionTitle', {
-                      title: version.title,
-                      number: version.picked.number,
-                    })}
-                  </span>
-                  <span className="text-small text-muted">{version.meta}</span>
-                </span>
-                <span aria-hidden="true" className="self-center text-muted">
-                  <Icon name="chevron" size={16} />
-                </span>
-              </button>
-            </li>
+            <ListedRow key={pickedKey(version.picked)} version={version} onPick={onPick} />
           ))}
         </ProposedGroup>
       )}
@@ -442,8 +431,97 @@ function ProposedVersions({
   );
 }
 
+/** A version as a plain row: its title and when it applies from, with no check. */
+function ListedRow({
+  version,
+  onPick,
+}: {
+  readonly version: Listed;
+  readonly onPick: (picked: Picked) => void;
+}) {
+  const { t } = useKnowledgeWords();
+  return (
+    <li>
+      <button
+        type="button"
+        className={rowButton}
+        onClick={() => {
+          onPick(version.picked);
+        }}
+      >
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="font-medium">
+            {t('knowledge.versionTitle', {
+              title: version.title,
+              number: version.picked.number,
+            })}
+          </span>
+          <span className="text-small text-muted">{version.meta}</span>
+        </span>
+        <span aria-hidden="true" className="self-center text-muted">
+          <Icon name="chevron" size={16} />
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/**
+ * Proposed versions no date from today on would use, folded apart: a correction or a later version
+ * took their place, so they need no decision and are not checked while that holds.
+ */
+function SupersededVersions({
+  versions,
+  onPick,
+  words,
+}: {
+  readonly versions: readonly Listed[];
+  readonly onPick: (picked: Picked) => void;
+  readonly words: KnowledgeWords;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <ProposedGroup
+      title={words.t('knowledge.superseded.title')}
+      count={versions.length}
+      tally={<span className="text-small text-muted">{words.t('knowledge.superseded.lead')}</span>}
+      open={open}
+      onOpenChange={setOpen}
+      words={words}
+    >
+      {versions.map((version) => (
+        <ListedRow key={pickedKey(version.picked)} version={version} onPick={onPick} />
+      ))}
+    </ProposedGroup>
+  );
+}
+
 /** The open-state key of the comparisons' card, which no country code can take. */
 const comparisonsGroup = 'comparisons';
+
+/** What the admin can do about each need, folded until asked. */
+function NeedHints({ words }: { readonly words: KnowledgeWords }) {
+  const { t } = words;
+  return (
+    <Disclosure
+      title={t('knowledge.review.hints.title')}
+      level={4}
+      defaultOpen={false}
+      className="flex flex-col"
+    >
+      <dl className="flex flex-col gap-3 pb-2">
+        {reviewNeeds.map((need) => (
+          <div key={need} className="flex flex-col items-start gap-1">
+            <dt>
+              <StatusChip tone={needTone[need]} label={t('knowledge.review.need', { need })} />
+            </dt>
+            <dd className="text-small">{t(`knowledge.review.hints.${need}`)}</dd>
+          </div>
+        ))}
+      </dl>
+    </Disclosure>
+  );
+}
 
 /** How many of a country's versions have each need, so a folded card still says what waits. */
 function NeedTally({
