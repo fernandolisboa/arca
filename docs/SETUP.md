@@ -51,11 +51,21 @@ Public by design; a pull request changes them.
 | --- | --- | --- | --- | --- |
 | `VERCEL_TOKEN` | Agents read the project and write Sensitive variables after the owner's OK | Agent session | Owner: [Vercel › Account › Tokens](https://vercel.com/account/settings/tokens), scoped to the team, with an expiry | Agents cannot create variables or read build logs |
 | `ARCA_GITHUB_TOKEN` | The owner's fine-grained token for this repository (ADR-0012). Nothing uses it: sessions reach GitHub through the Claude GitHub App. Its variable left the agent environment on 2026-11-11; threads started before then still hold the variable, and the owner said he revoked the token itself the same day | Threads started before 2026-11-11 | Owner: [GitHub › Fine-grained tokens](https://github.com/settings/personal-access-tokens), where he said he revoked it | Nothing |
-| `ARCA_CORRECTOR_KEY` | The corrector run reads correction requests and answers them ([ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)) | The corrector's own cloud environment only, never the shared agent environment | Owner, once: create it in the app (settings, "Chave da sessão de correção", with a passkey), paste it into that environment; the scheduled task is created only after #417 merges the runbook's corrector run section; a new key replaces the old one, and it expires after a year | The corrector run cannot read requests and ends |
+| `ARCA_CORRECTOR_KEY` | The corrector run reads correction requests and answers them ([ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)) | The corrector's own cloud environment only, never the shared agent environment | Owner, once, by the steps in [Corrector run](#corrector-run); a new key replaces the old one, and it expires after a year | The corrector run cannot read requests: it ends with one line saying `401 unauthorized` |
 | `GITHUB_TOKEN` | The staleness workflow posts its weekly issue | GitHub Actions, issued per run | GitHub | — |
 | `ANTHROPIC_API_KEY` | The `intake-eval` workflow, started by a person or by a rule audit's check loop ([rule audit](runbooks/rule-audit.md#the-check-loop)), scores the intake extractor and checks the rule summary and the independent check against the real model, and its `catalog-check` option runs the independent check on the bundled routes against their live official pages ([spec 0008, R5](specs/0008-free-text-intake.md#r5-evaluation), [ADR-0025](adr/0025-rule-summary-for-the-approver.md), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)) | GitHub repository secret | Owner, once: a new key of its own in the [Claude Console](https://platform.claude.com/settings/keys), ideally in its own workspace with a low spend limit, then repository › Settings › Secrets and variables › Actions › New repository secret. Not the Vercel key: any branch's workflow can read a repository secret, and a separate key keeps a leak away from production | `intake-eval` stops at "Set ANTHROPIC_API_KEY"; nothing else depends on it, and revoking it touches nothing else |
 
 CI creates throwaway role passwords, `BETTER_AUTH_SECRET` and `ARCA_RATE_LIMIT_KEY` for each run, so its checks need no stored secret; only the manual `intake-eval` workflow holds one. A workflow may use only the secrets listed in [.github/policy/workflow-secrets.json](../.github/policy/workflow-secrets.json).
+
+### Corrector run
+
+The daily corrector run ([runbook](runbooks/rule-audit.md#the-corrector-run), [ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)) runs in a cloud environment of its own, "Arca corrector", which holds `ARCA_CORRECTOR_KEY` and nothing else. A session creates the environment (the owner approves it in the prompt) and the scheduled task; the owner's one step is the key:
+
+1. In the app, signed in as an owner-list admin, open Configurações › Regras › "Chave da sessão de correção", tap to create a key and confirm with the passkey. The key is shown once; copy it.
+2. In [claude.ai/code](https://claude.ai/code), open the environment "Arca corrector" in its settings, add the variable `ARCA_CORRECTOR_KEY` with the key as its value and save. Paste it nowhere else: not in a chat, an issue or a file.
+3. Say in the project thread that the key is in place.
+
+A new key, made the same way, replaces the old one at once, so a lost or leaked key is fixed by step 1 and step 2 again; revoking one in the same screen stops the run until a new key is pasted.
 
 ## Local development
 
