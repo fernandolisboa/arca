@@ -29,7 +29,7 @@ The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the fi
 | Navigation from 768 px | `top` | `menu`, `side`, `floating-dock` |
 | Navigation below 768 px | `menu` | `fixed-dock`, `floating-dock` |
 | Dock edge (floating dock only) | `bottom` | `left`, `right` |
-| Text size | `100` | `112`, `125`, `150` (percent of the root size) |
+| Text size | `100` | `75`, `90`, `112`, `125`, `150` (percent of the root size; the steps below 100 were added on 2026-11-12 at the owner's request, for people who prefer denser screens) |
 | Contrast | `standard` | `high` |
 | Motion | `on` | `off` (also forced off by `prefers-reduced-motion: reduce`) |
 
@@ -96,7 +96,7 @@ Non-text cues (bars on `track`, the dashed `line` border of unknown items) are b
 | `clean` | Inter 700 | Inter 400–600 | Inter, tabular figures |
 | `technical` | IBM Plex Sans 600 | IBM Plex Sans 400–600 | IBM Plex Mono 500 |
 
-Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones; captions are for metadata only (sources, dates). Every size is in rem, so the text-size axis scales the whole scale; layouts reflow without horizontal scroll at 150% and at 200% browser zoom.
+Scale (rem at 16 px): 0.75 caption, 0.875 small, 1 body, 1.125 lead, 1.375 title, 1.75 page title, 2.25 hero. Body line height 1.5; titles 1.15–1.25. Body text never below 1 rem on phones (at the default text size; a person may pick 75% or 90% for themselves); captions are for metadata only (sources, dates). Every size is in rem, so the text-size axis scales the whole scale; layouts reflow without horizontal scroll at 150% and at 200% browser zoom.
 
 ### High contrast
 

@@ -920,6 +920,14 @@
   --arca-radius-dock: 999px;
 }
 
+[data-text-size="75"] {
+  font-size: 75%;
+}
+
+[data-text-size="90"] {
+  font-size: 90%;
+}
+
 [data-text-size="100"] {
   font-size: 100%;
 }

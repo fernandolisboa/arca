@@ -22,6 +22,8 @@ export const shadows = { card: '0 1px 2px 0 rgb(0 0 0 / 0.04)' } as const;
 
 /** Root font size per text-size step, as a percentage of the browser's size. */
 export const textSizes: Readonly<Record<TextSizeId, string>> = {
+  '75': '75%',
+  '90': '90%',
   '100': '100%',
   '112': '112%',
   '125': '125%',

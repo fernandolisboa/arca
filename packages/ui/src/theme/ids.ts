@@ -37,7 +37,11 @@ export const axes = {
     default: 'menu',
   },
   dockEdge: { attribute: 'data-dock-edge', values: ['bottom', 'left', 'right'], default: 'bottom' },
-  textSize: { attribute: 'data-text-size', values: ['100', '112', '125', '150'], default: '100' },
+  textSize: {
+    attribute: 'data-text-size',
+    values: ['75', '90', '100', '112', '125', '150'],
+    default: '100',
+  },
   contrast: { attribute: 'data-contrast', values: ['standard', 'high'], default: 'standard' },
   motion: { attribute: 'data-motion', values: ['on', 'off'], default: 'on' },
 } as const;

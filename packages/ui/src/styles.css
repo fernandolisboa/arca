@@ -44,8 +44,8 @@
 }
 
 @theme {
-  /* The minimum touch target: 44 px. */
-  --spacing-touch: 2.75rem;
+  /* The minimum touch target: 44 px, kept when the text size goes below 100%. */
+  --spacing-touch: max(2.75rem, 44px);
   /* The shell's top bar, below the safe-area inset; the menu panel opens right under it. */
   --spacing-bar: 3.75rem;
 
