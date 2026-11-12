@@ -102,8 +102,6 @@ function Family() {
         <StartCase />
       ) : (
         <FamilyCase
-          // A new layout starts with no one picked, so a phone shows the people again.
-          key={layout}
           view={view}
           accountId={session.data.accountId}
           admin={session.data.admin}
@@ -280,10 +278,25 @@ function FamilyCase({
     setAdding(false);
     setSelected(personId);
   };
+  // Closing the panel hands focus back to what opened it, so the place is not lost.
+  const returnFocusRef = useRef<string>(undefined);
+  useEffect(() => {
+    if (returnFocusRef.current === undefined) return;
+    document.querySelector<HTMLElement>(`[data-family-entry="${returnFocusRef.current}"]`)?.focus();
+    returnFocusRef.current = undefined;
+  });
   const close = () => {
+    returnFocusRef.current = adding ? addingKey : selected;
     setAdding(false);
     setSelected(undefined);
   };
+  // A new layout starts with no one picked, so a phone shows the people again.
+  const [laidOut, setLaidOut] = useState(layout);
+  if (laidOut !== layout) {
+    setLaidOut(layout);
+    setAdding(false);
+    setSelected(undefined);
+  }
   const entry = (person: CasePerson) => ({
     person,
     isMe: person.id === view.me,
@@ -315,6 +328,7 @@ function FamilyCase({
         <Button
           variant="secondary"
           aria-expanded={adding}
+          data-family-entry={addingKey}
           onClick={() => {
             setSelected(undefined);
             setAdding(true);
@@ -372,7 +386,7 @@ function FamilyCase({
               focusKey={adding ? addingKey : (shown?.id ?? '')}
               focus={picked}
               onBack={picked ? close : undefined}
-              onClose={layout === 'list' ? undefined : close}
+              onClose={layout === 'list' && !adding ? undefined : close}
             >
               {adding || shown === undefined ? (
                 <AddPerson
@@ -404,10 +418,10 @@ function FamilyCase({
   );
 }
 
-/** A shortcut to the next steps of the case. */
 /** The panel's focus key while it shows the form to add a person. */
 const addingKey = 'adding';
 
+/** A shortcut to the next steps of the case. */
 function NextLink({
   to,
   icon,
@@ -457,7 +471,7 @@ function LayoutToggle({
             onChange(option);
           }}
         >
-          <Icon name={option === 'tree' ? 'tree' : option} />
+          <Icon name={option} />
         </button>
       ))}
     </div>
@@ -552,6 +566,7 @@ function PersonCard({
       aria-labelledby={nameId}
       aria-describedby={`${relations === '' ? '' : `${relationsId} `}${chipsId} ${sharingId}`}
       aria-current={current}
+      data-family-entry={person.id}
       onClick={onSelect}
       className={`${entryClass} flex w-full flex-col gap-3 rounded-card border bg-surface p-4 shadow-card hover:bg-soft ${current ? 'border-accent' : 'border-line'}`}
     >
@@ -595,6 +610,7 @@ function PersonRow({ person, isMe, current, onSelect }: EntryProps) {
       aria-labelledby={nameId}
       aria-describedby={detailsId}
       aria-current={current}
+      data-family-entry={person.id}
       onClick={onSelect}
       className={`${entryClass} flex min-h-touch w-full items-center gap-3 rounded-control p-2 hover:bg-soft ${current ? 'bg-soft' : ''}`}
     >
@@ -620,6 +636,7 @@ function PersonTile({ person, isMe, current, onSelect }: EntryProps) {
       aria-labelledby={nameId}
       aria-describedby={detailsId}
       aria-current={current}
+      data-family-entry={person.id}
       onClick={onSelect}
       className={`${entryClass} flex min-h-touch w-36 items-center gap-2 rounded-control border bg-surface p-2 shadow-card hover:bg-soft sm:w-52 sm:gap-3 sm:p-3 ${current ? 'border-accent' : 'border-line'}`}
     >
@@ -667,13 +684,16 @@ function TreeView({
                 {level > 0 && <span aria-hidden="true" className="h-6 w-0.5 bg-second" />}
                 <ul className="flex flex-wrap justify-center gap-3">
                   {row.map((unit) => (
-                    <li key={unit.people.join()} className="flex items-center">
+                    <li key={unit.people.join()} className="flex flex-col items-center sm:flex-row">
                       {tile(unit.people[0] ?? '')}
                       {unit.bond !== undefined && (
                         <>
                           <span className="flex flex-col items-center px-1 text-caption text-muted">
                             {t(`family.tree.${unit.bond}`)}
-                            <span aria-hidden="true" className="h-0.5 w-8 bg-second sm:w-12" />
+                            <span
+                              aria-hidden="true"
+                              className="order-first h-3 w-0.5 bg-second sm:order-none sm:h-0.5 sm:w-12"
+                            />
                           </span>
                           {tile(unit.people[1] ?? '')}
                         </>
@@ -945,7 +965,7 @@ function AdminRole({
   );
 }
 
-type Panel = 'sharing' | 'edit' | 'handOver';
+type KeptPanel = 'sharing' | 'edit' | 'handOver';
 
 /** What the keeper may do with a person: sharing, renaming, handing over, inviting, removing. */
 function KeptActions({
@@ -960,12 +980,12 @@ function KeptActions({
   readonly askSharing: boolean;
 }) {
   const { t } = useTranslation();
-  const [panel, setPanel] = useState<Panel | undefined>(
+  const [panel, setPanel] = useState<KeptPanel | undefined>(
     askSharing && others.length > 0 ? 'sharing' : undefined,
   );
   const remove = useCaseWrite();
   const withoutAccount = person.accountId === null;
-  const toggle = (next: Panel) => {
+  const toggle = (next: KeptPanel) => {
     setPanel(panel === next ? undefined : next);
   };
   return (
@@ -1383,11 +1403,15 @@ function Relationships({
           className="flex flex-col gap-3"
           onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
-            add.run(() =>
-              writeCase(passkeys, routes.addCaseRelationship, {
-                ...edgeOf(choice, person.id, other),
-                details: {},
-              }),
+            add.run(
+              () =>
+                writeCase(passkeys, routes.addCaseRelationship, {
+                  ...edgeOf(choice, person.id, other),
+                  details: {},
+                }),
+              () => {
+                setPickedOther('');
+              },
             );
           }}
         >
