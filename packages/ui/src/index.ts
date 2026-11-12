@@ -18,4 +18,5 @@ export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
 export { ScaleChoice, type ScaleChoiceProps } from './patterns/scale-choice.js';
 export type { SignOut } from './shell/menu-panel.js';
 export { StarRating, type StarRatingProps } from './patterns/star-rating.js';
+export { Tabs, tabPanelProps, type Tab, type TabsProps } from './patterns/tabs.js';
 export { StatusChip, type StatusChipProps, type StatusTone } from './patterns/status-chip.js';

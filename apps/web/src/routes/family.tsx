@@ -7,7 +7,16 @@ import {
   type CaseRelationship,
   type CaseView,
 } from '@arca/api-contract/client';
-import { Button, ChoiceGroup, Icon, iconButtonClass, StatusChip, type IconName } from '@arca/ui';
+import {
+  Button,
+  buttonClass,
+  ChoiceGroup,
+  Icon,
+  iconButtonClass,
+  StatusChip,
+  tabPanelProps,
+  Tabs,
+} from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import {
@@ -86,17 +95,6 @@ function Family() {
       title={t('family.title')}
       lead={t(view === null ? 'family.startLead' : 'family.lead')}
       wide={view !== null}
-      actions={
-        view === null ? undefined : (
-          <LayoutToggle
-            layout={layout}
-            onChange={(next) => {
-              writeFamilyLayout(next);
-              setLayout(next);
-            }}
-          />
-        )
-      }
     >
       {view === null ? (
         <StartCase />
@@ -106,6 +104,10 @@ function Family() {
           accountId={session.data.accountId}
           admin={session.data.admin}
           layout={layout}
+          onLayoutChange={(next) => {
+            writeFamilyLayout(next);
+            setLayout(next);
+          }}
         />
       )}
     </Page>
@@ -250,13 +252,18 @@ function FamilyCase({
   accountId,
   admin,
   layout,
+  onLayoutChange,
 }: {
   readonly view: CaseView;
   readonly accountId: string;
   readonly admin: boolean;
   readonly layout: FamilyLayout;
+  readonly onLayoutChange: (layout: FamilyLayout) => void;
 }) {
   const { t } = useTranslation();
+  const [section, setSection] = useState<FamilySection>('people');
+  const sectionsId = useId();
+  const invites = useInviteStandings();
   const [selected, setSelected] = useState<string>();
   const [adding, setAdding] = useState(false);
   /** The person just added, whose sharing the screen asks about first (R2). */
@@ -308,142 +315,277 @@ function FamilyCase({
       select(person.id);
     },
   });
-  const columns =
-    layout === 'list'
-      ? 'lg:grid-cols-[20rem_minmax(0,1fr)]'
-      : panelOpen
-        ? 'lg:grid-cols-[minmax(0,1fr)_26rem]'
-        : '';
+  // The columns follow the summary's twelve, so the panel lines up with the next step above it.
+  const split = layout === 'list' || panelOpen;
+  const viewSpan = layout === 'list' ? 'lg:col-span-4' : panelOpen ? 'lg:col-span-8' : '';
+  const panelSpan = layout === 'list' ? 'lg:col-span-8' : 'lg:col-span-4';
+  const sectionPanel = {
+    ...tabPanelProps(sectionsId, section),
+    className: 'flex flex-col gap-4 outline-none',
+  };
   return (
     <>
       <FamilyNews view={view} accountId={accountId} />
-      <nav aria-label={t('family.next')} className="grid gap-3 sm:grid-cols-3">
-        {view.people.some((person) => person.keptByMe) && (
-          <NextLink to="/family/questions" icon="documents" label={t('family.questions')} />
-        )}
-        <NextLink to="/family/intake" icon="ai" label={t('intake.open')} />
-        <NextLink to="/family/results" icon="plan" label={t('results.open')} />
-      </nav>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-display text-lead">
-          {t('family.peopleCount', { count: view.people.length })}
-        </h3>
-        <Button
-          variant="secondary"
-          aria-expanded={adding}
-          data-family-entry={addingKey}
-          onClick={() => {
+      <div className="grid gap-5 lg:grid-cols-12">
+        <FamilySummary
+          view={view}
+          invitesWaiting={invites.waiting}
+          adding={adding}
+          onAdd={() => {
+            setSection('people');
             setSelected(undefined);
             setAdding(true);
           }}
-        >
-          <Icon name="addPerson" />
-          {t('family.add.title')}
-        </Button>
+        />
+        <NextStep view={view} />
       </div>
-      <div className={`grid items-start gap-5 ${columns}`}>
-        <div className={`min-w-0 ${picked ? 'max-lg:hidden' : ''}`}>
-          {layout === 'tree' && <TreeView view={view} entry={entry} />}
-          {layout === 'cards' && (
-            <ul
-              className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-              aria-label={t('family.peopleTitle')}
-            >
-              {view.people.map((person) => (
-                <li key={person.id} className="flex">
-                  <PersonCard
-                    {...entry(person)}
-                    relations={relationLine(person)}
-                    admin={
-                      caseAdmins?.some(({ accountId: id }) => id === person.accountId) === true
+      <div className="flex flex-col gap-5">
+        <Tabs
+          label={t('family.sections.label')}
+          idBase={sectionsId}
+          value={section}
+          onChange={setSection}
+          tabs={[
+            { value: 'people', label: t('family.sections.people'), count: view.people.length },
+            {
+              value: 'relationships',
+              label: t('family.sections.relationships'),
+              count: view.relationships.length,
+            },
+            { value: 'sharing', label: t('family.sections.sharing') },
+            {
+              value: 'invites',
+              label: t('family.sections.invites'),
+              ...(invites.waiting > 0 ? { count: invites.waiting } : {}),
+            },
+            { value: 'case', label: t('family.sections.case') },
+          ]}
+          className="max-md:sticky max-md:bottom-[var(--shell-bottom,0px)] max-md:z-10 max-md:order-last max-md:-mx-4 max-md:border-t max-md:border-line max-md:bg-surface max-md:px-4 max-md:py-2 max-md:shadow-card sm:max-md:-mx-6 sm:max-md:px-6"
+        />
+        {section === 'people' && (
+          <div {...sectionPanel}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-display text-lead">
+                {t('family.peopleCount', { count: view.people.length })}
+              </h3>
+              <LayoutToggle layout={layout} onChange={onLayoutChange} />
+            </div>
+            <div className={`grid items-start gap-5 ${split ? 'lg:grid-cols-12' : ''}`}>
+              <div className={`min-w-0 ${viewSpan} ${picked ? 'max-lg:hidden' : ''}`}>
+                {layout === 'tree' && <TreeView view={view} entry={entry} />}
+                {layout === 'cards' && (
+                  <ul
+                    className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                    aria-label={t('family.peopleTitle')}
+                  >
+                    {view.people.map((person) => (
+                      <li key={person.id} className="flex">
+                        <PersonCard
+                          {...entry(person)}
+                          relations={relationLine(person)}
+                          admin={
+                            caseAdmins?.some(({ accountId: id }) => id === person.accountId) ===
+                            true
+                          }
+                          sharing={sharingLine(person)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {layout === 'list' && (
+                  <ul
+                    className="flex flex-col gap-1 rounded-card border border-line bg-surface p-2 shadow-card"
+                    aria-label={t('family.peopleTitle')}
+                  >
+                    {view.people.map((person) => (
+                      <li key={person.id}>
+                        <PersonRow {...entry(person)} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              {panelOpen && (
+                <div className={`min-w-0 ${panelSpan} ${picked ? '' : 'max-lg:hidden'}`}>
+                  <Panel
+                    title={
+                      adding || shown === undefined
+                        ? t('family.add.title')
+                        : shown.id === view.me
+                          ? t('family.me', { name: shown.displayName })
+                          : shown.displayName
                     }
-                    sharing={sharingLine(person)}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-          {layout === 'list' && (
-            <ul
-              className="flex flex-col gap-1 rounded-card border border-line bg-surface p-2 shadow-card"
-              aria-label={t('family.peopleTitle')}
-            >
-              {view.people.map((person) => (
-                <li key={person.id}>
-                  <PersonRow {...entry(person)} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        {panelOpen && (
-          <div className={`min-w-0 ${picked ? '' : 'max-lg:hidden'}`}>
-            <Panel
-              title={
-                adding || shown === undefined
-                  ? t('family.add.title')
-                  : shown.id === view.me
-                    ? t('family.me', { name: shown.displayName })
-                    : shown.displayName
-              }
-              focusKey={adding ? addingKey : (shown?.id ?? '')}
-              focus={picked}
-              onBack={picked ? close : undefined}
-              onClose={layout === 'list' && !adding ? undefined : close}
-            >
-              {adding || shown === undefined ? (
-                <AddPerson
-                  view={view}
-                  onAdded={(personId) => {
-                    setJustAdded(personId);
-                    select(personId);
-                  }}
-                />
-              ) : (
-                <PersonDetails
-                  key={shown.id}
-                  person={shown}
-                  view={view}
-                  names={names}
-                  askSharing={shown.id === justAdded}
-                  admins={caseAdmins}
-                />
+                    focusKey={adding ? addingKey : (shown?.id ?? '')}
+                    focus={picked}
+                    onBack={picked ? close : undefined}
+                    onClose={layout === 'list' && !adding ? undefined : close}
+                  >
+                    {adding || shown === undefined ? (
+                      <AddPerson
+                        view={view}
+                        onAdded={(personId) => {
+                          setJustAdded(personId);
+                          select(personId);
+                        }}
+                      />
+                    ) : (
+                      <PersonDetails
+                        key={shown.id}
+                        person={shown}
+                        view={view}
+                        names={names}
+                        askSharing={shown.id === justAdded}
+                        admins={caseAdmins}
+                      />
+                    )}
+                  </Panel>
+                </div>
               )}
-            </Panel>
+            </div>
           </div>
         )}
-      </div>
-      <div className="grid items-start gap-4 sm:grid-cols-2">
-        <Invites />
-        <Leave />
+        {section === 'relationships' && (
+          <div {...sectionPanel}>
+            <RelationshipsSection view={view} names={names} />
+          </div>
+        )}
+        {section === 'sharing' && (
+          <div {...sectionPanel}>
+            <SharingSection view={view} />
+          </div>
+        )}
+        {section === 'invites' && (
+          <div {...sectionPanel}>
+            <Invites standings={invites.standings} />
+          </div>
+        )}
+        {section === 'case' && (
+          <div {...sectionPanel}>
+            <Leave />
+          </div>
+        )}
       </div>
     </>
   );
 }
 
+type FamilySection = 'people' | 'relationships' | 'sharing' | 'invites' | 'case';
+
 /** The panel's focus key while it shows the form to add a person. */
 const addingKey = 'adding';
 
-/** A shortcut to the next steps of the case. */
-function NextLink({
-  to,
-  icon,
-  label,
+/** How many people the summary shows by name before it counts the rest. */
+const summaryFaces = 8;
+
+/** Who is in the case at a glance, and the way to add someone. */
+function FamilySummary({
+  view,
+  invitesWaiting,
+  adding,
+  onAdd,
 }: {
-  readonly to: '/family/questions' | '/family/intake' | '/family/results';
-  readonly icon: IconName;
-  readonly label: string;
+  readonly view: CaseView;
+  readonly invitesWaiting: number;
+  readonly adding: boolean;
+  readonly onAdd: () => void;
 }) {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const figures = [
+    { key: 'people', value: view.people.length },
+    { key: 'members', value: view.people.filter((person) => person.caseMember).length },
+    { key: 'invites', value: invitesWaiting },
+  ] as const;
   return (
-    <Link
-      to={to}
-      className="flex min-h-touch items-center gap-3 rounded-card border border-line bg-surface p-4 font-medium shadow-card hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    <section
+      aria-labelledby={titleId}
+      className="flex flex-col gap-4 rounded-card border border-line bg-surface p-4 shadow-card sm:p-6 lg:col-span-8"
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-warn-bg text-warn-ink">
-        <Icon name={icon} />
-      </span>
-      {label}
-    </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 id={titleId} className="font-display text-lead">
+          {t('family.summary.label')}
+        </h3>
+        <Button aria-expanded={adding} data-family-entry={addingKey} onClick={onAdd}>
+          <Icon name="addPerson" />
+          {t('family.add.title')}
+        </Button>
+      </div>
+      {/* The names are listed in Pessoas; here they are a glance, so screen readers skip them. */}
+      <ul aria-hidden="true" className="flex flex-wrap gap-2">
+        {view.people.slice(0, summaryFaces).map((person) => (
+          <li
+            key={person.id}
+            className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
+          >
+            <Avatar person={person} isMe={person.id === view.me} small />
+            <span className="text-small">{person.displayName}</span>
+          </li>
+        ))}
+        {view.people.length > summaryFaces && (
+          <li className="flex items-center rounded-full bg-soft px-3 text-small text-muted">
+            +{view.people.length - summaryFaces}
+          </li>
+        )}
+      </ul>
+      <dl className="mt-auto grid grid-cols-3 gap-2 sm:gap-3">
+        {figures.map(({ key, value }) => (
+          <div
+            key={key}
+            className="flex flex-col-reverse justify-end gap-0.5 rounded-control border border-line p-3"
+          >
+            <dt className="text-small text-muted">{t(`family.summary.${key}`)}</dt>
+            <dd className="font-display text-title">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+/** The one thing to do next: the guided questions while someone kept has answers to give. */
+function NextStep({ view }: { readonly view: CaseView }) {
+  const { t, i18n } = useTranslation();
+  const listFormat = new Intl.ListFormat(i18n.language, { type: 'conjunction' });
+  const titleId = useId();
+  const kept = view.people.filter((person) => person.keptByMe);
+  const others = kept.flatMap((person) => (person.id === view.me ? [] : [person.displayName]));
+  const questions = kept.length > 0;
+  return (
+    <section
+      aria-labelledby={titleId}
+      className="flex flex-col gap-3 rounded-card border border-warn-bg bg-warn-bg p-4 text-ink sm:p-6 lg:col-span-4"
+    >
+      <h3 id={titleId} className="font-display text-lead">
+        {t('family.nextStep')}
+      </h3>
+      <p className="text-small text-muted">
+        {questions
+          ? kept.some((person) => person.id === view.me)
+            ? t('family.nextQuestionsMine', {
+                count: others.length,
+                names: listFormat.format(others),
+              })
+            : t('family.nextQuestionsOthers', { names: listFormat.format(others) })
+          : t('family.nextResults')}
+      </p>
+      <Link
+        to={questions ? '/family/questions' : '/family/results'}
+        className={`${buttonClass()} mt-auto`}
+      >
+        {t(questions ? 'family.questions' : 'results.open')}
+      </Link>
+      <div className="flex flex-wrap gap-x-4">
+        <Link to="/family/intake" className={textLinkClass}>
+          {t('intake.open')}
+        </Link>
+        {questions && (
+          <Link to="/family/results" className={textLinkClass}>
+            {t('results.open')}
+          </Link>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -497,10 +639,12 @@ function Avatar({
   person,
   isMe,
   large = false,
+  small = false,
 }: {
   readonly person: CasePerson;
   readonly isMe: boolean;
   readonly large?: boolean;
+  readonly small?: boolean;
 }) {
   const tone = !person.caseMember
     ? 'bg-soft text-muted'
@@ -512,7 +656,7 @@ function Avatar({
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${tone} ${large ? 'size-14 text-lead' : 'size-10 text-small'}`}
+      className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${tone} ${large ? 'size-14 text-lead' : small ? 'size-7 text-caption' : 'size-10 text-small'}`}
     >
       {initials(person.displayName)}
     </span>
@@ -872,9 +1016,7 @@ function PersonDetails({
   const isMe = person.id === view.me;
   const role = admins?.find(({ accountId }) => accountId === person.accountId);
   const sharingLine = useSharingLine(view);
-  const others = view.people.filter(
-    (other) => other.accountId !== null && other.id !== view.me && other.id !== person.id,
-  );
+  const others = othersOf(view, person);
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3">
@@ -1356,7 +1498,6 @@ function Relationships({
   // The API takes a relationship where the viewer keeps either end.
   const ready = other !== '' && (kept.has(person.id) || kept.has(other));
   const add = useCaseWrite();
-  const remove = useCaseWrite();
   const select =
     'min-h-touch rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
   const kindId = useId();
@@ -1370,37 +1511,7 @@ function Relationships({
       <h4 id={titleId} className="font-medium">
         {t('family.relationships.title')}
       </h4>
-      {own.length === 0 ? (
-        <p className="text-small text-muted">{t('family.relationships.empty')}</p>
-      ) : (
-        <ul className="flex flex-col gap-1">
-          {own.map(({ id, editable, relationship }) => (
-            <li key={id} className="flex flex-wrap items-center justify-between gap-x-3">
-              <span>
-                {t(`family.relationships.${relationship.kind}`, {
-                  from: names.get(relationship.from) ?? '',
-                  to: names.get(relationship.to) ?? '',
-                })}
-              </span>
-              {editable && (
-                <button
-                  type="button"
-                  className={dangerLinkClass}
-                  disabled={remove.pending}
-                  onClick={() => {
-                    remove.run(() =>
-                      writeCase(passkeys, routes.removeCaseRelationship, { relationshipId: id }),
-                    );
-                  }}
-                >
-                  {t('family.relationships.remove')}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      <WriteStatus pending={remove.pending} failure={remove.failure} />
+      <RelationshipList relationships={own} names={names} />
       {view.people.length > 1 && kept.size > 0 && (
         <form
           className="flex flex-col gap-3"
@@ -1472,9 +1583,139 @@ function Relationships({
   );
 }
 
-/** The viewer's invites and where each stands, so a relative's account can be followed. */
-function Invites() {
+/** The relationships given, each removable where the viewer may change it. */
+function RelationshipList({
+  relationships,
+  names,
+}: {
+  readonly relationships: readonly CaseRelationship[];
+  readonly names: ReadonlyMap<string, string>;
+}) {
   const { t } = useTranslation();
+  const remove = useCaseWrite();
+  return (
+    <>
+      {relationships.length === 0 ? (
+        <p className="text-small text-muted">{t('family.relationships.empty')}</p>
+      ) : (
+        <ul className="flex flex-col gap-1">
+          {relationships.map(({ id, editable, relationship }) => (
+            <li key={id} className="flex flex-wrap items-center justify-between gap-x-3">
+              <span>
+                {t(`family.relationships.${relationship.kind}`, {
+                  from: names.get(relationship.from) ?? '',
+                  to: names.get(relationship.to) ?? '',
+                })}
+              </span>
+              {editable && (
+                <button
+                  type="button"
+                  className={dangerLinkClass}
+                  disabled={remove.pending}
+                  onClick={() => {
+                    remove.run(() =>
+                      writeCase(passkeys, routes.removeCaseRelationship, { relationshipId: id }),
+                    );
+                  }}
+                >
+                  {t('family.relationships.remove')}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <WriteStatus pending={remove.pending} failure={remove.failure} />
+    </>
+  );
+}
+
+/** Every relationship in the case; a new one is noted on the person, in Pessoas. */
+function RelationshipsSection({
+  view,
+  names,
+}: {
+  readonly view: CaseView;
+  readonly names: ReadonlyMap<string, string>;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Section title={t('family.sections.relationships')}>
+      <p className="text-small text-muted">{t('family.sections.relationshipsHint')}</p>
+      <RelationshipList relationships={view.relationships} names={names} />
+    </Section>
+  );
+}
+
+/** The members with an account who could be shown a person: not the viewer, not the person. */
+function othersOf(view: CaseView, person: CasePerson) {
+  return view.people.filter(
+    (other) => other.accountId !== null && other.id !== view.me && other.id !== person.id,
+  );
+}
+
+/** Who sees whom, person by person, with the sharing of the people the viewer keeps to change. */
+function SharingSection({ view }: { readonly view: CaseView }) {
+  const { t } = useTranslation();
+  const sharingLine = useSharingLine(view);
+  const [open, setOpen] = useState<string>();
+  return (
+    <Section title={t('family.sections.sharing')}>
+      <p className="text-small text-muted">{t('family.sections.sharingLead')}</p>
+      <ul className="flex flex-col">
+        {view.people.map((person) => {
+          const isMe = person.id === view.me;
+          const others = othersOf(view, person);
+          const changeable = person.keptByMe && others.length > 0;
+          return (
+            <li key={person.id} className="flex flex-col gap-3 border-t border-line py-3">
+              <div className="flex items-center gap-3">
+                <Avatar person={person} isMe={isMe} />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="font-medium break-words">
+                    {isMe ? t('family.me', { name: person.displayName }) : person.displayName}
+                  </span>
+                  <span className="text-small text-muted">{sharingLine(person)}</span>
+                </div>
+                {changeable && (
+                  <Button
+                    variant="secondary"
+                    aria-expanded={open === person.id}
+                    aria-label={t('family.sections.change', { name: person.displayName })}
+                    onClick={() => {
+                      setOpen(open === person.id ? undefined : person.id);
+                    }}
+                  >
+                    {t('family.actions.edit')}
+                  </Button>
+                )}
+              </div>
+              {changeable && open === person.id && (
+                <Sharing
+                  person={person}
+                  others={others}
+                  first={false}
+                  onDone={() => {
+                    setOpen(undefined);
+                  }}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  );
+}
+
+interface InviteRow {
+  readonly id: string;
+  readonly email: string;
+  readonly standing: 'open' | 'accepted' | 'confirmed' | 'member';
+}
+
+/** The viewer's invites and where each stands; one whose account joined the case is a member. */
+function useInviteStandings() {
   const invites = useQuery(invitesQuery);
   const familyCase = useQuery(caseQuery);
   const inCase = new Set(
@@ -1482,25 +1723,94 @@ function Invites() {
       person.accountId === null ? [] : [person.accountId],
     ),
   );
+  const standings: readonly InviteRow[] = (invites.data?.invites ?? []).map((invite) => ({
+    id: invite.id,
+    email: invite.email,
+    standing:
+      invite.accountId !== null && inCase.has(invite.accountId)
+        ? ('member' as const)
+        : invite.status,
+  }));
+  return {
+    standings,
+    waiting: standings.filter(({ standing }) => standing !== 'member').length,
+  };
+}
+
+const inviteFilters = ['all', 'waiting', 'member'] as const;
+type InviteFilter = (typeof inviteFilters)[number];
+/** How many invites show before "show more", so a long list stays short. */
+const invitesPage = 10;
+
+/** The invites, filtered by where they stand and shown a page at a time. */
+function Invites({ standings }: { readonly standings: readonly InviteRow[] }) {
+  const { t } = useTranslation();
+  const [filter, setFilter] = useState<InviteFilter>('all');
+  const [limit, setLimit] = useState(invitesPage);
+  const matches = (standing: InviteRow['standing'], by: InviteFilter) =>
+    by === 'all' || (by === 'member') === (standing === 'member');
+  const filtered = standings.filter(({ standing }) => matches(standing, filter));
+  const shown = filtered.slice(0, limit);
   return (
     <Section title={t('family.invites.title')}>
       <p className="text-small text-muted">{t('family.invites.lead')}</p>
-      {invites.isSuccess && invites.data.invites.length > 0 && (
-        <ul className="flex flex-col gap-2">
-          {invites.data.invites.map((invite) => (
-            <li key={invite.id} className="flex flex-col">
-              <span className="break-all">{invite.email}</span>
+      {standings.length === 0 ? (
+        <p className="text-small text-muted">{t('family.invites.empty')}</p>
+      ) : (
+        <>
+          <div
+            role="group"
+            aria-label={t('family.invites.filter.label')}
+            className="flex flex-wrap gap-2"
+          >
+            {inviteFilters.map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={filter === option}
+                className={`${buttonClass('secondary')} gap-1.5 aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-on-primary`}
+                onClick={() => {
+                  setFilter(option);
+                  setLimit(invitesPage);
+                }}
+              >
+                {t(`family.invites.filter.${option}`)}
+                <span className="text-caption opacity-80">
+                  {standings.filter(({ standing }) => matches(standing, option)).length}
+                </span>
+              </button>
+            ))}
+          </div>
+          <ul className="flex flex-col">
+            {shown.map((invite) => (
+              <li
+                key={invite.id}
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line py-3"
+              >
+                <span className="min-w-0 break-all">{invite.email}</span>
+                <StatusChip
+                  tone={invite.standing === 'member' ? 'ok' : 'warn'}
+                  label={t('family.invites.status', { status: invite.standing })}
+                />
+              </li>
+            ))}
+          </ul>
+          {filtered.length > shown.length && (
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-small text-muted">
-                {t('family.invites.status', {
-                  status:
-                    invite.accountId !== null && inCase.has(invite.accountId)
-                      ? 'member'
-                      : invite.status,
-                })}
+                {t('family.invites.shown', { shown: shown.length, total: filtered.length })}
               </span>
-            </li>
-          ))}
-        </ul>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setLimit(limit + invitesPage);
+                }}
+              >
+                {t('family.invites.more')}
+              </Button>
+            </div>
+          )}
+        </>
       )}
       <Link to="/invites" className={textLinkClass}>
         {t('family.invites.link')}

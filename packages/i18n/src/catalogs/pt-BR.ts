@@ -457,7 +457,29 @@ export const ptBR = {
       '{reason, select, not_found {Isso não está mais disponível. Atualize a página.} case_exists {Você já participa de um caso.} case_limit {O caso chegou ao limite: até {people} pessoas, das quais {max} no planejamento.} case_invalid {Isso não combina com o resto do caso. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     peopleTitle: 'Pessoas do caso',
     peopleCount: '{count, plural, one {# pessoa no caso} other {# pessoas no caso}}',
-    next: 'Próximos passos',
+    summary: {
+      label: 'Resumo da família',
+      people: 'Pessoas no caso',
+      members: 'Entram no planejamento',
+      invites: 'Convites esperando',
+    },
+    nextStep: 'Próximo passo',
+    nextQuestionsMine:
+      '{count, plural, =0 {As perguntas guiadas montam o seu caso.} other {As perguntas guiadas montam o seu caso e o de {names}.}}',
+    nextQuestionsOthers: 'As perguntas guiadas montam o caso de {names}.',
+    nextResults: 'Veja as rotas que o Arca encontrou para quem entra no planejamento.',
+    sections: {
+      label: 'Partes da família',
+      people: 'Pessoas',
+      relationships: 'Vínculos',
+      sharing: 'Quem vê o quê',
+      invites: 'Convites',
+      case: 'Caso',
+      relationshipsHint: 'Para anotar um vínculo, abra a pessoa em Pessoas.',
+      sharingLead:
+        'Cada pessoa com conta decide quem vê os dados dela. Aqui você escolhe por quem você cuida.',
+      change: 'Mudar quem vê {name}',
+    },
     kept: 'Você cuida',
     back: 'Voltar para a família',
     close: 'Fechar',
@@ -498,9 +520,11 @@ export const ptBR = {
     save: 'Salvar',
     membership: {
       legend: 'Essa pessoa entra no planejamento?',
-      hint: 'O Arca avalia as rotas de imigração para quem entra no planejamento. Uma avó que fica no Brasil, por exemplo, pode ser só parente.',
+      hint: 'Uma avó que fica no Brasil, por exemplo, pode ser só parente.',
       member: 'Sim, entra no planejamento',
+      memberDetail: 'O Arca procura rotas de imigração para ela.',
       relative: 'Não, é só parente',
+      relativeDetail: 'Fica no caso para os vínculos e para ajudar, sem rotas próprias.',
     },
     sharing: {
       firstTitle: 'Quem pode ver os dados de {name}?',
@@ -552,6 +576,15 @@ export const ptBR = {
       status:
         '{status, select, open {Convite enviado, esperando a pessoa aceitar} accepted {Aceito, falta você confirmar} confirmed {Confirmado, falta adicionar ao caso} member {Participa do caso} other {}}',
       link: 'Abrir os convites',
+      empty: 'Nenhum convite enviado ainda.',
+      filter: {
+        label: 'Mostrar convites',
+        all: 'Todos',
+        waiting: 'Esperando',
+        member: 'Participam',
+      },
+      more: 'Mostrar mais',
+      shown: '{shown} de {total}',
     },
     leave: {
       title: 'Sair do caso',

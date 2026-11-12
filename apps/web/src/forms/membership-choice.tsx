@@ -17,9 +17,18 @@ export function MembershipChoice({
       legend={t('family.membership.legend')}
       description={t('family.membership.hint')}
       choices={[
-        { value: 'member', label: t('family.membership.member') },
-        { value: 'relative', label: t('family.membership.relative') },
+        {
+          value: 'member',
+          label: t('family.membership.member'),
+          detail: t('family.membership.memberDetail'),
+        },
+        {
+          value: 'relative',
+          label: t('family.membership.relative'),
+          detail: t('family.membership.relativeDetail'),
+        },
       ]}
+      stacked
       value={value}
       onChange={onChange}
     />

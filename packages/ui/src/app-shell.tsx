@@ -79,12 +79,28 @@ const wideClearance = {
   },
 } as const;
 
+/*
+ * How far the dock reaches up from the bottom of a phone screen, as `--shell-bottom`, so a bar a
+ * page keeps at the bottom sits right above the dock.
+ */
+const narrowBottom = {
+  menu: '',
+  'fixed-dock': 'max-md:[--shell-bottom:calc(var(--spacing-dock)+env(safe-area-inset-bottom))]',
+  'floating-dock': {
+    bottom: 'max-md:[--shell-bottom:calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
+    left: '',
+    right: '',
+  },
+} as const;
+
 function clearance(layout: ShellLayout): string {
   const narrow = narrowClearance[layout.narrow];
   const wide = wideClearance[layout.wide];
+  const bottom = narrowBottom[layout.narrow];
   return [
     typeof narrow === 'string' ? narrow : narrow[layout.dockEdge],
     typeof wide === 'string' ? wide : wide[layout.dockEdge],
+    typeof bottom === 'string' ? bottom : bottom[layout.dockEdge],
   ].join(' ');
 }
 
