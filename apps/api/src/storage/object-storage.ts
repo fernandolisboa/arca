@@ -1,5 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import type { DocumentUpload, DocumentUploadUrlResponse } from '@arca/api-contract/routes';
+import type { ObjectUpload, ObjectUploadUrlResponse } from '@arca/api-contract/routes';
 
 /** What the store holds under a pathname: its size, SHA-256 and first bytes. */
 export interface StoredObject {
@@ -41,7 +41,7 @@ export const objectUrlMinutes = 5;
  */
 export interface ObjectStorage {
   /** How the device uploads at most `maxBytes` to this pathname. */
-  readonly uploadTarget: (pathname: string, maxBytes: number) => DocumentUpload;
+  readonly uploadTarget: (pathname: string, maxBytes: number) => ObjectUpload;
   /**
    * The presigned upload for one pathname, at most `maxBytes` long and of `contentType` only,
    * valid for 5 minutes.
@@ -50,7 +50,7 @@ export interface ObjectStorage {
     pathname: string,
     maxBytes: number,
     contentType: string,
-  ) => Promise<DocumentUploadUrlResponse>;
+  ) => Promise<ObjectUploadUrlResponse>;
   /** The object's size, SHA-256 and first bytes, or undefined when nothing is stored there. */
   readonly digest: (pathname: string) => Promise<StoredObject | undefined>;
   /** A URL that reads the object for 5 minutes, served as an attachment with `nosniff`. */

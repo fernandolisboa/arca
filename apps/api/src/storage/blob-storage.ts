@@ -1,6 +1,6 @@
 import { del, get, issueSignedToken, presignUrl } from '@vercel/blob';
 import { handleUploadPresigned } from '@vercel/blob/client';
-import { DocumentUploadUrlResponse } from '@arca/api-contract/routes';
+import { ObjectUploadUrlResponse } from '@arca/api-contract/routes';
 import { digestOf, objectUrlMinutes, type ObjectStorage } from './object-storage.js';
 
 /** The environment's private Vercel Blob store, reached with Vercel's OIDC token (spec 0005, R3). */
@@ -36,7 +36,7 @@ export function blobObjectStorage({ storeId, webhookPublicKey }: BlobStore): Obj
           urlOptions: { ...limits, allowOverwrite: false },
         }),
       });
-      return DocumentUploadUrlResponse.parse(answer);
+      return ObjectUploadUrlResponse.parse(answer);
     },
 
     async digest(pathname) {

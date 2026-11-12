@@ -5,9 +5,9 @@ import { comparisonRoutes } from './comparison.js';
 import { adminRoutes } from './admins.js';
 import { knowledgeRoutes } from './knowledge.js';
 import {
-  DocumentUpload,
-  DocumentUploadUrlRequest,
-  DocumentUploadUrlResponse,
+  ObjectUpload,
+  ObjectUploadUrlRequest,
+  ObjectUploadUrlResponse,
   Sha256,
 } from './uploads.js';
 
@@ -1410,7 +1410,7 @@ export type CreateDocumentRequest = z.infer<typeof CreateDocumentRequest>;
  * this pathname and the upload-URL route; or, in development only, a URL on this origin.
  */
 
-export const CreateDocumentResponse = z.object({ documentId: z.uuid(), upload: DocumentUpload });
+export const CreateDocumentResponse = z.object({ documentId: z.uuid(), upload: ObjectUpload });
 export type CreateDocumentResponse = z.infer<typeof CreateDocumentResponse>;
 
 export const createDocument = {
@@ -1429,9 +1429,9 @@ export const documentUploadUrl = {
   operationId: 'documentUploadUrl',
   summary:
     "A presigned upload for one pending document's pathname, valid for 5 minutes and limited to its declared size; 401 without a session, 404 not_found unless the pathname is a pending document of the account created within the hour",
-  body: DocumentUploadUrlRequest,
-  response: { description: 'Presigned upload', schema: DocumentUploadUrlResponse },
-} as const satisfies RouteDefinition<typeof DocumentUploadUrlResponse>;
+  body: ObjectUploadUrlRequest,
+  response: { description: 'Presigned upload', schema: ObjectUploadUrlResponse },
+} as const satisfies RouteDefinition<typeof ObjectUploadUrlResponse>;
 
 export const DocumentReference = z.strictObject({ documentId: z.uuid() });
 
@@ -1573,7 +1573,7 @@ export async function replaceDocumentsAction({ recipients, documents }: ReplaceD
 }
 
 export const ReplaceDocumentsResponse = z.object({
-  uploads: z.array(z.object({ documentId: z.uuid(), upload: DocumentUpload })),
+  uploads: z.array(z.object({ documentId: z.uuid(), upload: ObjectUpload })),
 });
 export type ReplaceDocumentsResponse = z.infer<typeof ReplaceDocumentsResponse>;
 

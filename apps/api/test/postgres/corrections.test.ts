@@ -15,7 +15,7 @@ import type { RateLimiter } from '../../src/auth/rate-limit.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
-import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/storage/object-storage.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 

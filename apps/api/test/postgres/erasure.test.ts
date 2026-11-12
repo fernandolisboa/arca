@@ -12,7 +12,7 @@ import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDocuments } from '../../src/vault/documents.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
-import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/storage/object-storage.js';
 import { putObject } from '../objects.js';
 import { recordingNotifier } from '../notifications.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';

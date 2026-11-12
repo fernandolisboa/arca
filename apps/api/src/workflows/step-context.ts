@@ -35,8 +35,8 @@ import { vapidPushSender } from '../notification/push.js';
 import { configuredVapidKeys } from '../notification/vapid.js';
 import { stdoutLogger } from '../logger.js';
 import { createDocuments } from '../vault/documents.js';
-import { unconnectedObjectStorage } from '../vault/object-storage.js';
-import { objectStorageFor } from '../vault/storage-environment.js';
+import { unconnectedObjectStorage } from '../storage/object-storage.js';
+import { objectStorageFor } from '../storage/storage-environment.js';
 import { reportError, startMonitoring } from '../monitoring.js';
 import type { StepTelemetry } from './step-error.js';
 

@@ -1,6 +1,6 @@
 import { type Database, withIdentity } from '@arca/db';
 import { sql } from 'drizzle-orm';
-import type { ObjectStorage } from '../vault/object-storage.js';
+import type { ObjectStorage } from '../storage/object-storage.js';
 
 /** A request's contents go this long after an admin closed it (ADR-0029, RETENTION.md). */
 export const closedCorrectionDays = 30;

@@ -17,7 +17,7 @@ import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
 import { createNotifier } from '../../src/notification/notifier.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createDocuments } from '../../src/vault/documents.js';
-import { memoryObjectStorage } from '../../src/vault/object-storage.js';
+import { memoryObjectStorage } from '../../src/storage/object-storage.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { seeded } from './every-table.js';
 

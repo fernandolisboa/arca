@@ -135,7 +135,7 @@ import {
   memoryObjectsPath,
   objectUrlMinutes,
   type MemoryObjectStorage,
-} from './vault/object-storage.js';
+} from './storage/object-storage.js';
 import type { Vault } from './vault/vault.js';
 import { cspReportPath } from '@arca/security-policy';
 import { tunnelPath, type Logger } from '@arca/telemetry';

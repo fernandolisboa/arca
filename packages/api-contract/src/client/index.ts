@@ -117,7 +117,7 @@ export type {
   DevicePasskey,
   DeviceSession,
   DevicesResponse,
-  DocumentUpload,
+  ObjectUpload,
   HealthResponse,
   Invite,
   InviteDetails,

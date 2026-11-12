@@ -4,7 +4,7 @@ import {
   maxDocumentBytes,
   replaceDocumentsAction,
   routes,
-  type DocumentUpload,
+  type ObjectUpload,
   type VaultDocument,
 } from '@arca/api-contract/client';
 import type { Passkeys } from '@arca/platform';
@@ -130,7 +130,7 @@ export async function inVaultWindow<T>(passkeys: Passkeys, request: () => Promis
   }
 }
 
-const send = (upload: DocumentUpload, ciphertext: Uint8Array<ArrayBuffer>) =>
+const send = (upload: ObjectUpload, ciphertext: Uint8Array<ArrayBuffer>) =>
   sendUpload(upload, ciphertext, {
     handleUploadPath: routes.documentUploadUrl.path,
     contentType: 'application/octet-stream',

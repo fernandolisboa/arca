@@ -6,14 +6,14 @@ import {
   type CreateDocumentRequest,
   type CreateDocumentResponse,
   type DocumentsResponse,
-  type DocumentUploadUrlResponse,
+  type ObjectUploadUrlResponse,
   type ReplaceDocumentsRequest,
   type ReplaceDocumentsResponse,
 } from '@arca/api-contract/routes';
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import { ciphertextType, type ObjectStorage } from './object-storage.js';
+import { ciphertextType, type ObjectStorage } from '../storage/object-storage.js';
 
 export type DocumentCreated = CreateDocumentResponse | 'no_vault' | 'over_quota';
 export type UploadConfirmed = 'confirmed' | 'not_found' | 'not_uploaded' | 'mismatch';
@@ -32,7 +32,7 @@ export interface DocumentRequests {
   readonly presignUpload: (
     accountId: string,
     pathname: string,
-  ) => Promise<DocumentUploadUrlResponse | undefined>;
+  ) => Promise<ObjectUploadUrlResponse | undefined>;
   /**
    * Confirms a pending upload whose stored object has the declared size and SHA-256. Any other
    * object is deleted and the document stays pending: its row is deleted only by the daily

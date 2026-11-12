@@ -35,9 +35,9 @@ import { z } from 'zod';
 import { ruleReportReasons } from './case.js';
 import type { RouteDefinition } from './index.js';
 import {
-  DocumentUpload,
-  DocumentUploadUrlRequest,
-  DocumentUploadUrlResponse,
+  ObjectUpload,
+  ObjectUploadUrlRequest,
+  ObjectUploadUrlResponse,
   Sha256,
 } from './uploads.js';
 
@@ -589,7 +589,7 @@ export type StartCorrectionUpload = z.infer<typeof StartCorrectionUpload>;
 
 export const StartCorrectionUploadResponse = z.object({
   uploadId: z.uuid(),
-  upload: DocumentUpload,
+  upload: ObjectUpload,
 });
 export type StartCorrectionUploadResponse = z.infer<typeof StartCorrectionUploadResponse>;
 
@@ -609,9 +609,9 @@ export const correctionUploadUrl = {
   operationId: 'correctionUploadUrl',
   summary:
     "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
-  body: DocumentUploadUrlRequest,
-  response: { description: 'Presigned upload', schema: DocumentUploadUrlResponse },
-} as const satisfies RouteDefinition<typeof DocumentUploadUrlResponse>;
+  body: ObjectUploadUrlRequest,
+  response: { description: 'Presigned upload', schema: ObjectUploadUrlResponse },
+} as const satisfies RouteDefinition<typeof ObjectUploadUrlResponse>;
 
 export const CorrectionFileReference = z.strictObject({
   requestId: z.uuid(),

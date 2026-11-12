@@ -2,7 +2,7 @@ import type {
   CorrectionFileType,
   CorrectionItem,
   CorrectionRequests,
-  DocumentUploadUrlResponse,
+  ObjectUploadUrlResponse,
   FileCorrectionRequest,
   ListedCorrectionSource,
   StartCorrectionUpload,
@@ -20,7 +20,7 @@ import { sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
 import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
-import type { ObjectStorage } from '../vault/object-storage.js';
+import type { ObjectStorage } from '../storage/object-storage.js';
 import { fitsFileType } from './correction-files.js';
 import type { KnowledgeVersions } from './versions.js';
 
@@ -58,7 +58,7 @@ export interface Corrections {
   readonly presignUpload: (
     accountId: string,
     pathname: string,
-  ) => Promise<DocumentUploadUrlResponse | FilingRefusal | 'not_found'>;
+  ) => Promise<ObjectUploadUrlResponse | FilingRefusal | 'not_found'>;
   /** A 5-minute download URL for one file source, for an admin. */
   readonly fileUrl: (
     accountId: string,
