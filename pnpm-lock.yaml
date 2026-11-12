@@ -326,6 +326,9 @@ catalogs:
     parse5:
       specifier: 8.1.0
       version: 8.1.0
+    pdfjs-dist:
+      specifier: 6.5.438
+      version: 6.5.438
     pg:
       specifier: 8.23.1
       version: 8.23.1
@@ -477,6 +480,9 @@ importers:
       parse5:
         specifier: 'catalog:'
         version: 8.1.0
+      pdfjs-dist:
+        specifier: 'catalog:'
+        version: 6.5.438
       workflow:
         specifier: 'catalog:'
         version: 5.3.0(@aws-sdk/credential-provider-web-identity@3.972.49)(@opentelemetry/api@1.10.0)(react@19.3.1)(supports-color@10.2.2)(typescript@7.0.2)(ws@8.22.0)
@@ -3961,6 +3967,10 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
+  pdfjs-dist@6.5.438:
+    resolution: {integrity: sha512-vg8Pw1x+AFKy4AMDvhuWl5cOYV8d698UoEANoFFhc79hqXDnZQqnOXoxw3HG907WHOg1JYOvLhP756boddFxpA==}
+    engines: {node: '>=22.13.0 || >=24'}
+
   perfect-debounce@2.1.0:
     resolution: {integrity: sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g==}
 
@@ -4636,6 +4646,9 @@ packages:
 
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+
+ignoredOptionalDependencies:
+  - '@napi-rs/canvas'
 
 snapshots:
 
@@ -7415,6 +7428,8 @@ snapshots:
   path-key@3.1.1: {}
 
   pathe@2.0.3: {}
+
+  pdfjs-dist@6.5.438: {}
 
   perfect-debounce@2.1.0: {}
 

@@ -9,6 +9,7 @@ import { createBrotliDecompress, createGunzip, createInflate } from 'node:zlib';
 import { type FetchFailure, hostMatches } from '@arca/domain';
 import { globallyReachable } from './addresses.js';
 import { type AnswerFormat, answerFormat, answerText } from './answer-text.js';
+import { pdfText } from './pdf-text.js';
 
 export type FetchOutcome =
   | {
@@ -70,18 +71,47 @@ function capText(
 /**
  * An answer's text within the limits and whether they cut it, or undefined when it has no text: a
  * page that draws its text with scripts answers markup with nothing a reader would see, and a data
- * answer that does not parse has no strings.
+ * answer that does not parse has no strings. A PDF's `raw` is the text `pdfText` read from it.
  */
-export function textWithinLimits(
+function textWithinLimits(
   format: AnswerFormat,
   raw: string,
   limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
 ): { readonly text: string; readonly cut: boolean } | undefined {
-  const markupCut = format !== 'plain' && raw.length > limits.maxMarkupLength;
+  const markupCut = format !== 'plain' && format !== 'pdf' && raw.length > limits.maxMarkupLength;
   const full = answerText(format, markupCut ? raw.slice(0, limits.maxMarkupLength) : raw);
   if (full.trim() === '') return undefined;
   const capped = capText(full, limits.maxTextLength);
   return { text: capped.text, cut: markupCut || capped.cut };
+}
+
+/** An answer's body as received: its bytes, and their text in the declared charset. */
+export interface AnswerBody {
+  readonly bytes: Uint8Array;
+  readonly text: () => string;
+}
+
+/**
+ * An answer's text within the limits, read by its format: a PDF's text layer through `pdfText`,
+ * anything else decoded and read through `textWithinLimits`; or the fixed reason it has none.
+ */
+export async function answerWithinLimits(
+  format: AnswerFormat,
+  answer: AnswerBody,
+  signal: AbortSignal,
+  limits: Pick<FetchLimits, 'maxMarkupLength' | 'maxTextLength'> = fetchLimits,
+): Promise<
+  | { readonly ok: true; readonly text: string; readonly cut: boolean }
+  | { readonly ok: false; readonly failure: FetchFailure }
+> {
+  if (format !== 'pdf') {
+    const read = textWithinLimits(format, answer.text(), limits);
+    return read === undefined ? { ok: false, failure: 'no_text' } : { ok: true, ...read };
+  }
+  const pdf = await pdfText(answer.bytes, signal, limits.maxTextLength);
+  if (!pdf.ok) return pdf;
+  const read = textWithinLimits(format, pdf.text, limits);
+  return read === undefined ? { ok: false, failure: 'pdf_no_text' } : { ok: true, ...read };
 }
 
 /** Every address a host resolves to; the guard picks among them. */
@@ -208,7 +238,8 @@ function contentType(response: IncomingMessage): { type: string; charset: string
  * three redirect hops each checked against the allowed hosts, every connection made to an address
  * the guard checked, with the certificate verified against the host name, and limits on bytes,
  * decompressed size, time and text. Only a final 2xx answer with some text is read: an HTML or
- * plain-text page, or a JSON or XML answer from a machine-readable address.
+ * plain-text page, a PDF's text layer (ADR-0028), or a JSON or XML answer from a machine-readable
+ * address.
  */
 export function httpsSourceFetcher({
   resolve = systemResolve,
@@ -228,7 +259,7 @@ export function httpsSourceFetcher({
         path: `${url.pathname}${url.search}`,
         headers: {
           accept:
-            'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
+            'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, application/pdf;q=0.7, */*;q=0.1',
           'accept-encoding': 'gzip, deflate, br',
           'user-agent': 'Arca-rule-check/1',
         },
@@ -245,11 +276,16 @@ export function httpsSourceFetcher({
       sent.end();
     });
 
-  const body = async (response: IncomingMessage, charset: string): Promise<string> => {
+  const body = async (
+    response: IncomingMessage,
+    format: AnswerFormat,
+    charset: string,
+  ): Promise<AnswerBody> => {
     let text: TextDecoder;
     let decompress: Transform | undefined;
     try {
-      text = new TextDecoder(charset, { fatal: false });
+      // A PDF is bytes, whatever charset its server names (some say `binary`).
+      text = new TextDecoder(format === 'pdf' ? 'utf-8' : charset, { fatal: false });
       decompress = decoder(response.headers['content-encoding']);
     } catch (error) {
       // Nothing will read the body, so the socket closes now rather than at the time limit.
@@ -271,7 +307,8 @@ export function httpsSourceFetcher({
       byteLimit(limits.maxDecompressedBytes),
       collect,
     ]);
-    return text.decode(Buffer.concat(chunks));
+    const bytes = new Uint8Array(Buffer.concat(chunks));
+    return { bytes, text: () => text.decode(bytes) };
   };
 
   const read = async (
@@ -310,9 +347,10 @@ export function httpsSourceFetcher({
         response.destroy();
         throw new FetchError('unsupported_type', status);
       }
-      const read = textWithinLimits(format, await body(response, charset), limits);
-      if (read === undefined) throw new FetchError('no_text', status);
-      return { status, ...read };
+      const answer = await body(response, format, charset);
+      const read = await answerWithinLimits(format, answer, signal, limits);
+      if (!read.ok) throw new FetchError(read.failure, status);
+      return { status, text: read.text, cut: read.cut };
     }
     throw new FetchError('refused_url');
   };

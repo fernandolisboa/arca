@@ -9,7 +9,7 @@ import { callCounter } from '../call-limit.js';
  * capped and its input holds only synthetic pages, the long ones as an outline or an excerpt, so
  * this bounds what a run can cost.
  */
-export const maxCallsPerRun = 80;
+export const maxCallsPerRun = 90;
 
 /**
  * The checker and the locator, refusing any call past the limit they share; a call counts before
