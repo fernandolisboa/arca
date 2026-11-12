@@ -29,7 +29,7 @@ The owner picked these on 2026-11-03 and revised them on 2026-11-06, when the fi
 | Navigation from 768 px | `top` | `menu`, `side`, `floating-dock` |
 | Navigation below 768 px | `menu` | `fixed-dock`, `floating-dock` |
 | Dock edge (floating dock only) | `bottom` | `left`, `right` |
-| Text size | `100` | `75`, `90`, `112`, `125`, `150` (percent of the root size; the steps below 100 were added on 2026-11-12 at the owner's request, for people who prefer denser screens) |
+| Text size | `100` | `75`, `90`, `112`, `125`, `150` (percent of the root size) |
 | Contrast | `standard` | `high` |
 | Motion | `on` | `off` (also forced off by `prefers-reduced-motion: reduce`) |
 
