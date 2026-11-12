@@ -1,3 +1,4 @@
+import { type CheckCost, type ModelUsage, type PriceTable, checkCost } from './cost.js';
 import { type CheckStart, fetchOutcomes, startLifetime } from './reports.js';
 
 /** What a page event says of a cited page: about to be read, read, or why it was not. */
@@ -23,6 +24,7 @@ export type CheckProgressEvent =
     }
   | { readonly kind: 'locating'; readonly pages: number }
   | { readonly kind: 'comparing' }
+  | ({ readonly kind: 'usage' } & ModelUsage)
   | { readonly kind: 'finished' }
   | { readonly kind: 'failed'; readonly code: ProgressFailure };
 
@@ -52,6 +54,8 @@ export interface CheckProgress {
   /** How many long pages had passages picked, once that stage began. */
   readonly locatedPages: number | null;
   readonly failure: ProgressFailure | null;
+  /** What its model calls cost so far, or null before the first one. */
+  readonly cost: CheckCost | null;
 }
 
 const stageOf: Partial<Record<CheckProgressEvent['kind'], CheckProgressStage>> = {
@@ -59,6 +63,23 @@ const stageOf: Partial<Record<CheckProgressEvent['kind'], CheckProgressStage>> =
   locating: 'locating',
   comparing: 'comparing',
 };
+
+/** What each model call of a check used, from its events. */
+export function usagesOf(events: readonly CheckProgressEvent[]): ModelUsage[] {
+  return events.flatMap((event) =>
+    event.kind === 'usage'
+      ? [
+          {
+            model: event.model,
+            inputTokens: event.inputTokens,
+            outputTokens: event.outputTokens,
+            cacheReadTokens: event.cacheReadTokens,
+            cacheWriteTokens: event.cacheWriteTokens,
+          },
+        ]
+      : [],
+  );
+}
 
 /**
  * Reduces a start and its events, in the order recorded, into the progress view. The stored
@@ -70,6 +91,7 @@ export function checkProgress(
   events: readonly CheckProgressEvent[],
   reported: boolean,
   now: number,
+  prices: PriceTable,
 ): CheckProgress {
   const pages = new Map<string, PageProgress>();
   let stage: CheckProgressStage = 'starting';
@@ -98,6 +120,7 @@ export function checkProgress(
         failure = event.code;
         break;
       case 'comparing':
+      case 'usage':
         break;
     }
   }
@@ -117,5 +140,6 @@ export function checkProgress(
     pages: [...pages.values()],
     locatedPages,
     failure: state === 'failed' ? failure : null,
+    cost: checkCost(usagesOf(events), prices),
   };
 }

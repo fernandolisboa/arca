@@ -29,6 +29,14 @@ export function useKnowledgeWords() {
       new Intl.NumberFormat(language, { maximumFractionDigits: 20 }).format(
         value as Intl.StringNumericLiteral,
       ),
+    // A check's cost, in millionths of a dollar, shown to the cent.
+    usd: (microUsd: number) => {
+      const cents = Math.round(microUsd / 10_000);
+      if (cents === 0 && microUsd > 0) return t('knowledge.checkRun.underCent');
+      return new Intl.NumberFormat(language, { style: 'currency', currency: 'USD' }).format(
+        cents / 100,
+      );
+    },
     // The view writes each amount in the currency's units, as a decimal.
     money: (amount: string, currency: string) => formatAmount({ amount, currency }, language),
     duration: (value: string) => {

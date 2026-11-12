@@ -174,11 +174,11 @@ const checkProgressPollMs = 1_500;
 export const checkProgressQuery = (routeId: string, number: number) =>
   queryOptions({
     queryKey: ['knowledge', 'check-progress', routeId, number],
-    queryFn: async () =>
-      (await api.call(routes.getVersionCheckProgress, { routeId, number })).progress,
+    queryFn: () => api.call(routes.getVersionCheckProgress, { routeId, number }),
     networkMode: 'always',
     retry: false,
-    refetchInterval: ({ state }) => (state.data?.state === 'running' ? checkProgressPollMs : false),
+    refetchInterval: ({ state }) =>
+      state.data?.progress?.state === 'running' ? checkProgressPollMs : false,
   });
 
 /**

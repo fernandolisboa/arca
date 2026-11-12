@@ -5,6 +5,7 @@ import {
   type CheckedItem,
   type ListedCheckStatus,
   type ReportKey,
+  checkCost,
   checkItems,
   checkProgress,
   currentReport,
@@ -13,11 +14,13 @@ import {
   noGuide,
   reportPoints,
   scriptedCheckerModel,
+  usagesOf,
   versionKey,
 } from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import type { RuleCheckerChoice } from './check/checker.js';
+import { checkModelPrices } from './check/prices.js';
 import type { CheckProgressStore } from './check/progress.js';
 import type { CheckSubject } from './check/run.js';
 import type { RecordedStart, CheckStarts } from './check/starts.js';
@@ -53,7 +56,12 @@ export type RequestedCheckOutcome =
   | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' | 'check_not_started' };
 
 export type ProgressOutcome =
-  | { readonly ok: true; readonly progress: CheckProgress | null }
+  | {
+      readonly ok: true;
+      readonly progress: CheckProgress | null;
+      /** What the version's newest check with a report cost, in millionths of a dollar, if priced. */
+      readonly lastCost: number | null;
+    }
   | { readonly ok: false; readonly reason: 'not_found' };
 
 /** A version's check on the list: its status, and its current report's points if it has one. */
@@ -68,7 +76,10 @@ export interface VersionChecks {
   readonly start: () => Promise<number>;
   /** An admin's own start of one route version, in any state and whatever its reports say. */
   readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
-  /** How far the version's newest start of the last 24 hours got, or null with none. */
+  /**
+   * How far the version's newest start of the last 24 hours got, or null with none, and what its
+   * newest finished check cost.
+   */
   readonly progress: (routeId: string, number: number) => Promise<ProgressOutcome>;
   /** Each route version's check status and its current report's points, by `routeId/number`. */
   readonly statuses: () => Promise<ReadonlyMap<string, ListedCheck>>;
@@ -153,11 +164,31 @@ export function createVersionChecks({
 
     async progress(routeId, number) {
       if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
-      const newest = newestStart(ofVersion(routeId, number)(await starts.recent()));
-      if (newest === undefined) return { ok: true, progress: null };
-      const [events, stored] = await Promise.all([progress.list(newest.id), reports.list()]);
+      const own = ofVersion(routeId, number);
+      const [recent, stored] = await Promise.all([starts.recent(), reports.list()]);
+      const newest = newestStart(own(recent));
+      const lastReport = own(stored).reduce<(typeof stored)[number] | undefined>(
+        (last, report) => (last === undefined || report.checkedAt > last.checkedAt ? report : last),
+        undefined,
+      );
+      const [events, lastEvents] = await Promise.all([
+        newest === undefined ? [] : progress.list(newest.id),
+        lastReport === undefined || lastReport.startId === newest?.id
+          ? undefined
+          : progress.list(lastReport.startId),
+      ]);
+      const last =
+        lastReport === undefined
+          ? null
+          : checkCost(usagesOf(lastEvents ?? events), checkModelPrices);
+      const lastCost = last?.kind === 'priced' ? last.microUsd : null;
+      if (newest === undefined) return { ok: true, progress: null, lastCost };
       const reported = stored.some(({ startId }) => startId === newest.id);
-      return { ok: true, progress: checkProgress(newest, events, reported, now()) };
+      return {
+        ok: true,
+        progress: checkProgress(newest, events, reported, now(), checkModelPrices),
+        lastCost,
+      };
     },
 
     async statuses() {

@@ -1,9 +1,15 @@
 import { VersionCheck, type VersionView } from '@arca/api-contract/routes';
-import { type CatalogEntry, routeVersionSchema, versionIdentity } from '@arca/domain';
+import {
+  type CatalogEntry,
+  routeVersionSchema,
+  scriptedCheckerModel,
+  versionIdentity,
+} from '@arca/domain';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { SignedIn } from '../src/auth/service.js';
+import { ruleCheckModel } from '../src/knowledge/check/model.js';
 import { memoryCheckProgressStore } from '../src/knowledge/check/progress.js';
 import type { CheckSubject } from '../src/knowledge/check/run.js';
 import { memoryCheckStarts, type RecordedStart } from '../src/knowledge/check/starts.js';
@@ -234,8 +240,12 @@ function setup({
     });
   const watch = (number: number) =>
     app.request(`/v1/knowledge/versions/check/progress?routeId=qm-sample&number=${String(number)}`);
-  const watched = async (number: number) =>
-    ((await (await watch(number)).json()) as { progress: Record<string, unknown> | null }).progress;
+  const watchedWhole = async (number: number) =>
+    (await (await watch(number)).json()) as {
+      progress: Record<string, unknown> | null;
+      lastCost: number | null;
+    };
+  const watched = async (number: number) => (await watchedWhole(number)).progress;
   return {
     start,
     list,
@@ -251,6 +261,7 @@ function setup({
     startOne,
     watch,
     watched,
+    watchedWhole,
   };
 }
 
@@ -623,7 +634,7 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     const { watch, runs } = setup();
     const response = await watch(1);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ progress: null });
+    expect(await response.json()).toEqual({ progress: null, lastCost: null });
     expect(runs).toEqual([]);
   });
 
@@ -652,6 +663,7 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
       ],
       locatedPages: null,
       failure: null,
+      cost: null,
     });
   });
 
@@ -696,11 +708,66 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     });
   });
 
+  describe('its cost', () => {
+    // 100,000 prompt tokens with 20,000 written to and 30,000 read from the cache, and 10,000
+    // output tokens: US$ 0.10 + 0.08 + 0.003 + 0.10 at the table's prices.
+    const used = {
+      kind: 'usage',
+      model: ruleCheckModel,
+      inputTokens: 100_000,
+      outputTokens: 10_000,
+      cacheReadTokens: 30_000,
+      cacheWriteTokens: 20_000,
+    } as const;
+
+    it('shows what the running check spent so far, from the price table', async () => {
+      const { startOne, runs, progress, watched } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      expect(await watched(1)).toMatchObject({ cost: { kind: 'priced', microUsd: 283_000 } });
+    });
+
+    it('says a model missing from the price table has no known cost', async () => {
+      const { startOne, runs, progress, watched } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, { ...used, model: 'claude-unpriced' });
+      expect(await watched(1)).toMatchObject({ cost: { kind: 'unknown' } });
+    });
+
+    it('answers the newest finished check cost while a new one runs, and a day later', async () => {
+      const { startOne, runs, progress, report, watchedWhole, advance } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      await progress.record(runs[0]?.id ?? '', 1, used);
+      await report(runs[0]);
+      expect(await watchedWhole(1)).toMatchObject({ lastCost: 566_000 });
+      advance(minute);
+      await startOne(1);
+      expect(await watchedWhole(1)).toMatchObject({
+        progress: { state: 'running', cost: null },
+        lastCost: 566_000,
+      });
+      advance(25 * 60 * minute);
+      expect(await watchedWhole(1)).toEqual({ progress: null, lastCost: 566_000 });
+    });
+
+    it('answers no last cost when the newest finished check could not be priced', async () => {
+      const { startOne, runs, progress, report, watchedWhole } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, { ...used, model: scriptedCheckerModel });
+      await report(runs[0]);
+      expect(await watchedWhole(1)).toMatchObject({
+        progress: { cost: { kind: 'scripted' } },
+        lastCost: null,
+      });
+    });
+  });
+
   it('answers 404 for a version the app does not bundle, also where no check runs', async () => {
     expect((await setup({ count: 1 }).watch(9)).status).toBe(404);
     const off = setup({ count: 1, enabled: false });
     expect((await off.watch(9)).status).toBe(404);
-    expect(await (await off.watch(1)).json()).toEqual({ progress: null });
+    expect(await (await off.watch(1)).json()).toEqual({ progress: null, lastCost: null });
   });
 
   it('is for admins only', async () => {

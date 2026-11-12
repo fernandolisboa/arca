@@ -335,7 +335,16 @@ export {
   checkProgressStates,
   pageProgressOutcomes,
   progressFailures,
+  usagesOf,
 } from './independent-check/progress.js';
+export {
+  type CheckCost,
+  type ModelPricing,
+  type ModelUsage,
+  type PriceTable,
+  type TokenPrices,
+  checkCost,
+} from './independent-check/cost.js';
 export {
   type BatchListedVersion,
   type CheckedBatchSkip,
