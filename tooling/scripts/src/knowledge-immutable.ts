@@ -293,10 +293,14 @@ class Check {
           const proof = hostOf(entry.url);
           if (!entry.host.includes('.')) {
             this.#add(path, `lists ${entry.host}, a top-level domain, not a host`);
-          } else if (proof === undefined || isOnHost(proof, ownHosts)) {
+          } else if (
+            proof === undefined ||
+            isOnHost(proof, ownHosts) ||
+            [...ownHosts].some((own) => isOnHost(own, new Set([proof])))
+          ) {
             this.#add(
               path,
-              `is a first list whose host ${entry.host} cites proof on ${proof ?? 'an unreadable URL'}, a host of the same list, not a registry`,
+              `is a first list whose host ${entry.host} cites proof on ${proof ?? 'an unreadable URL'}, a host of the same list or its parent, not a registry`,
             );
           }
         }

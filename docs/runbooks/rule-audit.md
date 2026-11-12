@@ -266,11 +266,11 @@ A request for a new route counts as one of the run's three. It never writes a co
 
 ### What a corrector run leaves to others
 
-All of [what a monthly run leaves to others](#what-a-monthly-run-leaves-to-others), except a country's first official-domain list for a request for a new route ([Requests for a new route](#requests-for-a-new-route)), and also: it uses no credential but the key and the session's own GitHub access; it never closes a request (the key cannot); and it never writes a request's content anywhere outside its own working directories: its answers and the closing message name requests by route and item and never quote their note, text or files.
+All of [what a monthly run leaves to others](#what-a-monthly-run-leaves-to-others), except a country's first official-domain list for a request for a new route ([Requests for a new route](#requests-for-a-new-route)), and also: it uses no credential but the key and the session's own GitHub access; it never closes a request (the key cannot); and it never writes a request's content anywhere outside its own working directories: its answers and the closing message name requests by route and item, or by country, and never quote their note, text or files.
 
 ### The corrector run's closing message
 
-The session's last reply, to the owner, in plain Brazilian Portuguese; it reaches him as a push notification, so it quotes no request's note, pasted text or file. For each request worked: its route and item, and "versão N proposta, aguardando ativação" with the pull request, or "nada mudou" with one line on why, or "ficou em aberto" with the reason. Then the requests left for the next run, and what is left for an on-demand session.
+The session's last reply, to the owner, in plain Brazilian Portuguese; it reaches him as a push notification, so it quotes no request's note, pasted text or file. For each request worked: its route and item (for a request for a new route, its country and the new route's ID), and "versão N proposta, aguardando ativação" with the pull request, or "nada mudou" with one line on why, or "ficou em aberto" with the reason. Any first official-domain list merged, with its pull request and hosts. Then the requests left for the next run, and what is left for an on-demand session.
 
 ### Stopping or changing the corrector run
 

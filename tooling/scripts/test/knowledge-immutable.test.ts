@@ -550,7 +550,7 @@ describe('knowledge-immutable', () => {
             ['migration.qn.example', 'https://migration.qn.example/about'],
           ]);
         },
-        `${data}official-domains/qn-gov/1.json: is a first list whose host migration.qn.example cites proof on migration.qn.example, a host of the same list, not a registry`,
+        `${data}official-domains/qn-gov/1.json: is a first list whose host migration.qn.example cites proof on migration.qn.example, a host of the same list or its parent, not a registry`,
       ],
       [
         'a first list whose host vouches for another of the same list',
@@ -560,7 +560,16 @@ describe('knowledge-immutable', () => {
             ['visa.example', 'https://www.qn.example/agencies'],
           ]);
         },
-        `${data}official-domains/qn-gov/1.json: is a first list whose host visa.example cites proof on www.qn.example, a host of the same list, not a registry`,
+        `${data}official-domains/qn-gov/1.json: is a first list whose host visa.example cites proof on www.qn.example, a host of the same list or its parent, not a registry`,
+      ],
+      [
+        'a first list whose host vouches for itself from its parent domain',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['www.qn.example', 'https://qn.example/about'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host www.qn.example cites proof on qn.example, a host of the same list or its parent, not a registry`,
       ],
       [
         'a first list with a bare top-level domain',
