@@ -755,6 +755,38 @@ describe('the corrector routes (ADR-0029)', () => {
     }
   });
 
+  it('let the database refuse a new route in another country or past version 1', async () => {
+    const key = await newKey();
+    const id = await filedNewRoute();
+    await setup().answer(key, id, { kind: 'taken' });
+    const keyId = await testDatabase.asAdmin(
+      async (client) =>
+        (await client.query<{ id: string }>('SELECT id FROM knowledge.corrector_key')).rows[0]?.id,
+    );
+    const digest = createHash('sha256').update(key, 'utf8').digest();
+    for (const [route, version, expected] of [
+      ['xx-new', 1, 'refused'],
+      ['qm-new', 2, 'refused'],
+      ['qm-new', 1, 'stored'],
+    ] as const) {
+      const outcome = await testDatabase.asAdmin(async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query('SET LOCAL ROLE app_api');
+          return (
+            await client.query<{ outcome: string }>(
+              'SELECT knowledge.answer_new_route_request($1, $2, $3, $4, $5) AS outcome',
+              [keyId, digest, id, route, version],
+            )
+          ).rows[0]?.outcome;
+        } finally {
+          await client.query('ROLLBACK');
+        }
+      });
+      expect(outcome).toBe(expected);
+    }
+  });
+
   it('refuse callers the definer functions do not serve', async () => {
     await newKey();
     const keyId = await testDatabase.asAdmin(

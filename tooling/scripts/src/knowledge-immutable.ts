@@ -471,7 +471,6 @@ function hostEntries(list: unknown): { host: string; url: string }[] | undefined
   return entries.length === list['hosts'].length ? entries : undefined;
 }
 
-/** The matching `@arca/domain`'s `hostMatches` applies: the host itself or a subdomain of it. */
 /**
  * A suffix under which anyone may register, such as `gov.lt` or `com.br`, which would make every
  * site under it official. Without a public-suffix dataset, the common second-level labels.
@@ -480,6 +479,7 @@ const registrySuffix =
   /^(?:[a-z]{2,63}|(?:com|net|org|co|gov|edu|ac|gob|go|or|ne|mil|nic)\.[a-z]{2})$/;
 const isRegistrySuffix = (host: string) => registrySuffix.test(host);
 
+/** The matching `@arca/domain`'s `hostMatches` applies: the host itself or a subdomain of it. */
 function isOnHost(host: string, hosts: ReadonlySet<string>): boolean {
   return [...hosts].some((listed) => host === listed || host.endsWith(`.${listed}`));
 }
