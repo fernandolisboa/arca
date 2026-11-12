@@ -550,7 +550,7 @@ export const startVersionCheck = {
   path: '/knowledge/versions/check/start',
   operationId: 'startVersionCheck',
   summary:
-    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
+    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
   body: DecideVersionRequest,
   response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
 } as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
@@ -708,7 +708,6 @@ export {
   factTargets,
   maxAutomaticStartsPerDay,
   maxQuotes,
-  maxStartsPerDay,
   relationshipSteps,
   staleAfterDays,
   versionKey,

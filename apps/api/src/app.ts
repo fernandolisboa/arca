@@ -1553,8 +1553,6 @@ export function createApp({
     const outcome = await versionChecks.startOne(routeId, number);
     if (outcome.ok) return c.json({ started: outcome.started }, 200);
     switch (outcome.reason) {
-      case 'rate_limited':
-        return fail(c, 'rate_limited', 429);
       case 'check_not_started':
         return fail(c, 'check_not_started', 502);
       case 'not_found':

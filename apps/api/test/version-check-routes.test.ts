@@ -305,7 +305,7 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
     expect(await (await start()).json()).toEqual({ started: 0 });
   });
 
-  it('stays within 15 starts in any 24 hours, so 5 are left for an admin', async () => {
+  it('stays within 15 starts in any 24 hours', async () => {
     const { start, advance } = setup({ count: 25 });
     expect(await (await start()).json()).toEqual({ started: 15 });
     advance(31 * minute);
@@ -592,19 +592,14 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
     expect(runs).toHaveLength(1);
   });
 
-  it('uses the 5 starts the automatic share leaves, then answers the rate limit', async () => {
+  it('starts every version an admin asks for, past the automatic share, with no daily cap', async () => {
     const { start, startOne, runs, advance } = setup({ count: 25 });
     await start();
     advance(31 * minute);
-    for (const number of [16, 17, 18, 19, 20]) {
-      expect((await startOne(number)).status).toBe(200);
+    for (let number = 1; number <= 25; number += 1) {
+      expect(await (await startOne(number)).json()).toEqual({ started: true });
     }
-    const limited = await startOne(21);
-    expect(limited.status).toBe(429);
-    expect(await limited.json()).toEqual({ error: { code: 'rate_limited' } });
-    expect(runs).toHaveLength(20);
-    advance(24 * 60 * minute);
-    expect((await startOne(21)).status).toBe(200);
+    expect(runs).toHaveLength(15 + 25);
   });
 
   it('answers 404 for a version the app does not bundle', async () => {

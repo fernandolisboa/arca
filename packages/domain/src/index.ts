@@ -315,7 +315,6 @@ export {
   listedCheckStatuses,
   liveStart,
   maxAutomaticStartsPerDay,
-  maxStartsPerDay,
   newestReport,
   newestStart,
   noGuide,
