@@ -33,6 +33,7 @@ export const panel = (page: Page, name: string) => page.getByRole('region', { na
 export async function addPerson(page: Page, name: string) {
   await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
   await page.getByLabel('Nome', { exact: true }).fill(name);
+  await expect(page.getByRole('switch', { name: 'Entra no planejamento' })).toBeChecked();
   await page.getByRole('button', { name: 'Salvar pessoa' }).click();
   return panel(page, name);
 }

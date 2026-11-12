@@ -520,7 +520,7 @@ export const ptBR = {
     save: 'Salvar',
     membership: {
       label: 'Entra no planejamento',
-      hint: 'Desligado, a pessoa fica no caso só como parente, sem rotas próprias.',
+      hint: 'Se desligar, a pessoa fica no caso só como parente, sem rotas próprias.',
     },
     sharing: {
       firstTitle: 'Quem pode ver os dados de {name}?',

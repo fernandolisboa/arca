@@ -15,11 +15,14 @@ export function MembershipChoice({
   readonly onChange: (value: Membership) => void;
 }) {
   const { t } = useTranslation();
+  const labelId = useId();
   const hintId = useId();
   return (
     <label className="flex min-h-touch cursor-pointer items-center justify-between gap-4 rounded-control border border-line bg-surface px-3 py-2 hover:bg-soft has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary">
       <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="font-medium">{t('family.membership.label')}</span>
+        <span id={labelId} className="font-medium">
+          {t('family.membership.label')}
+        </span>
         <span id={hintId} className="text-small text-muted">
           {t('family.membership.hint')}
         </span>
@@ -27,6 +30,7 @@ export function MembershipChoice({
       <input
         type="checkbox"
         role="switch"
+        aria-labelledby={labelId}
         aria-describedby={hintId}
         checked={value === 'member'}
         onChange={(event) => {
@@ -36,7 +40,7 @@ export function MembershipChoice({
       />
       <span
         aria-hidden="true"
-        className="relative h-7 w-12 shrink-0 rounded-full bg-second transition-colors peer-checked:bg-primary after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-surface after:shadow-card after:transition-transform peer-checked:after:translate-x-5 motion-reduce:transition-none motion-reduce:after:transition-none"
+        className="relative h-7 w-12 shrink-0 rounded-full bg-muted transition-colors forced-colors:border forced-colors:after:bg-[CanvasText] forced-colors:peer-checked:bg-[Highlight] peer-checked:bg-primary after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-surface after:shadow-card after:transition-transform peer-checked:after:translate-x-5 motion-reduce:transition-none motion-reduce:after:transition-none"
       />
     </label>
   );
