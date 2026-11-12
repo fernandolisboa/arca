@@ -284,15 +284,31 @@ const correctionTables = {
     'note',
     'author_account_id',
     'created_at',
+    'content_erased_at',
   ],
-  'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text'],
+  'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text', 'upload_id'],
   'knowledge.correction_event': ['id', 'request_id', 'kind', 'at'],
+  'knowledge.correction_upload': [
+    'id',
+    'author_account_id',
+    'pathname',
+    'media_type',
+    'size',
+    'sha256',
+    'created_at',
+  ],
 } as const;
 const correctionFunctions = [
   'knowledge.file_correction_request(text, integer, text, text, text, jsonb, text)',
   'knowledge.correction_requests(text, integer, text, uuid)',
   'knowledge.close_correction_request(uuid, text, uuid)',
   'knowledge.own_correction_rows(text)',
+  'knowledge.start_correction_upload(text, integer, bytea, text)',
+  'knowledge.own_correction_upload(uuid, text)',
+  'knowledge.attach_correction_file(uuid, integer, uuid, text)',
+  'knowledge.correction_files(text, integer, text, uuid)',
+  'knowledge.correction_file(uuid, integer, text, uuid)',
+  'knowledge.own_correction_upload_rows(text)',
   'knowledge.admin_basis_holds(text, uuid)',
 ];
 
@@ -342,20 +358,44 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_requests',
         'knowledge.close_correction_request',
         'knowledge.own_correction_rows',
+        'knowledge.start_correction_upload',
+        'knowledge.own_correction_upload',
+        'knowledge.attach_correction_file',
+        'knowledge.correction_files',
+        'knowledge.correction_file',
+        'knowledge.own_correction_upload_rows',
       ],
     });
   });
 
-  it('lets app_jobs read every table and delete requests, for erasure, and run nothing', async () => {
+  it('lets app_jobs read every table, delete requests, sources and uploads, and clear a note, and run nothing', async () => {
+    const request = correctionTables['knowledge.correction_request'];
     expect(await correctionAccess('app_jobs')).toEqual({
-      tables: correctionMatrix(
-        {
-          'knowledge.correction_request': ['SELECT'],
-          'knowledge.correction_source': ['SELECT'],
-          'knowledge.correction_event': ['SELECT'],
+      tables: {
+        ...correctionMatrix(
+          {
+            'knowledge.correction_source': ['SELECT'],
+            'knowledge.correction_event': ['SELECT'],
+            'knowledge.correction_upload': ['SELECT'],
+          },
+          {
+            'knowledge.correction_request': ['DELETE'],
+            'knowledge.correction_source': ['DELETE'],
+            'knowledge.correction_upload': ['DELETE'],
+          },
+        ),
+        'knowledge.correction_request': {
+          columns: Object.fromEntries(
+            request.map((column) => [
+              column,
+              column === 'note' || column === 'content_erased_at'
+                ? ['SELECT', 'UPDATE']
+                : ['SELECT'],
+            ]),
+          ),
+          table: ['DELETE'],
         },
-        { 'knowledge.correction_request': ['DELETE'] },
-      ),
+      },
       functions: [],
     });
   });
@@ -368,6 +408,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_request': ['SELECT', 'INSERT'],
         'knowledge.correction_source': ['SELECT', 'INSERT'],
         'knowledge.correction_event': ['SELECT', 'INSERT'],
+        'knowledge.correction_upload': ['SELECT', 'INSERT'],
       }),
     );
   });
@@ -456,12 +497,14 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'correction_event', forced: true },
         { name: 'correction_request', forced: true },
         { name: 'correction_source', forced: true },
+        { name: 'correction_upload', forced: true },
         { name: 'decision', forced: true },
         { name: 'independent_check', forced: true },
         { name: 'rule_summary', forced: true },
       ],
-      // A correction request's sources and events, which go with it (ADR-0029).
-      foreignKeys: 2,
+      // A correction request's sources and events, which go with it, and a file source's upload
+      // (ADR-0029).
+      foreignKeys: 3,
     });
   });
 

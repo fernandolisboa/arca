@@ -536,6 +536,16 @@ test('the seed admin points out an error on a version and closes the request (AD
   await form.getByLabel('O que está errado?').fill('O valor mínimo mudou.');
   await form.getByRole('button', { name: 'Adicionar link' }).click();
   await form.getByLabel('Link').fill('https://www.uscis.gov/eb-5');
+  const chooser = page.waitForEvent('filechooser');
+  await form.getByRole('button', { name: 'Anexar arquivo' }).click();
+  await (
+    await chooser
+  ).setFiles({
+    name: 'eb5-synthetic.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Synthetic copy of an official page.\n'),
+  });
+  await expect(form).toContainText('Anexado');
   const filed = page.waitForRequest(
     (request) => request.url().endsWith('/v1/knowledge/corrections') && request.method() === 'POST',
   );
@@ -545,7 +555,10 @@ test('the seed admin points out an error on a version and closes the request (AD
     versionNumber: Number(version),
     item: { kind: 'version', key: null },
     note: 'O valor mínimo mudou.',
-    sources: [{ kind: 'link', url: 'https://www.uscis.gov/eb-5' }],
+    sources: [
+      { kind: 'link', url: 'https://www.uscis.gov/eb-5' },
+      { kind: 'file', uploadId: expect.any(String) as unknown },
+    ],
   });
   await expect(page.getByText('Pedido enviado.')).toBeVisible();
 
@@ -553,6 +566,10 @@ test('the seed admin points out an error on a version and closes the request (AD
   await expect(requests).toContainText('Aberto');
   await expect(requests).toContainText('Versão inteira');
   await expect(requests).toContainText('https://www.uscis.gov/eb-5');
+  await expect(requests).toContainText('Texto de');
+  const saved = page.waitForEvent('download');
+  await requests.getByRole('button', { name: 'Baixar arquivo' }).click();
+  expect((await saved).suggestedFilename()).toBe('pedido-de-correcao-arquivo-2.txt');
   await requests.getByRole('button', { name: 'Fechar pedido' }).click();
   await expect(requests).toContainText('Fechado');
   await expect(requests.getByRole('button', { name: 'Fechar pedido' })).toHaveCount(0);

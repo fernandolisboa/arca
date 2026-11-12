@@ -1,10 +1,32 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { DocumentUpload, DocumentUploadUrlResponse } from '@arca/api-contract/routes';
 
-/** What the store holds under a pathname: its size and SHA-256. */
+/** What the store holds under a pathname: its size, SHA-256 and first bytes. */
 export interface StoredObject {
   readonly size: number;
   readonly sha256: Buffer;
+  /** At most the first `objectHeadBytes`, for a check of the type by content. */
+  readonly head: Buffer;
+}
+
+export const objectHeadBytes = 1024;
+
+/** The media type of document ciphertext, the only type a vault upload may have. */
+export const ciphertextType = 'application/octet-stream';
+
+/** The SHA-256 and first bytes of a stream of chunks, as `digest` answers. */
+export async function digestOf(
+  chunks: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+): Promise<StoredObject> {
+  const hash = createHash('sha256');
+  const head: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of chunks) {
+    if (size < objectHeadBytes) head.push(Buffer.from(chunk.subarray(0, objectHeadBytes - size)));
+    size += chunk.length;
+    hash.update(chunk);
+  }
+  return { size, sha256: hash.digest(), head: Buffer.concat(head) };
 }
 
 /** Where the app serves the in-memory store's upload and download URLs, in development only. */
@@ -14,20 +36,24 @@ export const memoryObjectsPath = '/internal/objects';
 export const objectUrlMinutes = 5;
 
 /**
- * Where document ciphertext lives (spec 0005, R3 and R4). Document routes, the daily cleanup and
- * `eraseAccount` use this port, never the store's SDK directly.
+ * Where document ciphertext (spec 0005, R3 and R4) and correction request files (ADR-0029) live.
+ * Their routes, the daily jobs and `eraseAccount` use this port, never the store's SDK directly.
  */
 export interface ObjectStorage {
   /** How the device uploads at most `maxBytes` to this pathname. */
   readonly uploadTarget: (pathname: string, maxBytes: number) => DocumentUpload;
-  /** The presigned upload for one pathname, at most `maxBytes` long, valid for 5 minutes. */
+  /**
+   * The presigned upload for one pathname, at most `maxBytes` long and of `contentType` only,
+   * valid for 5 minutes.
+   */
   readonly presignUpload: (
     pathname: string,
     maxBytes: number,
+    contentType: string,
   ) => Promise<DocumentUploadUrlResponse>;
-  /** The object's size and SHA-256, or undefined when nothing is stored there. */
+  /** The object's size, SHA-256 and first bytes, or undefined when nothing is stored there. */
   readonly digest: (pathname: string) => Promise<StoredObject | undefined>;
-  /** A URL that reads the object for 5 minutes. */
+  /** A URL that reads the object for 5 minutes, served as an attachment with `nosniff`. */
   readonly downloadUrl: (pathname: string) => Promise<string>;
   /** Deletes the objects; a missing one is not an error. */
   readonly delete: (pathnames: readonly string[]) => Promise<void>;
@@ -97,11 +123,7 @@ export function memoryObjectStorage(
     presignUpload: () => Promise.reject(new Error('the memory store takes direct uploads only')),
     digest: (pathname) => {
       const bytes = objects.get(pathname);
-      return Promise.resolve(
-        bytes === undefined
-          ? undefined
-          : { size: bytes.length, sha256: createHash('sha256').update(bytes).digest() },
-      );
+      return bytes === undefined ? Promise.resolve(undefined) : digestOf([bytes]);
     },
     downloadUrl: (pathname) => Promise.resolve(grant(downloads, pathname, 0)),
     delete: (pathnames) => {

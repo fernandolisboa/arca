@@ -34253,7 +34253,7 @@
     "/knowledge/corrections": {
       "post": {
         "operationId": "fileCorrectionRequest",
-        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold; 409 already_corrected when a correction of the version is active",
+        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item or upload it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
         "requestBody": {
           "required": true,
           "content": {
@@ -34348,6 +34348,26 @@
                           "required": [
                             "kind",
                             "text"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "file"
+                              ]
+                            },
+                            "uploadId": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "uploadId"
                           ],
                           "additionalProperties": false
                         }
@@ -34492,7 +34512,10 @@
                             "additionalProperties": false
                           },
                           "note": {
-                            "type": "string"
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           },
                           "createdAt": {
                             "type": "string",
@@ -34543,6 +34566,35 @@
                                     "text"
                                   ],
                                   "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "file"
+                                      ]
+                                    },
+                                    "mediaType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "application/pdf",
+                                        "text/html",
+                                        "text/plain"
+                                      ]
+                                    },
+                                    "size": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 16777216
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "mediaType",
+                                    "size"
+                                  ]
                                 }
                               ]
                             }
@@ -34638,6 +34690,345 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/corrections/uploads": {
+      "post": {
+        "operationId": "startCorrectionUpload",
+        "summary": "Starts the upload of one file for a correction request, for an owner-list admin, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mediaType": {
+                    "type": "string",
+                    "enum": [
+                      "application/pdf",
+                      "text/html",
+                      "text/plain"
+                    ]
+                  },
+                  "size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 16777216
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  }
+                },
+                "required": [
+                  "mediaType",
+                  "size",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uploadId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "upload": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "via": {
+                              "type": "string",
+                              "enum": [
+                                "vercel_blob"
+                              ]
+                            },
+                            "pathname": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "via",
+                            "pathname"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "via": {
+                              "type": "string",
+                              "enum": [
+                                "direct"
+                              ]
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "via",
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "uploadId",
+                    "upload"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/corrections/uploads/url": {
+      "post": {
+        "operationId": "correctionUploadUrl",
+        "summary": "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "blob.generate-presigned-url"
+                    ]
+                  },
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "pathname": {
+                        "type": "string",
+                        "maxLength": 128
+                      },
+                      "clientPayload": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 256
+                      },
+                      "multipart": {
+                        "type": "boolean",
+                        "enum": [
+                          false
+                        ]
+                      }
+                    },
+                    "required": [
+                      "pathname",
+                      "clientPayload",
+                      "multipart"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "payload"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Presigned upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "blob.generate-presigned-url"
+                      ]
+                    },
+                    "presignedUrlPayload": {
+                      "type": "object",
+                      "properties": {
+                        "delegationToken": {
+                          "type": "string"
+                        },
+                        "signature": {
+                          "type": "string"
+                        },
+                        "params": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "delegationToken",
+                        "signature",
+                        "params"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "presignedUrlPayload"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/corrections/files/url": {
+      "post": {
+        "operationId": "correctionFileUrl",
+        "summary": "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin. 403 not_admin; 404 not_found for a source that is not a stored file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  }
+                },
+                "required": [
+                  "requestId",
+                  "position"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
                 }
               }
             }

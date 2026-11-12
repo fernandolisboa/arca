@@ -11,6 +11,7 @@ import { readCase } from '../../src/case/view.js';
 import { auditLog, type AuditLog } from '../../src/audit/log.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDocuments } from '../../src/vault/documents.js';
+import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
 import { putObject } from '../objects.js';
 import { recordingNotifier } from '../notifications.js';
@@ -42,6 +43,7 @@ const erasureWith = (
     audit,
     notices,
     documents: createDocuments({ db: testDatabase.jobsDb, storage: objects, audit }),
+    corrections: createCorrectionContents({ db: testDatabase.jobsDb, storage: objects }),
     registry: checked,
   });
 
@@ -263,6 +265,7 @@ describe('eraseAccount (spec 0004, R9)', () => {
       audit: auditLog(testDatabase.auditDb),
       notices,
       documents: { eraseObjects: () => Promise.reject(new Error('unavailable')) },
+      corrections: { eraseObjects: () => Promise.resolve() },
     });
     await expect(eraseAccountNow(failing, a.accountId)).rejects.toThrow('unavailable');
     const counts = await ownedCounts(testDatabase, a.accountId);

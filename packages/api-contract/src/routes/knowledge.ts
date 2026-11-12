@@ -34,6 +34,12 @@ import {
 import { z } from 'zod';
 import { ruleReportReasons } from './case.js';
 import type { RouteDefinition } from './index.js';
+import {
+  DocumentUpload,
+  DocumentUploadUrlRequest,
+  DocumentUploadUrlResponse,
+  Sha256,
+} from './uploads.js';
 
 /*
  * Activating and rejecting a route version (spec 0007, R7; ADR-0027). Only an admin may decide
@@ -456,7 +462,17 @@ export const closeRuleReports = {
  */
 
 /** The limits of a request (ADR-0029), checked here and again by the database. */
-export const correctionLimits = { note: 4_000, sources: 5, text: 20_000, url: 2_048 } as const;
+export const correctionLimits = {
+  note: 4_000,
+  sources: 5,
+  text: 20_000,
+  url: 2_048,
+  fileBytes: 16 * 1024 * 1024,
+} as const;
+
+/** The media types a request's file may have, checked again by content when the request is filed. */
+export const correctionFileTypes = ['application/pdf', 'text/html', 'text/plain'] as const;
+export type CorrectionFileType = (typeof correctionFileTypes)[number];
 
 /** The item a request points at: the whole version, its settings, or one item by its key. */
 export const CorrectionItem = z
@@ -472,20 +488,37 @@ export const CorrectionItem = z
   });
 export type CorrectionItem = z.infer<typeof CorrectionItem>;
 
+const LinkSource = z.strictObject({
+  kind: z.literal('link'),
+  url: z
+    .url({ protocol: /^https$/, hostname: z.regexes.domain })
+    .max(correctionLimits.url)
+    .regex(/^https:\/\/\S+$/),
+});
+const TextSource = z.strictObject({
+  kind: z.literal('text'),
+  text: z.string().trim().min(1).max(correctionLimits.text),
+});
+
+/** A source as filed: a link, pasted text, or a file uploaded first, named by its upload. */
 export const CorrectionSource = z.discriminatedUnion('kind', [
-  z.strictObject({
-    kind: z.literal('link'),
-    url: z
-      .url({ protocol: /^https$/, hostname: z.regexes.domain })
-      .max(correctionLimits.url)
-      .regex(/^https:\/\/\S+$/),
-  }),
-  z.strictObject({
-    kind: z.literal('text'),
-    text: z.string().trim().min(1).max(correctionLimits.text),
-  }),
+  LinkSource,
+  TextSource,
+  z.strictObject({ kind: z.literal('file'), uploadId: z.uuid() }),
 ]);
 export type CorrectionSource = z.infer<typeof CorrectionSource>;
+
+/** A source as listed: a file shows its type and size, and opens through `correctionFileUrl`. */
+export const ListedCorrectionSource = z.discriminatedUnion('kind', [
+  LinkSource,
+  TextSource,
+  z.object({
+    kind: z.literal('file'),
+    mediaType: z.enum(correctionFileTypes),
+    size: z.int().min(1).max(correctionLimits.fileBytes),
+  }),
+]);
+export type ListedCorrectionSource = z.infer<typeof ListedCorrectionSource>;
 
 export const FileCorrectionRequest = z.strictObject({
   routeId: routeIdSchema,
@@ -503,7 +536,7 @@ export const fileCorrectionRequest = {
   path: '/knowledge/corrections',
   operationId: 'fileCorrectionRequest',
   summary:
-    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version or item the catalog does not hold; 409 already_corrected when a correction of the version is active',
+    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item or upload it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared',
   body: FileCorrectionRequest,
   response: { description: 'Filed', schema: FileCorrectionResponse },
 } as const satisfies RouteDefinition<typeof FileCorrectionResponse>;
@@ -516,9 +549,10 @@ export const CorrectionRequests = z.object({
     z.object({
       id: z.uuid(),
       item: CorrectionItem,
-      note: z.string(),
+      /** Null once the request's contents were erased (ADR-0029, retention); its sources go too. */
+      note: z.string().nullable(),
       createdAt: z.iso.datetime({ offset: true }),
-      sources: z.array(CorrectionSource),
+      sources: z.array(ListedCorrectionSource),
       state: z.enum(correctionStates),
     }),
   ),
@@ -534,6 +568,62 @@ export const listCorrectionRequests = {
   query: VersionViewQuery,
   response: { description: 'The requests', schema: CorrectionRequests },
 } as const satisfies RouteDefinition<typeof CorrectionRequests>;
+
+export const StartCorrectionUpload = z.strictObject({
+  mediaType: z.enum(correctionFileTypes),
+  size: z.int().min(1).max(correctionLimits.fileBytes),
+  /** The file's SHA-256, which the stored object must match when the request is filed. */
+  sha256: Sha256,
+});
+export type StartCorrectionUpload = z.infer<typeof StartCorrectionUpload>;
+
+export const StartCorrectionUploadResponse = z.object({
+  uploadId: z.uuid(),
+  upload: DocumentUpload,
+});
+export type StartCorrectionUploadResponse = z.infer<typeof StartCorrectionUploadResponse>;
+
+export const startCorrectionUpload = {
+  method: 'post',
+  path: '/knowledge/corrections/uploads',
+  operationId: 'startCorrectionUpload',
+  summary:
+    'Starts the upload of one file for a correction request, for an owner-list admin, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only',
+  body: StartCorrectionUpload,
+  response: { description: 'Upload started', schema: StartCorrectionUploadResponse },
+} as const satisfies RouteDefinition<typeof StartCorrectionUploadResponse>;
+
+export const correctionUploadUrl = {
+  method: 'post',
+  path: '/knowledge/corrections/uploads/url',
+  operationId: 'correctionUploadUrl',
+  summary:
+    "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
+  body: DocumentUploadUrlRequest,
+  response: { description: 'Presigned upload', schema: DocumentUploadUrlResponse },
+} as const satisfies RouteDefinition<typeof DocumentUploadUrlResponse>;
+
+export const CorrectionFileReference = z.strictObject({
+  requestId: z.uuid(),
+  /** The source's place in the request's list, from 0. */
+  position: z
+    .int()
+    .min(0)
+    .max(correctionLimits.sources - 1),
+});
+export type CorrectionFileReference = z.infer<typeof CorrectionFileReference>;
+
+export const CorrectionFileUrlResponse = z.object({ url: z.string() });
+
+export const correctionFileUrl = {
+  method: 'post',
+  path: '/knowledge/corrections/files/url',
+  operationId: 'correctionFileUrl',
+  summary:
+    "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin. 403 not_admin; 404 not_found for a source that is not a stored file",
+  body: CorrectionFileReference,
+  response: { description: 'Download URL', schema: CorrectionFileUrlResponse },
+} as const satisfies RouteDefinition<typeof CorrectionFileUrlResponse>;
 
 export const CloseCorrectionRequest = z.strictObject({ id: z.uuid() });
 export type CloseCorrectionRequest = z.infer<typeof CloseCorrectionRequest>;
@@ -813,6 +903,9 @@ export const knowledgeRoutes = {
   fileCorrectionRequest,
   listCorrectionRequests,
   closeCorrectionRequest,
+  startCorrectionUpload,
+  correctionUploadUrl,
+  correctionFileUrl,
   startVersionChecks,
   getVersionCheck,
   startVersionCheck,

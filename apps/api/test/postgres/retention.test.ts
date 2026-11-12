@@ -15,6 +15,7 @@ import { accounts } from '../../src/auth/auth.js';
 import type { Notice, Notices } from '../../src/email/notices.js';
 import { createDelivery, deliverNow } from '../../src/notification/delivery.js';
 import { createNotifier } from '../../src/notification/notifier.js';
+import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createDocuments } from '../../src/vault/documents.js';
 import { memoryObjectStorage } from '../../src/vault/object-storage.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
@@ -44,6 +45,10 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
       db: testDatabase.jobsDb,
       storage: memoryObjectStorage(),
       audit: auditLog(testDatabase.auditDb),
+    }),
+    corrections: createCorrectionContents({
+      db: testDatabase.jobsDb,
+      storage: memoryObjectStorage(),
     }),
     // As the daily job runs it: the warning delivered in the step, before the marking commits.
     notifier: createNotifier({

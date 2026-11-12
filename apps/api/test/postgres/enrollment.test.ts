@@ -733,6 +733,7 @@ describe('invites (spec 0003, R2)', () => {
         audit: auditLog(testDatabase.auditDb),
         notices: { send: () => Promise.resolve() },
         documents: { eraseObjects: () => Promise.resolve() },
+        corrections: { eraseObjects: () => Promise.resolve() },
       }),
       accountId,
     );

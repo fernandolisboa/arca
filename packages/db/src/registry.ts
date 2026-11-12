@@ -475,6 +475,16 @@ export const registry: Registry = {
       exportedThrough: 'knowledge.own_correction_rows',
     },
     {
+      // After the requests, whose sources name these uploads; their objects go first (erasure).
+      table: 'knowledge.correction_upload',
+      strategy: 'delete',
+      owner: ownedByAccount('author_account_id'),
+      pool: 'app_jobs',
+      export: ['media_type', 'size', 'created_at'],
+      label: 'dataExport.tables.correctionUploads',
+      exportedThrough: 'knowledge.own_correction_upload_rows',
+    },
+    {
       table: 'audit.event',
       strategy: 'retain',
       owner: ownedByAccount('subject_account_id'),

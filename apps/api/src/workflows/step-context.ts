@@ -28,6 +28,7 @@ import { postgresCheckProgressStore } from '../knowledge/check/progress.js';
 import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
+import { createCorrectionContents } from '../knowledge/correction-contents.js';
 import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
 import { createNotifier } from '../notification/notifier.js';
 import { vapidPushSender } from '../notification/push.js';
@@ -96,13 +97,17 @@ const notices = once(async () => {
   return createNotices({ email, i18n: await createI18n(), origin: readAuthOrigin() });
 });
 
-/** The documents on the app_jobs pool; where no store is connected, erasing any object fails. */
+/** Where no store is connected, erasing any object fails. */
+const jobStorage = () =>
+  objectStorageFor(readDeploymentEnvironment())?.storage ?? unconnectedObjectStorage;
+
+/** The documents on the app_jobs pool. */
 const jobDocuments = () =>
-  createDocuments({
-    db: jobsDatabase(),
-    storage: objectStorageFor(readDeploymentEnvironment())?.storage ?? unconnectedObjectStorage,
-    audit: auditLog(auditDatabase()),
-  });
+  createDocuments({ db: jobsDatabase(), storage: jobStorage(), audit: auditLog(auditDatabase()) });
+
+/** Correction request contents on the app_jobs pool. */
+const jobCorrections = () =>
+  createCorrectionContents({ db: jobsDatabase(), storage: jobStorage() });
 
 export const erasureSteps = once(async (): Promise<Erasure> =>
   createErasure({
@@ -111,6 +116,7 @@ export const erasureSteps = once(async (): Promise<Erasure> =>
     audit: auditLog(auditDatabase()),
     notices: await notices(),
     documents: jobDocuments(),
+    corrections: jobCorrections(),
   }),
 );
 
@@ -145,6 +151,7 @@ export const retentionSteps = once(async (): Promise<Retention> => {
     jobsDb: jobsDatabase(),
     audit: auditLog(auditDatabase()),
     documents: jobDocuments(),
+    corrections: jobCorrections(),
     notifier: createNotifier({
       db: jobsDatabase(),
       startDelivery: (accountId, messageId) =>

@@ -3,6 +3,7 @@ import {
   type CorrectionItem,
   type CorrectionRequests,
   type CorrectionSource,
+  type ListedCorrectionSource,
   type VersionView,
   correctionLimits,
   correctionTargets,
@@ -22,6 +23,8 @@ import {
   type SubmitEvent,
 } from 'react';
 import { api, correctionRequestsQuery } from '../api.js';
+import { correctionFileType, fileExtensions } from './correction-file-type.js';
+import { saveCorrectionFile, uploadCorrectionFile } from './correction-upload.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from './words.js';
@@ -93,20 +96,32 @@ function TextArea({
   );
 }
 
+/** A file chosen for the request: uploading, uploaded with its upload's ID, or failed. */
+interface FileDraft {
+  readonly kind: 'file';
+  readonly name: string;
+  readonly state: 'sending' | 'ready' | 'failed';
+  readonly uploadId?: string;
+}
+
 type Draft = { readonly id: number } & (
-  { readonly kind: 'link'; url: string } | { readonly kind: 'text'; text: string }
+  { readonly kind: 'link'; url: string } | { readonly kind: 'text'; text: string } | FileDraft
 );
-type FormState = 'open' | 'sending' | 'limited' | 'corrected' | 'failed';
+type FormState = 'open' | 'sending' | 'limited' | 'corrected' | 'mismatch' | 'failed';
 
 const failures = {
   limited: 'knowledge.corrections.tooMany',
   corrected: 'knowledge.corrections.alreadyCorrected',
+  mismatch: 'knowledge.corrections.fileMismatch',
   failed: 'knowledge.corrections.sendFailure',
 } as const;
 
-/** The sources as the API takes them: blank ones left out. */
+/** The sources as the API takes them: blank ones and files not uploaded left out. */
 function filledSources(drafts: readonly Draft[]): CorrectionSource[] {
   return drafts.flatMap((draft): CorrectionSource[] => {
+    if (draft.kind === 'file') {
+      return draft.uploadId === undefined ? [] : [{ kind: 'file', uploadId: draft.uploadId }];
+    }
     if (draft.kind === 'link') {
       const url = draft.url.trim();
       return url === '' ? [] : [{ kind: 'link', url }];
@@ -130,7 +145,7 @@ function CorrectionForm({
   const [note, setNote] = useState('');
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const nextIdRef = useRef(0);
-  const add = (kind: Draft['kind']) => {
+  const add = (kind: 'link' | 'text') => {
     const id = nextIdRef.current++;
     setDrafts((current) => [
       ...current,
@@ -145,6 +160,27 @@ function CorrectionForm({
   const change = (draft: Draft) => {
     setDrafts((current) => current.map((old) => (old.id === draft.id ? draft : old)));
   };
+  const remove = (id: number) => {
+    setDrafts((current) => current.filter((old) => old.id !== id));
+  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileRefused, setFileRefused] = useState(false);
+  const attach = (file: File) => {
+    const mediaType = correctionFileType(file);
+    setFileRefused(mediaType === undefined);
+    if (mediaType === undefined) return;
+    const id = nextIdRef.current++;
+    const base = { id, kind: 'file', name: file.name } as const;
+    setDrafts((current) => [...current, { ...base, state: 'sending' }]);
+    uploadCorrectionFile(file, mediaType)
+      .then((uploadId) => {
+        change({ ...base, state: 'ready', uploadId });
+      })
+      .catch(() => {
+        change({ ...base, state: 'failed' });
+      });
+  };
+  const uploading = drafts.some((draft) => draft.kind === 'file' && draft.state === 'sending');
   const send = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (note.trim() === '') return;
@@ -161,7 +197,9 @@ function CorrectionForm({
       close(true);
     } catch (error) {
       if (error instanceof ApiError && error.status === 429) setState('limited');
-      else if (error instanceof ApiError && error.status === 409) setState('corrected');
+      else if (error instanceof ApiError && error.code === 'already_corrected')
+        setState('corrected');
+      else if (error instanceof ApiError && error.status === 409) setState('mismatch');
       else setState('failed');
     }
   };
@@ -182,7 +220,26 @@ function CorrectionForm({
         onChange={setNote}
       />
       {drafts.map((draft) =>
-        draft.kind === 'link' ? (
+        draft.kind === 'file' ? (
+          <div key={draft.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-small">
+            <span className="break-all font-medium">{draft.name}</span>
+            <span
+              role={draft.state === 'failed' ? 'alert' : 'status'}
+              className={draft.state === 'failed' ? 'text-danger-ink' : 'text-muted'}
+            >
+              {t('knowledge.corrections.fileState', { state: draft.state })}
+            </span>
+            <button
+              type="button"
+              className={textLinkClass}
+              onClick={() => {
+                remove(draft.id);
+              }}
+            >
+              {t('knowledge.corrections.removeFile')}
+            </button>
+          </div>
+        ) : draft.kind === 'link' ? (
           <TextField
             key={draft.id}
             type="url"
@@ -228,15 +285,43 @@ function CorrectionForm({
           >
             {t('knowledge.corrections.addText')}
           </button>
+          <button
+            type="button"
+            className={textLinkClass}
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+          >
+            {t('knowledge.corrections.addFile')}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept=".pdf,.html,.htm,.txt,application/pdf,text/html,text/plain"
+            onChange={(event) => {
+              const [file] = event.currentTarget.files ?? [];
+              event.currentTarget.value = '';
+              if (file !== undefined) attach(file);
+            }}
+          />
         </div>
       )}
-      {(state === 'limited' || state === 'corrected' || state === 'failed') && (
+      {drafts.length < correctionLimits.sources && (
+        <p className="text-small text-muted">{t('knowledge.corrections.fileHint')}</p>
+      )}
+      {fileRefused && (
+        <p role="alert" className="text-small text-danger-ink">
+          {t('knowledge.corrections.fileRefused')}
+        </p>
+      )}
+      {state !== 'open' && state !== 'sending' && (
         <p role="alert" className="text-small text-danger-ink">
           {t(failures[state])}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={state === 'sending' || note.trim() === ''}>
+        <Button type="submit" disabled={state === 'sending' || uploading || note.trim() === ''}>
           {state === 'sending'
             ? t('knowledge.corrections.sending')
             : t('knowledge.corrections.send')}
@@ -310,7 +395,63 @@ function itemTitle(view: VersionView, { kind, key }: CorrectionItem): string {
 
 /** A request's sources with keys: they are stored in order and never change. */
 const keyedSources = (request: ListedRequest) =>
-  request.sources.map((source, position) => ({ key: `${request.id}:${String(position)}`, source }));
+  request.sources.map((source, position) => ({
+    key: `${request.id}:${String(position)}`,
+    source,
+    position,
+  }));
+
+/** A file source: its type and size, and a button that saves it on this device. */
+function FileEntry({
+  requestId,
+  position,
+  source,
+  words,
+}: {
+  readonly requestId: string;
+  readonly position: number;
+  readonly source: Extract<ListedCorrectionSource, { kind: 'file' }>;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const [failed, setFailed] = useState(false);
+  const extension = fileExtensions[source.mediaType];
+  return (
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span>
+        {t('knowledge.corrections.fileSummary', {
+          type: extension,
+          size: new Intl.NumberFormat(words.language, {
+            style: 'unit',
+            unit: 'megabyte',
+            maximumFractionDigits: 1,
+          }).format(Math.max(source.size / 1_000_000, 0.1)),
+        })}
+      </span>
+      <button
+        type="button"
+        className={textLinkClass}
+        onClick={() => {
+          setFailed(false);
+          saveCorrectionFile(
+            requestId,
+            position,
+            `${t('knowledge.corrections.fileName', { n: position + 1 })}.${extension}`,
+          ).catch(() => {
+            setFailed(true);
+          });
+        }}
+      >
+        {t('knowledge.corrections.download')}
+      </button>
+      {failed && (
+        <span role="alert" className="text-danger-ink">
+          {t('knowledge.corrections.downloadFailure')}
+        </span>
+      )}
+    </span>
+  );
+}
 
 function RequestEntry({
   request,
@@ -346,19 +487,32 @@ function RequestEntry({
           ),
         })}
       </p>
-      <p className="whitespace-pre-wrap">{request.note}</p>
+      {request.note === null ? (
+        <p className="text-small text-muted">{t('knowledge.corrections.erased')}</p>
+      ) : (
+        <p className="whitespace-pre-wrap">{request.note}</p>
+      )}
       {request.sources.length > 0 && (
         <ul className="flex flex-col gap-2 text-small">
-          {keyedSources(request).map(({ key, source }) => (
+          {keyedSources(request).map(({ key, source, position }) => (
             <li key={key} className="flex flex-col gap-1">
               <span className="text-muted">
                 {t('knowledge.corrections.sourceKind', { kind: source.kind })}
               </span>
-              {source.kind === 'link' ? (
+              {source.kind === 'link' && (
                 // Plain text, never a link: the admin reads the full address before opening it.
                 <span className="font-mono break-all">{source.url}</span>
-              ) : (
+              )}
+              {source.kind === 'text' && (
                 <span className="line-clamp-6 whitespace-pre-wrap">{source.text}</span>
+              )}
+              {source.kind === 'file' && (
+                <FileEntry
+                  requestId={request.id}
+                  position={position}
+                  source={source}
+                  words={words}
+                />
               )}
             </li>
           ))}
