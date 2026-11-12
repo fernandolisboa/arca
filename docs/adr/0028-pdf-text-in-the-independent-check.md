@@ -1,6 +1,6 @@
 # ADR-0028: The independent check reads a PDF's text layer with pdf.js
 
-- Status: Accepted
+- Status: Accepted, amended 2026-11-12 (a PDF's own byte cap, under Caps)
 - Date: 2026-11-11
 - Issue: [#363](https://github.com/fernandolisboa/arca/issues/363) (spec [#351](https://github.com/fernandolisboa/arca/issues/351))
 - Amends: [ADR-0027](0027-admins-and-the-checked-batch-activation.md) (what the check reads); [ADR-0010](0010-stack-revised.md) (one dependency outside the stack)

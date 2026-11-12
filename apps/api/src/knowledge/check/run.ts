@@ -82,6 +82,10 @@ const maxFetchedPages = 200;
  */
 const maxLocatedPages = 10;
 
+/** The items that cite a page. */
+const itemsCiting = (items: readonly CheckItem[], url: string) =>
+  items.filter(({ urls }) => urls.includes(url));
+
 interface FetchedPage {
   /** The cited URL, which the model, the quotes and the panel name. */
   readonly url: string;
@@ -265,7 +269,7 @@ export function createVersionCheck({
     askLocator: boolean,
     record: Recorder,
   ): Promise<Excerpt> => {
-    const citing = items.filter(({ urls }) => urls.includes(page.url));
+    const citing = itemsCiting(items, page.url);
     const passages = splitPassages(page.text);
     const picks = askLocator
       ? await locate(
@@ -381,7 +385,7 @@ export function createVersionCheck({
     const budgets = excerptBudgets(
       readPages.map(({ url, text }) => ({
         text,
-        citing: items.filter(({ urls }) => urls.includes(url)).length,
+        citing: itemsCiting(items, url).length,
       })),
     );
     const budgetOf = new Map(readPages.map(({ url }, index) => [url, budgets[index] ?? 0]));
