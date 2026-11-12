@@ -577,6 +577,7 @@ export const ptBR = {
         '{status, select, open {Convite enviado, esperando a pessoa aceitar} accepted {Aceito, falta você confirmar} confirmed {Confirmado, falta adicionar ao caso} member {Participa do caso} other {}}',
       link: 'Abrir os convites',
       empty: 'Nenhum convite enviado ainda.',
+      loadFailure: 'Não conseguimos carregar os convites agora. Tente de novo daqui a pouco.',
       filter: {
         label: 'Mostrar convites',
         all: 'Todos',

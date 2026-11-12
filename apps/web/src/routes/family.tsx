@@ -458,7 +458,7 @@ function FamilyCase({
       )}
       {section === 'invites' && (
         <div {...sectionPanel}>
-          <Invites loaded={invites.loaded} standings={invites.standings} />
+          <Invites loaded={invites.loaded} failed={invites.failed} standings={invites.standings} />
         </div>
       )}
       {section === 'case' && (
@@ -1737,7 +1737,8 @@ function useInviteStandings() {
         : invite.status,
   }));
   return {
-    loaded: invites.isSuccess,
+    loaded: invites.data !== undefined,
+    failed: invites.isError && invites.data === undefined,
     standings,
     waiting: standings.filter(({ standing }) => standing !== 'member').length,
   };
@@ -1751,8 +1752,10 @@ const invitesPage = 10;
 /** The invites, filtered by where they stand and shown a page at a time. */
 function Invites({
   loaded,
+  failed,
   standings,
 }: {
+  readonly failed: boolean;
   /** False until the invites arrive, so a missing list does not read as "none sent". */
   readonly loaded: boolean;
   readonly standings: readonly InviteRow[];
@@ -1767,6 +1770,7 @@ function Invites({
   return (
     <Section title={t('family.invites.title')}>
       <p className="text-small text-muted">{t('family.invites.lead')}</p>
+      {failed && <p className="text-ink">{t('family.invites.loadFailure')}</p>}
       {!loaded ? null : standings.length === 0 ? (
         <p className="text-small text-muted">{t('family.invites.empty')}</p>
       ) : (
