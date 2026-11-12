@@ -16,6 +16,7 @@ import { httpsSourceFetcher } from '../../../src/knowledge/check/fetcher.js';
 import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
+import { memoryCheckProgressStore } from '../../../src/knowledge/check/progress.js';
 import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge/check/store.js';
 import { createCheckSubjects, createKnowledgeVersions } from '../../../src/knowledge/versions.js';
 import {
@@ -168,6 +169,7 @@ it('checks the newest version of every bundled route against its live official p
     checker: { checker, model: ruleCheckModel, promptVersion: ruleCheckPromptVersion },
     locator,
     store,
+    progress: memoryCheckProgressStore(),
     logger: usageLogger(usage),
     now: () => performance.now(),
   });

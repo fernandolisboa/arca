@@ -126,6 +126,8 @@ export const openApiRoutes = {
   closeRuleReports: toOpenApiRoute(routes.closeRuleReports),
   startVersionChecks: toOpenApiRoute(routes.startVersionChecks),
   getVersionCheck: toOpenApiRoute(routes.getVersionCheck),
+  startVersionCheck: toOpenApiRoute(routes.startVersionCheck),
+  getVersionCheckProgress: toOpenApiRoute(routes.getVersionCheckProgress),
   listCaseAdmins: toOpenApiRoute(routes.listCaseAdmins),
   grantAdmin: toOpenApiRoute(routes.grantAdmin),
   removeAdmin: toOpenApiRoute(routes.removeAdmin),

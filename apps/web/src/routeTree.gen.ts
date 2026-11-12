@@ -26,6 +26,7 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as FamilyIntakeRouteImport } from './routes/family_.intake'
 import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions'
 import { Route as FamilyResultsRouteImport } from './routes/family_.results'
+import { Route as KnowledgeCheckRouteImport } from './routes/knowledge_.check'
 
 const VaultLazyRouteImport = createFileRoute('/vault')()
 
@@ -109,6 +110,11 @@ const FamilyResultsRoute = FamilyResultsRouteImport.update({
   path: '/family/results',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KnowledgeCheckRoute = KnowledgeCheckRouteImport.update({
+  id: '/knowledge_/check',
+  path: '/knowledge/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/family/intake': typeof FamilyIntakeRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
+  '/knowledge/check': typeof KnowledgeCheckRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/family/intake': typeof FamilyIntakeRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
+  '/knowledge/check': typeof KnowledgeCheckRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/family_/intake': typeof FamilyIntakeRoute
   '/family_/questions': typeof FamilyQuestionsRoute
   '/family_/results': typeof FamilyResultsRoute
+  '/knowledge_/check': typeof KnowledgeCheckRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/family/intake'
     | '/family/questions'
     | '/family/results'
+    | '/knowledge/check'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/family/intake'
     | '/family/questions'
     | '/family/results'
+    | '/knowledge/check'
   id:
     | '__root__'
     | '/'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/family_/intake'
     | '/family_/questions'
     | '/family_/results'
+    | '/knowledge_/check'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   FamilyIntakeRoute: typeof FamilyIntakeRoute
   FamilyQuestionsRoute: typeof FamilyQuestionsRoute
   FamilyResultsRoute: typeof FamilyResultsRoute
+  KnowledgeCheckRoute: typeof KnowledgeCheckRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -355,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FamilyResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/knowledge_/check': {
+      id: '/knowledge_/check'
+      path: '/knowledge/check'
+      fullPath: '/knowledge/check'
+      preLoaderRoute: typeof KnowledgeCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -375,6 +395,7 @@ const rootRouteChildren: RootRouteChildren = {
   FamilyIntakeRoute: FamilyIntakeRoute,
   FamilyQuestionsRoute: FamilyQuestionsRoute,
   FamilyResultsRoute: FamilyResultsRoute,
+  KnowledgeCheckRoute: KnowledgeCheckRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

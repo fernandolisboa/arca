@@ -474,6 +474,12 @@ export const registry: Registry = {
         'A start of the independent check of a route version (ADR-0027): its route, number and time only; it names no account.',
     },
     {
+      table: 'knowledge.check_progress',
+      personalData: 'none',
+      reason:
+        'What a start of the independent check recorded as it ran (ADR-0027): counts, cited official URLs and fixed codes; it names no account.',
+    },
+    {
       table: 'knowledge.independent_check',
       personalData: 'none',
       reason:

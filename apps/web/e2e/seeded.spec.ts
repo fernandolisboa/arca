@@ -4,6 +4,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { card, family, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
+  clearCheckStarts,
   clearKnowledgeDecisions,
   linkAccounts,
   resetRateLimits,
@@ -410,6 +411,73 @@ test('the seed admin approves the checked versions with one tap, and the server 
     }),
   ).toBeVisible();
   expect(stepUps).toEqual([]);
+  expect(problems).toEqual([]);
+});
+
+test('the seed admin analyses a version with AI on demand and watches it to the report (ADR-0027, on demand)', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
+  test.setTimeout(90_000);
+  const [account] = await runSeed();
+  if (account === undefined) throw new Error('the seed lists no account');
+  await Promise.all([
+    restartSeededCounter(account.id),
+    clearKnowledgeDecisions(),
+    clearCheckStarts(),
+    resetRateLimits(),
+  ]);
+  const problems = watchProblems(page);
+  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
+    userId: account.id,
+  });
+  await withoutAutofill(page);
+  await page.goto(`${databaseServer.origin}/sign-in`);
+  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
+  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
+  const { version } = await eb5InEffect(page);
+
+  await page.goto(`${databaseServer.origin}/knowledge`);
+  const proposed = page.getByRole('region', { name: 'Versões propostas' });
+  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await proposed
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
+    .click();
+  // Opening the screen may have started this version's check by itself; the button waits for it.
+  const analyse = page.getByRole('button', { name: 'Analisar com IA' });
+  await expect(analyse).toBeVisible({ timeout: 30_000 });
+  await analyse.click();
+  const confirmation = page.getByRole('region', { name: 'Analisar esta versão com IA?' });
+  await expect(confirmation).toContainText('US$ 0,30 a US$ 0,50');
+  const started = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/knowledge/versions/check/start'),
+  );
+  await confirmation.getByRole('button', { name: 'Analisar agora' }).click();
+  expect((await started).postDataJSON()).toEqual({ routeId: 'us-eb5', number: Number(version) });
+
+  await expect(page).toHaveURL(new RegExp(`/knowledge/check\\?routeId=us-eb5&number=${version}$`));
+  await expect(page.getByRole('heading', { level: 2, name: 'Análise com IA' })).toBeVisible();
+  // On the page body, so a run that ends any other way prints what the screen said instead.
+  await expect(page.locator('body')).toContainText('Análise concluída.', { timeout: 30_000 });
+  const steps = page.getByRole('list', { name: 'Etapas da análise' });
+  await expect(steps).toContainText('Ler as páginas oficiais');
+  await expect(steps).toContainText('Montar o relatório');
+  // The scripted checker's report, read offline in e2e, opens below the steps.
+  await expect(page.getByText('Verificação de teste', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Analisar de novo' })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await horizontalOverflow(page)).toBe(0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(
+    violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
+  ).toEqual([]);
+
+  await page.getByRole('link', { name: 'Voltar para as versões' }).click();
+  await expect(page).toHaveURL(/\/knowledge$/);
   expect(problems).toEqual([]);
 });
 

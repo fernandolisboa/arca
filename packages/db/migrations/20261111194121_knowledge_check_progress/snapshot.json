@@ -1,0 +1,235 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "af1c8523-5e6b-4fe4-a959-28861893151b",
+  "prevIds": [
+    "4ca46830-134f-48ff-9d01-a25fd84e7070"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_progress"
+      ],
+      "writes": [
+        "s|tbl|knowledge.check_progress",
+        "n|tbl|knowledge.check_progress",
+        "e|tbl|knowledge.check_progress",
+        "n|rel|knowledge.check_progress",
+        "n|type|knowledge.check_progress",
+        "n|rel|knowledge.check_progress_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_progress"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_progress.check_progress_read",
+        "n|pol|knowledge.check_progress.check_progress_read",
+        "e|pol|knowledge.check_progress.check_progress_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_progress",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "e|rls|knowledge.check_progress"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_progress"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_progress.check_progress_insert",
+        "n|pol|knowledge.check_progress.check_progress_insert",
+        "e|pol|knowledge.check_progress.check_progress_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_progress",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.check_progress"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "check_progress",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "start_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "sequence",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "detail",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "recorded_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_pkey",
+        "columns": [
+          "start_id",
+          "sequence"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_sequence_range",
+        "value": "\"sequence\" BETWEEN 0 AND 999",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_kind_format",
+        "value": "\"kind\" ~ '^[a-z][a-z_]{0,19}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_detail_object",
+        "value": "jsonb_typeof(\"detail\") = 'object' AND length(\"detail\"::text) <= 2500",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "check_progress",
+        "name": "check_progress_insert",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    }
+  ]
+}

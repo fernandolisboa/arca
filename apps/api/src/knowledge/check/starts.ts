@@ -3,6 +3,7 @@ import {
   type CheckStart,
   type ReportKey,
   type ReportMeta,
+  requestedStart,
   startWindow,
   versionKey,
   versionsToStart,
@@ -10,6 +11,7 @@ import {
 import { type Database, lockKey } from '@arca/db';
 import { checkStart, independentCheck } from '@arca/db/knowledge-schema';
 import { gte, sql } from 'drizzle-orm';
+import type { CheckProgressStore } from './progress.js';
 import { type CheckReportStore, listingColumns } from './store.js';
 
 /** A version the screen asks to check, with what its report would answer for. */
@@ -24,10 +26,27 @@ export interface RecordedStart extends CheckStart {
   readonly number: number;
 }
 
+/** An admin's own start: the start now live for the version, and whether this request began it. */
+export interface RequestedCheckStart {
+  readonly start: RecordedStart;
+  readonly began: boolean;
+}
+
 /** The start ledger (ADR-0027): at most 20 starts in any 24 hours, never two live for a version. */
 export interface CheckStarts {
-  /** Records a start for each requested version that is due, in order, within what is left. */
+  /**
+   * Records a start for each requested version that is due, in order, within what is left of the
+   * automatic share of the cap.
+   */
   readonly begin: (requests: readonly StartRequest[]) => Promise<readonly RecordedStart[]>;
+  /**
+   * An admin's start of one version, whatever its reports say: answers its live start when it has
+   * one, records a new start otherwise, or answers undefined when the cap is used.
+   */
+  readonly request: (version: {
+    readonly routeId: string;
+    readonly number: number;
+  }) => Promise<RequestedCheckStart | undefined>;
   /** The starts of the last 24 hours, for the list's running status. */
   readonly recent: () => Promise<readonly RecordedStart[]>;
 }
@@ -63,19 +82,42 @@ function due(
 export function memoryCheckStarts(
   reports: CheckReportStore,
   now: () => number = Date.now,
+  progress?: Pick<CheckProgressStore, 'list'>,
 ): CheckStarts & { readonly rows: RecordedStart[] } {
   const rows: RecordedStart[] = [];
-  const recent = () => rows.filter((row) => now() - row.startedAt < startWindow);
+  const recent = () =>
+    Promise.all(
+      rows
+        .filter((row) => now() - row.startedAt < startWindow)
+        .map(async (row) => ({
+          ...row,
+          failed: ((await progress?.list(row.id)) ?? []).some(({ kind }) => kind === 'failed'),
+        })),
+    );
   return {
     rows,
     begin: async (requests) => {
-      const started = due(requests, recent(), await reports.list(), now()).map(
+      const started = due(requests, await recent(), await reports.list(), now()).map(
         ({ routeId, number }) => ({ id: randomUUID(), routeId, number, startedAt: now() }),
       );
       rows.push(...started);
       return started;
     },
-    recent: () => Promise.resolve(recent()),
+    request: async ({ routeId, number }) => {
+      const inWindow = await recent();
+      const decision = requestedStart(
+        grouped(inWindow)({ routeId, number }),
+        await reports.list(),
+        inWindow.length,
+        now(),
+      );
+      if (decision.outcome === 'limit') return undefined;
+      if (decision.outcome === 'live') return { start: decision.start, began: false };
+      const start = { id: randomUUID(), routeId, number, startedAt: now() };
+      rows.push(start);
+      return { start, began: true };
+    },
+    recent,
   };
 }
 
@@ -84,6 +126,8 @@ const startColumns = {
   routeId: checkStart.routeId,
   number: checkStart.versionNumber,
   startedAt: checkStart.startedAt,
+  failed: sql<boolean>`EXISTS (SELECT 1 FROM knowledge.check_progress p
+    WHERE p.start_id = ${checkStart.id} AND p.kind = 'failed')`,
 };
 
 /**
@@ -93,40 +137,60 @@ const startColumns = {
  */
 export function postgresCheckStarts(db: () => Database): CheckStarts {
   const since = sql`clock_timestamp() - interval '24 hours'`;
+  type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+  /** Under the lock: the database's time, the starts of the window and every report. */
+  const ledger = async (tx: Transaction) => {
+    await lockKey(tx, 'knowledge.check_start');
+    const [clock] = (
+      await tx.execute<{ now: number }>(
+        sql`SELECT (extract(epoch FROM clock_timestamp()) * 1000)::float8 AS now`,
+      )
+    ).rows;
+    const starts = (
+      await tx.select(startColumns).from(checkStart).where(gte(checkStart.startedAt, since))
+    ).map((row) => ({ ...row, startedAt: row.startedAt.getTime() }));
+    const reports = (await tx.select(listingColumns).from(independentCheck)).map((row) => ({
+      ...row,
+      checkedAt: row.checkedAt.getTime(),
+    }));
+    return { now: Number(clock?.now), starts, reports };
+  };
+  // Raw SQL: the role may insert the route and number only, which a builder insert would widen
+  // with DEFAULT for the ID and the time.
+  const insert = async (
+    tx: Transaction,
+    { routeId, number }: { readonly routeId: string; readonly number: number },
+  ): Promise<RecordedStart | undefined> => {
+    const [row] = (
+      await tx.execute<{ id: string; started_at: number }>(sql`
+        INSERT INTO knowledge.check_start (route_id, version_number)
+        VALUES (${routeId}, ${number})
+        RETURNING id, (extract(epoch FROM started_at) * 1000)::float8 AS started_at`)
+    ).rows;
+    return row === undefined
+      ? undefined
+      : { id: row.id, routeId, number, startedAt: row.started_at };
+  };
   return {
     begin: (requests) =>
       db().transaction(async (tx) => {
-        await lockKey(tx, 'knowledge.check_start');
-        const [clock] = (
-          await tx.execute<{ now: number }>(
-            sql`SELECT (extract(epoch FROM clock_timestamp()) * 1000)::float8 AS now`,
-          )
-        ).rows;
-        const now = Number(clock?.now);
-        const starts = (
-          await tx.select(startColumns).from(checkStart).where(gte(checkStart.startedAt, since))
-        ).map((row) => ({ ...row, startedAt: row.startedAt.getTime() }));
-        const reports = (await tx.select(listingColumns).from(independentCheck)).map((row) => ({
-          ...row,
-          checkedAt: row.checkedAt.getTime(),
-        }));
-        const picked = due(requests, starts, reports, now);
-        if (picked.length === 0) return [];
-        // Raw SQL: the role may insert the route and number only, which a builder insert would
-        // widen with DEFAULT for the ID and the time.
+        const { now, starts, reports } = await ledger(tx);
         const inserted: RecordedStart[] = [];
-        for (const { routeId, number } of picked) {
-          const [row] = (
-            await tx.execute<{ id: string; started_at: number }>(sql`
-              INSERT INTO knowledge.check_start (route_id, version_number)
-              VALUES (${routeId}, ${number})
-              RETURNING id, (extract(epoch FROM started_at) * 1000)::float8 AS started_at`)
-          ).rows;
-          if (row !== undefined) {
-            inserted.push({ id: row.id, routeId, number, startedAt: row.started_at });
-          }
+        for (const request of due(requests, starts, reports, now)) {
+          const start = await insert(tx, request);
+          if (start !== undefined) inserted.push(start);
         }
         return inserted;
+      }),
+    request: (version) =>
+      db().transaction(async (tx) => {
+        const { now, starts, reports } = await ledger(tx);
+        const decision = requestedStart(grouped(starts)(version), reports, starts.length, now);
+        if (decision.outcome === 'limit') return undefined;
+        if (decision.outcome === 'live') return { start: decision.start, began: false };
+        const start = await insert(tx, version);
+        if (start === undefined) throw new Error('The start was not recorded');
+        return { start, began: true };
       }),
     recent: async () =>
       (

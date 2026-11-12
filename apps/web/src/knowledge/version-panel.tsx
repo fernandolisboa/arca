@@ -2,12 +2,14 @@ import type { VersionView } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { versionCheckQuery } from '../api.js';
 import { CheckReport, ItemResult, addressesRead } from './checks.js';
 import { Decision, decideVersion } from './decision.js';
 import { ChangeList, CheckAndHash, card, cardOf, changeLines, surfaceOf } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
+import { CheckRunButton, CheckRunConfirm, useCheckRun } from './check-run.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
 import { type TallyTone, pointTone, shownPoints, stepTallies } from './step-checks.js';
@@ -417,6 +419,11 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   const words = useKnowledgeWords();
   const { t } = words;
   const summary = useRuleSummary(view);
+  const navigate = useNavigate();
+  const checked = { routeId: view.routeId, number: view.number };
+  const checkRun = useCheckRun(checked, () => {
+    void navigate({ to: '/knowledge/check', search: checked });
+  });
   const steps = reviewSteps(view);
   const [currentKey, setCurrentKey] = useState<StepKey>('changes');
   const movedRef = useRef(false);
@@ -481,7 +488,10 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           <h3 className="font-display text-title">
             {t('knowledge.versionTitle', { title: view.title, number: view.number })}
           </h3>
-          <RuleSummaryButton state={summary} />
+          <div className="flex flex-wrap items-center gap-2">
+            <RuleSummaryButton state={summary} />
+            <CheckRunButton state={checkRun} words={words} />
+          </div>
         </div>
         <p className="text-small text-muted">
           {[
@@ -506,6 +516,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           </ul>
         )}
       </header>
+      <CheckRunConfirm state={checkRun} words={words} />
       <RuleSummaryCard state={summary} />
       <CheckSummary tallies={tallies} scripted={report?.scripted === true} words={words} />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
