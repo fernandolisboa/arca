@@ -193,10 +193,11 @@ const rules: readonly Rule[] = [
     reviewers: withCore('supply-chain'),
   },
   // Agent and review configuration, wherever an agent would load it (threat model S4). The rule
-  // audit runbook holds the monthly run's prompt and what that run may merge on its own.
+  // audit runbook holds the scheduled runs' prompts and what they may merge on their own; the
+  // corrector script holds the corrector run's key.
   {
     match:
-      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/rule-audit\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
+      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/rule-audit\.md$|tooling\/scripts\/src\/(select-reviewers|corrector)\.ts$)/i,
     reviewers: withCore('supply-chain'),
   },
 ];

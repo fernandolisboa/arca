@@ -22,7 +22,8 @@
     "review:reviewers": "node tooling/scripts/src/select-reviewers.ts",
     "check:knowledge-immutable": "node tooling/scripts/src/check-knowledge-immutable.ts .",
     "check:web-bundle": "node tooling/scripts/src/check-web-bundle.ts apps/web/dist",
-    "enrollment-code": "node tooling/scripts/src/enrollment-code.ts"
+    "enrollment-code": "node tooling/scripts/src/enrollment-code.ts",
+    "corrector": "node tooling/scripts/src/corrector.ts"
   },
   "devDependencies": {
     "prettier": "catalog:",
