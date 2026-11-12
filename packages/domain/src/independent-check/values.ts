@@ -1,4 +1,5 @@
 import type { CalendarDate } from '../calendar/calendar-date.js';
+import { writesNumberInWords } from './number-words.js';
 
 /**
  * A value an item states, which a quote must contain for a match to count (ADR-0027): a number
@@ -238,12 +239,19 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
 }
 
 /**
- * Whether a text states the value: a number among the numbers it writes; a date in ISO form, in
- * numbers that read one way only, or by its year, its day and its month's name beside them.
+ * Whether a text states the value: a number among the numbers it writes, or a whole number written
+ * in words of one of `languages`; a date in ISO form, in numbers that read one way only, or by its
+ * year, its day and its month's name beside them.
  */
-export function statesValue(value: CheckValue, text: string): boolean {
+export function statesValue(
+  value: CheckValue,
+  text: string,
+  languages: readonly string[] = [],
+): boolean {
   const numbers = numbersIn(text);
-  if (value.kind === 'number') return numbers.has(value.value);
+  if (value.kind === 'number') {
+    return numbers.has(value.value) || writesNumberInWords(text, value.value, languages);
+  }
   if (text.includes(value.value)) return true;
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);
   if (writesNumericDate(text, year, month, day)) return true;

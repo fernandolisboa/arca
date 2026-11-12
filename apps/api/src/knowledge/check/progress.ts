@@ -42,7 +42,10 @@ const storedEvent = z.discriminatedUnion('kind', [
     status: z.int().min(0).max(999).nullable().default(null),
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
-  z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({
+    kind: z.literal('comparing'),
+    keys: z.array(z.string().max(maxCheckItemKeyLength)).max(1_000).optional(),
+  }),
   z.strictObject({
     kind: z.literal('item'),
     key: z.string().max(maxCheckItemKeyLength),

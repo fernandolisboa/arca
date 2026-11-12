@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { ReadPage } from '../../src/independent-check/answers.js';
 import { excerptGap, maxWholePageText } from '../../src/independent-check/passages.js';
 import {
+  checkCalls,
   excerptBudgets,
+  maxCallsPerCheck,
+  maxItemsPerCall,
   openingExcerpt,
   withinTextBudget,
 } from '../../src/independent-check/sent-pages.js';
@@ -138,5 +141,49 @@ describe('the opening sent of a long page no passage was picked for (ADR-0027)',
 
   it('never cuts inside a surrogate pair', () => {
     expect(openingExcerpt('ab😀cd', 3 + excerptGap.length + 1)).toBe(`ab\n${excerptGap}`);
+  });
+});
+
+describe('the checker calls of one check (ADR-0027)', () => {
+  const items = (count: number, url = 'https://a.example') =>
+    Array.from({ length: count }, (_, index) => ({ key: `k${String(index)}`, urls: [url] }));
+  const keys = (calls: readonly (readonly { key: string }[])[]) =>
+    calls.map((call) => call.map(({ key }) => key));
+
+  it('compares every item in one call when the pages fit whole', () => {
+    const many = items(20);
+    expect(checkCalls(many, [page('https://a.example', 1_000)], 2_000)).toEqual([many]);
+  });
+
+  it('splits consecutive items into calls when a page is long', () => {
+    const many = items(maxItemsPerCall + 1);
+    const calls = checkCalls(many, [page('https://a.example', maxWholePageText + 1)]);
+    expect(keys(calls)).toEqual([
+      many.slice(0, maxItemsPerCall).map(({ key }) => key),
+      [`k${String(maxItemsPerCall)}`],
+    ]);
+  });
+
+  it('splits when the pages together exceed the budget', () => {
+    const calls = checkCalls(items(maxItemsPerCall * 2), [page('https://a.example', 300)], 200);
+    expect(calls).toHaveLength(2);
+  });
+
+  it('ignores pages no item cites when judging the fit', () => {
+    const few = items(3);
+    expect(
+      checkCalls(few, [page('https://a.example', 10), page('https://b.example', 500)], 100),
+    ).toEqual([few]);
+  });
+
+  it('never makes more than the most calls a check may', () => {
+    const many = items(maxItemsPerCall * maxCallsPerCheck * 2);
+    const calls = checkCalls(many, [page('https://a.example', maxWholePageText + 1)]);
+    expect(calls).toHaveLength(maxCallsPerCheck);
+    expect(calls.flat()).toEqual(many);
+  });
+
+  it('makes no call without items', () => {
+    expect(checkCalls([], [page('https://a.example', 10)])).toEqual([]);
   });
 });

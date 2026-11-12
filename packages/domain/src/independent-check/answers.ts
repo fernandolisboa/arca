@@ -335,6 +335,7 @@ function verifyOne(
   item: CheckItem,
   answer: CheckAnswer | undefined,
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[],
 ): CheckedItem {
   if (item.urls.length === 0) return unchecked(item.key, 'no_source_cited');
   if (!item.urls.some((cited) => pages.has(cited))) return unchecked(item.key, 'no_page_read');
@@ -355,7 +356,11 @@ function verifyOne(
   const quotes = checked.map(({ quote }) => quote);
   if (answer.status === 'matches') {
     if (checked.some(({ page }) => page.cut)) return unchecked(item.key, 'page_cut');
-    if (!item.values.every((value) => quotes.some(({ quote }) => statesValue(value, quote)))) {
+    if (
+      !item.values.every((value) =>
+        quotes.some(({ quote }) => statesValue(value, quote, languages)),
+      )
+    ) {
       return unchecked(item.key, 'value_not_in_quote');
     }
     return { key: item.key, status: 'matches', quotes, note: null, reason: null };
@@ -368,7 +373,7 @@ function verifyOne(
  * one to `maxQuotes` quotes, and every one must count: after whitespace is normalized, a substring
  * of the exact text sent for a URL the item itself cites, within one run of an excerpt, within the
  * length limits and echoing no address of its page's redirect chain. A match also needs every
- * value the item states in at least one of its quotes, and no quote from a page that was cut. An
+ * value the item states in at least one of its quotes, in figures or in words of `languages`, and no quote from a page that was cut. An
  * item that cites no official page, whose pages were all unread, or that the model left out,
  * answered twice or failed on is could not be checked, with the model's own reason when it gave
  * one; keys of no item are dropped.
@@ -377,13 +382,14 @@ export function verifyAnswers(
   items: readonly CheckItem[],
   answers: readonly CheckAnswer[],
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[] = [],
 ): CheckedItem[] {
   const counts = new Map<string, number>();
   for (const { key } of answers) counts.set(key, (counts.get(key) ?? 0) + 1);
   const byKey = new Map(
     answers.filter(({ key }) => counts.get(key) === 1).map((answer) => [answer.key, answer]),
   );
-  return items.map((item) => verifyOne(item, byKey.get(item.key), pages));
+  return items.map((item) => verifyOne(item, byKey.get(item.key), pages, languages));
 }
 
 /** The model a report is stored under when the scripted checker wrote it, outside production. */
