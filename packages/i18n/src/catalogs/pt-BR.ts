@@ -1051,7 +1051,7 @@ export const ptBR = {
       order:
         'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Falta conferir} unchecked {Sem verificação} other {Sem verificação}}',
+      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Confira você} unchecked {Sem verificação} other {Sem verificação}}',
       needCount: {
         differs: '{n, plural, one {# com diferença} other {# com diferença}}',
         ready: '{n, plural, one {# conferida} other {# conferidas}}',
@@ -1199,18 +1199,24 @@ export const ptBR = {
     /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
     points: {
       status:
-        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Não conferido.}}',
+        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Confira você.}}',
       matches: '{n, plural, one {# bate} other {# batem}}',
       differs: '{n, plural, one {# difere} other {# diferem}}',
-      unread: '{n, plural, one {# não conferido} other {# não conferidos}}',
+      unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
       checked:
         'A IA comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
       needYou:
         '{n, plural, one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
       unconfirmed:
-        '{n, plural, one {Nenhum ponto difere, mas 1 não foi conferido} other {Nenhum ponto difere, mas # não foram conferidos}}',
+        '{n, plural, one {Nenhum ponto difere. 1 fica para você conferir} other {Nenhum ponto difere. # ficam para você conferir}}',
       allMatch: 'Todos os pontos batem com as fontes',
-      note: 'Feita por IA, que pode errar. “Não conferido” quer dizer que a IA não conseguiu confirmar o ponto, não que a regra está errada. O relatório completo fica no passo Decisão.',
+      note: 'Feita por IA, que pode errar. “Confira você” quer dizer que a IA não conseguiu ler a fonte desse ponto, não que a regra está errada: cada um traz o link oficial e o que procurar lá. O relatório completo fica no passo Decisão.',
+      lookAt: 'Onde olhar',
+      opensSite: '(abre o site oficial)',
+      lookFor: 'O que deve estar escrito lá: {values}',
+      handCheck: 'Conferi',
+      handChecked: 'Conferido por você',
+      handCheckNote: 'Fica salvo só neste aparelho e não ativa a versão.',
       quotes: '{n, plural, one {Ver o trecho da fonte} other {Ver os # trechos da fonte}}',
     },
     /** The independent check of a route version against its official pages (ADR-0027). */

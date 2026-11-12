@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { versionCheckQuery } from '../api.js';
 import { CheckReport, ItemResult, addressesRead } from './checks.js';
+import { useHandChecks } from './hand-checks.js';
 import { Decision, decideVersion } from './decision.js';
 import { ChangeList, CheckAndHash, card, cardOf, changeLines, surfaceOf } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
@@ -430,6 +431,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const check = useQuery(versionCheckQuery(view.routeId, view.number));
   const report = check.data?.enabled === true ? check.data.report : null;
+  const handCheckOf = useHandChecks(view);
   const { tallies, point } = useMemo(() => {
     const points = shownPoints(report);
     const byKey = new Map(points.map((item) => [item.key, item]));
@@ -438,7 +440,12 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
       result: (key) => {
         const item = byKey.get(key);
         return item === undefined ? null : (
-          <ItemResult item={item} addressRead={addressRead} words={words} />
+          <ItemResult
+            item={item}
+            addressRead={addressRead}
+            words={words}
+            handCheck={handCheckOf(key)}
+          />
         );
       },
       tone: (key) => {
@@ -447,7 +454,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
       },
     };
     return { tallies: stepTallies(points), point: pointOf };
-  }, [report, words]);
+  }, [report, words, handCheckOf]);
   const headingId = useId();
 
   const index = Math.max(

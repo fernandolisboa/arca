@@ -64,7 +64,9 @@ export function checkRunItems(
   progress: Pick<CheckProgress, 'items' | 'scripted' | 'state'>,
 ): CheckRunItemsView {
   const answered: ReportItem[] = progress.items.flatMap(({ status, ...item }) =>
-    status === null ? [] : [{ ...item, status, quotes: [], note: null, reason: null }],
+    status === null
+      ? []
+      : [{ ...item, status, quotes: [], note: null, reason: null, citations: [], values: [] }],
   );
   const waiting = progress.items.filter(({ status }) => status === null);
   const [next] = progress.state === 'running' ? waiting : [];
