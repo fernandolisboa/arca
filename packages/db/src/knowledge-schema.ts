@@ -434,7 +434,7 @@ export const correctionRequest = knowledge.table(
       'correction_request_target',
       sql`CASE WHEN ${table.itemKind} = 'newRoute'
         THEN ${table.routeId} IS NULL AND ${table.versionNumber} IS NULL
-          AND ${table.countryCode} ~ '^[a-z]{2}$'
+          AND ${table.countryCode} IS NOT NULL AND ${table.countryCode} ~ '^[a-z]{2}$'
         ELSE ${table.routeId} IS NOT NULL AND ${table.versionNumber} IS NOT NULL
           AND ${table.countryCode} IS NULL END`,
     ),

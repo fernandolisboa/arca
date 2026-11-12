@@ -1,5 +1,5 @@
-import { ApiError, type RouteRequests, correctionLimits, routes } from '@arca/api-contract/client';
-import { Button, StatusChip } from '@arca/ui';
+import { type RouteRequests, correctionLimits, routes } from '@arca/api-contract/client';
+import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type SubmitEvent } from 'react';
 import { api, routeRequestsQuery } from '../api.js';
@@ -9,7 +9,7 @@ import { textLinkClass } from '../forms/text-link.js';
 import { filePicking } from '../platform.js';
 import { correctionFileAccept, correctionFileType } from './correction-file-type.js';
 import { uploadCorrectionFile } from './correction-upload.js';
-import { MarkedText, SourceList, TextArea, requestStateTones } from './corrections.js';
+import { AnswerBox, MarkedText, RequestCard, TextArea, filingFailure } from './corrections.js';
 import {
   type PageDraft,
   type PageFile,
@@ -248,10 +248,8 @@ function RouteRequestWizard({
       await queryClient.invalidateQueries(routeRequestsQuery);
       close(true);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 429) setState('limited');
-      else if (error instanceof ApiError && error.code === 'not_uploaded') setState('missing');
-      else if (error instanceof ApiError && error.status === 409) setState('mismatch');
-      else setState('failed');
+      const failure = filingFailure(error);
+      setState(failure === 'corrected' ? 'failed' : failure);
     }
   };
   const sources = routeRequestSources(draft);
@@ -272,11 +270,13 @@ function RouteRequestWizard({
           {t('knowledge.routeRequests.stepTitle', { step })}
         </h4>
       </div>
+      {step !== 'review' && (
+        <p className="text-small font-medium text-danger-ink">
+          {t('knowledge.corrections.privacy')}
+        </p>
+      )}
       {step === 'route' && (
         <>
-          <p className="text-small font-medium text-danger-ink">
-            {t('knowledge.corrections.privacy')}
-          </p>
           <p className="text-small text-muted">{t('knowledge.routeRequests.routeLead')}</p>
           <SelectField
             label={t('knowledge.routeRequests.country')}
@@ -449,78 +449,33 @@ function RouteRequestEntry({
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {
   const { t } = words;
-  const queryClient = useQueryClient();
-  const [failed, setFailed] = useState(false);
-  const headingId = useId();
   const { answer } = request;
   return (
-    <li className="flex flex-col gap-2 rounded-control border border-line p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <StatusChip
-          tone={requestStateTones[request.state]}
-          label={t('knowledge.corrections.state', { state: request.state })}
-        />
-        <p id={headingId} className="font-medium">
-          {words.country(request.countryCode.toUpperCase())}
-        </p>
-      </div>
-      <p className="text-small text-muted">
-        {t('knowledge.corrections.filedAt', {
-          date: new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
-            new Date(request.createdAt),
-          ),
-        })}
-      </p>
-      {request.note === null ? (
-        <p className="text-small text-muted">{t('knowledge.corrections.erased')}</p>
-      ) : (
-        <p className="whitespace-pre-wrap">{request.note}</p>
-      )}
-      <SourceList request={request} words={words} />
-      {answer?.kind === 'no_change' && (
-        <div className="flex flex-col gap-1 rounded-control bg-soft p-3 text-small">
-          <p className="font-medium">{t('knowledge.routeRequests.answerNoRoute')}</p>
-          <MarkedText text={answer.explanation} />
-        </div>
-      )}
-      {answer?.kind === 'version_proposed' && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-soft p-3 text-small">
-          <p className="font-medium">{t('knowledge.routeRequests.answerRoute')}</p>
-          <button
-            type="button"
-            className={textLinkClass}
-            onClick={() => {
-              onOpenVersion(answer.routeId, answer.number);
-            }}
-          >
-            {t('knowledge.routeRequests.openRoute')}
-          </button>
-        </div>
-      )}
-      {failed && (
-        <p role="alert" className="text-small text-danger-ink">
-          {t('knowledge.corrections.closeFailure')}
-        </p>
-      )}
-      {request.state !== 'closed' && (
-        <button
-          type="button"
-          aria-describedby={headingId}
-          className={`${textLinkClass} self-start text-small`}
-          onClick={() => {
-            setFailed(false);
-            api
-              .call(routes.closeCorrectionRequest, { id: request.id })
-              .then(() => queryClient.invalidateQueries(routeRequestsQuery))
-              .catch(() => {
-                setFailed(true);
-              });
-          }}
-        >
-          {t('knowledge.corrections.close')}
-        </button>
-      )}
-    </li>
+    <RequestCard
+      request={request}
+      heading={words.country(request.countryCode.toUpperCase())}
+      answer={
+        answer === null ? null : answer.kind === 'no_change' ? (
+          <AnswerBox title={t('knowledge.routeRequests.answerNoRoute')}>
+            <MarkedText text={answer.explanation} />
+          </AnswerBox>
+        ) : (
+          <AnswerBox title={t('knowledge.routeRequests.answerRoute')}>
+            <button
+              type="button"
+              className={textLinkClass}
+              onClick={() => {
+                onOpenVersion(answer.routeId, answer.number);
+              }}
+            >
+              {t('knowledge.routeRequests.openRoute')}
+            </button>
+          </AnswerBox>
+        )
+      }
+      reload={routeRequestsQuery.queryKey}
+      words={words}
+    />
   );
 }
 

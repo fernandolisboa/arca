@@ -4,7 +4,7 @@ ALTER TABLE "knowledge"."correction_request" ALTER COLUMN "route_id" DROP NOT NU
 ALTER TABLE "knowledge"."correction_request" ALTER COLUMN "version_number" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "knowledge"."correction_request" ADD CONSTRAINT "correction_request_target" CHECK (CASE WHEN "item_kind" = 'newRoute'
         THEN "route_id" IS NULL AND "version_number" IS NULL
-          AND "country_code" ~ '^[a-z]{2}$'
+          AND "country_code" IS NOT NULL AND "country_code" ~ '^[a-z]{2}$'
         ELSE "route_id" IS NOT NULL AND "version_number" IS NOT NULL
           AND "country_code" IS NULL END);--> statement-breakpoint
 ALTER TABLE "knowledge"."correction_request" DROP CONSTRAINT "correction_request_item_kind", ADD CONSTRAINT "correction_request_item_kind" CHECK ("item_kind" IN ('newRoute', 'version', 'settings', 'requirement', 'assessment', 'dependent', 'cost', 'duration', 'countrySet'));--> statement-breakpoint

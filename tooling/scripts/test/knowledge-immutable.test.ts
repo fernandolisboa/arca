@@ -543,6 +543,34 @@ describe('knowledge-immutable', () => {
         },
         `${data}official-domains/qn-gov/1.json: is the first list for its issuer, so it goes in a pull request alone`,
       ],
+      [
+        'a first list whose host vouches for itself',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['migration.qn.example', 'https://migration.qn.example/about'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host migration.qn.example cites proof on migration.qn.example, a host of the same list, not a registry`,
+      ],
+      [
+        'a first list whose host vouches for another of the same list',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['qn.example', 'https://registry.example/qn'],
+            ['visa.example', 'https://www.qn.example/agencies'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: is a first list whose host visa.example cites proof on www.qn.example, a host of the same list, not a registry`,
+      ],
+      [
+        'a first list with a bare top-level domain',
+        (tree) => {
+          tree[`${data}official-domains/qn-gov/1.json`] = officialList([
+            ['qn', 'https://registry.example/qn'],
+          ]);
+        },
+        `${data}official-domains/qn-gov/1.json: lists qn, a top-level domain, not a host`,
+      ],
     ])('refuses %s', async (_, change, message) => {
       expect(await problems(change)).toContain(message);
     });

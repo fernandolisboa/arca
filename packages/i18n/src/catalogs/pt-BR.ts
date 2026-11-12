@@ -1105,7 +1105,7 @@ export const ptBR = {
       copyHint:
         'PDF, HTML ou texto de até 16 MB, salvo do site oficial. Nunca um documento pessoal.',
       passagesLead:
-        'Cole os trechos que dizem cada regra. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
+        'Cole os trechos que tratam de cada regra. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
       topic:
         '{topic, select, requirements {Requisitos} amounts {Valores} deadlines {Prazos} other {Dependentes}}',
       topicHint:
@@ -1122,11 +1122,11 @@ export const ptBR = {
         'A sessão de correção pega o pedido na próxima manhã. Nada muda para a família até você ativar a regra.',
       next: 'Continuar',
       back: 'Voltar',
-      sent: 'Pedido enviado. A sessão de correção pega na próxima manhã.',
+      sent: 'Pedido enviado. A sessão de correção pega o pedido amanhã de manhã.',
       sendFailure: 'Não deu para enviar o pedido agora. Confira os endereços e tente de novo.',
       loadFailure: 'Não deu para carregar os pedidos de regra nova agora.',
       answerRoute: 'A sessão de correção escreveu a regra. Ela espera a sua ativação.',
-      openRoute: 'Abrir a regra',
+      openRoute: 'Abrir a versão proposta',
       answerNoRoute: 'A sessão de correção não escreveu a regra:',
     },
     /** The corrector key in settings (ADR-0029), for owner-list admins. */

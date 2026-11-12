@@ -260,7 +260,9 @@ class Check {
 
   /**
    * A host added to an existing issuer's list cites proof on a host of a list already on main. The
-   * first list for an issuer has no such host, so it goes in a pull request of its own.
+   * first list for an issuer has no such host, so it goes in a pull request of its own, and no
+   * host of it may vouch for itself or any host of the same list: its proof is a registry
+   * elsewhere (spec 0002, R6). A host with no dot, a bare top-level domain, is never a list's.
    */
   async #checkHostProofs(): Promise<void> {
     const { base, head } = this.#change;
@@ -285,6 +287,18 @@ class Check {
       if (!baseLists.some((other) => other.startsWith(issuerPrefix))) {
         if (official.length > 1) {
           this.#add(path, 'is the first list for its issuer, so it goes in a pull request alone');
+        }
+        const ownHosts = new Set(listed.map((entry) => entry.host));
+        for (const entry of listed) {
+          const proof = hostOf(entry.url);
+          if (!entry.host.includes('.')) {
+            this.#add(path, `lists ${entry.host}, a top-level domain, not a host`);
+          } else if (proof === undefined || isOnHost(proof, ownHosts)) {
+            this.#add(
+              path,
+              `is a first list whose host ${entry.host} cites proof on ${proof ?? 'an unreadable URL'}, a host of the same list, not a registry`,
+            );
+          }
         }
         continue;
       }

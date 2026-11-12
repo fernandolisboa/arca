@@ -30,7 +30,7 @@ CREATE FUNCTION "knowledge"."file_route_request"(country text, note_arg text, so
   END
   $$;
 --> statement-breakpoint
--- Every request for a new route, newest first, with its sources (a file with its type, size and
+-- The fifty newest requests for a new route, newest first, with their sources (a file with its type, size and
 -- page) and events (an answer with its proposed route and version or its explanation), for an
 -- admin.
 CREATE FUNCTION "knowledge"."route_requests"(basis text, grant_id uuid)
@@ -62,7 +62,8 @@ CREATE FUNCTION "knowledge"."route_requests"(basis text, grant_id uuid)
                          FROM "knowledge"."correction_event" e WHERE e.request_id = r.id), '[]'::jsonb)
         FROM "knowledge"."correction_request" r
        WHERE r.item_kind = 'newRoute'
-       ORDER BY r.created_at DESC, r.id;
+       ORDER BY r.created_at DESC, r.id
+       LIMIT 50;
   END
   $$;
 --> statement-breakpoint
@@ -102,8 +103,8 @@ CREATE FUNCTION "knowledge"."corrector_request_queue"(key uuid, digest bytea)
   $$;
 --> statement-breakpoint
 -- For the live key: answers a taken request for a new route, which no answer or close names yet,
--- with the version proposed on the route the run wrote; the API checked it against the catalog
--- first. Taking such a request, or answering that nothing changed, goes through
+-- with the version proposed on the route the run wrote, in the request's country; the API checked
+-- it against the catalog first. Taking such a request, or answering that nothing changed, goes through
 -- answer_correction_request. Answers `stored`, `refused` for any other state, or `missing`.
 CREATE FUNCTION "knowledge"."answer_route_request"(key uuid, digest bytea, request uuid, route text, proposed integer)
   RETURNS text
@@ -117,6 +118,10 @@ CREATE FUNCTION "knowledge"."answer_route_request"(key uuid, digest bytea, reque
     IF NOT EXISTS (SELECT FROM "knowledge"."correction_request" r
                     WHERE r.id = request AND r.item_kind = 'newRoute') THEN
       RETURN 'missing';
+    END IF;
+    IF NOT EXISTS (SELECT FROM "knowledge"."correction_request" r
+                    WHERE r.id = request AND pg_catalog.starts_with(route, r.country_code || '-')) THEN
+      RETURN 'refused';
     END IF;
     IF NOT EXISTS (SELECT FROM "knowledge"."correction_event" e
                     WHERE e.request_id = request AND e.kind = 'taken')

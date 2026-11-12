@@ -15,6 +15,7 @@ import {
   type DecisionStates,
   correctionAnswerRefusal,
   correctionState,
+  routeCountry,
 } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
@@ -350,7 +351,12 @@ export function createCorrector({
       return named === undefined || named === request.routeId ? request.routeId : undefined;
     }
     if (answer.kind !== 'version_proposed') return null;
-    return named?.startsWith(`${request.countryCode ?? ''}-`) === true ? named : undefined;
+    const isFirstVersion = answer.number === 1;
+    return isFirstVersion &&
+      named !== undefined &&
+      routeCountry(named) === request.countryCode?.toUpperCase()
+      ? named
+      : undefined;
   }
 
   /** Stores an answer the request's state and the catalog allow; audited inside its transaction. */

@@ -10,7 +10,7 @@ import {
   routes,
 } from '@arca/api-contract/client';
 import { Button, StatusChip, type StatusTone } from '@arca/ui';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
   Fragment,
@@ -247,12 +247,7 @@ function CorrectionForm({
       await queryClient.invalidateQueries(correctionRequestsQuery(filing.routeId, filing.number));
       close(true);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 429) setState('limited');
-      else if (error instanceof ApiError && error.code === 'already_corrected')
-        setState('corrected');
-      else if (error instanceof ApiError && error.code === 'not_uploaded') setState('missing');
-      else if (error instanceof ApiError && error.status === 409) setState('mismatch');
-      else setState('failed');
+      setState(filingFailure(error));
     }
   };
   return (
@@ -487,7 +482,23 @@ export function MarkedText({ text }: { readonly text: string }) {
   );
 }
 
-/** The corrector run's answer: the version it proposed, with a way to open it, or its reasons. */
+/** The corrector run's answer: what it did, then its reasons or a way to open its version. */
+export function AnswerBox({
+  title,
+  children,
+}: {
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-1 rounded-control bg-soft p-3 text-small">
+      <p className="font-medium">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+/** The answer on a version: the version it proposed, with a way to open it, or its reasons. */
 function AnswerEntry({
   answer,
   words,
@@ -499,17 +510,13 @@ function AnswerEntry({
   const open = use(OpenRouteVersionContext);
   if (answer.kind === 'no_change') {
     return (
-      <div className="flex flex-col gap-1 rounded-control bg-soft p-3 text-small">
-        <p className="font-medium">{t('knowledge.corrections.answerNoChange')}</p>
+      <AnswerBox title={t('knowledge.corrections.answerNoChange')}>
         <MarkedText text={answer.explanation} />
-      </div>
+      </AnswerBox>
     );
   }
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-soft p-3 text-small">
-      <p className="font-medium">
-        {t('knowledge.corrections.answerVersion', { number: answer.number })}
-      </p>
+    <AnswerBox title={t('knowledge.corrections.answerVersion', { number: answer.number })}>
       {open !== undefined && (
         <button
           type="button"
@@ -521,7 +528,7 @@ function AnswerEntry({
           {t('knowledge.corrections.openVersion', { number: answer.number })}
         </button>
       )}
-    </div>
+    </AnswerBox>
   );
 }
 
@@ -624,13 +631,21 @@ export function SourceList({
   );
 }
 
-function RequestEntry({
+/**
+ * One request as admins follow it: its state, heading, date, note, sources and answer, and a
+ * button that closes it and then reloads `reload`.
+ */
+export function RequestCard({
   request,
-  view,
+  heading,
+  answer,
+  reload,
   words,
 }: {
-  readonly request: ListedRequest;
-  readonly view: VersionView;
+  readonly request: Pick<ListedRequest, 'id' | 'state' | 'createdAt' | 'note' | 'sources'>;
+  readonly heading: string;
+  readonly answer: ReactNode;
+  readonly reload: QueryKey;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -645,10 +660,7 @@ function RequestEntry({
           label={t('knowledge.corrections.state', { state: request.state })}
         />
         <p id={headingId} className="font-medium">
-          {t('knowledge.corrections.item', {
-            kind: request.item.kind,
-            title: itemTitle(view, request.item),
-          })}
+          {heading}
         </p>
       </div>
       <p className="text-small text-muted">
@@ -664,7 +676,7 @@ function RequestEntry({
         <p className="whitespace-pre-wrap">{request.note}</p>
       )}
       <SourceList request={request} words={words} />
-      {request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
+      {answer}
       {failed && (
         <p role="alert" className="text-small text-danger-ink">
           {t('knowledge.corrections.closeFailure')}
@@ -679,9 +691,7 @@ function RequestEntry({
             setFailed(false);
             api
               .call(routes.closeCorrectionRequest, { id: request.id })
-              .then(() =>
-                queryClient.invalidateQueries(correctionRequestsQuery(view.routeId, view.number)),
-              )
+              .then(() => queryClient.invalidateQueries({ queryKey: reload }))
               .catch(() => {
                 setFailed(true);
               });
@@ -692,6 +702,43 @@ function RequestEntry({
       )}
     </li>
   );
+}
+
+function RequestEntry({
+  request,
+  view,
+  words,
+}: {
+  readonly request: ListedRequest;
+  readonly view: VersionView;
+  readonly words: KnowledgeWords;
+}) {
+  return (
+    <RequestCard
+      request={request}
+      heading={words.t('knowledge.corrections.item', {
+        kind: request.item.kind,
+        title: itemTitle(view, request.item),
+      })}
+      answer={request.answer !== null && <AnswerEntry answer={request.answer} words={words} />}
+      reload={correctionRequestsQuery(view.routeId, view.number).queryKey}
+      words={words}
+    />
+  );
+}
+
+/**
+ * Maps a refused filing to what the form says: too many, a file not yet arrived, a file that
+ * differs, a correction already active, or any other failure.
+ */
+export function filingFailure(
+  error: unknown,
+): 'limited' | 'missing' | 'mismatch' | 'corrected' | 'failed' {
+  if (error instanceof ApiError && error.status === 429) return 'limited';
+  if (error instanceof ApiError && error.code === 'already_corrected') return 'corrected';
+  if (error instanceof ApiError && error.code === 'not_uploaded') return 'missing';
+  if (error instanceof ApiError && error.status === 409) return 'mismatch';
+  return 'failed';
 }
 
 /** The version's correction requests and their states (ADR-0029); nothing when it has none. */
