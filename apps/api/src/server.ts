@@ -20,6 +20,7 @@ import { createCaseIntake } from './case/intake.js';
 import { extractorFor } from './intake/environment.js';
 import { createDocuments } from './vault/documents.js';
 import { objectStorageFor } from './vault/storage-environment.js';
+import { unconnectedObjectStorage } from './vault/object-storage.js';
 import { createVault } from './vault/vault.js';
 import { rateLimiter, type RateLimiter } from './auth/rate-limit.js';
 import { clientAddressFor } from './client-address.js';
@@ -525,6 +526,7 @@ const app = createApp({
     states: () => knowledgeDecisions().states(),
     audit: lazyAudit,
     notify: async (accountId, kind) => (await authParts()).correctionNotice(accountId, kind),
+    storage: documentStorage?.storage ?? unconnectedObjectStorage,
   }),
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),

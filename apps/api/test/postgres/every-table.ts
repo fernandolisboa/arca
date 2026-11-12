@@ -237,6 +237,16 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO knowledge.correction_source (request_id, position, kind, url) VALUES ($1, 0, 'link', 'https://example.gov/law')`,
       [correctionId],
     );
+    const uploadId = randomUUID();
+    await insert(
+      `INSERT INTO knowledge.correction_upload (id, author_account_id, pathname, media_type, size, sha256)
+       VALUES ($1, $2, 'corrections/' || gen_random_uuid(), 'application/pdf', 10, $3)`,
+      [uploadId, accountId, Buffer.alloc(32)],
+    );
+    await insert(
+      `INSERT INTO knowledge.correction_source (request_id, position, kind, upload_id) VALUES ($1, 1, 'file', $2)`,
+      [correctionId, uploadId],
+    );
     await insert(
       `INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`,
       [correctionId],

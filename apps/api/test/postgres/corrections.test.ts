@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   identityKey,
   parseCalendarDate,
@@ -13,7 +13,9 @@ import { createApp } from '../../src/app.js';
 import { auditLog } from '../../src/audit/log.js';
 import type { RateLimiter } from '../../src/auth/rate-limit.js';
 import { adminRole } from '../../src/knowledge/admins.js';
+import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
+import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/vault/object-storage.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 
@@ -44,6 +46,8 @@ const view = {
 
 let states: DecisionStates = new Map();
 let notices: string[] = [];
+let objects: MemoryObjectStorage = memoryObjectStorage();
+let presigns: unknown[] = [];
 
 function setup(signedIn: string | null, limiter = noLimits.limiter) {
   const corrections = createCorrections({
@@ -60,6 +64,16 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       notices.push(`${accountId}:${kind}`);
       return Promise.resolve();
     },
+    storage: {
+      ...objects,
+      presignUpload: (pathname, maxBytes, contentType) => {
+        presigns.push({ pathname, maxBytes, contentType });
+        return Promise.resolve({
+          type: 'blob.generate-presigned-url',
+          presignedUrlPayload: { delegationToken: 'd', signature: 's', params: {} },
+        });
+      },
+    },
   });
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -75,6 +89,7 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
     },
     authLimits: { ...noLimits, limiter },
     corrections,
+    memoryObjects: objects,
   });
   const post = (path: string, body: unknown) =>
     app.request(`/v1/knowledge/corrections${path}`, {
@@ -87,8 +102,46 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
     list: (number = 1) =>
       app.request(`/v1/knowledge/corrections?routeId=qm-sample&number=${String(number)}`),
     close: (id: string) => post('/close', { id }),
+    startUpload: (body: Record<string, unknown>) => post('/uploads', body),
+    presign: (pathname: string) =>
+      post('/uploads/url', {
+        type: 'blob.generate-presigned-url',
+        payload: { pathname, clientPayload: null, multipart: false },
+      }),
+    put: (url: string, bytes: Uint8Array) =>
+      app.request(url, { method: 'PUT', body: new Uint8Array(bytes) }),
+    get: (url: string) => app.request(url),
+    fileUrl: (requestId: string, position: number) => post('/files/url', { requestId, position }),
   };
 }
+
+const pdf = new TextEncoder().encode('%PDF-1.7\nSynthetic official gazette page\n%%EOF\n');
+const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('base64url');
+
+/** Starts an upload as the owner and sends `sent`, declared as `declared`; answers its ID. */
+async function uploaded(
+  sent: Uint8Array,
+  declared: { mediaType?: string; bytes?: Uint8Array } = {},
+) {
+  const routes = setup(owner);
+  const bytes = declared.bytes ?? sent;
+  const started = await routes.startUpload({
+    mediaType: declared.mediaType ?? 'application/pdf',
+    size: bytes.length,
+    sha256: sha256(bytes),
+  });
+  expect(started.status).toBe(200);
+  const { uploadId, upload } = (await started.json()) as {
+    uploadId: string;
+    upload: { via: 'direct'; url: string };
+  };
+  expect((await routes.put(upload.url, sent)).status).toBe(204);
+  return uploadId;
+}
+
+const withFile = (uploadId: string) => ({
+  sources: [...filed.sources, { kind: 'file', uploadId }],
+});
 
 const filed = {
   routeId: 'qm-sample',
@@ -106,7 +159,13 @@ const listed = async (signedIn: string, number = 1) => {
   expect(response.status).toBe(200);
   return (await response.json()) as {
     canFile: boolean;
-    requests: { id: string; state: string; note: string; sources: unknown[]; item: unknown }[];
+    requests: {
+      id: string;
+      state: string;
+      note: string | null;
+      sources: unknown[];
+      item: unknown;
+    }[];
   };
 };
 
@@ -127,8 +186,12 @@ afterAll(async () => {
 beforeEach(async () => {
   states = new Map();
   notices = [];
+  objects = memoryObjectStorage();
+  presigns = [];
   await testDatabase.asAdmin(async (client) => {
-    await client.query('TRUNCATE knowledge.correction_request, knowledge.admin_grant CASCADE');
+    await client.query(
+      'TRUNCATE knowledge.correction_request, knowledge.correction_upload, knowledge.admin_grant CASCADE',
+    );
     await client.query(
       `INSERT INTO knowledge.admin_grant (kind, grantee_account_id, actor_account_id, actor_basis, step_up_id)
        VALUES ('grant', $1, $2, 'owner_list', $3)`,
@@ -230,6 +293,15 @@ describe('filing a correction request (ADR-0029)', () => {
     };
     expect((await setup(owner, spent).file()).status).toBe(429);
   });
+
+  it('answers 429 on presign and download once their daily limits are spent', async () => {
+    const spent: RateLimiter = {
+      hit: () => Promise.resolve({ allowed: false, retryAfterSeconds: 60 }),
+      sweep: () => Promise.resolve(0),
+    };
+    expect((await setup(owner, spent).presign(`corrections/${randomUUID()}`)).status).toBe(429);
+    expect((await setup(owner, spent).fileUrl(randomUUID(), 0)).status).toBe(429);
+  });
 });
 
 describe('reading and closing requests (ADR-0029)', () => {
@@ -290,10 +362,245 @@ describe('reading and closing requests (ADR-0029)', () => {
   });
 });
 
+describe('files on a correction request (ADR-0029)', () => {
+  it('files an uploaded PDF and lets any admin download it, never anyone else', async () => {
+    const uploadId = await uploaded(pdf);
+    const response = await setup(owner).file(withFile(uploadId));
+    expect(response.status).toBe(200);
+    const { id } = (await response.json()) as { id: string };
+    const [request] = (await listed(granted)).requests;
+    expect(request?.sources).toEqual([
+      ...filed.sources,
+      { kind: 'file', mediaType: 'application/pdf', size: pdf.length },
+    ]);
+    for (const admin of [owner, granted]) {
+      const link = await setup(admin).fileUrl(id, 2);
+      expect(link.status).toBe(200);
+      const { url } = (await link.json()) as { url: string };
+      const download = await setup(admin).get(url);
+      expect(download.headers.get('content-disposition')).toBe('attachment');
+      expect(download.headers.get('x-content-type-options')).toBe('nosniff');
+      expect(new Uint8Array(await download.arrayBuffer())).toEqual(pdf);
+    }
+    expect((await setup(member).fileUrl(id, 2)).status).toBe(403);
+    expect((await setup(owner).fileUrl(id, 0)).status).toBe(404);
+    expect(await audited('correction_file_downloaded')).toEqual([
+      { details: { requestId: id, position: 2 } },
+      { details: { requestId: id, position: 2 } },
+    ]);
+  });
+
+  it.each<[string, Record<string, unknown>]>([
+    ['an image', { mediaType: 'image/png', size: 10, sha256: sha256(pdf) }],
+    [
+      'a file over 16 MB',
+      { mediaType: 'application/pdf', size: 16 * 1024 * 1024 + 1, sha256: sha256(pdf) },
+    ],
+  ])('refuses to start an upload of %s with 400', async (_label, body) => {
+    expect((await setup(owner).startUpload(body)).status).toBe(400);
+  });
+
+  it('answers 403 to anyone but an owner-list admin starting an upload', async () => {
+    const body = { mediaType: 'application/pdf', size: pdf.length, sha256: sha256(pdf) };
+    const byGrant = await setup(granted).startUpload(body);
+    expect(byGrant.status).toBe(403);
+    expect(await byGrant.json()).toEqual({ error: { code: 'owner_list_only' } });
+    expect((await setup(member).startUpload(body)).status).toBe(403);
+  });
+
+  it('refuses a file whose content is not its declared type, and deletes it', async () => {
+    const text = new TextEncoder().encode('Plain synthetic text, declared a PDF');
+    const uploadId = await uploaded(text);
+    const response = await setup(owner).file(withFile(uploadId));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: 'upload_mismatch' } });
+    expect(await audited('correction_upload_mismatch')).toEqual([{ details: { uploadId } }]);
+    expect(await objectsHeld()).toBe(0);
+    expect((await listed(owner)).requests).toEqual([]);
+  });
+
+  it('refuses a file whose digest is not the declared one, and deletes it', async () => {
+    const declared = pdf.map((byte, index) => (index === pdf.length - 2 ? byte ^ 1 : byte));
+    const uploadId = await uploaded(pdf, { bytes: declared });
+    const response = await setup(owner).file(withFile(uploadId));
+    expect(response.status).toBe(409);
+    expect(await objectsHeld()).toBe(0);
+  });
+
+  it('answers 409 not_uploaded before the file arrived and 404 for an unknown upload', async () => {
+    const routes = setup(owner);
+    const started = await routes.startUpload({
+      mediaType: 'text/plain',
+      size: 3,
+      sha256: sha256(new Uint8Array([1, 2, 3])),
+    });
+    const { uploadId } = (await started.json()) as { uploadId: string };
+    expect((await routes.file(withFile(uploadId))).status).toBe(409);
+    expect((await routes.file(withFile(randomUUID()))).status).toBe(404);
+  });
+
+  it('presigns only the owner’s own unused upload started within the hour, at its size and type', async () => {
+    const routes = setup(owner);
+    const started = await routes.startUpload({
+      mediaType: 'text/html',
+      size: 40,
+      sha256: sha256(pdf),
+    });
+    const { upload } = (await started.json()) as { upload: { url: string } };
+    const pathname = new URL(upload.url, origin).pathname.replace('/internal/objects/', '');
+    expect((await routes.presign(pathname)).status).toBe(200);
+    expect(presigns).toEqual([{ pathname, maxBytes: 40, contentType: 'text/html' }]);
+    expect((await setup(granted).presign(pathname)).status).toBe(403);
+    expect((await setup(member).presign(pathname)).status).toBe(403);
+    expect((await routes.presign(`corrections/${randomUUID()}`)).status).toBe(404);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE knowledge.correction_upload SET created_at = now() - interval '61 minutes'`,
+      ),
+    );
+    expect((await routes.presign(pathname)).status).toBe(404);
+  });
+
+  it('does not presign an upload a request already names', async () => {
+    const uploadId = await uploaded(pdf);
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(200);
+    const pathname = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ pathname: string }>(
+            'SELECT pathname FROM knowledge.correction_upload',
+          )
+        ).rows[0]?.pathname ?? '',
+    );
+    expect((await setup(owner).presign(pathname)).status).toBe(404);
+  });
+
+  it('refuses a file named twice in one request with 400', async () => {
+    const uploadId = await uploaded(pdf);
+    const twice = {
+      sources: [
+        { kind: 'file', uploadId },
+        { kind: 'file', uploadId },
+      ],
+    };
+    expect((await setup(owner).file(twice)).status).toBe(400);
+  });
+
+  it('refuses a file filed more than 2 hours after its upload started', async () => {
+    const uploadId = await uploaded(pdf);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE knowledge.correction_upload SET created_at = now() - interval '121 minutes'`,
+      ),
+    );
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(404);
+  });
+
+  it('takes an upload in one request only', async () => {
+    const uploadId = await uploaded(pdf);
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(200);
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(404);
+  });
+});
+
+const audited = (code: string) =>
+  testDatabase.asAdmin(
+    async (client) =>
+      (
+        await client.query<{ details: unknown }>(
+          'SELECT details FROM audit.event WHERE code = $1 ORDER BY time, id',
+          [code],
+        )
+      ).rows,
+  );
+
+/** How many objects the memory store holds under `corrections/`. */
+async function objectsHeld(): Promise<number> {
+  const pathnames = await testDatabase.asAdmin(
+    async (client) =>
+      (await client.query<{ pathname: string }>('SELECT pathname FROM knowledge.correction_upload'))
+        .rows,
+  );
+  let held = 0;
+  for (const { pathname } of pathnames) {
+    if ((await objects.digest(pathname)) !== undefined) held += 1;
+  }
+  return held;
+}
+
+describe('the retention of request contents (ADR-0029)', () => {
+  const days = (count: number) => new Date(Date.now() + count * 86_400_000);
+  const contents = () => createCorrectionContents({ db: testDatabase.jobsDb, storage: objects });
+
+  it('erases an admin-closed request’s note, sources and files 30 days after the close', async () => {
+    const response = await setup(owner).file(withFile(await uploaded(pdf)));
+    const { id } = (await response.json()) as { id: string };
+    await setup(owner).close(id);
+    expect(await contents().expire(owner, days(29))).toBe(0);
+    expect((await listed(owner)).requests[0]?.note).toBe(filed.note);
+    expect(await contents().expire(owner, days(31))).toBe(1);
+    const [request] = (await listed(owner)).requests;
+    expect(request).toMatchObject({ id, note: null, sources: [], state: 'closed' });
+    expect(await objectsHeld()).toBe(0);
+    const left = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ n: number }>(
+            'SELECT count(*)::int AS n FROM knowledge.correction_upload',
+          )
+        ).rows[0]?.n,
+    );
+    expect(left).toBe(0);
+  });
+
+  it('keeps an open request’s contents until 180 days after filing', async () => {
+    await setup(owner).file(withFile(await uploaded(pdf)));
+    expect(await contents().expire(owner, days(179))).toBe(0);
+    expect((await listed(owner)).requests[0]?.sources).toHaveLength(3);
+    expect(await contents().expire(owner, days(181))).toBe(1);
+    expect((await listed(owner)).requests[0]).toMatchObject({ note: null, sources: [] });
+  });
+
+  it('keeps a request a correction closed until 180 days after filing, since it can open again', async () => {
+    await setup(owner).file(withFile(await uploaded(pdf)));
+    const [, correction] = identities;
+    if (correction === undefined) throw new Error('no correction');
+    states = new Map([[identityKey(correction), 'active']]);
+    expect((await listed(owner)).requests[0]?.state).toBe('closed');
+    expect(await contents().expire(owner, days(31))).toBe(0);
+    expect((await listed(owner)).requests[0]?.note).toBe(filed.note);
+    expect(await contents().expire(owner, days(181))).toBe(1);
+  });
+
+  it('deletes an upload no request names a day after it started, with its file', async () => {
+    await uploaded(pdf);
+    expect(await contents().expire(owner, new Date(Date.now() + 23 * 3_600_000))).toBe(0);
+    expect(await contents().expire(owner, days(1.1))).toBe(1);
+    expect(await objectsHeld()).toBe(0);
+  });
+
+  it('touches only the author’s own rows', async () => {
+    await setup(owner).file(withFile(await uploaded(pdf)));
+    expect(await contents().expire(member, days(181))).toBe(0);
+    expect((await listed(owner)).requests[0]?.note).toBe(filed.note);
+  });
+
+  it('erases every file of the author before the rows go', async () => {
+    await setup(owner).file(withFile(await uploaded(pdf)));
+    await contents().eraseObjects(owner);
+    expect(await objectsHeld()).toBe(0);
+  });
+});
+
 describe('the request tables (ADR-0029)', () => {
   it('give app_api no table to read, and only the author’s own rows through the export function', async () => {
     await fileOne();
-    for (const table of ['correction_request', 'correction_source', 'correction_event']) {
+    for (const table of [
+      'correction_request',
+      'correction_source',
+      'correction_event',
+      'correction_upload',
+    ]) {
       await expect(
         withIdentity(testDatabase.apiDb, { accountId: owner }, (tx) =>
           tx.execute(sql`SELECT FROM ${sql.raw(`knowledge.${table}`)}`),
@@ -306,12 +613,16 @@ describe('the request tables (ADR-0029)', () => {
           async (tx) =>
             (
               await tx.execute<{ row: unknown }>(
-                sql`SELECT * FROM knowledge.own_correction_rows(${`knowledge.${table}`})`,
+                table === 'correction_upload'
+                  ? sql`SELECT * FROM knowledge.own_correction_upload_rows(${`knowledge.${table}`})`
+                  : sql`SELECT * FROM knowledge.own_correction_rows(${`knowledge.${table}`})`,
               )
             ).rows.length,
         );
       expect(await exported(granted)).toBe(0);
-      if (table !== 'correction_event') expect(await exported(owner)).toBeGreaterThan(0);
+      if (table !== 'correction_event' && table !== 'correction_upload') {
+        expect(await exported(owner)).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -348,6 +659,19 @@ describe('the request tables (ADR-0029)', () => {
         ),
       ),
     ).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+
+  it('refuse a file on a request filed in an earlier transaction, or from another account’s upload', async () => {
+    const id = await fileOne();
+    const uploadId = await uploaded(pdf);
+    const attach = (accountId: string) =>
+      withIdentity(testDatabase.apiDb, { accountId }, (tx) =>
+        tx.execute(
+          sql`SELECT knowledge.attach_correction_file(${id}, 2, ${uploadId}, 'owner_list')`,
+        ),
+      );
+    await expect(attach(owner)).rejects.toMatchObject({ cause: { code: '42501' } });
+    await expect(attach(member)).rejects.toMatchObject({ cause: { code: '42501' } });
   });
 
   it('let app_jobs read and delete only the author’s own requests, with their sources', async () => {

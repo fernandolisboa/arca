@@ -16,6 +16,7 @@ import {
   documentDownloadUrl,
   DocumentsQuery,
   documentUploadUrl,
+  correctionUploadUrl,
   declineInvite,
   cancelAccountDeletion,
   enrollOwner,
@@ -49,6 +50,8 @@ import {
   caseRoutes,
   comparisonRoutes,
   CloseCorrectionRequest,
+  CorrectionFileReference,
+  StartCorrectionUpload,
   CloseRuleReportsRequest,
   FileCorrectionRequest,
   handOverCasePersonAction,
@@ -1689,10 +1692,59 @@ export function createApp({
       case 'not_found':
         return fail(c, outcome, 404);
       case 'already_corrected':
+      case 'not_uploaded':
+      case 'upload_mismatch':
         return fail(c, outcome, 409);
       default:
         return c.json(outcome, 200);
     }
+  });
+  v1.openapi(openApiRoutes.startCorrectionUpload, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const request = StartCorrectionUpload.parse(await c.req.json());
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.upload, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.startUpload(accountId, request);
+    return typeof outcome === 'string' ? fail(c, outcome, 403) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.correctionUploadUrl, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const { payload } = correctionUploadUrl.body.parse(await c.req.json());
+    const presignLimited = await overLimit(
+      c,
+      authLimits,
+      correctionRequestLimits.presign,
+      reads.current.accountId,
+    );
+    if (presignLimited !== undefined) return presignLimited;
+    const outcome = await reads.corrections.presignUpload(
+      reads.current.accountId,
+      payload.pathname,
+    );
+    if (outcome === 'not_found') return fail(c, outcome, 404);
+    return typeof outcome === 'string' ? fail(c, outcome, 403) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.correctionFileUrl, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const { requestId, position } = CorrectionFileReference.parse(await c.req.json());
+    const downloadLimited = await overLimit(
+      c,
+      authLimits,
+      correctionRequestLimits.download,
+      reads.current.accountId,
+    );
+    if (downloadLimited !== undefined) return downloadLimited;
+    const outcome = await reads.corrections.fileUrl(reads.current.accountId, requestId, position);
+    if (outcome === 'not_admin') return fail(c, outcome, 403);
+    if (outcome === 'not_found') return fail(c, outcome, 404);
+    return c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.listCorrectionRequests, async (c) => {
     const reads = await correctionsOf(c);
@@ -1902,6 +1954,8 @@ export function createApp({
       if (bytes === undefined) return reject(c, 'not_found', 404);
       return c.body(new Uint8Array(bytes), 200, {
         'content-type': 'application/octet-stream',
+        'content-disposition': 'attachment',
+        'x-content-type-options': 'nosniff',
         'cache-control': 'no-store',
       });
     });

@@ -101,7 +101,13 @@
     "knowledge.close_correction_request",
     "knowledge.correction_requests",
     "knowledge.file_correction_request",
-    "knowledge.own_correction_rows"
+    "knowledge.own_correction_rows",
+    "knowledge.attach_correction_file",
+    "knowledge.correction_file",
+    "knowledge.correction_files",
+    "knowledge.own_correction_upload",
+    "knowledge.own_correction_upload_rows",
+    "knowledge.start_correction_upload"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

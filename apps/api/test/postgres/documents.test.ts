@@ -486,7 +486,7 @@ describe('replacing, sharing and deleting documents (spec 0005, R4)', () => {
 
     const after = await objectKeyOf(documentId);
     expect(after).not.toBe(before);
-    expect(await objects.digest(after)).toEqual({
+    expect(await objects.digest(after)).toMatchObject({
       size: 80,
       sha256: createHash('sha256').update(body).digest(),
     });

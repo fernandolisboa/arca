@@ -70,7 +70,7 @@ const withinGrant = (validUntil: unknown) => {
 
 describe('the Vercel Blob store (spec 0005, R3)', () => {
   it('presigns one put of ciphertext at the pathname, capped at the declared size, never overwriting', async () => {
-    const answer = await storage.presignUpload(pathname, 1024);
+    const answer = await storage.presignUpload(pathname, 1024, 'application/octet-stream');
     expect(answer.type).toBe('blob.generate-presigned-url');
     const [grant] = sdk.issued as Record<string, unknown>[];
     expect(grant).toMatchObject({
@@ -90,9 +90,9 @@ describe('the Vercel Blob store (spec 0005, R3)', () => {
     expect(urlOptions).not.toHaveProperty('callbackUrl');
   });
 
-  it('gives a read-only download URL for 5 minutes, uncached', async () => {
+  it('gives a read-only download URL for 5 minutes, uncached, served as an attachment', async () => {
     expect(await storage.downloadUrl(pathname)).toBe(
-      'https://store.example.com/object?signature=s',
+      'https://store.example.com/object?signature=s&download=1',
     );
     const [grant] = sdk.issued as Record<string, unknown>[];
     expect(grant).toMatchObject({ storeId: 'store_synthetic', pathname, operations: ['get'] });
@@ -113,6 +113,7 @@ describe('the Vercel Blob store (spec 0005, R3)', () => {
       sha256: createHash('sha256')
         .update(new Uint8Array([1, 2, 3, 4, 5]))
         .digest(),
+      head: Buffer.from([1, 2, 3, 4, 5]),
     });
     expect(sdk.read).toEqual([
       [pathname, { access: 'private', storeId: 'store_synthetic', useCache: false }],

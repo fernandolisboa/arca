@@ -198,7 +198,9 @@ export async function clearKnowledgeDecisions(): Promise<void> {
 /** Empties the correction requests, which no runtime role deletes outside erasure. */
 export async function clearCorrectionRequests(): Promise<void> {
   await asAdmin(async (client) => {
-    await client.query('TRUNCATE knowledge.correction_request CASCADE');
+    await client.query(
+      'TRUNCATE knowledge.correction_request, knowledge.correction_upload CASCADE',
+    );
   });
 }
 

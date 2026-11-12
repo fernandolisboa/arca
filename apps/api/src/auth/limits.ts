@@ -79,6 +79,9 @@ export const caseLimits = {
 /** Correction requests an owner-list admin files per account (ADR-0029). */
 export const correctionRequestLimits = {
   file: { name: 'correction_request_account', limit: 30, windowSeconds: 24 * hour },
+  upload: { name: 'correction_upload_account', limit: 60, windowSeconds: 24 * hour },
+  presign: { name: 'correction_presign_account', limit: 60, windowSeconds: 24 * hour },
+  download: { name: 'correction_download_account', limit: 120, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Free-text drafts per account (spec 0008, R3): each one is a paid model call. */

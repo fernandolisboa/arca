@@ -11,6 +11,7 @@ import { accounts, erasedAccounts } from '../auth/auth.js';
 import { lockCase, memberCase } from '../case/view.js';
 import type { Notices } from '../email/notices.js';
 import type { DocumentObjects } from '../vault/documents.js';
+import type { CorrectionContents } from '../knowledge/correction-contents.js';
 
 /**
  * The steps of `eraseAccount` (spec 0004, R9), in their order. Each is idempotent, takes the
@@ -19,7 +20,10 @@ import type { DocumentObjects } from '../vault/documents.js';
 export interface Erasure {
   /** Whether the erasure may go on: the deletion is due, or the account is already gone. */
   erasable(accountId: string): Promise<boolean>;
-  /** Deletes the account's stored document objects while the rows that name them remain. */
+  /**
+   * Deletes the account's stored objects, documents and correction request files, while the rows
+   * that name them remain.
+   */
   eraseStoredObjects(accountId: string): Promise<void>;
   /** Erases the account's rows in every app_jobs entry, under its identity. */
   eraseOwnedEntries(accountId: string): Promise<void>;
@@ -43,6 +47,7 @@ export interface ErasureDependencies {
   readonly notices: Notices;
   /** On the app_jobs pool, with the environment's object store. */
   readonly documents: Pick<DocumentObjects, 'eraseObjects'>;
+  readonly corrections: Pick<CorrectionContents, 'eraseObjects'>;
   readonly registry?: Registry;
   readonly clock?: () => Date;
 }
@@ -77,6 +82,7 @@ export function createErasure({
   audit,
   notices,
   documents,
+  corrections,
   registry = fullRegistry,
   clock = () => new Date(),
 }: ErasureDependencies): Erasure {
@@ -92,7 +98,10 @@ export function createErasure({
   return {
     erasable: (accountId) => accounts.erasable(authDb, accountId),
 
-    eraseStoredObjects: (accountId) => documents.eraseObjects(accountId),
+    eraseStoredObjects: async (accountId) => {
+      await documents.eraseObjects(accountId);
+      await corrections.eraseObjects(accountId);
+    },
 
     // The member's own row is the registry's first case entry, so the account leaves its case
     // first and the cascade takes the people it keeps, as leaving does (spec 0007, R9).

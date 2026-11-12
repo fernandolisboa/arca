@@ -1,4 +1,5 @@
 import {
+  expireCorrectionContents,
   expireOwnedRows,
   expirePendingDocuments,
   markUnconfirmedAccounts,
@@ -18,6 +19,7 @@ export async function enforceRetention(runDate: IsoDate): Promise<void> {
   await sweepExpiredRows();
   await expireOwnedRows();
   await expirePendingDocuments();
+  await expireCorrectionContents();
   await markUnconfirmedAccounts();
   await warnInactiveAccounts();
 }

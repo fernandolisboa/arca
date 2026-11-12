@@ -4,6 +4,12 @@ import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
 import { adminRoutes } from './admins.js';
 import { knowledgeRoutes } from './knowledge.js';
+import {
+  DocumentUpload,
+  DocumentUploadUrlRequest,
+  DocumentUploadUrlResponse,
+  Sha256,
+} from './uploads.js';
 
 /** Every route lives under this prefix; clients prepend their origin, if any. */
 export const apiBasePath = '/v1';
@@ -861,6 +867,13 @@ export const auditEventDetails = {
   }),
   /** An admin closed a correction request (ADR-0029). */
   correction_closed: z.strictObject({ requestId: z.uuid() }),
+  /** An admin minted a download URL for one file of a request (ADR-0029). */
+  correction_file_downloaded: z.strictObject({
+    requestId: z.uuid(),
+    position: z.int().min(0),
+  }),
+  /** A filed file was not what its upload declared, and was deleted (ADR-0029). */
+  correction_upload_mismatch: z.strictObject({ uploadId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;
@@ -1371,9 +1384,6 @@ export const documentPageSize = 50;
 /** The largest sealed label: a document's file name and media type, encrypted like the file. */
 export const maxDocumentLabelBytes = 32 * 1024;
 
-/** A SHA-256 digest, base64url without padding. */
-const Sha256 = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
-
 /**
  * A sealed label, base64url without padding: age ciphertext to the document's recipients, so the
  * server never sees a file name.
@@ -1399,11 +1409,6 @@ export type CreateDocumentRequest = z.infer<typeof CreateDocumentRequest>;
  * Where the device sends the ciphertext: Vercel Blob, through the SDK's presigned upload with
  * this pathname and the upload-URL route; or, in development only, a URL on this origin.
  */
-export const DocumentUpload = z.discriminatedUnion('via', [
-  z.object({ via: z.literal('vercel_blob'), pathname: z.string() }),
-  z.object({ via: z.literal('direct'), url: z.string() }),
-]);
-export type DocumentUpload = z.infer<typeof DocumentUpload>;
 
 export const CreateDocumentResponse = z.object({ documentId: z.uuid(), upload: DocumentUpload });
 export type CreateDocumentResponse = z.infer<typeof CreateDocumentResponse>;
@@ -1417,26 +1422,6 @@ export const createDocument = {
   body: CreateDocumentRequest,
   response: { description: 'Pending document', schema: CreateDocumentResponse },
 } as const satisfies RouteDefinition<typeof CreateDocumentResponse>;
-
-/** The request `uploadPresigned` from `@vercel/blob/client` sends for one pending document. */
-export const DocumentUploadUrlRequest = z.strictObject({
-  type: z.literal('blob.generate-presigned-url'),
-  payload: z.strictObject({
-    pathname: z.string().max(128),
-    clientPayload: z.string().max(256).nullable(),
-    multipart: z.literal(false),
-  }),
-});
-
-export const DocumentUploadUrlResponse = z.object({
-  type: z.literal('blob.generate-presigned-url'),
-  presignedUrlPayload: z.object({
-    delegationToken: z.string(),
-    signature: z.string(),
-    params: z.record(z.string(), z.string()),
-  }),
-});
-export type DocumentUploadUrlResponse = z.infer<typeof DocumentUploadUrlResponse>;
 
 export const documentUploadUrl = {
   method: 'post',
@@ -1650,6 +1635,7 @@ export * from './case.js';
 export * from './comparison.js';
 export * from './knowledge.js';
 export * from './admins.js';
+export * from './uploads.js';
 
 export const routes = {
   health,

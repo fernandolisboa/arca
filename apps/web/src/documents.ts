@@ -1,6 +1,5 @@
 import {
   ApiError,
-  apiBasePath,
   deleteDocumentsAction,
   maxDocumentBytes,
   replaceDocumentsAction,
@@ -23,6 +22,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
 import { base64url, fromBase64url } from './base64url.js';
 import { saveFile } from './download.js';
+import { sendUpload } from './uploads.js';
 import { reach } from './requests.js';
 import { openVaultWindow, stepUpFor } from './step-up.js';
 import { identitiesOf, type UnlockedVault } from './vault-session.js';
@@ -130,21 +130,11 @@ export async function inVaultWindow<T>(passkeys: Passkeys, request: () => Promis
   }
 }
 
-async function send(upload: DocumentUpload, ciphertext: Uint8Array<ArrayBuffer>) {
-  if (upload.via === 'direct') {
-    const response = await reach(fetch(upload.url, { method: 'PUT', body: ciphertext }));
-    if (!response.ok) throw new Error('the upload was refused');
-    return;
-  }
-  // The Blob client loads only when a document goes to Vercel Blob, never in development.
-  const { uploadPresigned } = await import('@vercel/blob/client');
-  await uploadPresigned(upload.pathname, new Blob([ciphertext]), {
-    access: 'private',
-    handleUploadUrl: `${apiBasePath}${routes.documentUploadUrl.path}`,
+const send = (upload: DocumentUpload, ciphertext: Uint8Array<ArrayBuffer>) =>
+  sendUpload(upload, ciphertext, {
+    handleUploadPath: routes.documentUploadUrl.path,
     contentType: 'application/octet-stream',
-    multipart: false,
   });
-}
 
 /**
  * Encrypts a file on this device to the owner's own recipient, seals its name and type the same

@@ -1,0 +1,705 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "a11f9f12-a5d9-49eb-a1c1-ba8e10c039fa",
+  "prevIds": [
+    "cae310b1-fe3e-484d-bf15-fd7b072dcac5"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_upload"
+      ],
+      "writes": [
+        "s|tbl|knowledge.correction_upload",
+        "n|tbl|knowledge.correction_upload",
+        "e|tbl|knowledge.correction_upload",
+        "n|rel|knowledge.correction_upload",
+        "n|type|knowledge.correction_upload",
+        "n|rel|knowledge.correction_upload_pkey",
+        "n|rel|knowledge.correction_upload_pathname_key"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "content_erased_at"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_request.content_erased_at",
+        "n|col|knowledge.correction_request.content_erased_at",
+        "e|col|knowledge.correction_request.content_erased_at"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_source",
+        "upload_id"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_source.upload_id",
+        "n|col|knowledge.correction_source.upload_id",
+        "e|col|knowledge.correction_source.upload_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "note"
+      ],
+      "writes": [
+        "s|colprop|knowledge.correction_request.note.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.note"
+      ],
+      "sqlHash": "756e89d9ca6ff02a"
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|uq|knowledge.correction_source.correction_source_upload_once",
+        "n|uq|knowledge.correction_source.correction_source_upload_once",
+        "e|uq|knowledge.correction_source.correction_source_upload_once",
+        "n|con|knowledge.correction_source.correction_source_upload_once",
+        "n|rel|knowledge.correction_source_upload_once"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.upload_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "correction_upload",
+        "correction_upload_author_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.correction_upload_author_account_id_idx",
+        "n|idx|knowledge.correction_upload_author_account_id_idx",
+        "e|idx|knowledge.correction_upload_author_account_id_idx",
+        "n|rel|knowledge.correction_upload_author_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_upload.author_account_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|fk|knowledge.correction_source.correction_source_upload_fkey",
+        "n|fk|knowledge.correction_source.correction_source_upload_fkey",
+        "e|fk|knowledge.correction_source.correction_source_upload_fkey",
+        "n|con|knowledge.correction_source.correction_source_upload_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.upload_id",
+        "n|col|knowledge.correction_upload.id",
+        "e|uniqueness|knowledge.correction_upload.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_note_erased",
+        "n|ck|knowledge.correction_request.correction_request_note_erased",
+        "e|ck|knowledge.correction_request.correction_request_note_erased",
+        "n|con|knowledge.correction_request.correction_request_note_erased"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.note",
+        "n|col|knowledge.correction_request.content_erased_at"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_source.correction_source_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.kind",
+        "n|col|knowledge.correction_source.text",
+        "n|col|knowledge.correction_source.upload_id",
+        "n|col|knowledge.correction_source.url",
+        "e|col|knowledge.correction_source.kind",
+        "e|col|knowledge.correction_source.text",
+        "e|col|knowledge.correction_source.url"
+      ],
+      "sqlHash": "9cdc0158c1a3cfc0"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_request.correction_request_erase_own_by_jobs",
+        "n|pol|knowledge.correction_request.correction_request_erase_own_by_jobs",
+        "e|pol|knowledge.correction_request.correction_request_erase_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_source.correction_source_delete_own_by_jobs",
+        "n|pol|knowledge.correction_source.correction_source_delete_own_by_jobs",
+        "e|pol|knowledge.correction_source.correction_source_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_source"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_upload"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_upload.correction_upload_insert_by_definer",
+        "n|pol|knowledge.correction_upload.correction_upload_insert_by_definer",
+        "e|pol|knowledge.correction_upload.correction_upload_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_upload"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_upload"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_upload.correction_upload_select_by_definer",
+        "n|pol|knowledge.correction_upload.correction_upload_select_by_definer",
+        "e|pol|knowledge.correction_upload.correction_upload_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_upload"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_upload"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_upload.correction_upload_select_own_by_jobs",
+        "n|pol|knowledge.correction_upload.correction_upload_select_own_by_jobs",
+        "e|pol|knowledge.correction_upload.correction_upload_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_upload"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_upload"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_upload.correction_upload_delete_own_by_jobs",
+        "n|pol|knowledge.correction_upload.correction_upload_delete_own_by_jobs",
+        "e|pol|knowledge.correction_upload.correction_upload_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_upload",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_upload"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "correction_upload",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "content_erased_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "upload_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "author_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "pathname",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "media_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "size",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "sha256",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_author_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "author_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_upload_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "upload_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "correction_upload",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_upload_once",
+        "nameExplicit": true,
+        "columns": [
+          "upload_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_pathname_key",
+        "nameExplicit": true,
+        "columns": [
+          "pathname"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_note_erased",
+        "value": "(\"note\" IS NULL) = (\"content_erased_at\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_pathname_format",
+        "value": "\"pathname\" ~ '^corrections/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_media_type",
+        "value": "\"media_type\" IN ('application/pdf', 'text/html', 'text/plain')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_size_range",
+        "value": "\"size\" BETWEEN 1 AND 16777216",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_sha256_length",
+        "value": "octet_length(\"sha256\") = 32",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_erase_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"knowledge\".\"correction_request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": "\"knowledge\".\"correction_request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"knowledge\".\"correction_request\".\"note\" IS NULL",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "EXISTS (SELECT FROM \"knowledge\".\"correction_request\" \"request\"\n        WHERE \"request\".\"id\" = \"knowledge\".\"correction_source\".\"request_id\"\n          AND \"request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"knowledge\".\"correction_upload\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_upload",
+        "name": "correction_upload_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"knowledge\".\"correction_upload\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"correction_request\",\"note\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_source\",\"correction_source_shape\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'link' THEN \"text\" IS NULL AND \"upload_id\" IS NULL\n          AND \"url\" ~ '^https://[^[:space:]]+$' AND char_length(\"url\") <= 2048\n        WHEN 'text' THEN \"url\" IS NULL AND \"upload_id\" IS NULL\n          AND char_length(\"text\") BETWEEN 1 AND 20000\n        WHEN 'file' THEN \"url\" IS NULL AND \"text\" IS NULL\n          AND \"upload_id\" IS NOT NULL\n        ELSE false END"
+      }
+    }
+  ]
+}

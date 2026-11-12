@@ -21,6 +21,11 @@ export async function expirePendingDocuments(): Promise<void> {
   await run('expirePendingDocuments', 'storage_unavailable');
 }
 
+export async function expireCorrectionContents(): Promise<void> {
+  'use step';
+  await run('expireCorrectionContents', 'storage_unavailable');
+}
+
 export async function markUnconfirmedAccounts(): Promise<void> {
   'use step';
   await run('markUnconfirmedAccounts');

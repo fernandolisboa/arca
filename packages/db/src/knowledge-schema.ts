@@ -399,7 +399,9 @@ const ownRequest = (requestId: unknown) =>
  * definer functions of `knowledge_definer`, which check the admin basis the API computed and
  * insert or read on its behalf; the author's data export reads their own rows through one too.
  * `app_jobs` reads and deletes an author's own requests under their identity, for erasure; their
- * sources and events go with them.
+ * sources and events go with them. The daily retention step, also `app_jobs` under the author's
+ * identity, clears a request's note and deletes its sources and uploads, keeping the row with its
+ * identifiers and dates; that clearing is the only update.
  */
 export const correctionRequest = knowledge.table(
   'correction_request',
@@ -409,11 +411,13 @@ export const correctionRequest = knowledge.table(
     versionNumber: integer('version_number').notNull(),
     itemKind: text('item_kind').notNull(),
     itemKey: text('item_key'),
-    note: text('note').notNull(),
+    /** Null once the retention step erased the request's contents. */
+    note: text('note'),
     authorAccountId: uuid('author_account_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
+    contentErasedAt: timestamp('content_erased_at', { withTimezone: true }),
   },
   (table) => [
     check('correction_request_route_id_format', routeIdFormat(table.routeId)),
@@ -425,6 +429,10 @@ export const correctionRequest = knowledge.table(
         ELSE ${table.itemKey} ~ '^[a-z0-9][a-z0-9./-]{0,79}$' END`,
     ),
     check('correction_request_note_length', sql`char_length(${table.note}) BETWEEN 1 AND 4000`),
+    check(
+      'correction_request_note_erased',
+      sql`(${table.note} IS NULL) = (${table.contentErasedAt} IS NOT NULL)`,
+    ),
     index('correction_request_version_idx').on(table.routeId, table.versionNumber),
     index('correction_request_author_account_id_idx').on(table.authorAccountId),
     pgPolicy('correction_request_insert_by_definer', {
@@ -447,10 +455,75 @@ export const correctionRequest = knowledge.table(
       to: 'app_jobs',
       using: isIdentity(table.authorAccountId),
     }),
+    pgPolicy('correction_request_erase_own_by_jobs', {
+      for: 'update',
+      to: 'app_jobs',
+      using: isIdentity(table.authorAccountId),
+      withCheck: sql`${isIdentity(table.authorAccountId)} AND ${table.note} IS NULL`,
+    }),
   ],
 );
 
-/** A request's sources, up to five: an `https` link or pasted text, both leads only (ADR-0029). */
+/** The media types a request's file may have (ADR-0029), checked by content on filing. */
+export const correctionFileTypes = ['application/pdf', 'text/html', 'text/plain'] as const;
+
+/**
+ * A file an owner-list admin uploads for a request (ADR-0029): a plaintext copy of what is meant
+ * to be an official text, in the private Blob store under a random `corrections/` pathname. The
+ * row is made before the upload, with the size and SHA-256 the grant and the filing check; a
+ * request's source names it once filed. Uploads no request names are deleted by the daily
+ * retention step after a day, objects first; named ones go with their request's contents.
+ */
+export const correctionUpload = knowledge.table(
+  'correction_upload',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    authorAccountId: uuid('author_account_id').notNull(),
+    pathname: text('pathname').notNull(),
+    mediaType: text('media_type').notNull(),
+    size: integer('size').notNull(),
+    sha256: bytea('sha256').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    unique('correction_upload_pathname_key').on(table.pathname),
+    check(
+      'correction_upload_pathname_format',
+      sql`${table.pathname} ~ '^corrections/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'`,
+    ),
+    check('correction_upload_media_type', inList(table.mediaType, correctionFileTypes)),
+    check('correction_upload_size_range', sql`${table.size} BETWEEN 1 AND 16777216`),
+    check('correction_upload_sha256_length', sql`octet_length(${table.sha256}) = 32`),
+    index('correction_upload_author_account_id_idx').on(table.authorAccountId),
+    pgPolicy('correction_upload_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+    pgPolicy('correction_upload_select_by_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+    pgPolicy('correction_upload_select_own_by_jobs', {
+      for: 'select',
+      to: 'app_jobs',
+      using: isIdentity(table.authorAccountId),
+    }),
+    pgPolicy('correction_upload_delete_own_by_jobs', {
+      for: 'delete',
+      to: 'app_jobs',
+      using: isIdentity(table.authorAccountId),
+    }),
+  ],
+);
+
+/**
+ * A request's sources, up to five: an `https` link, pasted text or an uploaded file, all leads
+ * only (ADR-0029). A file source names its upload, which no other source names.
+ */
 export const correctionSource = knowledge.table(
   'correction_source',
   {
@@ -459,6 +532,7 @@ export const correctionSource = knowledge.table(
     kind: text('kind').notNull(),
     url: text('url'),
     text: text('text'),
+    uploadId: uuid('upload_id'),
   },
   (table) => [
     primaryKey({ name: 'correction_source_pkey', columns: [table.requestId, table.position] }),
@@ -467,13 +541,22 @@ export const correctionSource = knowledge.table(
       columns: [table.requestId],
       foreignColumns: [correctionRequest.id],
     }).onDelete('cascade'),
+    foreignKey({
+      name: 'correction_source_upload_fkey',
+      columns: [table.uploadId],
+      foreignColumns: [correctionUpload.id],
+    }),
+    unique('correction_source_upload_once').on(table.uploadId),
     check('correction_source_position_range', sql`${table.position} BETWEEN 0 AND 4`),
     check(
       'correction_source_shape',
       sql`CASE ${table.kind}
-        WHEN 'link' THEN ${table.text} IS NULL AND ${table.url} ~ '^https://[^[:space:]]+$'
-          AND char_length(${table.url}) <= 2048
-        WHEN 'text' THEN ${table.url} IS NULL AND char_length(${table.text}) BETWEEN 1 AND 20000
+        WHEN 'link' THEN ${table.text} IS NULL AND ${table.uploadId} IS NULL
+          AND ${table.url} ~ '^https://[^[:space:]]+$' AND char_length(${table.url}) <= 2048
+        WHEN 'text' THEN ${table.url} IS NULL AND ${table.uploadId} IS NULL
+          AND char_length(${table.text}) BETWEEN 1 AND 20000
+        WHEN 'file' THEN ${table.url} IS NULL AND ${table.text} IS NULL
+          AND ${table.uploadId} IS NOT NULL
         ELSE false END`,
     ),
     pgPolicy('correction_source_insert_by_definer', {
@@ -488,6 +571,11 @@ export const correctionSource = knowledge.table(
     }),
     pgPolicy('correction_source_select_own_by_jobs', {
       for: 'select',
+      to: 'app_jobs',
+      using: ownRequest(table.requestId),
+    }),
+    pgPolicy('correction_source_delete_own_by_jobs', {
+      for: 'delete',
       to: 'app_jobs',
       using: ownRequest(table.requestId),
     }),

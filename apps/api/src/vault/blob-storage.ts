@@ -1,8 +1,7 @@
-import { createHash } from 'node:crypto';
 import { del, get, issueSignedToken, presignUrl } from '@vercel/blob';
 import { handleUploadPresigned } from '@vercel/blob/client';
 import { DocumentUploadUrlResponse } from '@arca/api-contract/routes';
-import { objectUrlMinutes, type ObjectStorage } from './object-storage.js';
+import { digestOf, objectUrlMinutes, type ObjectStorage } from './object-storage.js';
 
 /** The environment's private Vercel Blob store, reached with Vercel's OIDC token (spec 0005, R3). */
 export interface BlobStore {
@@ -11,19 +10,18 @@ export interface BlobStore {
   readonly webhookPublicKey: string;
 }
 
-const ciphertextType = 'application/octet-stream';
 const expiry = () => Date.now() + objectUrlMinutes * 60_000;
 
 export function blobObjectStorage({ storeId, webhookPublicKey }: BlobStore): ObjectStorage {
   return {
     uploadTarget: (pathname) => ({ via: 'vercel_blob', pathname }),
 
-    async presignUpload(pathname, maxBytes) {
+    async presignUpload(pathname, maxBytes, contentType) {
       const validUntil = expiry();
       const limits = {
         validUntil,
         maximumSizeInBytes: maxBytes,
-        allowedContentTypes: [ciphertextType],
+        allowedContentTypes: [contentType],
       };
       const answer = await handleUploadPresigned({
         body: {
@@ -44,13 +42,7 @@ export function blobObjectStorage({ storeId, webhookPublicKey }: BlobStore): Obj
     async digest(pathname) {
       const found = await get(pathname, { access: 'private', storeId, useCache: false });
       if (found?.statusCode !== 200) return undefined;
-      const hash = createHash('sha256');
-      let size = 0;
-      for await (const chunk of found.stream) {
-        size += chunk.length;
-        hash.update(chunk);
-      }
-      return { size, sha256: hash.digest() };
+      return digestOf(found.stream);
     },
 
     async downloadUrl(pathname) {
@@ -63,7 +55,11 @@ export function blobObjectStorage({ storeId, webhookPublicKey }: BlobStore): Obj
         validUntil,
         useCache: false,
       });
-      return presignedUrl;
+      // The store sends `nosniff` on every blob; `download` makes it an attachment too, and sits
+      // outside the signed parameters, as the SDK's own `cache` does.
+      const url = new URL(presignedUrl);
+      url.searchParams.set('download', '1');
+      return url.toString();
     },
 
     async delete(pathnames) {

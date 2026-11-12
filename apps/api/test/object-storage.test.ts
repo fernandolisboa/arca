@@ -45,6 +45,7 @@ describe('the in-memory object store', () => {
     expect(await store.digest(pathname)).toEqual({
       size: 40,
       sha256: createHash('sha256').update(body).digest(),
+      head: Buffer.from(body),
     });
   });
 

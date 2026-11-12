@@ -13,7 +13,7 @@ import {
 import { withIdentity, type Database, type Transaction } from '@arca/db';
 import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
-import type { ObjectStorage } from './object-storage.js';
+import { ciphertextType, type ObjectStorage } from './object-storage.js';
 
 export type DocumentCreated = CreateDocumentResponse | 'no_vault' | 'over_quota';
 export type UploadConfirmed = 'confirmed' | 'not_found' | 'not_uploaded' | 'mismatch';
@@ -338,7 +338,9 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
                WHERE owner_id = ${accountId} AND object_key = ${pathname} AND ${recent}`)
           ).rows,
       );
-      return found === undefined ? undefined : storage.presignUpload(pathname, found.size);
+      return found === undefined
+        ? undefined
+        : storage.presignUpload(pathname, found.size, ciphertextType);
     },
 
     async confirm(accountId, documentId) {

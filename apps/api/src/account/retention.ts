@@ -8,6 +8,7 @@ import { qualified } from './erasure.js';
 import { forEachAccount } from './each-account.js';
 import type { Notifier } from '../notification/notifier.js';
 import type { DocumentObjects } from '../vault/documents.js';
+import type { CorrectionContents } from '../knowledge/correction-contents.js';
 
 /** The periods of RETENTION.md that the daily jobs count (spec 0004, R10). */
 export const inactivityYears = 3;
@@ -83,6 +84,8 @@ export const enforcedRows = [
   ...expiryRules.map(({ row }) => row),
   ...ownedExpiryRules.map(({ row }) => row),
   'Pending document uploads',
+  'Correction requests',
+  'Correction request uploads',
   'Deleted and replaced document ciphertext',
   'Invites',
   'Unconfirmed invited accounts',
@@ -105,6 +108,11 @@ export interface Retention {
   expireOwnedRows(now: Date): Promise<void>;
   /** Each account's document uploads left unconfirmed for 24 hours, objects first. */
   expirePendingDocuments(now: Date): Promise<void>;
+  /**
+   * Each account's correction request contents that are due, and uploads no request names a day
+   * old (ADR-0029), objects first.
+   */
+  expireCorrectionContents(now: Date): Promise<void>;
   /** Warns each account 3 years without a sign-in and marks it for erasure 60 days later. */
   warnInactiveAccounts(now: Date): Promise<void>;
   /** Marks invited accounts still unconfirmed after 30 days for erasure now. */
@@ -120,6 +128,8 @@ export interface RetentionDependencies {
   readonly notifier: Notifier;
   /** On the app_jobs pool, with the environment's object store. */
   readonly documents: Pick<DocumentObjects, 'expirePending'>;
+  /** On the app_jobs pool, with the environment's object store. */
+  readonly corrections: Pick<CorrectionContents, 'expire'>;
   readonly ownedRules?: readonly OwnedExpiryRule[];
 }
 
@@ -129,6 +139,7 @@ export function createRetention({
   audit,
   notifier,
   documents,
+  corrections,
   ownedRules = ownedExpiryRules,
 }: RetentionDependencies): Retention {
   return {
@@ -157,6 +168,12 @@ export function createRetention({
     async expirePendingDocuments(now) {
       await forEachAccount(await accounts.ids(authDb), async (accountId) => {
         await documents.expirePending(accountId, now);
+      });
+    },
+
+    async expireCorrectionContents(now) {
+      await forEachAccount(await accounts.ids(authDb), async (accountId) => {
+        await corrections.expire(accountId, now);
       });
     },
 
