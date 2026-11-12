@@ -9,6 +9,7 @@ import {
   checkedBatchSkips,
   fetchOutcomes,
   listedCheckStatuses,
+  maxCheckCostMicroUsd,
   maxCheckItemKeyLength,
   pageProgressOutcomes,
   progressFailures,
@@ -554,6 +555,20 @@ export const startVersionCheck = {
   response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
 } as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
 
+/** Millionths of a U.S. dollar, computed in code from the reviewed price table. */
+const microUsd = z.int().min(0).max(maxCheckCostMicroUsd);
+
+/**
+ * What a check's model calls cost: `unknown` when a model has no price or the provider left a
+ * count out, `scripted` when the scripted checker ran, which is a test and costs nothing.
+ */
+export const CheckCost = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('priced'), microUsd }),
+  z.strictObject({ kind: z.literal('unknown') }),
+  z.strictObject({ kind: z.literal('scripted') }),
+]);
+export type CheckCost = z.infer<typeof CheckCost>;
+
 export const CheckProgress = z.strictObject({
   startedAt: z.iso.datetime(),
   /** `dead` when the start is 30 minutes old with neither a report nor a recorded failure. */
@@ -576,12 +591,16 @@ export const CheckProgress = z.strictObject({
   /** How many long pages had passages picked, once that stage began. */
   locatedPages: z.int().min(0).max(1_000).nullable(),
   failure: z.enum(progressFailures).nullable(),
+  /** What its model calls cost so far, or null before the first one (see `CheckCost`). */
+  cost: CheckCost.nullable(),
 });
 export type CheckProgress = z.infer<typeof CheckProgress>;
 
 export const VersionCheckProgress = z.strictObject({
   /** The version's newest start of the last 24 hours, or null with none or where no check runs. */
   progress: CheckProgress.nullable(),
+  /** What the version's newest check whose report did not fail cost, when it could be priced. */
+  lastCostMicroUsd: microUsd.nullable(),
 });
 export type VersionCheckProgress = z.infer<typeof VersionCheckProgress>;
 
@@ -590,7 +609,7 @@ export const getVersionCheckProgress = {
   path: '/knowledge/versions/check/progress',
   operationId: 'getVersionCheckProgress',
   summary:
-    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage and the cited pages read so far; never starts a check. 403 not_admin, 404 not_found",
+    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest check whose report did not fail cost. Never starts a check. 403 not_admin, 404 not_found",
   query: VersionViewQuery,
   response: { description: 'The progress', schema: VersionCheckProgress },
 } as const satisfies RouteDefinition<typeof VersionCheckProgress>;

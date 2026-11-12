@@ -24,6 +24,8 @@ export const scriptedChecker: RuleChecker = {
       },
       model: scriptedCheckerModel,
       promptVersion: scriptedCheckerPromptVersion,
+      inputTokens: 0,
+      outputTokens: 0,
     });
   },
 };

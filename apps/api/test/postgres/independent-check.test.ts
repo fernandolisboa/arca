@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { ReportKey } from '@arca/domain';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { postgresCheckProgressStore } from '../../src/knowledge/check/progress.js';
+import { postgresCheckProgressStore, unreadableUsage } from '../../src/knowledge/check/progress.js';
 import { postgresCheckStarts } from '../../src/knowledge/check/starts.js';
 import { type NewCheckReport, postgresCheckReportStore } from '../../src/knowledge/check/store.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
@@ -142,6 +142,14 @@ describe('knowledge.check_start (ADR-0027)', () => {
 describe('knowledge.check_progress (ADR-0027, on demand)', () => {
   const written = () => postgresCheckProgressStore(() => testDatabase.jobsDb);
   const read = () => postgresCheckProgressStore(() => testDatabase.apiDb);
+  const usage = {
+    kind: 'usage',
+    model: 'claude-test',
+    inputTokens: 52_000,
+    outputTokens: 3_100,
+    cacheReadTokens: 4_000,
+    cacheWriteTokens: null,
+  } as const;
 
   it('records events from app_jobs and reads them back in order on app_api', async () => {
     const startId = randomUUID();
@@ -160,7 +168,8 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
     });
     await written().record(startId, 3, { kind: 'locating', pages: 1 });
     await written().record(startId, 4, { kind: 'comparing' });
-    await written().record(startId, 5, { kind: 'failed', code: 'check_failed' });
+    await written().record(startId, 5, usage);
+    await written().record(startId, 6, { kind: 'failed', code: 'check_failed' });
     await written().record(randomUUID(), 0, { kind: 'finished' });
     expect(await read().list(startId)).toEqual([
       { kind: 'started', items: 3, pages: 1 },
@@ -168,6 +177,7 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
       { kind: 'page', url: law, outcome: 'http_status', status: 503 },
       { kind: 'locating', pages: 1 },
       { kind: 'comparing' },
+      usage,
       { kind: 'failed', code: 'check_failed' },
     ]);
   });
@@ -178,19 +188,20 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
     await expect(written().record(startId, 0, { kind: 'finished' })).rejects.toThrow();
   });
 
-  it('never answers a row the closed event schema refuses', async () => {
+  it('never answers a row the closed event schema refuses, and reads a refused usage as unpriced', async () => {
     const startId = randomUUID();
     await written().record(startId, 0, { kind: 'comparing' });
     for (const [sequence, kind, detail] of [
       [1, 'thinking', '{}'],
       [2, 'page', '{"url":"https://www.gov.example/law","outcome":"read","text":"page words"}'],
       [3, 'failed', '{"code":"whatever the model said"}'],
+      [4, 'usage', '{"model":"claude-test","inputTokens":-1,"outputTokens":0}'],
     ] as const) {
       await testDatabase.jobsDb.execute(sql`
         INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail)
         VALUES (${startId}, ${sequence}, ${kind}, ${detail}::jsonb)`);
     }
-    expect(await read().list(startId)).toEqual([{ kind: 'comparing' }]);
+    expect(await read().list(startId)).toEqual([{ kind: 'comparing' }, unreadableUsage]);
   });
 
   it.each<[string, ReturnType<typeof sql>]>([

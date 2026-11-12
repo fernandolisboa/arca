@@ -11,14 +11,21 @@ import { z } from 'zod';
 export interface CheckProgressStore {
   /** Appends one event of a start; `sequence` orders the start's events from zero. */
   readonly record: (startId: string, sequence: number, event: CheckProgressEvent) => Promise<void>;
-  /** A start's events in the order recorded; a row the closed schema refuses is left out. */
+  /**
+   * A start's events in the order recorded; a row the closed schema refuses is left out, except a
+   * usage, which reads as `unreadableUsage`.
+   */
   readonly list: (startId: string) => Promise<readonly CheckProgressEvent[]>;
 }
 
-/** The most events one start records: two per cited page and a handful of stages. */
+/**
+ * The most events one start records: two per cited page, one per model call and a handful of
+ * stages.
+ */
 export const maxProgressEvents = 1_000;
 
 const count = z.int().min(0).max(1_000);
+const tokens = z.int().min(0).max(100_000_000).nullable();
 const storedEvent = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('started'), items: count, pages: count }),
   z.strictObject({
@@ -30,9 +37,27 @@ const storedEvent = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('locating'), pages: count }),
   z.strictObject({ kind: z.literal('comparing') }),
+  z.strictObject({
+    kind: z.literal('usage'),
+    model: z.string().regex(/^[a-z0-9.-]{1,100}$/u),
+    inputTokens: tokens,
+    outputTokens: tokens,
+    cacheReadTokens: tokens,
+    cacheWriteTokens: tokens,
+  }),
   z.strictObject({ kind: z.literal('finished') }),
   z.strictObject({ kind: z.literal('failed'), code: z.enum(progressFailures) }),
 ]) satisfies z.ZodType<CheckProgressEvent>;
+
+/** A stored usage the schema refuses: no price matches its model, so the cost is unknown. */
+export const unreadableUsage: CheckProgressEvent = {
+  kind: 'usage',
+  model: 'unreadable',
+  inputTokens: null,
+  outputTokens: null,
+  cacheReadTokens: null,
+  cacheWriteTokens: null,
+};
 
 /** For tests: kept while the process runs. */
 export function memoryCheckProgressStore(): CheckProgressStore & {
@@ -84,7 +109,10 @@ export function postgresCheckProgressStore(db: () => Database): CheckProgressSto
           ...(typeof detail === 'object' && detail !== null ? detail : {}),
           kind,
         });
-        return parsed.success ? [parsed.data] : [];
+        if (parsed.success) return [parsed.data];
+        // A model call's usage the schema refuses still happened, so the check's cost reads as
+        // unknown rather than short by that call.
+        return kind === 'usage' ? [unreadableUsage] : [];
       });
     },
   };
