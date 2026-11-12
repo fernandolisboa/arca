@@ -100,7 +100,8 @@
     "cases.set_owner",
     "knowledge.close_correction_request",
     "knowledge.correction_requests",
-    "knowledge.file_correction_request"
+    "knowledge.file_correction_request",
+    "knowledge.own_correction_rows"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

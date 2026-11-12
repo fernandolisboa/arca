@@ -43,6 +43,11 @@ interface Exported {
   readonly export: readonly string[];
   /** The i18n key of the export's label for these rows. */
   readonly label: `dataExport.tables.${string}`;
+  /**
+   * A definer function, `schema.name(entry text) RETURNS SETOF jsonb`, that answers the account's
+   * own rows of a table `app_api` may not read, with the `export` columns.
+   */
+  readonly exportedThrough?: string;
 }
 
 export interface DeletedEntry extends Exported {
@@ -449,6 +454,7 @@ export const registry: Registry = {
       pool: 'app_jobs',
       export: ['route_id', 'version_number', 'item_kind', 'item_key', 'note', 'created_at'],
       label: 'dataExport.tables.correctionRequests',
+      exportedThrough: 'knowledge.own_correction_rows',
     },
     {
       table: 'knowledge.correction_source',
@@ -457,6 +463,7 @@ export const registry: Registry = {
       pool: 'app_jobs',
       export: ['position', 'kind', 'url', 'text'],
       label: 'dataExport.tables.correctionSources',
+      exportedThrough: 'knowledge.own_correction_rows',
     },
     {
       table: 'knowledge.correction_event',
@@ -465,6 +472,7 @@ export const registry: Registry = {
       pool: 'app_jobs',
       export: ['kind', 'at'],
       label: 'dataExport.tables.correctionEvents',
+      exportedThrough: 'knowledge.own_correction_rows',
     },
     {
       table: 'audit.event',

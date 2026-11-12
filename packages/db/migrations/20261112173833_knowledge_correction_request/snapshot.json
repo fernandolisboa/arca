@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "f17d7792-ed0c-4d8b-8d71-2d6fff2460ca",
+  "id": "3d2b7190-39e3-4c90-9674-f61237c02107",
   "prevIds": [
     "cb37d6e1-7d8d-4cde-bdd9-bada1493f99f"
   ],
@@ -217,25 +217,6 @@
         "correction_event"
       ],
       "writes": [
-        "s|pol|knowledge.correction_event.correction_event_select_own",
-        "n|pol|knowledge.correction_event.correction_event_select_own",
-        "e|pol|knowledge.correction_event.correction_event_select_own"
-      ],
-      "reads": [
-        "n|tbl|knowledge.correction_event",
-        "n|sch|knowledge",
-        "n|role|app_api",
-        "e|rls|knowledge.correction_event"
-      ]
-    },
-    {
-      "statementType": "create_policy",
-      "statementTarget": [
-        "table",
-        "knowledge",
-        "correction_event"
-      ],
-      "writes": [
         "s|pol|knowledge.correction_event.correction_event_select_own_by_jobs",
         "n|pol|knowledge.correction_event.correction_event_select_own_by_jobs",
         "e|pol|knowledge.correction_event.correction_event_select_own_by_jobs"
@@ -282,25 +263,6 @@
         "n|tbl|knowledge.correction_request",
         "n|sch|knowledge",
         "n|role|knowledge_definer",
-        "e|rls|knowledge.correction_request"
-      ]
-    },
-    {
-      "statementType": "create_policy",
-      "statementTarget": [
-        "table",
-        "knowledge",
-        "correction_request"
-      ],
-      "writes": [
-        "s|pol|knowledge.correction_request.correction_request_select_own",
-        "n|pol|knowledge.correction_request.correction_request_select_own",
-        "e|pol|knowledge.correction_request.correction_request_select_own"
-      ],
-      "reads": [
-        "n|tbl|knowledge.correction_request",
-        "n|sch|knowledge",
-        "n|role|app_api",
         "e|rls|knowledge.correction_request"
       ]
     },
@@ -377,25 +339,6 @@
         "n|tbl|knowledge.correction_source",
         "n|sch|knowledge",
         "n|role|knowledge_definer",
-        "e|rls|knowledge.correction_source"
-      ]
-    },
-    {
-      "statementType": "create_policy",
-      "statementTarget": [
-        "table",
-        "knowledge",
-        "correction_source"
-      ],
-      "writes": [
-        "s|pol|knowledge.correction_source.correction_source_select_own",
-        "n|pol|knowledge.correction_source.correction_source_select_own",
-        "e|pol|knowledge.correction_source.correction_source_select_own"
-      ],
-      "reads": [
-        "n|tbl|knowledge.correction_source",
-        "n|sch|knowledge",
-        "n|role|app_api",
         "e|rls|knowledge.correction_source"
       ]
     },
@@ -1002,22 +945,6 @@
       "row": {
         "schema": "knowledge",
         "table": "correction_event",
-        "name": "correction_event_select_own",
-        "as": "PERMISSIVE",
-        "for": "SELECT",
-        "roles": [
-          "app_api"
-        ],
-        "using": "EXISTS (SELECT FROM \"knowledge\".\"correction_request\" \"request\"\n        WHERE \"request\".\"id\" = \"knowledge\".\"correction_event\".\"request_id\"\n          AND \"request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
-        "withCheck": null,
-        "entityType": "policies"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "knowledge",
-        "table": "correction_event",
         "name": "correction_event_select_own_by_jobs",
         "as": "PERMISSIVE",
         "for": "SELECT",
@@ -1057,22 +984,6 @@
           "knowledge_definer"
         ],
         "using": "true",
-        "withCheck": null,
-        "entityType": "policies"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "knowledge",
-        "table": "correction_request",
-        "name": "correction_request_select_own",
-        "as": "PERMISSIVE",
-        "for": "SELECT",
-        "roles": [
-          "app_api"
-        ],
-        "using": "\"knowledge\".\"correction_request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
         "withCheck": null,
         "entityType": "policies"
       }
@@ -1137,22 +1048,6 @@
           "knowledge_definer"
         ],
         "using": "true",
-        "withCheck": null,
-        "entityType": "policies"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "knowledge",
-        "table": "correction_source",
-        "name": "correction_source_select_own",
-        "as": "PERMISSIVE",
-        "for": "SELECT",
-        "roles": [
-          "app_api"
-        ],
-        "using": "EXISTS (SELECT FROM \"knowledge\".\"correction_request\" \"request\"\n        WHERE \"request\".\"id\" = \"knowledge\".\"correction_source\".\"request_id\"\n          AND \"request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
         "withCheck": null,
         "entityType": "policies"
       }

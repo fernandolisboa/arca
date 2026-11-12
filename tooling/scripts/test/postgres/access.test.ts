@@ -292,6 +292,7 @@ const correctionFunctions = [
   'knowledge.file_correction_request(text, integer, text, text, text, jsonb, text)',
   'knowledge.correction_requests(text, integer, text, uuid)',
   'knowledge.close_correction_request(uuid, text, uuid)',
+  'knowledge.own_correction_rows(text)',
   'knowledge.admin_basis_holds(text, uuid)',
 ];
 
@@ -333,17 +334,14 @@ function correctionMatrix(
 }
 
 describe('the correction request access matrix (ADR-0029)', () => {
-  it('lets app_api read the tables, for the author’s export, and run only the three request functions', async () => {
+  it('gives app_api no table privilege, only the request and export functions', async () => {
     expect(await correctionAccess('app_api')).toEqual({
-      tables: correctionMatrix({
-        'knowledge.correction_request': ['SELECT'],
-        'knowledge.correction_source': ['SELECT'],
-        'knowledge.correction_event': ['SELECT'],
-      }),
+      tables: correctionMatrix({}),
       functions: [
         'knowledge.file_correction_request',
         'knowledge.correction_requests',
         'knowledge.close_correction_request',
+        'knowledge.own_correction_rows',
       ],
     });
   });

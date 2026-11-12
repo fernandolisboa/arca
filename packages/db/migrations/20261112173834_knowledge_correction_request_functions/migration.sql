@@ -2,9 +2,9 @@
 -- owned by knowledge_definer, which take the admin basis the API computed and check it again:
 -- filing needs the owner list, which lives in code, so the database checks only that an account
 -- is named; reading and closing need the owner list or a grant of the transaction's account that
--- no removal ended. app_api also reads the author's own rows for their data export, and app_jobs
--- reads and deletes them under the author's identity for erasure; sources and events go through
--- the cascades. Nobody updates a row.
+-- no removal ended. app_api holds no table privileges: the author's data export reads their own
+-- rows through a definer function too. app_jobs reads and deletes them under the author's identity
+-- for erasure; sources and events go through the cascades. Nobody updates a row.
 ALTER TABLE "knowledge"."correction_request" FORCE ROW LEVEL SECURITY;
 --> statement-breakpoint
 ALTER TABLE "knowledge"."correction_source" FORCE ROW LEVEL SECURITY;
@@ -20,8 +20,6 @@ GRANT SELECT, INSERT ON "knowledge"."correction_request", "knowledge"."correctio
 GRANT SELECT, DELETE ON "knowledge"."correction_request" TO app_jobs;
 --> statement-breakpoint
 GRANT SELECT ON "knowledge"."correction_source", "knowledge"."correction_event" TO app_jobs;
---> statement-breakpoint
-GRANT SELECT ON "knowledge"."correction_request", "knowledge"."correction_source", "knowledge"."correction_event" TO app_api;
 --> statement-breakpoint
 -- Whether the transaction's account holds the admin basis it claims: the owner list, which only
 -- the API can check, or a grant to it that no removal ended (ADR-0027). Called by the functions
@@ -116,6 +114,31 @@ CREATE FUNCTION "knowledge"."close_correction_request"(request uuid, basis text,
   END
   $$;
 --> statement-breakpoint
+-- The transaction's account's own rows of one correction table, with the columns the data export
+-- registry lists for it (spec 0004, R8), one JSON object per row; nothing for another table.
+CREATE FUNCTION "knowledge"."own_correction_rows"(entry text)
+  RETURNS SETOF jsonb
+  LANGUAGE sql STABLE SECURITY DEFINER
+  SET search_path = pg_catalog, pg_temp
+  AS $$
+    WITH own AS (
+      SELECT r.* FROM "knowledge"."correction_request" r
+       WHERE r.author_account_id = nullif(pg_catalog.current_setting('app.account_id', true), '')::uuid)
+    SELECT pg_catalog.jsonb_build_object('route_id', own.route_id, 'version_number', own.version_number,
+             'item_kind', own.item_kind, 'item_key', own.item_key, 'note', own.note,
+             'created_at', own.created_at)
+      FROM own WHERE entry = 'knowledge.correction_request'
+    UNION ALL
+    SELECT pg_catalog.jsonb_build_object('position', s.position, 'kind', s.kind, 'url', s.url,
+             'text', s.text)
+      FROM "knowledge"."correction_source" s JOIN own ON own.id = s.request_id
+     WHERE entry = 'knowledge.correction_source'
+    UNION ALL
+    SELECT pg_catalog.jsonb_build_object('kind', e.kind, 'at', e.at)
+      FROM "knowledge"."correction_event" e JOIN own ON own.id = e.request_id
+     WHERE entry = 'knowledge.correction_event'
+  $$;
+--> statement-breakpoint
 REVOKE ALL ON FUNCTION "knowledge"."admin_basis_holds"(text, uuid) FROM PUBLIC;
 --> statement-breakpoint
 REVOKE ALL ON FUNCTION "knowledge"."file_correction_request"(text, integer, text, text, text, jsonb, text) FROM PUBLIC;
@@ -131,6 +154,10 @@ GRANT EXECUTE ON FUNCTION "knowledge"."correction_requests"(text, integer, text,
 --> statement-breakpoint
 GRANT EXECUTE ON FUNCTION "knowledge"."close_correction_request"(uuid, text, uuid) TO app_api;
 --> statement-breakpoint
+REVOKE ALL ON FUNCTION "knowledge"."own_correction_rows"(text) FROM PUBLIC;
+--> statement-breakpoint
+GRANT EXECUTE ON FUNCTION "knowledge"."own_correction_rows"(text) TO app_api;
+--> statement-breakpoint
 -- ALTER ... OWNER needs the new owner to hold CREATE on the schema; it holds it only meanwhile.
 GRANT CREATE ON SCHEMA "knowledge" TO knowledge_definer;
 --> statement-breakpoint
@@ -141,5 +168,7 @@ ALTER FUNCTION "knowledge"."file_correction_request"(text, integer, text, text, 
 ALTER FUNCTION "knowledge"."correction_requests"(text, integer, text, uuid) OWNER TO knowledge_definer;
 --> statement-breakpoint
 ALTER FUNCTION "knowledge"."close_correction_request"(uuid, text, uuid) OWNER TO knowledge_definer;
+--> statement-breakpoint
+ALTER FUNCTION "knowledge"."own_correction_rows"(text) OWNER TO knowledge_definer;
 --> statement-breakpoint
 REVOKE CREATE ON SCHEMA "knowledge" FROM knowledge_definer;

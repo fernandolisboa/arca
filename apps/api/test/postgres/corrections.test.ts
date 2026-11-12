@@ -213,6 +213,8 @@ describe('filing a correction request (ADR-0029)', () => {
     if (correction === undefined) throw new Error('no correction');
     states = new Map([[identityKey(correction), 'active']]);
     expect((await setup(owner).file()).status).toBe(409);
+    expect((await listed(owner)).requests).toEqual([]);
+    expect(notices).toEqual([]);
   });
 
   it('refuses a link the database would refuse, such as an upper-case scheme', async () => {
@@ -289,22 +291,27 @@ describe('reading and closing requests (ADR-0029)', () => {
 });
 
 describe('the request tables (ADR-0029)', () => {
-  it('let app_api read only the author’s own rows, for the export', async () => {
+  it('give app_api no table to read, and only the author’s own rows through the export function', async () => {
     await fileOne();
     for (const table of ['correction_request', 'correction_source', 'correction_event']) {
-      const read = (accountId: string) =>
+      await expect(
+        withIdentity(testDatabase.apiDb, { accountId: owner }, (tx) =>
+          tx.execute(sql`SELECT FROM ${sql.raw(`knowledge.${table}`)}`),
+        ),
+      ).rejects.toMatchObject({ cause: { code: '42501' } });
+      const exported = (accountId: string) =>
         withIdentity(
           testDatabase.apiDb,
           { accountId },
           async (tx) =>
             (
-              await tx.execute<Record<string, unknown>>(
-                sql`SELECT * FROM ${sql.raw(`knowledge.${table}`)}`,
+              await tx.execute<{ row: unknown }>(
+                sql`SELECT * FROM knowledge.own_correction_rows(${`knowledge.${table}`})`,
               )
             ).rows.length,
         );
-      expect(await read(granted)).toBe(0);
-      if (table !== 'correction_event') expect(await read(owner)).toBeGreaterThan(0);
+      expect(await exported(granted)).toBe(0);
+      if (table !== 'correction_event') expect(await exported(owner)).toBeGreaterThan(0);
     }
   });
 
