@@ -33,6 +33,7 @@ import { authService, type AuthService } from './auth/service.js';
 import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
+import { createCorrections } from './knowledge/corrections.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
@@ -175,6 +176,7 @@ interface AuthParts {
   readonly i18n: I18n;
   readonly accountDeletion: AccountDeletion;
   readonly adminNotice: AccountNotice<'admin_role_changed'>;
+  readonly correctionNotice: AccountNotice<'correction_requested'>;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -240,6 +242,11 @@ function authParts(): Promise<AuthParts> {
         notifier,
         logger,
         label: 'AdminRoleNotice',
+      }),
+      correctionNotice: accountNotice<'correction_requested'>({
+        notifier,
+        logger,
+        label: 'CorrectionRequestNotice',
       }),
     };
   })();
@@ -511,6 +518,14 @@ const app = createApp({
   },
   ...(intake === undefined ? {} : { intake }),
   ruleReports: createRuleReportReview(() => connected().db),
+  corrections: createCorrections({
+    db: () => connected().db,
+    role,
+    versions: knowledgeVersions,
+    states: () => knowledgeDecisions().states(),
+    audit: lazyAudit,
+    notify: async (accountId, kind) => (await authParts()).correctionNotice(accountId, kind),
+  }),
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),

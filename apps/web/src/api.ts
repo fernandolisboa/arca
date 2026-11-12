@@ -116,6 +116,15 @@ export const ruleReportsQuery = queryOptions({
   retry: false,
 });
 
+/** One route version's correction requests, for an admin (ADR-0029). */
+export const correctionRequestsQuery = (routeId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'corrections', routeId, number],
+    queryFn: () => api.call(routes.listCorrectionRequests, { routeId, number }),
+    networkMode: 'always',
+    retry: false,
+  });
+
 /** How often a screen reads again while a version's independent check runs (ADR-0027). */
 const checkPollMs = 15_000;
 

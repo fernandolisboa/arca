@@ -47,6 +47,19 @@ $$;
 
 GRANT cases_definer TO app_migrator WITH ADMIN FALSE, INHERIT FALSE, SET TRUE;
 
+-- knowledge_definer owns the knowledge schema's SECURITY DEFINER functions (ADR-0029), on the same
+-- terms as cases_definer: no login, confined to its schema, handed functions by the migrator.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'knowledge_definer') THEN
+    CREATE ROLE knowledge_definer;
+  END IF;
+  ALTER ROLE knowledge_definer NOLOGIN NOINHERIT NOBYPASSRLS NOREPLICATION NOCREATEROLE NOCREATEDB;
+END
+$$;
+
+GRANT knowledge_definer TO app_migrator WITH ADMIN FALSE, INHERIT FALSE, SET TRUE;
+
 ALTER ROLE app_migrator PASSWORD '{{app_migrator}}';
 ALTER ROLE app_api PASSWORD '{{app_api}}';
 ALTER ROLE app_jobs PASSWORD '{{app_jobs}}';

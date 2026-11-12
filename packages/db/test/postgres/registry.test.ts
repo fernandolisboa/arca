@@ -23,7 +23,7 @@ const jobsPassword = randomBytes(24).toString('base64url');
 const runtimeRoles = ['app_api', 'app_jobs', 'app_auth', 'app_audit'] as const;
 // Roles without login: app_backup is retired (ADR-0021) and kept only so the migrations that once
 // granted to it replay; cases_definer owns the case schema's definer functions (spec 0007).
-const noLoginRoles = ['app_backup', 'cases_definer'] as const;
+const noLoginRoles = ['app_backup', 'cases_definer', 'knowledge_definer'] as const;
 const createdRoles: string[] = [];
 
 const accountA = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';

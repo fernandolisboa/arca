@@ -274,6 +274,109 @@ const reportColumns = [
 const reportPrivileges = (role: string) =>
   columnPrivileges(role, 'knowledge.independent_check', reportColumns);
 
+const correctionTables = {
+  'knowledge.correction_request': [
+    'id',
+    'route_id',
+    'version_number',
+    'item_kind',
+    'item_key',
+    'note',
+    'author_account_id',
+    'created_at',
+  ],
+  'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text'],
+  'knowledge.correction_event': ['id', 'request_id', 'kind', 'at'],
+} as const;
+const correctionFunctions = [
+  'knowledge.file_correction_request(text, integer, text, text, text, jsonb, text)',
+  'knowledge.correction_requests(text, integer, text, uuid)',
+  'knowledge.close_correction_request(uuid, text, uuid)',
+  'knowledge.admin_basis_holds(text, uuid)',
+];
+
+/** Every privilege a role holds on the correction request tables, and the functions it may run. */
+async function correctionAccess(role: string) {
+  const tables: Record<string, unknown> = {};
+  for (const [table, columns] of Object.entries(correctionTables)) {
+    const { columns: granted, table: whole } = await columnPrivileges(role, table, columns);
+    tables[table] = { columns: granted, table: whole };
+  }
+  const functions = await withClient(adminTarget(database), async (client) => {
+    const runs: string[] = [];
+    for (const signature of correctionFunctions) {
+      const row = await client.query<{ granted: boolean }>(
+        `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS granted`,
+        [role, signature],
+      );
+      if (row.rows[0]?.granted) runs.push(signature.slice(0, signature.indexOf('(')));
+    }
+    return runs;
+  });
+  return { tables, functions };
+}
+
+/** No privilege on any correction table, and on `owned` columns only `privileges`. */
+function correctionMatrix(
+  owned: Partial<Record<keyof typeof correctionTables, string[]>>,
+  table: Partial<Record<keyof typeof correctionTables, string[]>> = {},
+) {
+  return Object.fromEntries(
+    Object.entries(correctionTables).map(([name, columns]) => [
+      name,
+      {
+        columns: onEvery(columns, owned[name as keyof typeof correctionTables] ?? []),
+        table: table[name as keyof typeof correctionTables] ?? [],
+      },
+    ]),
+  );
+}
+
+describe('the correction request access matrix (ADR-0029)', () => {
+  it('gives app_api no table privilege, only the three request functions', async () => {
+    expect(await correctionAccess('app_api')).toEqual({
+      tables: correctionMatrix({}),
+      functions: [
+        'knowledge.file_correction_request',
+        'knowledge.correction_requests',
+        'knowledge.close_correction_request',
+      ],
+    });
+  });
+
+  it('lets app_jobs read every table and delete requests, for export and erasure, and run nothing', async () => {
+    expect(await correctionAccess('app_jobs')).toEqual({
+      tables: correctionMatrix(
+        {
+          'knowledge.correction_request': ['SELECT'],
+          'knowledge.correction_source': ['SELECT'],
+          'knowledge.correction_event': ['SELECT'],
+        },
+        { 'knowledge.correction_request': ['DELETE'] },
+      ),
+      functions: [],
+    });
+  });
+
+  it('lets knowledge_definer read and insert, never change or delete, and run its own functions', async () => {
+    const access = await correctionAccess('knowledge_definer');
+    expect(access.tables).toEqual(
+      correctionMatrix({
+        'knowledge.correction_request': ['SELECT', 'INSERT'],
+        'knowledge.correction_source': ['SELECT', 'INSERT'],
+        'knowledge.correction_event': ['SELECT', 'INSERT'],
+      }),
+    );
+  });
+
+  it.each([
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
+    ...retiredRoles,
+  ])('gives %s no access', async (role) => {
+    expect(await correctionAccess(role)).toEqual({ tables: correctionMatrix({}), functions: [] });
+  });
+});
+
 const onEvery = (columns: readonly string[], privileges: string[]) =>
   Object.fromEntries(columns.map((column) => [column, privileges]));
 const onEveryColumn = (privileges: string[]) => onEvery(auditColumns, privileges);
@@ -341,17 +444,21 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, decision, rule summary, check start and check report tables, with no foreign keys and forced row-level security', async () => {
+  it('has only the admin grant, decision, rule summary, check, and correction request tables, with forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
         { name: 'check_progress', forced: true },
         { name: 'check_start', forced: true },
+        { name: 'correction_event', forced: true },
+        { name: 'correction_request', forced: true },
+        { name: 'correction_source', forced: true },
         { name: 'decision', forced: true },
         { name: 'independent_check', forced: true },
         { name: 'rule_summary', forced: true },
       ],
-      foreignKeys: 0,
+      // A correction request's sources and events, which go with it (ADR-0029).
+      foreignKeys: 2,
     });
   });
 

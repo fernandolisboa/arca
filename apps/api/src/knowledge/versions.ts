@@ -3,6 +3,7 @@ import {
   type CalendarDate,
   type ComparisonVersionView,
   type DecisionStates,
+  type VersionIdentity,
   type VersionView,
   compareDates,
   comparisonStateOf,
@@ -19,6 +20,8 @@ export interface KnowledgeVersions {
   /** Every bundled version with its state, the newest first (spec 0007, R7). */
   readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check' | 'points'>[]>;
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
+  /** A route's version identities, which never carry a version's content. */
+  readonly identities: (routeId: string) => readonly VersionIdentity[];
   /** Every bundled comparison version with its state, the newest first (ADR-0026). */
   readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;
   readonly comparisonView: (
@@ -76,6 +79,8 @@ export function createKnowledgeVersions({
             right.number - left.number,
         );
     },
+
+    identities: (routeId) => catalog.versions(routeId).map(({ identity }) => identity),
 
     view: async (routeId, number) => {
       const versions = catalog.versions(routeId);

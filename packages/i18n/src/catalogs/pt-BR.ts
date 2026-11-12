@@ -1025,6 +1025,34 @@ export const ptBR = {
   /** The activation screen (spec 0007, R7), shown to admins only. */
   knowledge: {
     title: 'Tela de ativação',
+    /** An owner-list admin's correction requests on a version (ADR-0029). */
+    corrections: {
+      open: 'Apontar erro',
+      formTitle: 'Apontar erro na regra',
+      privacy:
+        'Quem lê este pedido é uma IA. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
+      note: 'O que está errado?',
+      link: 'Link',
+      linkHint: 'Endereço completo, começando com https://',
+      text: 'Texto colado',
+      addLink: 'Adicionar link',
+      addText: 'Colar um texto',
+      send: 'Enviar pedido',
+      sending: 'Enviando…',
+      cancel: 'Cancelar',
+      sent: 'Pedido enviado.',
+      tooMany: 'Você já mandou muitos pedidos hoje. Tente de novo amanhã.',
+      sendFailure: 'Não deu para enviar o pedido agora. Confira os links e tente de novo.',
+      title: 'Pedidos de correção',
+      loadFailure: 'Não deu para carregar os pedidos de correção agora.',
+      state:
+        '{state, select, open {Aberto} taken {Em correção} answered {Respondido} other {Fechado}}',
+      item: '{kind, select, version {Versão inteira} settings {Configurações da versão} requirement {Requisito: {title}} assessment {Critério subjetivo: {title}} dependent {Dependente: {title}} cost {Custo: {title}} duration {Prazo: {title}} other {Grupo de países: {title}}}',
+      filedAt: 'Enviado em {date}',
+      sourceKind: '{kind, select, link {Link} other {Texto colado}}',
+      close: 'Fechar pedido',
+      closeFailure: 'Não deu para fechar o pedido agora. Tente de novo.',
+    },
     reports: {
       title: 'Avisos de regra errada',
       lead: 'Pessoas do caso marcaram estes requisitos como possivelmente errados. Pesquise a regra nas fontes antes de encerrar os avisos.',
@@ -1757,6 +1785,10 @@ export const ptBR = {
         subject: 'Recuperação bloqueada por 24 horas',
         body: 'O código de recuperação da sua conta Arca foi digitado errado várias vezes em {when} (horário de Brasília). Por segurança, a recuperação fica bloqueada pelas próximas 24 horas.',
       },
+      correction_requested: {
+        subject: 'Novo pedido de correção de regra',
+        body: 'Em {when} (horário de Brasília), chegou um pedido de correção de regra no Arca. Se não foi você que mandou, entre no Arca, feche o pedido e confira seus dispositivos.',
+      },
       admin_role_changed: {
         subject: 'Mudança nos administradores do Arca',
         body: 'Em {when} (horário de Brasília), uma conta ganhou ou perdeu o papel de administrador no Arca. Quem administra aprova as regras usadas nas análises. Se você não esperava por isso, entre no Arca e confira os administradores na área da família.',
@@ -1804,6 +1836,10 @@ export const ptBR = {
     inactivity_warning: {
       title: 'Sua conta Arca vai ser apagada por falta de uso',
       body: 'Para manter a conta, entre no Arca com sua chave de acesso. A data está no email que mandamos.',
+    },
+    correction_requested: {
+      title: 'Novo pedido de correção de regra',
+      body: 'Se não foi você que mandou, feche o pedido no Arca e confira seus dispositivos.',
     },
     admin_role_changed: {
       title: 'Mudança nos administradores do Arca',
@@ -1872,6 +1908,9 @@ export const ptBR = {
       caseRelationships: 'Vínculos familiares',
       caseShares: 'Com quem você compartilhou dados',
       ruleReports: 'Avisos de regra errada que você enviou',
+      correctionRequests: 'Pedidos de correção de regra que você enviou',
+      correctionSources: 'Links e textos dos seus pedidos de correção',
+      correctionEvents: 'O que aconteceu com seus pedidos de correção',
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },

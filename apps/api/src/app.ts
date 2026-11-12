@@ -48,7 +48,9 @@ import {
   adminRoutes,
   caseRoutes,
   comparisonRoutes,
+  CloseCorrectionRequest,
   CloseRuleReportsRequest,
+  FileCorrectionRequest,
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
@@ -87,6 +89,7 @@ import {
   caseLimits,
   deviceLimits,
   intakeLimits,
+  correctionRequestLimits,
   ruleSummaryLimits,
   ruleCheckLimits,
   inviteLimits,
@@ -119,6 +122,7 @@ import { type DecisionKind, type DecisionSubject } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
+import type { Corrections } from './knowledge/corrections.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
@@ -228,6 +232,8 @@ export interface AppDependencies {
   readonly versionChecks?: VersionChecks;
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
+  /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
+  readonly corrections?: Corrections;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -306,6 +312,7 @@ export type ErrorCode =
   | 'too_many_push_channels'
   | 'not_admin'
   | 'owner_list_admin'
+  | 'owner_list_only'
   | 'already_rejected'
   | 'accounts_closed'
   | 'too_large'
@@ -446,6 +453,7 @@ export function createApp({
   ruleSummaries,
   versionChecks,
   ruleReports,
+  corrections,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1657,6 +1665,49 @@ export function createApp({
     if ('refused' in review) return review.refused;
     const request = CloseRuleReportsRequest.parse(await c.req.json());
     return c.json({ closed: await review.reports.close(request) }, 200);
+  });
+  const correctionsOf = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    return current === null || corrections === undefined
+      ? { refused: unauthorized(c) }
+      : { corrections, current };
+  };
+  v1.openapi(openApiRoutes.fileCorrectionRequest, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const request = FileCorrectionRequest.parse(await c.req.json());
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.file, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.file(accountId, request);
+    switch (outcome) {
+      case 'not_admin':
+      case 'owner_list_only':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
+  v1.openapi(openApiRoutes.listCorrectionRequests, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    const { routeId, number } = VersionViewQuery.parse(c.req.query());
+    const outcome = await reads.corrections.list(reads.current.accountId, routeId, number);
+    if (outcome === 'not_admin') return fail(c, outcome, 403);
+    if (outcome === 'not_found') return fail(c, outcome, 404);
+    return c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.closeCorrectionRequest, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    const { id } = CloseCorrectionRequest.parse(await c.req.json());
+    const outcome = await reads.corrections.close(reads.current.accountId, id);
+    if (outcome === 'not_admin') return fail(c, outcome, 403);
+    if (outcome === 'not_found') return fail(c, outcome, 404);
+    return c.json({}, 200);
   });
   const checkedActivation =
     knowledge === undefined || knowledgeVersions === undefined

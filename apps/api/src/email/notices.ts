@@ -19,6 +19,7 @@ export const noticeKinds = [
   'account_erased',
   'inactivity_warning',
   'admin_role_changed',
+  'correction_requested',
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 

@@ -83,6 +83,7 @@ function setup({
     knowledgeVersions: {
       list: () => Promise.resolve([]),
       view: (_, number) => Promise.resolve(number === 2 ? ({} as VersionView) : undefined),
+      identities: () => [],
       comparisons: () => Promise.resolve([]),
       comparisonView: () => Promise.resolve(undefined),
     } satisfies KnowledgeVersions,

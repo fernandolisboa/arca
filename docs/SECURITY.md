@@ -54,7 +54,7 @@ Revisited at the start of every epic. New features list the assets they touch an
 **Identity and access**
 - Better Auth with passkeys only ([ADR-0006](adr/0006-auth.md), [ADR-0015](adr/0015-identity-enrollment-step-up-and-recovery.md)); invite-only enrollment until Phase 3; native passkey APIs on mobile; purpose-bound step-up for sensitive actions, its assertion stored and re-verifiable, including giving the admin role; knowledge-base decisions stored under [ADR-0022](adr/0022-single-approver-activation.md) keep their step-up, and new ones need a signed-in admin ([ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)); device list with remote sign-out; recovery that needs the email link and the recovery code, with a 24-hour inactive period and notices.
 - Forced row-level security on every table with case data, identity set per transaction, plus API-level checks; deny-by-default policies ([ADR-0008](adr/0008-database-security-and-environments.md)).
-- Separate SQL-created roles for API, jobs, auth, audit and migrations, none able to bypass row-level security, plus `cases_definer`, which cannot log in and owns the few reviewed `SECURITY DEFINER` functions of the case schema.
+- Separate SQL-created roles for API, jobs, auth, audit and migrations, none able to bypass row-level security, plus `cases_definer` and `knowledge_definer`, which cannot log in and own the few reviewed `SECURITY DEFINER` functions of the case schema and of correction requests.
 - Access-matrix tests in CI for every role, person and table.
 
 **Web and API**

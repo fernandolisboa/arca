@@ -215,6 +215,14 @@ export {
   versionIdentity,
 } from './rules/catalog.js';
 export {
+  type CorrectionEvent,
+  type CorrectionItemKind,
+  type CorrectionState,
+  correctionItemKinds,
+  correctionState,
+  keyedCorrectionItemKinds,
+} from './rules/correction-request.js';
+export {
   type CheckedDecision,
   type DecidedVersion,
   type DecisionKind,

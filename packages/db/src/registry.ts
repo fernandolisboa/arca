@@ -106,6 +106,13 @@ const keptPerson = (columns: readonly string[], parentColumns: readonly string[]
   parentColumns,
 });
 
+/** A row of an admin's correction request (ADR-0029), which goes with the request. */
+const correctionRequest: ParentLink = {
+  parent: 'knowledge.correction_request',
+  columns: ['request_id'],
+  parentColumns: ['id'],
+};
+
 export const registry: Registry = {
   entries: [
     {
@@ -434,6 +441,30 @@ export const registry: Registry = {
       pool: 'app_jobs',
       export: ['preferences', 'updated_at'],
       label: 'dataExport.tables.comparisonPreferences',
+    },
+    {
+      table: 'knowledge.correction_request',
+      strategy: 'delete',
+      owner: ownedByAccount('author_account_id'),
+      pool: 'app_jobs',
+      export: ['route_id', 'version_number', 'item_kind', 'item_key', 'note', 'created_at'],
+      label: 'dataExport.tables.correctionRequests',
+    },
+    {
+      table: 'knowledge.correction_source',
+      strategy: 'delete',
+      owner: correctionRequest,
+      pool: 'app_jobs',
+      export: ['position', 'kind', 'url', 'text'],
+      label: 'dataExport.tables.correctionSources',
+    },
+    {
+      table: 'knowledge.correction_event',
+      strategy: 'delete',
+      owner: correctionRequest,
+      pool: 'app_jobs',
+      export: ['kind', 'at'],
+      label: 'dataExport.tables.correctionEvents',
     },
     {
       table: 'audit.event',

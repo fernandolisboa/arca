@@ -1,0 +1,1072 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "72cb893f-bc99-4337-9035-9749150882d6",
+  "prevIds": [
+    "cb37d6e1-7d8d-4cde-bdd9-bada1493f99f"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|tbl|knowledge.correction_event",
+        "n|tbl|knowledge.correction_event",
+        "e|tbl|knowledge.correction_event",
+        "n|rel|knowledge.correction_event",
+        "n|type|knowledge.correction_event",
+        "n|rel|knowledge.correction_event_pkey",
+        "n|rel|knowledge.correction_event_closed_once"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|tbl|knowledge.correction_request",
+        "n|tbl|knowledge.correction_request",
+        "e|tbl|knowledge.correction_request",
+        "n|rel|knowledge.correction_request",
+        "n|type|knowledge.correction_request",
+        "n|rel|knowledge.correction_request_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|tbl|knowledge.correction_source",
+        "n|tbl|knowledge.correction_source",
+        "e|tbl|knowledge.correction_source",
+        "n|rel|knowledge.correction_source",
+        "n|type|knowledge.correction_source",
+        "n|rel|knowledge.correction_source_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "correction_request",
+        "correction_request_version_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.correction_request_version_idx",
+        "n|idx|knowledge.correction_request_version_idx",
+        "e|idx|knowledge.correction_request_version_idx",
+        "n|rel|knowledge.correction_request_version_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.route_id",
+        "n|col|knowledge.correction_request.version_number"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "correction_request",
+        "correction_request_author_account_id_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.correction_request_author_account_id_idx",
+        "n|idx|knowledge.correction_request_author_account_id_idx",
+        "e|idx|knowledge.correction_request_author_account_id_idx",
+        "n|rel|knowledge.correction_request_author_account_id_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.author_account_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|fk|knowledge.correction_event.correction_event_request_fkey",
+        "n|fk|knowledge.correction_event.correction_event_request_fkey",
+        "e|fk|knowledge.correction_event.correction_event_request_fkey",
+        "n|con|knowledge.correction_event.correction_event_request_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.request_id",
+        "n|col|knowledge.correction_request.id",
+        "e|uniqueness|knowledge.correction_request.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|fk|knowledge.correction_source.correction_source_request_fkey",
+        "n|fk|knowledge.correction_source.correction_source_request_fkey",
+        "e|fk|knowledge.correction_source.correction_source_request_fkey",
+        "n|con|knowledge.correction_source.correction_source_request_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_source.request_id",
+        "n|col|knowledge.correction_request.id",
+        "e|uniqueness|knowledge.correction_request.id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "admin_grant"
+      ],
+      "writes": [
+        "s|pol|knowledge.admin_grant.admin_grant_read_definer",
+        "n|pol|knowledge.admin_grant.admin_grant_read_definer",
+        "e|pol|knowledge.admin_grant.admin_grant_read_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.admin_grant",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.admin_grant"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_event.correction_event_insert_by_definer",
+        "n|pol|knowledge.correction_event.correction_event_insert_by_definer",
+        "e|pol|knowledge.correction_event.correction_event_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_event"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_event.correction_event_select_by_definer",
+        "n|pol|knowledge.correction_event.correction_event_select_by_definer",
+        "e|pol|knowledge.correction_event.correction_event_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_event"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_event.correction_event_select_own_by_jobs",
+        "n|pol|knowledge.correction_event.correction_event_select_own_by_jobs",
+        "e|pol|knowledge.correction_event.correction_event_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_event"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_request.correction_request_insert_by_definer",
+        "n|pol|knowledge.correction_request.correction_request_insert_by_definer",
+        "e|pol|knowledge.correction_request.correction_request_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_request.correction_request_select_by_definer",
+        "n|pol|knowledge.correction_request.correction_request_select_by_definer",
+        "e|pol|knowledge.correction_request.correction_request_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_request.correction_request_select_own_by_jobs",
+        "n|pol|knowledge.correction_request.correction_request_select_own_by_jobs",
+        "e|pol|knowledge.correction_request.correction_request_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_request.correction_request_delete_own_by_jobs",
+        "n|pol|knowledge.correction_request.correction_request_delete_own_by_jobs",
+        "e|pol|knowledge.correction_request.correction_request_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_source.correction_source_insert_by_definer",
+        "n|pol|knowledge.correction_source.correction_source_insert_by_definer",
+        "e|pol|knowledge.correction_source.correction_source_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_source"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_source.correction_source_select_by_definer",
+        "n|pol|knowledge.correction_source.correction_source_select_by_definer",
+        "e|pol|knowledge.correction_source.correction_source_select_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.correction_source"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_source"
+      ],
+      "writes": [
+        "s|pol|knowledge.correction_source.correction_source_select_own_by_jobs",
+        "n|pol|knowledge.correction_source.correction_source_select_own_by_jobs",
+        "e|pol|knowledge.correction_source.correction_source_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_source",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.correction_source"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "correction_event",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "correction_request",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "correction_source",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "version_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "item_kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "item_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "note",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "author_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "text",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_version_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "route_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "version_number",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_author_account_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "author_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_request_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "correction_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_request_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "correction_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_pkey",
+        "columns": [
+          "request_id",
+          "position"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_closed_once",
+        "nameExplicit": true,
+        "columns": [
+          "request_id",
+          "kind"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_kind",
+        "value": "\"kind\" = 'closed'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_route_id_format",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_version_number_positive",
+        "value": "\"version_number\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_item_kind",
+        "value": "\"item_kind\" IN ('version', 'settings', 'requirement', 'assessment', 'dependent', 'cost', 'duration', 'countrySet')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_item_key",
+        "value": "CASE WHEN \"item_kind\" IN ('version', 'settings') THEN \"item_key\" IS NULL\n        ELSE \"item_key\" ~ '^[a-z0-9][a-z0-9./-]{0,79}$' END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_note_length",
+        "value": "char_length(\"note\") BETWEEN 1 AND 4000",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_position_range",
+        "value": "\"position\" BETWEEN 0 AND 4",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_shape",
+        "value": "CASE \"kind\"\n        WHEN 'link' THEN \"text\" IS NULL AND \"url\" ~ '^https://[^[:space:]]+$'\n          AND char_length(\"url\") <= 2048\n        WHEN 'text' THEN \"url\" IS NULL AND char_length(\"text\") BETWEEN 1 AND 20000\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "admin_grant",
+        "name": "admin_grant_read_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "EXISTS (SELECT FROM \"knowledge\".\"correction_request\" \"request\"\n        WHERE \"request\".\"id\" = \"knowledge\".\"correction_event\".\"request_id\"\n          AND \"request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"knowledge\".\"correction_request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"knowledge\".\"correction_request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_select_by_definer",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_source",
+        "name": "correction_source_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "EXISTS (SELECT FROM \"knowledge\".\"correction_request\" \"request\"\n        WHERE \"request\".\"id\" = \"knowledge\".\"correction_source\".\"request_id\"\n          AND \"request\".\"author_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}
