@@ -6,7 +6,6 @@ import {
   currentReport,
   listedCheckStatus,
   maxAutomaticStartsPerDay,
-  maxStartsPerDay,
   requestedStart,
   versionsToStart,
 } from '../../src/independent-check/reports.js';
@@ -132,7 +131,7 @@ describe('versionsToStart', () => {
     expect(versionsToStart(candidates, 0, now)).toHaveLength(maxAutomaticStartsPerDay);
     expect(versionsToStart(candidates, maxAutomaticStartsPerDay - 3, now)).toHaveLength(3);
     expect(versionsToStart(candidates, maxAutomaticStartsPerDay, now)).toHaveLength(0);
-    expect(versionsToStart(candidates, maxStartsPerDay + 5, now)).toHaveLength(0);
+    expect(versionsToStart(candidates, maxAutomaticStartsPerDay + 5, now)).toHaveLength(0);
   });
 });
 
@@ -140,36 +139,14 @@ describe('requestedStart', () => {
   const live = { id: 'start-9', startedAt: now - 5 * minute };
   const newerLive = { id: 'start-10', startedAt: now - minute };
   const dead = { id: 'start-8', startedAt: now - 31 * minute };
-  it.each<[string, { id: string; startedAt: number }[], { startId: string }[], number, unknown]>([
-    ['starts with nothing before', [], [], 0, { outcome: 'start' }],
-    ['starts over a current report', [], [report()], 3, { outcome: 'start' }],
-    ['starts past the automatic share', [], [], maxAutomaticStartsPerDay, { outcome: 'start' }],
-    ['starts with one start left', [], [], maxStartsPerDay - 1, { outcome: 'start' }],
-    ['is limited at the cap', [], [], maxStartsPerDay, { outcome: 'limit' }],
-    ['answers the live start', [live], [], 1, { outcome: 'live', start: live }],
-    [
-      'answers the live start even at the cap',
-      [live],
-      [],
-      maxStartsPerDay,
-      {
-        outcome: 'live',
-        start: live,
-      },
-    ],
-    [
-      'answers the newest live start',
-      [live, newerLive],
-      [],
-      2,
-      {
-        outcome: 'live',
-        start: newerLive,
-      },
-    ],
-    ['starts after a dead start', [dead], [], 1, { outcome: 'start' }],
-    ['starts after its start reported', [live], [{ startId: 'start-9' }], 1, { outcome: 'start' }],
-  ])('%s', (_, starts, reports, inWindow, expected) => {
-    expect(requestedStart(starts, reports, inWindow, now)).toEqual(expected);
+  it.each<[string, { id: string; startedAt: number }[], { startId: string }[], unknown]>([
+    ['starts with nothing before', [], [], { outcome: 'start' }],
+    ['starts over a current report', [], [report()], { outcome: 'start' }],
+    ['answers the live start', [live], [], { outcome: 'live', start: live }],
+    ['answers the newest live start', [live, newerLive], [], { outcome: 'live', start: newerLive }],
+    ['starts after a dead start', [dead], [], { outcome: 'start' }],
+    ['starts after its start reported', [live], [{ startId: 'start-9' }], { outcome: 'start' }],
+  ])('%s', (_, starts, reports, expected) => {
+    expect(requestedStart(starts, reports, now)).toEqual(expected);
   });
 });

@@ -1,9 +1,4 @@
-import {
-  ApiError,
-  maxStartsPerDay,
-  type VersionView,
-  VersionViewQuery,
-} from '@arca/api-contract/client';
+import { ApiError, type VersionView, VersionViewQuery } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -126,9 +121,7 @@ function CheckRunBody({
       />
       <CheckRunConfirm state={checkRun} words={words} />
       {!checkRun.confirming && checkRun.failure !== undefined && (
-        <p role="status">
-          {t('knowledge.checkRun.startFailure', { reason: checkRun.failure, max: maxStartsPerDay })}
-        </p>
+        <p role="status">{t('knowledge.checkRun.startFailure', { reason: checkRun.failure })}</p>
       )}
     </>
   );

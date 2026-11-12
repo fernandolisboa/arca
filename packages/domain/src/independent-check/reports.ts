@@ -66,12 +66,11 @@ export const reportLifetime = 30 * day;
 export const failedReportLifetime = day;
 /** A start with no report after this long is dead, and the version may be started again. */
 export const startLifetime = 30 * minute;
-/** Starts allowed in any 24 hours, per environment. */
-export const maxStartsPerDay = 20;
+/** The window the automatic share is counted over. */
 export const startWindow = day;
 /**
- * Starts the activation screen may use by itself in the window; the rest of the cap is kept for
- * checks an admin asks for.
+ * Starts the activation screen may use by itself in any 24 hours, per environment, counting every
+ * start in the window. A check an admin asks for has no cap.
  */
 export const maxAutomaticStartsPerDay = 15;
 
@@ -193,21 +192,17 @@ export function versionsToStart<C extends StartCandidate>(
 
 /** What happens when an admin asks for one version's check now. */
 export type RequestedStart<S extends CheckStart> =
-  | { readonly outcome: 'live'; readonly start: S }
-  | { readonly outcome: 'limit' }
-  | { readonly outcome: 'start' };
+  { readonly outcome: 'live'; readonly start: S } | { readonly outcome: 'start' };
 
 /**
  * An admin's own start of one version, whatever its reports say: its live start is answered in
- * place of a second one, and otherwise it starts unless the starts of the last 24 hours are used.
+ * place of a second one, and otherwise it starts.
  */
 export function requestedStart<S extends CheckStart>(
   starts: readonly S[],
   reports: readonly Pick<ReportMeta, 'startId'>[],
-  startsInWindow: number,
   now: number,
 ): RequestedStart<S> {
   const live = newestStart(starts.filter((start) => liveStart(start, reports, now)));
-  if (live !== undefined) return { outcome: 'live', start: live };
-  return startsInWindow >= maxStartsPerDay ? { outcome: 'limit' } : { outcome: 'start' };
+  return live === undefined ? { outcome: 'start' } : { outcome: 'live', start: live };
 }

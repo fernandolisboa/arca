@@ -32,7 +32,10 @@ export interface RequestedCheckStart {
   readonly began: boolean;
 }
 
-/** The start ledger (ADR-0027): at most 20 starts in any 24 hours, never two live for a version. */
+/**
+ * The start ledger (ADR-0027): automatic starts within their share of any 24 hours, never two
+ * live for a version.
+ */
 export interface CheckStarts {
   /**
    * Records a start for each requested version that is due, in order, within what is left of the
@@ -41,12 +44,12 @@ export interface CheckStarts {
   readonly begin: (requests: readonly StartRequest[]) => Promise<readonly RecordedStart[]>;
   /**
    * An admin's start of one version, whatever its reports say: answers its live start when it has
-   * one, records a new start otherwise, or answers undefined when the cap is used.
+   * one, records a new start otherwise.
    */
   readonly request: (version: {
     readonly routeId: string;
     readonly number: number;
-  }) => Promise<RequestedCheckStart | undefined>;
+  }) => Promise<RequestedCheckStart>;
   /** The starts of the last 24 hours, for the list's running status. */
   readonly recent: () => Promise<readonly RecordedStart[]>;
 }
@@ -104,14 +107,11 @@ export function memoryCheckStarts(
       return started;
     },
     request: async ({ routeId, number }) => {
-      const inWindow = await recent();
       const decision = requestedStart(
-        grouped(inWindow)({ routeId, number }),
+        grouped(await recent())({ routeId, number }),
         await reports.list(),
-        inWindow.length,
         now(),
       );
-      if (decision.outcome === 'limit') return undefined;
       if (decision.outcome === 'live') return { start: decision.start, began: false };
       const start = { id: randomUUID(), routeId, number, startedAt: now() };
       rows.push(start);
@@ -133,7 +133,7 @@ const startColumns = {
 /**
  * `knowledge.check_start` on the app_api pool. A start is decided and recorded in one transaction
  * under an environment-wide advisory lock, on the database's clock, so concurrent screens on any
- * instance neither pass the cap nor start a version twice.
+ * instance neither pass the automatic share nor start a version twice.
  */
 export function postgresCheckStarts(db: () => Database): CheckStarts {
   const since = sql`clock_timestamp() - interval '24 hours'`;
@@ -185,8 +185,7 @@ export function postgresCheckStarts(db: () => Database): CheckStarts {
     request: (version) =>
       db().transaction(async (tx) => {
         const { now, starts, reports } = await ledger(tx);
-        const decision = requestedStart(grouped(starts)(version), reports, starts.length, now);
-        if (decision.outcome === 'limit') return undefined;
+        const decision = requestedStart(grouped(starts)(version), reports, now);
         if (decision.outcome === 'live') return { start: decision.start, began: false };
         const start = await insert(tx, version);
         if (start === undefined) throw new Error('The start was not recorded');

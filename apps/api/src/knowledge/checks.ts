@@ -54,7 +54,7 @@ export type ReportOutcome =
 export type RequestedCheckOutcome =
   /** `started` is false when the version's live start was answered in place of a new one. */
   | { readonly ok: true; readonly started: boolean }
-  | { readonly ok: false; readonly reason: 'not_found' | 'rate_limited' | 'check_not_started' };
+  | { readonly ok: false; readonly reason: 'not_found' | 'check_not_started' };
 
 /** A check's progress, and whether the scripted checker writes this environment's answers. */
 export type ShownProgress = CheckProgress & { readonly scripted: boolean };
@@ -164,7 +164,6 @@ export function createVersionChecks({
     async startOne(routeId, number) {
       if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
       const requested = await starts.request({ routeId, number });
-      if (requested === undefined) return { ok: false, reason: 'rate_limited' };
       if (!requested.began) return { ok: true, started: false };
       return (await runAll([requested.start], '/v1/knowledge/versions/check/start'))
         ? { ok: true, started: true }

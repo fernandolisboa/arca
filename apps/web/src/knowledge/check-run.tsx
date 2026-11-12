@@ -1,9 +1,4 @@
-import {
-  type ApiError,
-  type CheckProgress,
-  maxStartsPerDay,
-  routes,
-} from '@arca/api-contract/client';
+import { type ApiError, type CheckProgress, routes } from '@arca/api-contract/client';
 import { Button, Icon, StatusChip, type StatusTone, buttonClass } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -168,10 +163,7 @@ export function CheckRunConfirm({
           ? t('knowledge.checkRun.starting')
           : state.failure === undefined
             ? ''
-            : t('knowledge.checkRun.startFailure', {
-                reason: state.failure,
-                max: maxStartsPerDay,
-              })}
+            : t('knowledge.checkRun.startFailure', { reason: state.failure })}
       </p>
     </section>
   );

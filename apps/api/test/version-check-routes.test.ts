@@ -72,7 +72,10 @@ function setup({
   refusals = new Map(),
   superseded = new Set<number>(),
   runFails = false,
+  blocked,
 }: {
+  /** The rate-limit rule that refuses, if any. */
+  blocked?: string;
   /** Starting the workflow throws, as when the platform refuses it. */
   runFails?: boolean;
   admitted?: boolean;
@@ -160,6 +163,7 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
+  const limited: [string, string][] = [];
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -169,7 +173,17 @@ function setup({
       signedIn: () => Promise.resolve(admin),
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: {
+      ...noLimits,
+      limiter: {
+        hit: (rule, subject) => {
+          limited.push([rule.name, subject]);
+          return Promise.resolve(
+            rule.name === blocked ? { allowed: false, retryAfterSeconds: 60 } : { allowed: true },
+          );
+        },
+      },
+    },
     admins,
     knowledge,
     knowledgeVersions: versions,
@@ -263,6 +277,7 @@ function setup({
     activateChecked,
     decided,
     startOne,
+    limited,
     watch,
     watched,
     watchedWhole,
@@ -305,7 +320,7 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
     expect(await (await start()).json()).toEqual({ started: 0 });
   });
 
-  it('stays within 15 starts in any 24 hours, so 5 are left for an admin', async () => {
+  it('stays within 15 starts in any 24 hours', async () => {
     const { start, advance } = setup({ count: 25 });
     expect(await (await start()).json()).toEqual({ started: 15 });
     advance(31 * minute);
@@ -592,19 +607,26 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
     expect(runs).toHaveLength(1);
   });
 
-  it('uses the 5 starts the automatic share leaves, then answers the rate limit', async () => {
+  it('starts every version an admin asks for, past the automatic share, with no daily cap', async () => {
     const { start, startOne, runs, advance } = setup({ count: 25 });
     await start();
     advance(31 * minute);
-    for (const number of [16, 17, 18, 19, 20]) {
-      expect((await startOne(number)).status).toBe(200);
+    for (let number = 1; number <= 25; number += 1) {
+      expect(await (await startOne(number)).json()).toEqual({ started: true });
     }
-    const limited = await startOne(21);
-    expect(limited.status).toBe(429);
-    expect(await limited.json()).toEqual({ error: { code: 'rate_limited' } });
-    expect(runs).toHaveLength(20);
-    advance(24 * 60 * minute);
-    expect((await startOne(21)).status).toBe(200);
+    expect(runs).toHaveLength(15 + 25);
+  });
+
+  it('counts each request against a per-minute burst limit per admin, and starts nothing past it', async () => {
+    const { startOne, runs, limited } = setup({ count: 1 });
+    await startOne(1);
+    expect(limited).toEqual([['rule_check_minute', admin.accountId]]);
+    const blocked = setup({ count: 1, blocked: 'rule_check_minute' });
+    const response = await blocked.startOne(1);
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ error: { code: 'rate_limited' } });
+    expect(blocked.runs).toEqual([]);
+    expect(runs).toHaveLength(1);
   });
 
   it('answers 404 for a version the app does not bundle', async () => {
