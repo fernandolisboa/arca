@@ -195,7 +195,7 @@ export async function clearKnowledgeDecisions(): Promise<void> {
   });
 }
 
-/** Empties the check starts, which no role may delete, so the daily cap starts over. */
+/** Empties the check starts, which no role may delete, so the automatic share starts over. */
 export async function clearCheckStarts(): Promise<void> {
   await asAdmin(async (client) => {
     await client.query('TRUNCATE knowledge.check_start');
