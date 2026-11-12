@@ -519,7 +519,7 @@ export const registry: Registry = {
       strategy: 'retain',
       owner: ownedByAccount('actor_account_id'),
       reason:
-        'The record of who made or revoked the corrector key and when, which the corrector run\'s answers name, with account IDs and key digests only (ADR-0029).',
+        "The record of who made or revoked the corrector key and when, which the corrector run's answers name, with account IDs and key digests only (ADR-0029).",
       period: 'forever',
       export: ['kind', 'at'],
       label: 'dataExport.tables.correctorKeys',
