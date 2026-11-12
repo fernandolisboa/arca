@@ -1211,6 +1211,13 @@ export const ptBR = {
       confirmLead:
         'A IA lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
       cost: 'Cada análise gasta de US$ 0,30 a US$ 0,50 do seu crédito da API.',
+      lastCost: 'A última análise desta versão custou {cost} do seu crédito da API.',
+      spent:
+        '{state, select, running {Gasto até agora: {cost}.} other {Esta análise custou {cost}.}}',
+      costUnknown:
+        'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou a IA não informou quantos tokens gastou.',
+      costScripted: 'Esta foi uma análise de teste, sem IA de verdade. Não custou nada.',
+      underCent: 'menos de US$ 0,01',
       confirm: 'Analisar agora',
       starting: 'Começando a análise…',
       startFailure:

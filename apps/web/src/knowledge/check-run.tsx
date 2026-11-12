@@ -41,6 +41,8 @@ export interface CheckRunState {
   readonly offered: boolean;
   /** Whether a check of the version is running now. */
   readonly running: boolean;
+  /** What the version's newest check whose report did not fail cost, in millionths of a dollar, when priced. */
+  readonly lastCostMicroUsd: number | null;
   readonly confirming: boolean;
   readonly starting: boolean;
   readonly failure: StartFailure | undefined;
@@ -59,7 +61,7 @@ export function useCheckRun(version: CheckedVersion, onStarted?: () => void): Ch
   const queryClient = useQueryClient();
   const check = useQuery(versionCheckQuery(routeId, number));
   const progress = useQuery(checkProgressQuery(routeId, number));
-  const finished = progress.data?.state === 'finished';
+  const finished = progress.data?.progress?.state === 'finished';
   // A forced check replaces a current report, so the report is read again once the run ends.
   useEffect(() => {
     if (finished) void queryClient.invalidateQueries({ queryKey: ['knowledge', 'check'] });
@@ -77,7 +79,8 @@ export function useCheckRun(version: CheckedVersion, onStarted?: () => void): Ch
   return {
     version,
     offered: check.data?.enabled === true,
-    running: progress.data?.state === 'running',
+    running: progress.data?.progress?.state === 'running',
+    lastCostMicroUsd: progress.data?.lastCostMicroUsd ?? null,
     confirming,
     starting: start.isPending,
     failure: start.isError ? startFailure(start.error) : undefined,
@@ -147,7 +150,11 @@ export function CheckRunConfirm({
         {t('knowledge.checkRun.confirmTitle')}
       </h4>
       <p>{t('knowledge.checkRun.confirmLead')}</p>
-      <p className="font-medium">{t('knowledge.checkRun.cost')}</p>
+      <p className="font-medium">
+        {state.lastCostMicroUsd === null
+          ? t('knowledge.checkRun.cost')
+          : t('knowledge.checkRun.lastCost', { cost: words.usd(state.lastCostMicroUsd) })}
+      </p>
       <div className="flex flex-wrap gap-3">
         <Button disabled={state.starting} onClick={state.confirm}>
           {t('knowledge.checkRun.confirm')}
@@ -168,6 +175,27 @@ export function CheckRunConfirm({
       </p>
     </section>
   );
+}
+
+/** What a check spent: so far while it runs, in all once it ends; nothing before a model call. */
+export function CheckRunCost({
+  progress,
+  words,
+}: {
+  readonly progress: CheckProgress;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const { cost, state } = progress;
+  if (cost === null) return null;
+  switch (cost.kind) {
+    case 'priced':
+      return <p>{t('knowledge.checkRun.spent', { state, cost: words.usd(cost.microUsd) })}</p>;
+    case 'unknown':
+      return <p>{t('knowledge.checkRun.costUnknown')}</p>;
+    case 'scripted':
+      return <p>{t('knowledge.checkRun.costScripted')}</p>;
+  }
 }
 
 const stepTones: Record<CheckRunStepStatus, StatusTone> = {

@@ -35,8 +35,23 @@ const empty: CheckProgress = {
   locatedPages: null,
   items: [],
   failure: null,
+  cost: null,
 };
 const counted = { itemCount: 4, pageCount: 2 };
+const prices = new Map([
+  [
+    'strong',
+    { prices: { input: 2_000_000, cacheWrite: 4_000_000, cacheRead: 100_000, output: 10_000_000 } },
+  ],
+]);
+const usage = (model: string): CheckProgressEvent => ({
+  kind: 'usage',
+  model,
+  inputTokens: 100_000,
+  outputTokens: 10_000,
+  cacheReadTokens: 0,
+  cacheWriteTokens: 0,
+});
 
 describe('checkProgress', () => {
   it.each<[string, CheckProgressEvent[], boolean, number, Partial<CheckProgress>]>([
@@ -134,8 +149,25 @@ describe('checkProgress', () => {
       { state: 'dead', stage: 'reading', ...counted },
     ],
     ['an old start that reported', [], true, start.startedAt + 90 * minute, { state: 'finished' }],
+    [
+      'what the model calls cost so far',
+      [started, { kind: 'comparing' }, usage('strong'), usage('strong')],
+      false,
+      now,
+      { stage: 'comparing', ...counted, cost: { kind: 'priced', microUsd: 600_000 } },
+    ],
+    [
+      'a cost it cannot price',
+      [started, usage('strong'), usage('unpriced'), { kind: 'finished' }],
+      true,
+      now,
+      { state: 'finished', stage: 'reading', ...counted, cost: { kind: 'unknown' } },
+    ],
   ])('shows %s', (_, events, reported, time, expected) => {
-    expect(checkProgress(start, events, reported, time, [])).toEqual({ ...empty, ...expected });
+    expect(checkProgress(start, events, reported, time, prices, [])).toEqual({
+      ...empty,
+      ...expected,
+    });
   });
 
   describe('items', () => {
@@ -146,11 +178,14 @@ describe('checkProgress', () => {
     const item = (key: string, status: 'matches' | 'differs' | 'could_not_check') =>
       ({ kind: 'item', key, status }) satisfies CheckProgressEvent;
     const statusesOf = (events: CheckProgressEvent[]) =>
-      checkProgress(start, events, false, now, items).items.map(({ key, status }) => [key, status]);
+      checkProgress(start, events, false, now, prices, items).items.map(({ key, status }) => [
+        key,
+        status,
+      ]);
 
     it('lists every item in its order, each awaited until answered', () => {
       expect(
-        checkProgress(start, [started, { kind: 'comparing' }], false, now, items).items,
+        checkProgress(start, [started, { kind: 'comparing' }], false, now, prices, items).items,
       ).toEqual([
         { key: 'requirement:means', kind: 'requirement', title: 'Means', status: null },
         { key: 'cost:fee', kind: 'cost', title: 'Fee', status: null },
@@ -206,6 +241,7 @@ describe('checkProgress', () => {
           [started, { kind: 'comparing' }, item('cost:fee', 'matches')],
           false,
           now,
+          prices,
           items,
         ).stage,
       ).toBe('comparing');

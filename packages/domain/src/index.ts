@@ -315,6 +315,7 @@ export {
   liveStart,
   maxAutomaticStartsPerDay,
   maxStartsPerDay,
+  newestReport,
   newestStart,
   noGuide,
   reportLifetime,
@@ -337,7 +338,17 @@ export {
   checkProgressStates,
   pageProgressOutcomes,
   progressFailures,
+  usagesOf,
 } from './independent-check/progress.js';
+export {
+  type CheckCost,
+  type ModelPricing,
+  type ModelUsage,
+  type PriceTable,
+  type TokenPrices,
+  checkCost,
+  maxCheckCostMicroUsd,
+} from './independent-check/cost.js';
 export {
   type BatchListedVersion,
   type CheckedBatchSkip,

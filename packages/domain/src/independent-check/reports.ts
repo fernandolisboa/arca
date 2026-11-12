@@ -88,12 +88,7 @@ export function currentReport<R extends ReportMeta>(
   key: ReportKey,
   now: number,
 ): R | undefined {
-  const newest = reports
-    .filter((report) => sameKey(report, key))
-    .reduce<R | undefined>(
-      (best, report) => (best === undefined || report.checkedAt > best.checkedAt ? report : best),
-      undefined,
-    );
+  const newest = newestReport(reports.filter((report) => sameKey(report, key)));
   if (newest === undefined) return undefined;
   const lifetime = newest.failed ? failedReportLifetime : reportLifetime;
   return now - newest.checkedAt < lifetime ? newest : undefined;
@@ -109,6 +104,15 @@ function liveReports<R extends ReportMeta>(
     (report) =>
       sameKey(report, key) &&
       now - report.checkedAt < (report.failed ? failedReportLifetime : reportLifetime),
+  );
+}
+
+/** The report checked last, whatever its key and age. */
+export function newestReport<R extends ReportMeta>(reports: readonly R[]): R | undefined {
+  return reports.reduce<R | undefined>(
+    (newest, report) =>
+      newest === undefined || report.checkedAt > newest.checkedAt ? report : newest,
+    undefined,
   );
 }
 

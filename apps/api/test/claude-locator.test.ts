@@ -130,11 +130,13 @@ describe('the passage locator prompt and answer (ADR-0027)', () => {
     expect(parsePassageLocation(reply)).toBeUndefined();
   });
 
-  it('has a scripted locator that picks nothing and names no real model', async () => {
+  it('has a scripted locator that picks nothing, spends nothing and names no real model', async () => {
     expect(await scriptedLocator.locate(request)).toEqual({
       reply: { items: [{ key: 'requirement:means', passages: [] }] },
       model: 'fake',
       promptVersion: 'scripted-1',
+      inputTokens: 0,
+      outputTokens: 0,
     });
   });
 });

@@ -24,7 +24,7 @@ import {
 } from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
-import { loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
+import { type ModelReply, loggedModelCall, parsedWithOneRetry } from '../../ai/model-call.js';
 import { guideContent } from '../version-content.js';
 import { addressesAsRead } from './answer-text.js';
 import { parseCheckAnswer, parseCheckAnswerEntry } from './answer.js';
@@ -92,6 +92,16 @@ interface FetchedPage {
 }
 
 type Recorder = (event: CheckProgressEvent) => Promise<void>;
+
+/** What a model call used, as its reply reports it, for the check's cost. */
+const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
+  kind: 'usage',
+  model: reply.model,
+  inputTokens: reply.inputTokens ?? null,
+  outputTokens: reply.outputTokens ?? null,
+  cacheReadTokens: reply.cacheReadTokens ?? null,
+  cacheWriteTokens: reply.cacheWriteTokens ?? null,
+});
 
 /** A long page as it is sent, and whether passages were picked for it. */
 interface Excerpt {
@@ -221,9 +231,10 @@ export function createVersionCheck({
 
   const locate = async (
     request: PassageLocateRequest,
+    record: Recorder,
   ): Promise<ReadonlyMap<string, readonly number[]> | undefined> => {
     try {
-      const { reply } = await loggedModelCall(
+      const answered = await loggedModelCall(
         () => locator.locate(request),
         { route, logger, now },
         (error) =>
@@ -231,7 +242,8 @@ export function createVersionCheck({
             ? new PassageLocatorError(error.code)
             : new PassageLocatorError('locate_failed'),
       );
-      const picks = parsePassageLocation(reply);
+      await record(usageEvent(answered));
+      const picks = parsePassageLocation(answered.reply);
       if (picks === undefined) logger.error({ route, errorCode: 'locate_unparsable' });
       return picks;
     } catch {
@@ -251,15 +263,19 @@ export function createVersionCheck({
     entry: CatalogEntry,
     budget: number,
     askLocator: boolean,
+    record: Recorder,
   ): Promise<Excerpt> => {
     const citing = items.filter(({ urls }) => urls.includes(page.url));
     const passages = splitPassages(page.text);
     const picks = askLocator
-      ? await locate({
-          items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
-          sourceTitles: sourceTitlesAt(page.url, entry),
-          outline: pageOutline(page.text, passages),
-        })
+      ? await locate(
+          {
+            items: citing.map(({ key, kind, title }) => ({ key, kind, title })),
+            sourceTitles: sourceTitlesAt(page.url, entry),
+            outline: pageOutline(page.text, passages),
+          },
+          record,
+        )
       : undefined;
     const ranked = citing.map(({ key }) =>
       (picks?.get(key) ?? []).filter((pick) => pick < passages.length).slice(0, maxPassagesPerItem),
@@ -307,21 +323,22 @@ export function createVersionCheck({
 
   const ask = async (
     request: RuleCheckRequest,
+    record: Recorder,
     onCall: () => (entry: unknown) => void,
   ): Promise<readonly CheckAnswer[]> =>
     parsedWithOneRetry(
       async () => {
         const onEntry = onCall();
-        return (
-          await loggedModelCall(
-            () => checker.check(request, onEntry),
-            { route, logger, now },
-            (error) =>
-              error instanceof RuleCheckerError
-                ? new RuleCheckerError(error.code)
-                : new RuleCheckerError('check_failed'),
-          )
-        ).reply;
+        const answered = await loggedModelCall(
+          () => checker.check(request, onEntry),
+          { route, logger, now },
+          (error) =>
+            error instanceof RuleCheckerError
+              ? new RuleCheckerError(error.code)
+              : new RuleCheckerError('check_failed'),
+        );
+        await record(usageEvent(answered));
+        return answered.reply;
       },
       parseCheckAnswer,
       {
@@ -370,7 +387,7 @@ export function createVersionCheck({
           async (page, index) =>
             [
               page.url,
-              await excerptOf(page, items, subject.entry, budget, index < maxLocatedPages),
+              await excerptOf(page, items, subject.entry, budget, index < maxLocatedPages, record),
             ] as const,
         ),
       ),
@@ -398,6 +415,7 @@ export function createVersionCheck({
             pages: pagesToSend,
             guide: guide === undefined ? null : guideContent(guide.guide),
           },
+          record,
           // A retry records the comparison again, so the screen drops the first call's answers.
           () => {
             if (calls++ > 0) written.push(record({ kind: 'comparing' }));

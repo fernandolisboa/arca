@@ -226,6 +226,16 @@ function setup({
 
 const startId = '0b9c3d6e-1f2a-4b5c-8d7e-9f0a1b2c3d4e';
 
+/** A model call whose reply reported no token counts. */
+const unreported = (model: string) => ({
+  kind: 'usage' as const,
+  model,
+  inputTokens: null,
+  outputTokens: null,
+  cacheReadTokens: null,
+  cacheWriteTokens: null,
+});
+
 describe('the independent check of one version (ADR-0027)', () => {
   it('stores a clean report keyed by its start when every quote checks out', async () => {
     const { check, store, fetched } = setup();
@@ -942,8 +952,61 @@ describe('the independent check of one version (ADR-0027)', () => {
         { kind: 'page', url: fees, outcome: 'reading', status: null },
         { kind: 'page', url: fees, outcome: 'read', status: 200 },
         { kind: 'comparing' },
+        unreported('claude-test'),
         { kind: 'finished' },
       ]);
+    });
+
+    it('records what each model call used, the cache counts included, a retry too', async () => {
+      const replies = [{ items: 'not a list' }, matchesBoth];
+      const checker: RuleChecker = {
+        check: () =>
+          Promise.resolve({
+            reply: replies.shift(),
+            model: 'claude-test',
+            promptVersion: 'check-1',
+            inputTokens: 52_000,
+            outputTokens: 3_100,
+            cacheReadTokens: 4_000,
+            cacheWriteTokens: 0,
+          }),
+      };
+      const { check, events } = setup({ checker });
+      await check(startId, 'qm-sample', 1);
+      const used = {
+        kind: 'usage',
+        model: 'claude-test',
+        inputTokens: 52_000,
+        outputTokens: 3_100,
+        cacheReadTokens: 4_000,
+        cacheWriteTokens: 0,
+      };
+      expect(events().filter(({ kind }) => kind === 'usage')).toEqual([used, used]);
+    });
+
+    it('records the scripted calls as using nothing', async () => {
+      const long = 'Article 3. The applicant shows means of at least EUR 920 a month.\n\n'.repeat(
+        Math.ceil(maxWholePageText / 60),
+      );
+      const fetcher: SourceFetcher = {
+        fetch: (url) =>
+          Promise.resolve({ ok: true, status: 200, text: long, cut: false, chain: [url] }),
+      };
+      const { check, events } = setup({
+        checker: scriptedCheckerChoice.checker,
+        model: scriptedCheckerChoice.model,
+        fetcher,
+      });
+      await check(startId, 'qm-sample', 1);
+      const nothing = {
+        kind: 'usage',
+        model: scriptedCheckerChoice.model,
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: null,
+        cacheWriteTokens: null,
+      };
+      expect(events().filter(({ kind }) => kind === 'usage')).toEqual([nothing, nothing, nothing]);
     });
 
     it('records why a page was not read, and no comparison when none was', async () => {
@@ -987,7 +1050,9 @@ describe('the independent check of one version (ADR-0027)', () => {
         'page',
         'page',
         'locating',
+        'usage',
         'comparing',
+        'usage',
         'finished',
       ]);
       expect(events()).toContainEqual({ kind: 'locating', pages: 1 });
@@ -1032,7 +1097,11 @@ describe('the independent check of one version (ADR-0027)', () => {
           checker: streaming({ entries: matchesBoth.items, end: matchesBoth }),
         });
         await check(startId, 'qm-sample', 1);
-        expect(events().slice(-4)).toEqual([
+        expect(
+          events()
+            .filter(({ kind }) => kind !== 'usage')
+            .slice(-4),
+        ).toEqual([
           { kind: 'comparing' },
           { kind: 'item', key: 'requirement:means', status: 'matches' },
           { kind: 'item', key: 'cost:fee', status: 'matches' },

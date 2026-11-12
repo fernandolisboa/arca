@@ -14,6 +14,7 @@ import {
   type CheckedVersion,
   CheckRunButton,
   CheckRunConfirm,
+  CheckRunCost,
   CheckRunSteps,
   useCheckRun,
 } from '../knowledge/check-run.js';
@@ -115,7 +116,7 @@ function CheckRunBody({
     );
   }
   if (progress.data === undefined) return null;
-  const run = progress.data;
+  const run = progress.data.progress;
   const again = (
     <>
       <CheckRunButton
@@ -159,6 +160,7 @@ function CheckRunBody({
         )}
         {run.failure === 'check_unknown_version' && <p>{t('knowledge.checkRun.unknownVersion')}</p>}
       </div>
+      <CheckRunCost progress={run} words={words} />
       {run.state === 'running' && (
         <p className="text-small text-muted">{t('knowledge.checkRun.leave')}</p>
       )}

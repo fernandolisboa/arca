@@ -33,6 +33,8 @@ export function scriptedCheckerSpaced(spacingMs: number): RuleChecker {
         reply: { items: entries },
         model: scriptedCheckerModel,
         promptVersion: scriptedCheckerPromptVersion,
+        inputTokens: 0,
+        outputTokens: 0,
       };
     },
   };

@@ -87,6 +87,7 @@ export type {
   WriteComparisonPreferencesRequest,
   ActivateCheckedRequest,
   ActivateCheckedResponse,
+  CheckCost,
   CheckProgress,
   ComparisonVersionView,
   DecideComparisonRequest,

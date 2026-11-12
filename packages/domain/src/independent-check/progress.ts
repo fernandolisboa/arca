@@ -1,5 +1,6 @@
 import type { CheckStatus } from './answers.js';
 import type { CheckItem } from './items.js';
+import { type CheckCost, type ModelUsage, type PriceTable, checkCost } from './cost.js';
 import { type CheckStart, fetchOutcomes, startLifetime } from './reports.js';
 
 /** What a page event says of a cited page: about to be read, read, or why it was not. */
@@ -27,6 +28,7 @@ export type CheckProgressEvent =
   | { readonly kind: 'locating'; readonly pages: number }
   | { readonly kind: 'comparing' }
   | { readonly kind: 'item'; readonly key: string; readonly status: CheckStatus }
+  | ({ readonly kind: 'usage' } & ModelUsage)
   | { readonly kind: 'finished' }
   | { readonly kind: 'failed'; readonly code: ProgressFailure };
 
@@ -66,6 +68,8 @@ export interface CheckProgress {
   /** Every item of the version in its order; a key no item has is left out. */
   readonly items: readonly ItemProgress[];
   readonly failure: ProgressFailure | null;
+  /** What its model calls cost so far, or null before the first one. */
+  readonly cost: CheckCost | null;
 }
 
 const stageOf: Partial<Record<CheckProgressEvent['kind'], CheckProgressStage>> = {
@@ -73,6 +77,23 @@ const stageOf: Partial<Record<CheckProgressEvent['kind'], CheckProgressStage>> =
   locating: 'locating',
   comparing: 'comparing',
 };
+
+/** What each model call of a check used, from its events. */
+export function usagesOf(events: readonly CheckProgressEvent[]): ModelUsage[] {
+  return events.flatMap((event) =>
+    event.kind === 'usage'
+      ? [
+          {
+            model: event.model,
+            inputTokens: event.inputTokens,
+            outputTokens: event.outputTokens,
+            cacheReadTokens: event.cacheReadTokens,
+            cacheWriteTokens: event.cacheWriteTokens,
+          },
+        ]
+      : [],
+  );
+}
 
 /**
  * Reduces a start and its events, in the order recorded, into the progress view. The stored
@@ -85,6 +106,7 @@ export function checkProgress(
   events: readonly CheckProgressEvent[],
   reported: boolean,
   now: number,
+  prices: PriceTable,
   items: readonly Pick<CheckItem, 'key' | 'kind' | 'title'>[],
 ): CheckProgress {
   const statuses = new Map<string, CheckStatus>();
@@ -120,6 +142,8 @@ export function checkProgress(
       case 'comparing':
         statuses.clear();
         break;
+      case 'usage':
+        break;
     }
   }
   const state: CheckProgressState = finished
@@ -144,5 +168,6 @@ export function checkProgress(
       status: statuses.get(key) ?? null,
     })),
     failure: state === 'failed' ? failure : null,
+    cost: checkCost(usagesOf(events), prices),
   };
 }
