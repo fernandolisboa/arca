@@ -84,6 +84,14 @@ function holdsItem(view: VersionView, { kind, key }: CorrectionItem): boolean {
   return correctionTargets(view)[kind].some((target) => target.key === key);
 }
 
+/** Whether every file names, as the page it copies, only a page the version cites. */
+function citesCopiedPages(view: VersionView, sources: FileCorrectionRequest['sources']): boolean {
+  const cited = new Set(view.sources.map(({ url }) => url));
+  return sources.every(
+    (source) => source.kind !== 'file' || source.pageUrl === null || cited.has(source.pageUrl),
+  );
+}
+
 /** The basis as the definer functions take it: the owner list, or the grant it names. */
 const basisArguments = (basis: AdminBasis) =>
   basis.basis === 'grant'
@@ -96,7 +104,7 @@ interface StoredRequest extends Record<string, unknown> {
   item_key: string | null;
   note: string | null;
   created_at: string | Date;
-  /** A file source comes as its kind only; `correction_files` gives its type and size. */
+  /** A file source comes as its kind only; `correction_file_sources` gives its type, size and page. */
   sources: (ListedCorrectionSource | { kind: 'file' })[];
 }
 
@@ -126,6 +134,7 @@ interface StoredFile extends Record<string, unknown> {
   position: number;
   media_type: CorrectionFileType;
   size: number;
+  page_url: string | null;
 }
 
 export function createCorrections({
@@ -213,7 +222,13 @@ export function createCorrections({
       const basis = await filingBasis(accountId);
       if (typeof basis === 'string') return basis;
       const view = await versions.view(request.routeId, request.versionNumber);
-      if (view === undefined || !holdsItem(view, request.item)) return 'not_found';
+      if (
+        view === undefined ||
+        !holdsItem(view, request.item) ||
+        !citesCopiedPages(view, request.sources)
+      ) {
+        return 'not_found';
+      }
       // A request filed after a correction is active would close at once and never be worked on.
       const corrected = correctionState({
         versionNumber: request.versionNumber,
@@ -236,8 +251,8 @@ export function createCorrections({
         if (filed === undefined) throw new Error('The request was not filed');
         for (const [index, file] of files.entries()) {
           await tx.execute(sql`
-            SELECT knowledge.attach_correction_file(${filed}, ${written.length + index},
-              ${file.uploadId}, ${basis.basis})`);
+            SELECT knowledge.attach_correction_file_with_page(${filed}, ${written.length + index},
+              ${file.uploadId}, ${file.pageUrl}, ${basis.basis})`);
         }
         // Recorded before the filing commits, so a request no event records is never kept.
         await audit.record({
@@ -267,7 +282,7 @@ export function createCorrections({
           ).rows,
           files: (
             await tx.execute<StoredFile>(sql`
-              SELECT * FROM knowledge.correction_files(${routeId}, ${number}, ${kind}, ${grantId})`)
+              SELECT * FROM knowledge.correction_file_sources(${routeId}, ${number}, ${kind}, ${grantId})`)
           ).rows,
           events: (
             await tx.execute<StoredEvent>(sql`
@@ -280,7 +295,12 @@ export function createCorrections({
       const fileAt = new Map(
         files.map((file) => [
           `${file.request_id}/${String(file.position)}`,
-          { kind: 'file' as const, mediaType: file.media_type, size: file.size },
+          {
+            kind: 'file' as const,
+            mediaType: file.media_type,
+            size: file.size,
+            pageUrl: file.page_url,
+          },
         ]),
       );
       return {

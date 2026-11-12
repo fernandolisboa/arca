@@ -1044,6 +1044,11 @@ export const ptBR = {
       fileState:
         '{state, select, sending {Enviando…} ready {Anexado} other {O arquivo não subiu. Remova e anexe de novo.}}',
       removeFile: 'Remover',
+      copyOf: 'Este arquivo é cópia de qual página da regra?',
+      copyOfHint:
+        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Salve a página sem estar logado.',
+      notACopy: 'Nenhuma, é só uma pista',
+      copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
       fileMissing: 'Um arquivo ainda não terminou de subir. Remova e anexe de novo.',
       send: 'Enviar pedido',
@@ -1319,6 +1324,7 @@ export const ptBR = {
       quote: '{total, plural, one {Trecho da página} other {Trecho {n} de {total}}}',
       page: 'Página',
       readAt: 'O Arca leu o texto neste endereço',
+      readFromCopy: 'O site não abriu. A IA leu a cópia anexada a um pedido de correção.',
       note: 'Observação da IA: {note}',
       reason:
         '{reason, select, no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {O Arca não conseguiu ler nenhuma página deste item. O motivo de cada uma está em “Páginas com problema”, no fim.} not_answered {A IA não respondeu sobre este item.} model_could_not_check {A IA leu o que recebeu e não confirmou este item.} quote_count {A IA não citou nenhum trecho, ou citou mais de {max}.} url_not_cited {A IA citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {Esta página não foi lida inteira, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',

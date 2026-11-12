@@ -34263,7 +34263,7 @@
     "/knowledge/corrections": {
       "post": {
         "operationId": "fileCorrectionRequest",
-        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item or upload it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
+        "summary": "Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request, and may name a page the version cites that it copies; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item, upload or copied page it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
         "requestBody": {
           "required": true,
           "content": {
@@ -34373,6 +34373,15 @@
                             "uploadId": {
                               "type": "string",
                               "format": "uuid"
+                            },
+                            "pageUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "maxLength": 2048,
+                              "pattern": "^https:\\/\\/\\S+$",
+                              "default": null
                             }
                           },
                           "required": [
@@ -34598,12 +34607,21 @@
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 16777216
+                                    },
+                                    "pageUrl": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
                                     }
                                   },
                                   "required": [
                                     "kind",
                                     "mediaType",
-                                    "size"
+                                    "size",
+                                    "pageUrl"
                                   ]
                                 }
                               ]
@@ -35323,7 +35341,7 @@
     "/corrector/requests": {
       "get": {
         "operationId": "listCorrectorRequests",
-        "summary": "The open and taken correction requests with their sources, at most ten, oldest first. Bearer corrector key only; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key",
+        "summary": "The open and taken correction requests with their sources, at most ten, oldest first. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key",
         "responses": {
           "200": {
             "description": "The requests",
@@ -35456,12 +35474,21 @@
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 16777216
+                                    },
+                                    "pageUrl": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
                                     }
                                   },
                                   "required": [
                                     "kind",
                                     "mediaType",
-                                    "size"
+                                    "size",
+                                    "pageUrl"
                                   ]
                                 }
                               ]
@@ -35528,7 +35555,7 @@
     "/corrector/files/url": {
       "post": {
         "operationId": "correctorFileUrl",
-        "summary": "A URL that downloads one file of an open or taken request, as an attachment, for 5 minutes. Bearer corrector key only; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 200 per 24 hours per key; 404 not_found for a source that is not a stored file of such a request",
+        "summary": "A URL that downloads one file of an open or taken request, as an attachment, for 5 minutes. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 200 per 24 hours per key; 404 not_found for a source that is not a stored file of such a request",
         "requestBody": {
           "required": true,
           "content": {
@@ -35607,7 +35634,7 @@
     "/corrector/requests/answer": {
       "post": {
         "operationId": "answerCorrectionRequest",
-        "summary": "Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. Bearer corrector key only; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, or one that neither corrects nor follows the request's version",
+        "summary": "Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version",
         "requestBody": {
           "required": true,
           "content": {
@@ -36071,6 +36098,9 @@
                                 ],
                                 "maxLength": 2000
                               },
+                              "fromCopy": {
+                                "type": "boolean"
+                              },
                               "outcome": {
                                 "type": "string",
                                 "enum": [
@@ -36105,6 +36135,7 @@
                             "required": [
                               "url",
                               "machineReadableUrl",
+                              "fromCopy",
                               "outcome",
                               "status",
                               "cut"

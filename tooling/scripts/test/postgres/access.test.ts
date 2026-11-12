@@ -286,7 +286,15 @@ const correctionTables = {
     'created_at',
     'content_erased_at',
   ],
-  'knowledge.correction_source': ['request_id', 'position', 'kind', 'url', 'text', 'upload_id'],
+  'knowledge.correction_source': [
+    'request_id',
+    'position',
+    'kind',
+    'url',
+    'text',
+    'upload_id',
+    'page_url',
+  ],
   'knowledge.correction_event': [
     'id',
     'request_id',
@@ -326,9 +334,13 @@ const correctionFunctions = [
   'knowledge.correction_files(text, integer, text, uuid)',
   'knowledge.correction_file(uuid, integer, text, uuid)',
   'knowledge.own_correction_upload_rows(text)',
+  'knowledge.attach_correction_file_with_page(uuid, integer, uuid, text, text)',
+  'knowledge.correction_file_sources(text, integer, text, uuid)',
+  'knowledge.correction_page_copies(text[])',
   'knowledge.live_corrector_key()',
   'knowledge.revoke_corrector_key(uuid, text)',
   'knowledge.corrector_requests(uuid, bytea)',
+  'knowledge.corrector_request_list(uuid, bytea)',
   'knowledge.corrector_file(uuid, bytea, uuid, integer)',
   'knowledge.answer_correction_request(uuid, bytea, uuid, text, integer, text)',
   'knowledge.correction_events(text, integer, text, uuid)',
@@ -389,9 +401,12 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_files',
         'knowledge.correction_file',
         'knowledge.own_correction_upload_rows',
+        'knowledge.attach_correction_file_with_page',
+        'knowledge.correction_file_sources',
         'knowledge.live_corrector_key',
         'knowledge.revoke_corrector_key',
         'knowledge.corrector_requests',
+        'knowledge.corrector_request_list',
         'knowledge.corrector_file',
         'knowledge.answer_correction_request',
         'knowledge.correction_events',
@@ -406,13 +421,16 @@ describe('the correction request access matrix (ADR-0029)', () => {
     expect(await correctionAccess('app_auth')).toEqual({
       tables: {
         ...matrix,
-        'knowledge.corrector_key': { ...keys, columns: { ...keys.columns, revokes_key_id: [], at: [] } },
+        'knowledge.corrector_key': {
+          ...keys,
+          columns: { ...keys.columns, revokes_key_id: [], at: [] },
+        },
       },
       functions: [],
     });
   });
 
-  it('lets app_jobs read every table, delete requests, sources and uploads, and clear a note, and run nothing', async () => {
+  it('lets app_jobs read every table, delete requests, sources and uploads, clear a note, and read page copies', async () => {
     const request = correctionTables['knowledge.correction_request'];
     expect(await correctionAccess('app_jobs')).toEqual({
       tables: {
@@ -440,7 +458,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
           table: ['DELETE'],
         },
       },
-      functions: [],
+      functions: ['knowledge.correction_page_copies'],
     });
   });
 

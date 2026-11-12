@@ -13,7 +13,7 @@ import {
   checkRunSteps,
   pagesSettled,
 } from './check-run-steps.js';
-import { ItemResult } from './checks.js';
+import { ItemResult, type PageRead } from './checks.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -219,7 +219,7 @@ function StepMarker({ status }: { readonly status: CheckRunStepStatus }) {
   );
 }
 
-const noAddresses: ReadonlyMap<string, string | null> = new Map();
+const noPageReads: ReadonlyMap<string, PageRead> = new Map();
 
 /**
  * Each item of a check as its answer lands: the result for the answered ones, then the item the
@@ -248,7 +248,7 @@ function CheckRunItems({
                   {t('knowledge.check.kind', { kind: item.kind })}
                 </span>
               </span>
-              <ItemResult item={item} addressRead={noAddresses} words={words} />
+              <ItemResult item={item} pageReads={noPageReads} words={words} />
             </li>
           ))}
         </ul>

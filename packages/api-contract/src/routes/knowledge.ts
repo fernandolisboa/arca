@@ -488,23 +488,29 @@ export const CorrectionItem = z
   });
 export type CorrectionItem = z.infer<typeof CorrectionItem>;
 
-const LinkSource = z.strictObject({
-  kind: z.literal('link'),
-  url: z
-    .url({ protocol: /^https$/, hostname: z.regexes.domain })
-    .max(correctionLimits.url)
-    .regex(/^https:\/\/\S+$/),
-});
+const httpsUrl = z
+  .url({ protocol: /^https$/, hostname: z.regexes.domain })
+  .max(correctionLimits.url)
+  .regex(/^https:\/\/\S+$/);
+const LinkSource = z.strictObject({ kind: z.literal('link'), url: httpsUrl });
+/**
+ * The official page a file is a copy of, one the version cites, or null: the independent check
+ * reads the newest such copy when it cannot read the page itself.
+ */
+const pageUrl = httpsUrl.nullable();
 const TextSource = z.strictObject({
   kind: z.literal('text'),
   text: z.string().trim().min(1).max(correctionLimits.text),
 });
 
-/** A source as filed: a link, pasted text, or a file uploaded first, named by its upload. */
+/**
+ * A source as filed: a link, pasted text, or a file uploaded first, named by its upload, with the
+ * cited page it copies, if any.
+ */
 export const CorrectionSource = z.discriminatedUnion('kind', [
   LinkSource,
   TextSource,
-  z.strictObject({ kind: z.literal('file'), uploadId: z.uuid() }),
+  z.strictObject({ kind: z.literal('file'), uploadId: z.uuid(), pageUrl: pageUrl.default(null) }),
 ]);
 export type CorrectionSource = z.infer<typeof CorrectionSource>;
 
@@ -516,6 +522,7 @@ export const ListedCorrectionSource = z.discriminatedUnion('kind', [
     kind: z.literal('file'),
     mediaType: z.enum(correctionFileTypes),
     size: z.int().min(1).max(correctionLimits.fileBytes),
+    pageUrl,
   }),
 ]);
 export type ListedCorrectionSource = z.infer<typeof ListedCorrectionSource>;
@@ -546,7 +553,7 @@ export const fileCorrectionRequest = {
   path: '/knowledge/corrections',
   operationId: 'fileCorrectionRequest',
   summary:
-    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item or upload it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared',
+    'Files a correction request on one item of a route version, for an owner-list admin; 30 per 24 hours per account (429 rate_limited). A file source names an upload of the admin started within 2 hours and named by no request, and may name a page the version cites that it copies; filing checks its stored size, SHA-256 and type by content, and deletes an object that differs. 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a version, item, upload or copied page it does not hold; 409 already_corrected when a correction of the version is active; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared',
   body: FileCorrectionRequest,
   response: { description: 'Filed', schema: FileCorrectionResponse },
 } as const satisfies RouteDefinition<typeof FileCorrectionResponse>;
@@ -867,6 +874,11 @@ export const VersionCheckReport = z.strictObject({
         url: z.string().max(2_000),
         /** The address read in the page's place, so the admin sees where a quote's text came from. */
         machineReadableUrl: z.string().max(2_000).nullable(),
+        /**
+         * Whether the text came from a copy of the page attached to a correction request, read
+         * because the page itself could not be (ADR-0029).
+         */
+        fromCopy: z.boolean(),
         outcome: z.enum(fetchOutcomes),
         status: z.int().min(0).max(999).nullable(),
         cut: z.boolean(),

@@ -473,7 +473,7 @@ describe('the corrector routes (ADR-0029)', () => {
       state: 'open',
       sources: [
         { kind: 'link', url: 'https://example.gov/lei' },
-        { kind: 'file', mediaType: 'application/pdf', size: 19 },
+        { kind: 'file', mediaType: 'application/pdf', size: 19, pageUrl: null },
       ],
     });
     expect(await auditCodes('corrector_requests_listed')).toEqual([
@@ -642,7 +642,7 @@ describe('the corrector routes (ADR-0029)', () => {
         (await client.query<{ id: string }>('SELECT id FROM knowledge.corrector_key')).rows[0]?.id,
     );
     for (const call of [
-      'SELECT * FROM knowledge.corrector_requests($1, $2)',
+      'SELECT * FROM knowledge.corrector_request_list($1, $2)',
       `SELECT knowledge.corrector_file($1, $2, '${id}', 1)`,
       `SELECT knowledge.answer_correction_request($1, $2, '${id}', 'taken', NULL, NULL)`,
     ]) {

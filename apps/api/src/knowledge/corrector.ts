@@ -160,7 +160,7 @@ export function createCorrector({
   const workable = async (key: PresentedKey): Promise<WorkableRequest[]> => {
     const [{ rows }, decided] = await Promise.all([
       db().execute<StoredRequest>(sql`
-        SELECT * FROM knowledge.corrector_requests(${key.id}::uuid, ${key.digest})`),
+        SELECT * FROM knowledge.corrector_request_list(${key.id}::uuid, ${key.digest})`),
       states(),
     ]);
     return rows.flatMap((row) => {

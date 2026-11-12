@@ -546,6 +546,10 @@ test('the seed admin points out an error on a version and closes the request (AD
     buffer: Buffer.from('Synthetic copy of an official page.\n'),
   });
   await expect(form).toContainText('Anexado');
+  const copyOf = form.getByLabel('Este arquivo é cópia de qual página da regra?');
+  await copyOf.selectOption({ index: 1 });
+  const pageUrl = await copyOf.inputValue();
+  expect(pageUrl).toMatch(/^https:\/\//);
   const filed = page.waitForRequest(
     (request) => request.url().endsWith('/v1/knowledge/corrections') && request.method() === 'POST',
   );
@@ -557,7 +561,7 @@ test('the seed admin points out an error on a version and closes the request (AD
     note: 'O valor mínimo mudou.',
     sources: [
       { kind: 'link', url: 'https://www.uscis.gov/eb-5' },
-      { kind: 'file', uploadId: expect.any(String) as unknown },
+      { kind: 'file', uploadId: expect.any(String) as unknown, pageUrl },
     ],
   });
   await expect(page.getByText('Pedido enviado.')).toBeVisible();
@@ -567,6 +571,7 @@ test('the seed admin points out an error on a version and closes the request (AD
   await expect(requests).toContainText('Versão inteira');
   await expect(requests).toContainText('https://www.uscis.gov/eb-5');
   await expect(requests).toContainText('Texto de');
+  await expect(requests).toContainText('Cópia da página');
   const saved = page.waitForEvent('download');
   await requests.getByRole('button', { name: 'Baixar arquivo' }).click();
   expect((await saved).suggestedFilename()).toBe('pedido-de-correcao-arquivo-2.txt');

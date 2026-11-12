@@ -43,6 +43,7 @@ const report = (patch: Partial<NewCheckReport> = {}): NewCheckReport => ({
     {
       url: law,
       machineReadableUrl: 'https://api.gov.example/law.json',
+      fromCopy: false,
       outcome: 'read',
       status: 200,
       durationMs: 12,
@@ -293,6 +294,16 @@ describe('knowledge.independent_check (ADR-0027)', () => {
     await postgresCheckReportStore(() => testDatabase.jobsDb).save(stored);
     const found = await postgresCheckReportStore(() => testDatabase.apiDb).find(stored.startId);
     expect(found?.fetchLog).toEqual([{ ...entry, machineReadableUrl: null }]);
+  });
+
+  it('keeps the mark of a page read from an attached copy', async () => {
+    const [entry] = report().fetchLog;
+    if (entry === undefined) throw new Error('the report has a fetch log');
+    const copied = { ...entry, machineReadableUrl: null, fromCopy: true, status: 403 };
+    const stored = report({ fetchLog: [copied] });
+    await postgresCheckReportStore(() => testDatabase.jobsDb).save(stored);
+    const found = await postgresCheckReportStore(() => testDatabase.apiDb).find(stored.startId);
+    expect(found?.fetchLog).toEqual([copied]);
   });
 
   it('keeps one report per start', async () => {
