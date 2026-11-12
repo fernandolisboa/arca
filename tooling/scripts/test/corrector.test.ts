@@ -148,6 +148,18 @@ describe('the corrector script (ADR-0029)', () => {
     expect(waits).toEqual([5, 5]);
   });
 
+  it('waits ten minutes by default before the refusal stands', async () => {
+    const waits: number[] = [];
+    const client: CorrectorClient = {
+      list: () => Promise.reject(new Error('unused')),
+      file: () => Promise.reject(new Error('unused')),
+      answer: () => Promise.resolve('invalid_version'),
+    };
+    const wait = (ms: number) => Promise.resolve(waits.push(ms));
+    await expect(propose(client, requestId, 4, { wait })).resolves.toBe('invalid_version');
+    expect(waits.reduce((sum, ms) => sum + ms, 0)).toBe(10 * 60_000);
+  });
+
   it('stops proposing after the last attempt, or at once on another refusal', async () => {
     let calls = 0;
     const client = (outcome: 'invalid_version' | 'wrong_state'): CorrectorClient => ({

@@ -93,7 +93,9 @@ export function correctorClient(
     if (response.status !== 200) {
       throw failure(path, response.status, await errorCode(response));
     }
-    return response.json();
+    return response.json().catch(() => {
+      throw new CorrectorError(`${path}: answered 200 with no JSON`);
+    });
   };
 
   return {
