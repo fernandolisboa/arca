@@ -5,8 +5,6 @@ export interface Choice<V extends string> {
   readonly label: string;
   /** A small live sample beside the label, such as color swatches or the font itself. */
   readonly preview?: ReactNode;
-  /** A line under the label that says what the answer leads to. */
-  readonly detail?: string;
 }
 
 export interface ChoiceGroupProps<V extends string> {
@@ -16,8 +14,6 @@ export interface ChoiceGroupProps<V extends string> {
   /** The checked choice. */
   readonly value: V;
   readonly onChange: (value: V) => void;
-  /** One answer per row at every width, for answers with a detail line or in a narrow panel. */
-  readonly stacked?: boolean;
 }
 
 /**
@@ -30,7 +26,6 @@ export function ChoiceGroup<V extends string>({
   choices,
   value,
   onChange,
-  stacked = false,
 }: ChoiceGroupProps<V>) {
   const groupId = useId();
   const descriptionId = `${groupId}-description`;
@@ -45,7 +40,7 @@ export function ChoiceGroup<V extends string>({
           {description}
         </p>
       )}
-      <div className={`grid grid-cols-1 gap-2 ${stacked ? '' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {choices.map((choice) => (
           <label
             key={choice.value}
@@ -61,14 +56,7 @@ export function ChoiceGroup<V extends string>({
               }}
               className="size-4 shrink-0 accent-(--arca-primary)"
             />
-            {choice.detail === undefined ? (
-              <span className="min-w-0 flex-1">{choice.label}</span>
-            ) : (
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5 py-1">
-                <span className="font-medium">{choice.label}</span>
-                <span className="text-small text-muted">{choice.detail}</span>
-              </span>
-            )}
+            <span className="min-w-0 flex-1">{choice.label}</span>
             {choice.preview}
           </label>
         ))}

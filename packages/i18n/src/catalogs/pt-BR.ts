@@ -519,12 +519,8 @@ export const ptBR = {
     name: 'Nome',
     save: 'Salvar',
     membership: {
-      legend: 'Essa pessoa entra no planejamento?',
-      hint: 'Uma avó que fica no Brasil, por exemplo, pode ser só parente.',
-      member: 'Sim, entra no planejamento',
-      memberDetail: 'O Arca procura rotas de imigração para ela.',
-      relative: 'Não, é só parente',
-      relativeDetail: 'Fica no caso para os vínculos e para ajudar, sem rotas próprias.',
+      label: 'Entra no planejamento',
+      hint: 'Desligado, a pessoa fica no caso só como parente, sem rotas próprias.',
     },
     sharing: {
       firstTitle: 'Quem pode ver os dados de {name}?',
