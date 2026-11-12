@@ -105,6 +105,8 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Catalog check | Internal, no UI label | The manual run of the independent check on the newest version of every bundled route against its live official pages, which reports what matched and why the rest did not; it measures a change to the check and never gates one |
 | Country guide | Internal, no UI label | The reviewed, versioned data file per country that the independent check loads, its per-country specialist: governing laws, how they change, known pitfalls; never a source and never a list of official hosts; lands in its own pull request; not a Claude Code skill |
 | Rule report | Aviso de regra errada | A person's flag that a rule they were shown may be wrong; opens a research task. The button reads "Avisar regra errada" |
+| Correction request | Pedido de correção | An admin's note that an item of a version (or the whole version) is wrong, with sources as leads: links, pasted text or files; a scheduled authoring session answers it with a correcting version or an explanation ([ADR-0029](docs/adr/0029-correction-requests-and-the-corrector-session.md)). The button reads "Apontar erro" |
+| Corrector key | Chave da sessão de correção | The secret the scheduled correction session uses to read correction requests and answer them; it reaches nothing else |
 | Research task | Pesquisa pendente | The request opened when the knowledge base cannot answer a question; a research agent works it into a proposal; while none is built, the owner may ask for a rule audit instead |
 | Possible dependent | Possível dependente | A person a route might cover, pending unknown facts |
 | Candidate | Internal, no UI label | The person a dependent rule is being evaluated for |
