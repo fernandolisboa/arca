@@ -39,7 +39,7 @@ for (const [width, baseLayouts] of sizes) {
   test.describe(`at ${String(width)} px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    const layouts = ['100', '150'].flatMap((textSize) =>
+    const layouts = ['75', '100', '150'].flatMap((textSize) =>
       baseLayouts.map((layout) => ({ ...layout, textSize })),
     );
     for (const layout of layouts) {
