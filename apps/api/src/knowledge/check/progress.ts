@@ -22,8 +22,8 @@ export interface CheckProgressStore {
 }
 
 /**
- * The most events one start records: two per cited page, a handful of stages, and an item event
- * per answer of each of the two model calls a check may take.
+ * The most events one start records: two per cited page, a handful of stages, and at most one
+ * item event per item for each of the two model calls a check may take: 2 × 200 + 2 × 200 + 8.
  */
 export const maxProgressEvents = 1_000;
 

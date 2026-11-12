@@ -1217,8 +1217,8 @@ export const ptBR = {
       locateDetail:
         '{n, plural, one {# página longa: a IA lê só os trechos escolhidos.} other {# páginas longas: a IA lê só os trechos escolhidos.}}',
       compareDetail: '{n, plural, one {# item da regra} other {# itens da regra}}',
-      items: 'Itens já comparados',
-      awaiting: 'Comparando agora: {title}',
+      comparedItems: 'Itens já comparados',
+      awaiting: 'A seguir: {title}',
       left: '{n, plural, one {Falta # item.} other {Faltam # itens.}}',
       pageOutcome: '{outcome, select, reading {Lendo agora} read {Lida} other {Não abriu}}',
       httpStatus: 'O site respondeu com erro.',

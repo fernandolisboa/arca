@@ -175,6 +175,19 @@ describe('checkProgress', () => {
         ],
       ],
       [
+        'nothing of a comparison asked for again, until it answers',
+        [
+          { kind: 'comparing' },
+          item('requirement:means', 'matches'),
+          { kind: 'comparing' },
+          item('cost:fee', 'differs'),
+        ],
+        [
+          ['requirement:means', null],
+          ['cost:fee', 'differs'],
+        ],
+      ],
+      [
         'nothing of a key no item has',
         [item('requirement:other', 'matches')],
         [

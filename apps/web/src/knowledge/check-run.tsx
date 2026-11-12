@@ -14,12 +14,12 @@ import {
   type CheckRunStep,
   type CheckRunStepStatus,
   checkRunStepStatuses,
+  checkRunItems,
   checkRunSteps,
   pagesSettled,
 } from './check-run-steps.js';
 import { ItemResult } from './checks.js';
 import { card } from './review-parts.js';
-import { type ReportItem, shownPoints } from './step-checks.js';
 import type { KnowledgeWords } from './words.js';
 
 /** A route version by its public identity, as the progress screen's address names it. */
@@ -214,37 +214,42 @@ function CheckRunItems({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const answered: ReportItem[] = progress.items.flatMap(({ status, ...item }) =>
-    status === null ? [] : [{ ...item, status, quotes: [], note: null, reason: null }],
-  );
-  const shown = shownPoints({ items: answered, scripted: progress.scripted });
-  const waiting = progress.items.filter(({ status }) => status === null);
-  const [next] = progress.state === 'running' ? waiting : [];
-  const left = waiting.length - (next === undefined ? 0 : 1);
+  const { answered, next, left } = checkRunItems(progress);
   return (
     <>
-      {shown.length > 0 && (
-        <ul aria-label={t('knowledge.checkRun.items')} className="flex flex-col gap-3">
-          {shown.map((item) => (
+      {answered.length > 0 && (
+        <ul aria-label={t('knowledge.checkRun.comparedItems')} className="flex flex-col gap-3">
+          {answered.map((item) => (
             <li key={item.key} className="flex animate-row-land flex-col gap-1 pt-2">
-              <span className="text-small font-medium">{item.title}</span>
+              <span className="text-small">
+                <span className="font-medium">{item.title}</span>
+                <span className="text-muted">
+                  {' · '}
+                  {t('knowledge.check.kind', { kind: item.kind })}
+                </span>
+              </span>
               <ItemResult item={item} addressRead={noAddresses} words={words} />
             </li>
           ))}
         </ul>
       )}
-      {next !== undefined && (
-        <p className="flex items-center gap-3 border-t border-line pt-3 text-small">
-          <span
-            aria-hidden="true"
-            className="size-2.5 shrink-0 animate-stage-pulse rounded-full bg-primary"
-          />
-          <span className="min-w-0">{t('knowledge.checkRun.awaiting', { title: next.title })}</span>
-        </p>
-      )}
-      {left > 0 && (
-        <p className="text-small text-muted">{t('knowledge.checkRun.left', { n: left })}</p>
-      )}
+      {/* Polite, so a screen reader hears which item is next without losing its place. */}
+      <div role="status" className="flex flex-col gap-2">
+        {next !== undefined && (
+          <p className="flex items-center gap-3 border-t border-line pt-3 text-small">
+            <span
+              aria-hidden="true"
+              className="size-2.5 shrink-0 animate-stage-pulse rounded-full bg-primary"
+            />
+            <span className="min-w-0">
+              {t('knowledge.checkRun.awaiting', { title: next.title })}
+            </span>
+          </p>
+        )}
+        {left > 0 && (
+          <p className="text-small text-muted">{t('knowledge.checkRun.left', { n: left })}</p>
+        )}
+      </div>
     </>
   );
 }

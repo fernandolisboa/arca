@@ -477,7 +477,7 @@ export const registry: Registry = {
       table: 'knowledge.check_progress',
       personalData: 'none',
       reason:
-        'What a start of the independent check recorded as it ran (ADR-0027): counts, cited official URLs and fixed codes; it names no account.',
+        'What a start of the independent check recorded as it ran (ADR-0027): counts, cited official URLs, item keys with their verified status and fixed codes; it names no account.',
     },
     {
       table: 'knowledge.independent_check',

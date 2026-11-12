@@ -160,7 +160,12 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
     });
     await written().record(startId, 3, { kind: 'locating', pages: 1 });
     await written().record(startId, 4, { kind: 'comparing' });
-    await written().record(startId, 5, { kind: 'failed', code: 'check_failed' });
+    await written().record(startId, 5, {
+      kind: 'item',
+      key: 'requirement:means',
+      status: 'differs',
+    });
+    await written().record(startId, 6, { kind: 'failed', code: 'check_failed' });
     await written().record(randomUUID(), 0, { kind: 'finished' });
     expect(await read().list(startId)).toEqual([
       { kind: 'started', items: 3, pages: 1 },
@@ -168,6 +173,7 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
       { kind: 'page', url: law, outcome: 'http_status', status: 503 },
       { kind: 'locating', pages: 1 },
       { kind: 'comparing' },
+      { kind: 'item', key: 'requirement:means', status: 'differs' },
       { kind: 'failed', code: 'check_failed' },
     ]);
   });
@@ -185,6 +191,9 @@ describe('knowledge.check_progress (ADR-0027, on demand)', () => {
       [1, 'thinking', '{}'],
       [2, 'page', '{"url":"https://www.gov.example/law","outcome":"read","text":"page words"}'],
       [3, 'failed', '{"code":"whatever the model said"}'],
+      [4, 'item', '{"key":"requirement:means","status":"fine"}'],
+      [5, 'item', `{"key":"${'k'.repeat(121)}","status":"matches"}`],
+      [6, 'item', '{"key":"requirement:means","status":"matches","note":"model words"}'],
     ] as const) {
       await testDatabase.jobsDb.execute(sql`
         INSERT INTO knowledge.check_progress (start_id, sequence, kind, detail)

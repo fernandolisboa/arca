@@ -1060,8 +1060,14 @@ describe('the independent check of one version (ADR-0027)', () => {
         ]);
       });
 
-      it('skips an entry that does not parse or names no item, and a repeated key could not be checked', async () => {
-        const entries = [{ verdict: 'fine' }, { ...means, key: 'requirement:ghost' }, means, means];
+      it('skips an entry that does not parse or names no item, and a repeated key could not be checked, once', async () => {
+        const entries = [
+          { verdict: 'fine' },
+          { ...means, key: 'requirement:ghost' },
+          means,
+          means,
+          means,
+        ];
         const { check, events } = setup({
           checker: streaming({ entries, end: { items: entries.slice(1) } }),
         });
@@ -1099,8 +1105,10 @@ describe('the independent check of one version (ADR-0027)', () => {
         const { check, events, store } = setup({ checker });
         await check(startId, 'qm-sample', 1);
         expect(checker.requests).toHaveLength(2);
-        expect(itemEvents(events())).toEqual([
+        expect(events().filter(({ kind }) => kind === 'item' || kind === 'comparing')).toEqual([
+          { kind: 'comparing' },
           { kind: 'item', key: 'requirement:means', status: 'matches' },
+          { kind: 'comparing' },
           { kind: 'item', key: 'requirement:means', status: 'differs' },
           { kind: 'item', key: 'cost:fee', status: 'matches' },
         ]);
