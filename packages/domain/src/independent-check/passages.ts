@@ -238,7 +238,7 @@ export function excerptRuns(excerpt: string): string[] {
 
 /** The words a catalog source title names a provision with, before its number. */
 const provisionWord =
-  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)/gu;
+  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)/gu;
 
 /** A date written with dots (12.03.2024), which is not a provision. */
 const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;

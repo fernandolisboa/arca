@@ -235,6 +235,7 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
 describe('the provisions a source title names (ADR-0027)', () => {
   it.each<[string, string[]]>([
     ['Aliens Act, § 9 a(2)(3) and (29): a job offer', ['9 a']],
+    ['Aliens Act, § 42a(1)(a) to (d): family', ['42a']],
     ['Foreigners law, articles 58.º, n.º 5, and 99.º, n.os 1 and 4: family', ['58.º', '99.º']],
     ['Regulation, article 24.º-B, n.º 1: proof', ['24.º-B']],
     [
