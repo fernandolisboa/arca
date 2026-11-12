@@ -158,8 +158,10 @@ function ReportBody({
   readonly subheading: 'h5' | 'h6';
 }) {
   const { t } = words;
-  const problems = report.fetchLog.filter(({ outcome, cut }) => outcome !== 'read' || cut);
-  const addressRead = addressesRead(report);
+  const problems = report.fetchLog.filter(
+    ({ outcome, cut, fromCopy }) => outcome !== 'read' || cut || fromCopy,
+  );
+  const pageReads = pageReadsOf(report);
   const checkedAt = new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
     new Date(report.checkedAt),
   );
@@ -186,7 +188,7 @@ function ReportBody({
               <ReportItemCard
                 item={item}
                 scripted={report.scripted}
-                addressRead={addressRead}
+                pageReads={pageReads}
                 words={words}
               />
             </li>
@@ -197,13 +199,15 @@ function ReportBody({
         <div className="flex flex-col gap-2">
           <Subheading className="font-medium">{t('knowledge.check.pages')}</Subheading>
           <ul className="flex flex-col gap-2">
-            {problems.map(({ url, machineReadableUrl, fromCopy, outcome, status }) => (
+            {problems.map(({ url, machineReadableUrl, fromCopy, outcome, status, cut }) => (
               <li key={url} className="flex flex-col gap-1 text-small">
-                <span>
-                  {t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}
-                </span>
+                {(outcome !== 'read' || cut) && (
+                  <span>
+                    {t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}
+                  </span>
+                )}
                 <span className="font-mono break-all text-muted">{url}</span>
-                <AddressRead read={{ address: machineReadableUrl, fromCopy }} words={words} />
+                <PageReadNote read={{ address: machineReadableUrl, fromCopy }} words={words} />
               </li>
             ))}
           </ul>
@@ -223,7 +227,7 @@ export interface PageRead {
  * Where a page's text was read, when not the page itself: an attached copy, or the address, as
  * plain text like every URL here, so the admin can tell where a quote's words came from.
  */
-function AddressRead({
+function PageReadNote({
   read,
   words,
 }: {
@@ -246,12 +250,12 @@ function AddressRead({
 function ReportItemCard({
   item,
   scripted,
-  addressRead,
+  pageReads,
   words,
 }: {
   readonly item: ReportItem;
   readonly scripted: boolean;
-  readonly addressRead: ReadonlyMap<string, PageRead>;
+  readonly pageReads: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -270,7 +274,7 @@ function ReportItemCard({
       {item.reason !== null && (
         <p>{t('knowledge.check.reason', { reason: item.reason, max: maxQuotes })}</p>
       )}
-      <Quotes item={item} addressRead={addressRead} words={words} />
+      <Quotes item={item} pageReads={pageReads} words={words} />
       {item.note !== null && <p>{t('knowledge.check.note', { note: item.note })}</p>}
       {(item.status === 'could_not_check' || scripted) && item.citations.length > 0 && (
         <LookHere item={item} words={words} />
@@ -282,11 +286,11 @@ function ReportItemCard({
 /** The verified passages an item rests on, each with its page: plain text, never links. */
 function Quotes({
   item,
-  addressRead,
+  pageReads,
   words,
 }: {
   readonly item: ReportItem;
-  readonly addressRead: ReadonlyMap<string, PageRead>;
+  readonly pageReads: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -299,14 +303,14 @@ function Quotes({
       <p className="flex flex-col gap-1 text-small">
         <span className="text-muted">{t('knowledge.check.page')}</span>
         <span className="font-mono break-all">{url}</span>
-        <AddressRead read={addressRead.get(url)} words={words} />
+        <PageReadNote read={pageReads.get(url)} words={words} />
       </p>
     </figure>
   ));
 }
 
 /** The address each page of a report was read at, by the page's URL. */
-export const addressesRead = (
+export const pageReadsOf = (
   report: Pick<VersionCheckReport, 'fetchLog'>,
 ): ReadonlyMap<string, PageRead> =>
   new Map(
@@ -373,12 +377,12 @@ function HandCheckToggle({
  */
 export function ItemResult({
   item,
-  addressRead,
+  pageReads,
   words,
   handCheck,
 }: {
   readonly item: ReportItem;
-  readonly addressRead: ReadonlyMap<string, PageRead>;
+  readonly pageReads: ReadonlyMap<string, PageRead>;
   readonly words: KnowledgeWords;
   readonly handCheck?: HandCheck;
 }) {
@@ -410,7 +414,7 @@ export function ItemResult({
               {t('knowledge.points.quotes', { n: item.quotes.length })}
             </summary>
             <div className="mt-2 flex flex-col gap-3">
-              <Quotes item={item} addressRead={addressRead} words={words} />
+              <Quotes item={item} pageReads={pageReads} words={words} />
             </div>
           </details>
         )}

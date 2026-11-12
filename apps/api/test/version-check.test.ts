@@ -457,6 +457,20 @@ describe('the independent check of one version (ADR-0027)', () => {
       expect(store.rows[0]?.items[1]).toMatchObject({ status: 'could_not_check' });
     });
 
+    it('reads no copy of a page off the pinned official hosts', async () => {
+      const copies = copying(feeText);
+      const refused: SourceFetcher = {
+        fetch: (url) =>
+          url === fees
+            ? Promise.resolve({ ok: false, failure: 'refused_url', status: null, chain: [url] })
+            : readAll.fetch(url, []),
+      };
+      const { check, store } = setup({ fetcher: refused, copies });
+      await check(startId, 'qm-sample', 1);
+      expect(copies.asked).toEqual([]);
+      expect(store.rows[0]?.fetchLog[1]).toMatchObject({ outcome: 'refused_url', fromCopy: false });
+    });
+
     it('keeps the failure when there is no copy, or reading one fails', async () => {
       for (const copies of [
         noPageCopies,

@@ -717,6 +717,30 @@ describe('the request tables (ADR-0029)', () => {
     await expect(attach(member)).rejects.toMatchObject({ cause: { code: '42501' } });
   });
 
+  it('refuse a copy on a request filed in an earlier transaction, from another account’s upload or on a grant', async () => {
+    const id = await fileOne();
+    const uploadId = await uploaded(pdf);
+    const attach = (accountId: string, basis: string) =>
+      withIdentity(testDatabase.apiDb, { accountId }, (tx) =>
+        tx.execute(
+          sql`SELECT knowledge.attach_correction_file_with_page(${id}, 2, ${uploadId}, ${citedPage}, ${basis})`,
+        ),
+      );
+    await expect(attach(owner, 'owner_list')).rejects.toMatchObject({ cause: { code: '42501' } });
+    await expect(attach(member, 'owner_list')).rejects.toMatchObject({ cause: { code: '42501' } });
+    await expect(attach(owner, 'grant')).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+
+  it('refuse listing file sources to an account with no admin basis', async () => {
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: member }, (tx) =>
+        tx.execute(
+          sql`SELECT * FROM knowledge.correction_file_sources('qm-sample', 1, 'grant', ${randomUUID()}::uuid)`,
+        ),
+      ),
+    ).rejects.toMatchObject({ cause: { code: '42501' } });
+  });
+
   it('let app_jobs read and delete only the author’s own requests, with their sources', async () => {
     const id = await fileOne();
     const own = await withIdentity(testDatabase.jobsDb, { accountId: owner }, async (tx) => ({

@@ -49,14 +49,16 @@ export function storedPageCopies({ db, storage }: PageCopySettings): PageCopies 
       const copy = rows[0];
       const format = copy === undefined ? undefined : answerFormat(copy.media_type);
       if (copy === undefined || format === undefined) return undefined;
-      const bytes = await storage.read(copy.pathname, copy.size);
+      // A PDF past the fetcher's own cap is not parsed, as a live page that size would not be.
+      const maxBytes = format === 'pdf' ? Math.min(copy.size, fetchLimits.maxPdfBytes) : copy.size;
+      const bytes = await storage.read(copy.pathname, maxBytes);
       if (
         bytes === undefined ||
         !createHash('sha256').update(bytes).digest().equals(Buffer.from(copy.sha256))
       ) {
         return undefined;
       }
-      // Saved pages are read as UTF-8, which official sites serve today; other bytes become U+FFFD.
+      // A copy is read as UTF-8, by choice; bytes that are not UTF-8 become U+FFFD.
       const read = await answerWithinLimits(
         format,
         { bytes, text: () => new TextDecoder('utf-8', { fatal: false }).decode(bytes) },

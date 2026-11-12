@@ -57,8 +57,9 @@ CREATE FUNCTION "knowledge"."correction_page_copies"(pages text[])
     SELECT DISTINCT ON (s.page_url) s.page_url, u.pathname, u.media_type, u.size, u.sha256
       FROM "knowledge"."correction_source" s
       JOIN "knowledge"."correction_upload" u ON u.id = s.upload_id
+      JOIN "knowledge"."correction_request" r ON r.id = s.request_id
      WHERE s.page_url = ANY (pages)
-     ORDER BY s.page_url, u.created_at DESC, u.id
+     ORDER BY s.page_url, r.created_at DESC, s.position DESC
   $$;
 --> statement-breakpoint
 REVOKE ALL ON FUNCTION "knowledge"."attach_correction_file_with_page"(uuid, integer, uuid, text, text) FROM PUBLIC;

@@ -34372,13 +34372,13 @@
                                 "null"
                               ],
                               "maxLength": 2048,
-                              "pattern": "^https:\\/\\/\\S+$"
+                              "pattern": "^https:\\/\\/\\S+$",
+                              "default": null
                             }
                           },
                           "required": [
                             "kind",
-                            "uploadId",
-                            "pageUrl"
+                            "uploadId"
                           ],
                           "additionalProperties": false
                         }

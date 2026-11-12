@@ -14,6 +14,9 @@ export const objectHeadBytes = 1024;
 /** The media type of document ciphertext, the only type a vault upload may have. */
 export const ciphertextType = 'application/octet-stream';
 
+/** Whether the server may read an object: a correction file, never document ciphertext. */
+export const readablePathname = (pathname: string) => pathname.startsWith('corrections/');
+
 /** A stream's bytes, or undefined once they run past `maxBytes`. */
 export async function bytesWithin(
   chunks: AsyncIterable<Uint8Array>,
@@ -70,7 +73,8 @@ export interface ObjectStorage {
   readonly digest: (pathname: string) => Promise<StoredObject | undefined>;
   /**
    * The object's bytes, or undefined when nothing is stored there or it runs past `maxBytes`. Only
-   * correction files are read on the server, which stores document ciphertext without reading it.
+   * correction files are read on the server, which stores document ciphertext without reading it;
+   * any other pathname is refused.
    */
   readonly read: (pathname: string, maxBytes: number) => Promise<Uint8Array | undefined>;
   /** A URL that reads the object for 5 minutes, served as an attachment with `nosniff`. */
@@ -147,6 +151,7 @@ export function memoryObjectStorage(
       return bytes === undefined ? Promise.resolve(undefined) : digestOf([bytes]);
     },
     read: (pathname, maxBytes) => {
+      if (!readablePathname(pathname)) return Promise.reject(new Error('not a correction file'));
       const bytes = objects.get(pathname);
       return Promise.resolve(bytes === undefined || bytes.length > maxBytes ? undefined : bytes);
     },

@@ -328,13 +328,15 @@ export function createVersionCheck({
       // Official sites fail often and the report keeps each failure, so the log line is a code.
       if (!live.ok) logger.info({ route, errorCode: `check_fetch_${live.failure}` });
       // A page the check cannot read is read from the copy an owner-list admin attached, if any;
-      // the log then names no address, since the text came from neither.
-      const copy = live.ok
-        ? undefined
-        : await copies.read(url).catch(() => {
-            logger.error({ route, errorCode: 'check_copy_failed' });
-            return undefined;
-          });
+      // the log then names no address, since the text came from neither. A page off the pinned
+      // official hosts never is, so a copy cannot make an unofficial page count as official.
+      const copy =
+        live.ok || live.failure === 'refused_url'
+          ? undefined
+          : await copies.read(url).catch(() => {
+              logger.error({ route, errorCode: 'check_copy_failed' });
+              return undefined;
+            });
       const read: FetchOutcome =
         copy === undefined ? live : { ok: true, status: live.status ?? 0, ...copy, chain: [url] };
       await record({

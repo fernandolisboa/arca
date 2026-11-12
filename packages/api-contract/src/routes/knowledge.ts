@@ -510,7 +510,7 @@ const TextSource = z.strictObject({
 export const CorrectionSource = z.discriminatedUnion('kind', [
   LinkSource,
   TextSource,
-  z.strictObject({ kind: z.literal('file'), uploadId: z.uuid(), pageUrl }),
+  z.strictObject({ kind: z.literal('file'), uploadId: z.uuid(), pageUrl: pageUrl.default(null) }),
 ]);
 export type CorrectionSource = z.infer<typeof CorrectionSource>;
 

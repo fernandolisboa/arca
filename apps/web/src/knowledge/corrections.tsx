@@ -41,7 +41,7 @@ type ListedRequest = CorrectionRequests['requests'][number];
 interface Filing {
   readonly routeId: string;
   readonly number: number;
-  /** The pages the version cites, which a file may be a copy of. */
+  /** The distinct pages the version cites, which a file may be a copy of. */
   readonly pages: VersionView['sources'];
   readonly canFile: boolean;
   readonly words: KnowledgeWords;
@@ -62,7 +62,13 @@ export function CorrectionFiling({
   const requests = useQuery(correctionRequestsQuery(view.routeId, view.number));
   const canFile = requests.data?.canFile === true;
   const filing = useMemo(
-    () => ({ routeId: view.routeId, number: view.number, pages: view.sources, canFile, words }),
+    () => ({
+      routeId: view.routeId,
+      number: view.number,
+      pages: [...new Map(view.sources.map((page) => [page.url, page])).values()],
+      canFile,
+      words,
+    }),
     [view.routeId, view.number, view.sources, canFile, words],
   );
   return <FilingContext value={filing}>{children}</FilingContext>;
@@ -178,6 +184,18 @@ function CorrectionForm({
   const remove = (id: number) => {
     setDrafts((current) => current.filter((old) => old.id !== id));
   };
+  /**
+   * Merges into a file draft as it then stands, so an upload ending and a page being chosen never
+   * undo each other.
+   */
+  const settle = (
+    id: number,
+    settled: Partial<Pick<FileDraft, 'state' | 'uploadId' | 'pageUrl'>>,
+  ) => {
+    setDrafts((current) =>
+      current.map((old) => (old.id === id && old.kind === 'file' ? { ...old, ...settled } : old)),
+    );
+  };
   const [fileRefused, setFileRefused] = useState(false);
   const attach = (file: File) => {
     const mediaType = correctionFileType(file);
@@ -188,18 +206,12 @@ function CorrectionForm({
       ...current,
       { id, kind: 'file', name: file.name, state: 'sending', pageUrl: null },
     ]);
-    // Merged into the draft as it then stands, so a page chosen while it uploads is kept.
-    const settle = (settled: Pick<FileDraft, 'state' | 'uploadId'>) => {
-      setDrafts((current) =>
-        current.map((old) => (old.id === id && old.kind === 'file' ? { ...old, ...settled } : old)),
-      );
-    };
     uploadCorrectionFile(file, mediaType)
       .then((uploadId) => {
-        settle({ state: 'ready', uploadId });
+        settle(id, { state: 'ready', uploadId });
       })
       .catch(() => {
-        settle({ state: 'failed' });
+        settle(id, { state: 'failed' });
       });
   };
   const pickFile = () => {
@@ -280,11 +292,9 @@ function CorrectionForm({
                 hint={t('knowledge.corrections.copyOfHint')}
                 value={draft.pageUrl ?? ''}
                 placeholder={t('knowledge.corrections.notACopy')}
-                options={[...new Map(filing.pages.map((page) => [page.url, page])).values()].map(
-                  ({ url, title }) => ({ value: url, label: title }),
-                )}
+                options={filing.pages.map(({ url, title }) => ({ value: url, label: title }))}
                 onChange={(pageUrl) => {
-                  change({ ...draft, pageUrl: pageUrl === '' ? null : pageUrl });
+                  settle(draft.id, { pageUrl: pageUrl === '' ? null : pageUrl });
                 }}
               />
             )}
