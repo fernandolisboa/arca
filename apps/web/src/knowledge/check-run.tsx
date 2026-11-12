@@ -40,7 +40,7 @@ export interface CheckRunState {
   /** Whether a check of the version is running now. */
   readonly running: boolean;
   /** What the version's newest finished check cost, in millionths of a dollar, when priced. */
-  readonly lastCost: number | null;
+  readonly lastCostMicroUsd: number | null;
   readonly confirming: boolean;
   readonly starting: boolean;
   readonly failure: StartFailure | undefined;
@@ -78,7 +78,7 @@ export function useCheckRun(version: CheckedVersion, onStarted?: () => void): Ch
     version,
     offered: check.data?.enabled === true,
     running: progress.data?.progress?.state === 'running',
-    lastCost: progress.data?.lastCost ?? null,
+    lastCostMicroUsd: progress.data?.lastCostMicroUsd ?? null,
     confirming,
     starting: start.isPending,
     failure: start.isError ? startFailure(start.error) : undefined,
@@ -149,9 +149,9 @@ export function CheckRunConfirm({
       </h4>
       <p>{t('knowledge.checkRun.confirmLead')}</p>
       <p className="font-medium">
-        {state.lastCost === null
+        {state.lastCostMicroUsd === null
           ? t('knowledge.checkRun.cost')
-          : t('knowledge.checkRun.lastCost', { cost: words.usd(state.lastCost) })}
+          : t('knowledge.checkRun.lastCost', { cost: words.usd(state.lastCostMicroUsd) })}
       </p>
       <div className="flex flex-wrap gap-3">
         <Button disabled={state.starting} onClick={state.confirm}>

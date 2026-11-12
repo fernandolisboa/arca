@@ -45,6 +45,9 @@ export type CheckCost =
 
 const perMillion = 1_000_000n;
 
+/** The most a check's cost is shown as, US$ 1,000; anything above is no real check's and is unknown. */
+export const maxCheckCostMicroUsd = 1_000_000_000;
+
 /** A call's cost in millionths of a millionth of a dollar, or undefined when it cannot be priced. */
 function callCost(usage: ModelUsage, table: PriceTable): bigint | undefined {
   const pricing = table.get(usage.model);
@@ -81,5 +84,8 @@ export function checkCost(usages: readonly ModelUsage[], table: PriceTable): Che
     total += cost;
   }
   // Half a millionth of a dollar and up rounds up.
-  return { kind: 'priced', microUsd: Number((total + perMillion / 2n) / perMillion) };
+  const microUsd = (total + perMillion / 2n) / perMillion;
+  return microUsd > BigInt(maxCheckCostMicroUsd)
+    ? { kind: 'unknown' }
+    : { kind: 'priced', microUsd: Number(microUsd) };
 }

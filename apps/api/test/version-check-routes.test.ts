@@ -243,7 +243,7 @@ function setup({
   const watchedWhole = async (number: number) =>
     (await (await watch(number)).json()) as {
       progress: Record<string, unknown> | null;
-      lastCost: number | null;
+      lastCostMicroUsd: number | null;
     };
   const watched = async (number: number) => (await watchedWhole(number)).progress;
   return {
@@ -634,7 +634,7 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     const { watch, runs } = setup();
     const response = await watch(1);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ progress: null, lastCost: null });
+    expect(await response.json()).toEqual({ progress: null, lastCostMicroUsd: null });
     expect(runs).toEqual([]);
   });
 
@@ -740,15 +740,26 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
       await progress.record(runs[0]?.id ?? '', 0, used);
       await progress.record(runs[0]?.id ?? '', 1, used);
       await report(runs[0]);
-      expect(await watchedWhole(1)).toMatchObject({ lastCost: 566_000 });
+      expect(await watchedWhole(1)).toMatchObject({ lastCostMicroUsd: 566_000 });
       advance(minute);
       await startOne(1);
       expect(await watchedWhole(1)).toMatchObject({
         progress: { state: 'running', cost: null },
-        lastCost: 566_000,
+        lastCostMicroUsd: 566_000,
       });
       advance(25 * 60 * minute);
-      expect(await watchedWhole(1)).toEqual({ progress: null, lastCost: 566_000 });
+      expect(await watchedWhole(1)).toEqual({ progress: null, lastCostMicroUsd: 566_000 });
+    });
+
+    it('skips a failed report, whose run may have stopped before its model calls', async () => {
+      const { startOne, runs, progress, report, watchedWhole, advance } = setup();
+      await startOne(1);
+      await progress.record(runs[0]?.id ?? '', 0, used);
+      await report(runs[0]);
+      advance(minute);
+      await startOne(1);
+      await report(runs[1], { failed: true, failure: 'check_timeout' });
+      expect(await watchedWhole(1)).toMatchObject({ lastCostMicroUsd: 283_000 });
     });
 
     it('answers no last cost when the newest finished check could not be priced', async () => {
@@ -758,7 +769,7 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
       await report(runs[0]);
       expect(await watchedWhole(1)).toMatchObject({
         progress: { cost: { kind: 'scripted' } },
-        lastCost: null,
+        lastCostMicroUsd: null,
       });
     });
   });
@@ -767,7 +778,7 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
     expect((await setup({ count: 1 }).watch(9)).status).toBe(404);
     const off = setup({ count: 1, enabled: false });
     expect((await off.watch(9)).status).toBe(404);
-    expect(await (await off.watch(1)).json()).toEqual({ progress: null, lastCost: null });
+    expect(await (await off.watch(1)).json()).toEqual({ progress: null, lastCostMicroUsd: null });
   });
 
   it('is for admins only', async () => {

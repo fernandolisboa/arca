@@ -36,7 +36,7 @@ const storedEvent = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('comparing') }),
   z.strictObject({
     kind: z.literal('usage'),
-    model: z.string().max(100),
+    model: z.string().regex(/^[a-z0-9.-]{1,100}$/u),
     inputTokens: tokens,
     outputTokens: tokens,
     cacheReadTokens: tokens,

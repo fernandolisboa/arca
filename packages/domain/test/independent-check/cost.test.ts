@@ -87,6 +87,11 @@ describe('checkCost', () => {
       [call('strong', { inputTokens: 10, cacheReadTokens: 11 })],
       { kind: 'unknown' },
     ],
+    [
+      'a total past what any check costs',
+      [call('strong', { inputTokens: 100_000_000, outputTokens: 100_000_000 })],
+      { kind: 'unknown' },
+    ],
     ['the scripted checker', [call(scriptedCheckerModel)], { kind: 'scripted' }],
   ])('prices %s', (_, usages, expected) => {
     expect(checkCost(usages, table)).toEqual(expected);

@@ -2,6 +2,7 @@ import {
   calendarDateSchema,
   checkItemKinds,
   checkProgressStages,
+  maxCheckCostMicroUsd,
   checkProgressStates,
   checkReasons,
   checkStatuses,
@@ -549,7 +550,7 @@ export const startVersionCheck = {
 } as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
 
 /** Millionths of a U.S. dollar, computed in code from the reviewed price table. */
-const microUsd = z.int().min(0).max(1_000_000_000);
+const microUsd = z.int().min(0).max(maxCheckCostMicroUsd);
 
 /**
  * What a check's model calls cost: `unknown` when a model has no price or the provider left a
@@ -593,7 +594,7 @@ export const VersionCheckProgress = z.strictObject({
   /** The version's newest start of the last 24 hours, or null with none or where no check runs. */
   progress: CheckProgress.nullable(),
   /** What the version's newest check with a report cost, when it could be priced. */
-  lastCost: microUsd.nullable(),
+  lastCostMicroUsd: microUsd.nullable(),
 });
 export type VersionCheckProgress = z.infer<typeof VersionCheckProgress>;
 

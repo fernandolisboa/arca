@@ -314,6 +314,7 @@ export {
   liveStart,
   maxAutomaticStartsPerDay,
   maxStartsPerDay,
+  newestReport,
   newestStart,
   noGuide,
   reportLifetime,
@@ -344,6 +345,7 @@ export {
   type PriceTable,
   type TokenPrices,
   checkCost,
+  maxCheckCostMicroUsd,
 } from './independent-check/cost.js';
 export {
   type BatchListedVersion,

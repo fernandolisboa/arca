@@ -94,7 +94,7 @@ interface FetchedPage {
 type Recorder = (event: CheckProgressEvent) => Promise<void>;
 
 /** What a model call used, as its reply reports it, for the check's cost. */
-const usageOf = (reply: ModelReply): CheckProgressEvent => ({
+const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
   kind: 'usage',
   model: reply.model,
   inputTokens: reply.inputTokens ?? null,
@@ -242,7 +242,7 @@ export function createVersionCheck({
             ? new PassageLocatorError(error.code)
             : new PassageLocatorError('locate_failed'),
       );
-      await record(usageOf(answered));
+      await record(usageEvent(answered));
       const picks = parsePassageLocation(answered.reply);
       if (picks === undefined) logger.error({ route, errorCode: 'locate_unparsable' });
       return picks;
@@ -304,7 +304,7 @@ export function createVersionCheck({
               ? new RuleCheckerError(error.code)
               : new RuleCheckerError('check_failed'),
         );
-        await record(usageOf(answered));
+        await record(usageEvent(answered));
         return answered.reply;
       },
       parseCheckAnswer,

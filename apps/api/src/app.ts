@@ -1569,14 +1569,14 @@ export function createApp({
       const view = await reads.versions.view(routeId, number);
       return view === undefined
         ? fail(c, 'not_found', 404)
-        : c.json({ progress: null, lastCost: null }, 200);
+        : c.json({ progress: null, lastCostMicroUsd: null }, 200);
     }
     const outcome = await versionChecks.progress(routeId, number);
     if (!outcome.ok) return fail(c, outcome.reason, 404);
-    const { progress, lastCost } = outcome;
+    const { progress, lastCostMicroUsd } = outcome;
     return c.json(
       VersionCheckProgress.parse({
-        lastCost,
+        lastCostMicroUsd,
         progress:
           progress === null
             ? null

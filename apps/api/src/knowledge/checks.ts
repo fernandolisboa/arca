@@ -9,6 +9,7 @@ import {
   checkItems,
   checkProgress,
   currentReport,
+  newestReport,
   newestStart,
   listedCheckStatus,
   noGuide,
@@ -59,8 +60,8 @@ export type ProgressOutcome =
   | {
       readonly ok: true;
       readonly progress: CheckProgress | null;
-      /** What the version's newest check with a report cost, in millionths of a dollar, if priced. */
-      readonly lastCost: number | null;
+      /** What the version's newest check with a report that did not fail cost, in millionths of a dollar, if priced. */
+      readonly lastCostMicroUsd: number | null;
     }
   | { readonly ok: false; readonly reason: 'not_found' };
 
@@ -167,10 +168,8 @@ export function createVersionChecks({
       const own = ofVersion(routeId, number);
       const [recent, stored] = await Promise.all([starts.recent(), reports.list()]);
       const newest = newestStart(own(recent));
-      const lastReport = own(stored).reduce<(typeof stored)[number] | undefined>(
-        (last, report) => (last === undefined || report.checkedAt > last.checkedAt ? report : last),
-        undefined,
-      );
+      // A failed run may have stopped before its model calls, so its cost says little of the next one's.
+      const lastReport = newestReport(own(stored).filter(({ failed }) => !failed));
       const [events, lastEvents] = await Promise.all([
         newest === undefined ? [] : progress.list(newest.id),
         lastReport === undefined || lastReport.startId === newest?.id
@@ -181,13 +180,13 @@ export function createVersionChecks({
         lastReport === undefined
           ? null
           : checkCost(usagesOf(lastEvents ?? events), checkModelPrices);
-      const lastCost = last?.kind === 'priced' ? last.microUsd : null;
-      if (newest === undefined) return { ok: true, progress: null, lastCost };
+      const lastCostMicroUsd = last?.kind === 'priced' ? last.microUsd : null;
+      if (newest === undefined) return { ok: true, progress: null, lastCostMicroUsd };
       const reported = stored.some(({ startId }) => startId === newest.id);
       return {
         ok: true,
         progress: checkProgress(newest, events, reported, now(), checkModelPrices),
-        lastCost,
+        lastCostMicroUsd,
       };
     },
 

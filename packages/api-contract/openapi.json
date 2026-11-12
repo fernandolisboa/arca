@@ -34896,7 +34896,7 @@
                       ],
                       "additionalProperties": false
                     },
-                    "lastCost": {
+                    "lastCostMicroUsd": {
                       "type": [
                         "integer",
                         "null"
@@ -34907,7 +34907,7 @@
                   },
                   "required": [
                     "progress",
-                    "lastCost"
+                    "lastCostMicroUsd"
                   ],
                   "additionalProperties": false
                 }
