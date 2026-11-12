@@ -672,8 +672,30 @@ describe('GET /v1/knowledge/versions/check/progress (ADR-0027, on demand)', () =
         { url: `${law}/fees`, outcome: 'reading', status: null },
       ],
       locatedPages: null,
+      items: [
+        {
+          key: 'requirement:means',
+          kind: 'requirement',
+          title: 'Means of subsistence',
+          status: null,
+        },
+      ],
+      scripted: false,
       failure: null,
       cost: null,
+    });
+  });
+
+  it('shows each item with its status as it lands, and whether the answers are scripted', async () => {
+    const { startOne, runs, progress, watched } = setup({ model: 'fake' });
+    await startOne(1);
+    const id = runs[0]?.id ?? '';
+    await progress.record(id, 0, { kind: 'comparing' });
+    await progress.record(id, 1, { kind: 'item', key: 'requirement:means', status: 'differs' });
+    expect(await watched(1)).toMatchObject({
+      stage: 'comparing',
+      items: [{ key: 'requirement:means', status: 'differs' }],
+      scripted: true,
     });
   });
 

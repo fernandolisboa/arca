@@ -18,25 +18,29 @@ const maxParsedQuotes = 10;
  * counts here only bound the parse; code checks every quote, URL and note after, and refuses an
  * item with more than `maxQuotes` quotes.
  */
+const RuleCheckAnswerEntry = z.strictObject({
+  key: z.string().max(maxCheckItemKeyLength),
+  status: z.enum(checkStatuses),
+  quotes: z
+    .array(z.strictObject({ quote: text, url: text }))
+    .max(maxParsedQuotes)
+    .nullish()
+    .transform((value) => value ?? undefined),
+  note: optionalText,
+});
+
 export const RuleCheckAnswer = z.strictObject({
-  items: z
-    .array(
-      z.strictObject({
-        key: z.string().max(maxCheckItemKeyLength),
-        status: z.enum(checkStatuses),
-        quotes: z
-          .array(z.strictObject({ quote: text, url: text }))
-          .max(maxParsedQuotes)
-          .nullish()
-          .transform((value) => value ?? undefined),
-        note: optionalText,
-      }),
-    )
-    .max(200),
+  items: z.array(RuleCheckAnswerEntry).max(200),
 });
 
 /** The answer's entries, or undefined when the reply does not parse. */
 export function parseCheckAnswer(reply: unknown): readonly CheckAnswer[] | undefined {
   const parsed = RuleCheckAnswer.safeParse(reply);
   return parsed.success ? parsed.data.items : undefined;
+}
+
+/** One entry of an answer as it streams in, or undefined when it does not parse. */
+export function parseCheckAnswerEntry(entry: unknown): CheckAnswer | undefined {
+  const parsed = RuleCheckAnswerEntry.safeParse(entry);
+  return parsed.success ? parsed.data : undefined;
 }

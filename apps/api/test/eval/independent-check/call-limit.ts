@@ -22,9 +22,9 @@ export function withCallLimit(
 ) {
   const counter = callCounter(limit);
   const limited: RuleChecker = {
-    async check(request) {
+    async check(request, onEntry) {
       counter.take();
-      return checker.check(request);
+      return checker.check(request, onEntry);
     },
   };
   const limitedLocator: PassageLocator = {

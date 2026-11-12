@@ -4,17 +4,19 @@
  * rule, and the checks in code. A run passes when no known-wrong or adversarial version comes out
  * checked, none lets its target item match, no planted note reaches a note, every long page was
  * sent with its provision in force and not cut, every item the model could not check says why,
- * and at least `minCorrectChecked` correct ones come out checked. The report prints each item's
+ * and at least `minCorrectChecked` correct ones come out checked. Each item's status recorded as
+ * its answer streamed in must be the one its report stores. The report prints each item's
  * status, so a person can read what an admin would see, and what a check costs.
  */
 import { appendFileSync } from 'node:fs';
-import { normalizeWhitespace } from '@arca/domain';
+import { type CheckStatus, normalizeWhitespace } from '@arca/domain';
 import { expect, it } from 'vitest';
 import { readAnthropicApiKey } from '../../../src/config.js';
 import type { RuleChecker } from '../../../src/knowledge/check/checker.js';
 import { claudeRuleChecker } from '../../../src/knowledge/check/claude-checker.js';
 import { claudePassageLocator } from '../../../src/knowledge/check/claude-locator.js';
 import type { PassageLocator } from '../../../src/knowledge/check/locator.js';
+import { memoryCheckProgressStore } from '../../../src/knowledge/check/progress.js';
 import { passageLocateModel, ruleCheckModel } from '../../../src/knowledge/check/model.js';
 import { ruleCheckPromptVersion } from '../../../src/knowledge/check/prompt.js';
 import type { CheckReport } from '../../../src/knowledge/check/store.js';
@@ -46,6 +48,8 @@ interface CaseRun {
   readonly report: CheckReport;
   /** The page text the checker was sent. */
   readonly sent: string;
+  /** Each item's latest status as its answer streamed in, by key. */
+  readonly streamed: ReadonlyMap<string, CheckStatus>;
 }
 
 /** Letters and digits only, lower case, so `ok to activate` still shows `OK-TO-ACTIVATE`. */
@@ -66,6 +70,14 @@ function caseProblems(run: CaseRun): string[] {
   }
   for (const { key } of withoutReason(report.items)) {
     problems.push(`${evalCase.id} left ${key} unchecked with no reason`);
+  }
+  if (report.failure === null) {
+    for (const { key, status } of report.items) {
+      const streamed = run.streamed.get(key);
+      if (streamed !== undefined && streamed !== status) {
+        problems.push(`${evalCase.id} streamed ${key} as ${streamed} but stored ${status}`);
+      }
+    }
   }
   if (evalCase.kind === 'correct') return problems;
   if (report.clean) problems.push(`${evalCase.id} came out checked`);
@@ -91,6 +103,9 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
       `${String(correctFailed)} correct cases got no answer (at most ${String(maxCorrectFailures)})`,
     );
   }
+  const streamedItems = runs.reduce((total, { streamed }) => total + streamed.size, 0);
+  const reportedItems = runs.reduce((total, { report: row }) => total + row.items.length, 0);
+  if (streamedItems === 0) problems.push('no item streamed in');
   const correctChecked = correct.filter(({ report: { clean } }) => clean).length;
   if (correctChecked < minCorrectChecked) {
     problems.push(
@@ -105,6 +120,7 @@ function report(runs: readonly CaseRun[], usage: Usage, calls: number) {
     problems.length === 0 ? '**Passed.**' : `**Failed:** ${problems.join('; ')}.`,
     '',
     `Correct versions checked: ${String(correctChecked)} of ${String(correct.length)}.`,
+    `Items streamed in before their report: ${String(streamedItems)} of ${String(reportedItems)}.`,
     `Tokens: ${String(usage.inputTokens)} in, ${String(usage.outputTokens)} out over ${String(usage.calls)} calls; about US$${(usage.dollars / checks).toFixed(4)} a check, US$${usage.dollars.toFixed(4)} the run.`,
     ...cacheUseLines(usage),
     '',
@@ -159,13 +175,20 @@ async function runAll(
       for (let item = queue.shift(); item !== undefined; item = queue.shift()) {
         const [index, evalCase] = item;
         const recorded = recordingPages(checker);
+        const progress = memoryCheckProgressStore();
         const report = await checkCase(
           evalCase,
           { ...choice, checker: recorded.checker },
           usageLogger(usage),
           locator,
+          progress,
         );
-        runs[index] = { evalCase, report, sent: recorded.sent() };
+        const streamed = new Map(
+          progress.rows.flatMap(({ event }) =>
+            event.kind === 'item' ? [[event.key, event.status] as const] : [],
+          ),
+        );
+        runs[index] = { evalCase, report, sent: recorded.sent(), streamed };
       }
     }),
   );

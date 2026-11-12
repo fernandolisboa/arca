@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkRunStepStatuses } from '../src/knowledge/check-run-steps.js';
+import { checkRunItems, checkRunStepStatuses } from '../src/knowledge/check-run-steps.js';
 
 type Progress = Parameters<typeof checkRunStepStatuses>[0];
 const at = (
@@ -53,5 +53,51 @@ describe('checkRunStepStatuses', () => {
   ])('%s', (_, progress, expected) => {
     const statuses = checkRunStepStatuses(progress);
     expect([statuses.read, statuses.locate, statuses.compare, statuses.report]).toEqual(expected);
+  });
+});
+
+describe('checkRunItems', () => {
+  type ItemsProgress = Parameters<typeof checkRunItems>[0];
+  const item = (key: string, status: 'matches' | 'differs' | null) => ({
+    key,
+    kind: 'requirement' as const,
+    title: key,
+    status,
+  });
+  const items = [item('a', 'matches'), item('b', 'differs'), item('c', null), item('d', null)];
+  const progress = (over: Partial<ItemsProgress> = {}): ItemsProgress => ({
+    items,
+    scripted: false,
+    state: 'running',
+    ...over,
+  });
+
+  it('lists the answered items, the one awaited and how many follow it', () => {
+    const view = checkRunItems(progress());
+    expect(view.answered.map(({ key, status }) => [key, status])).toEqual([
+      ['a', 'matches'],
+      ['b', 'differs'],
+    ]);
+    expect(view.answered[0]).toMatchObject({ quotes: [], note: null, reason: null });
+    expect(view.next?.key).toBe('c');
+    expect(view.left).toBe(1);
+  });
+
+  it('awaits nothing once the check stopped', () => {
+    const view = checkRunItems(progress({ state: 'failed' }));
+    expect(view.next).toBeUndefined();
+    expect(view.left).toBe(2);
+  });
+
+  it('shows a scripted match as not confirmed', () => {
+    const view = checkRunItems(progress({ scripted: true }));
+    expect(view.answered.map(({ status }) => status)).toEqual(['could_not_check', 'differs']);
+  });
+
+  it('shows nothing answered before the first answer lands', () => {
+    const view = checkRunItems(progress({ items: [item('c', null)] }));
+    expect(view.answered).toEqual([]);
+    expect(view.next?.key).toBe('c');
+    expect(view.left).toBe(0);
   });
 });
