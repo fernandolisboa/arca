@@ -112,6 +112,7 @@ test('starts a case, adds people, shares a child with a member and tells them', 
   const stepUp = relativePage.waitForRequest((request) =>
     request.url().endsWith('/v1/auth/step-up/options'),
   );
+  await relativePage.getByRole('tab', { name: 'Caso' }).click();
   await relativePage.getByRole('button', { name: 'Sair do caso' }).click();
   await relativePage.getByRole('button', { name: 'Sim, sair do caso' }).click();
   await expect(relativePage.getByRole('button', { name: 'Começar o caso' })).toBeVisible();

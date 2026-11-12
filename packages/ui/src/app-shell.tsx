@@ -56,15 +56,19 @@ const defaultLayout: ShellLayout = {
 
 /*
  * Content clearance per layout, written out in full so Tailwind finds every class: the dock's size,
- * the floating dock's 14 px gap and the safe-area inset on the dock's side.
+ * the floating dock's 14 px gap and the safe-area inset on the dock's side. A bottom dock's height
+ * is also `--shell-bottom`, where `phoneBottomBarClass` sits.
  */
 const narrowClearance = {
-  menu: '',
-  'fixed-dock': 'max-md:pb-[calc(var(--spacing-dock)+env(safe-area-inset-bottom))]',
+  menu: 'max-md:[--shell-bottom:env(safe-area-inset-bottom)]',
+  'fixed-dock':
+    'max-md:pb-(--shell-bottom) max-md:[--shell-bottom:calc(var(--spacing-dock)+env(safe-area-inset-bottom))]',
   'floating-dock': {
-    bottom: 'max-md:pb-[calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
-    left: 'max-md:pl-[calc(5rem+14px+env(safe-area-inset-left))]',
-    right: 'max-md:pr-[calc(5rem+14px+env(safe-area-inset-right))]',
+    bottom:
+      'max-md:pb-(--shell-bottom) max-md:[--shell-bottom:calc(var(--spacing-dock)+14px+env(safe-area-inset-bottom))]',
+    left: 'max-md:pl-[calc(5rem+14px+env(safe-area-inset-left))] max-md:[--shell-bottom:env(safe-area-inset-bottom)]',
+    right:
+      'max-md:pr-[calc(5rem+14px+env(safe-area-inset-right))] max-md:[--shell-bottom:env(safe-area-inset-bottom)]',
   },
 } as const;
 

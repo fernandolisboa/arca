@@ -8,6 +8,7 @@ import { ScaleChoice } from '../src/patterns/scale-choice.js';
 import { formatCalendarDate, SourceLine } from '../src/patterns/source-line.js';
 import { StarRating } from '../src/patterns/star-rating.js';
 import { StatusChip } from '../src/patterns/status-chip.js';
+import { nextTabIndex, tabPanelProps, Tabs } from '../src/patterns/tabs.js';
 import type { ShellLinkProps } from '../src/shell/nav.js';
 
 const noop = () => undefined;
@@ -301,5 +302,48 @@ describe('CoachMark', () => {
 
   it('dims the page with `bg` at 70% before the target is measured', () => {
     expect(step(true, false)).toContain('bg-bg/70');
+  });
+});
+
+describe('Tabs', () => {
+  const tabs = [
+    { value: 'people', label: 'Pessoas', count: 3 },
+    { value: 'invites', label: 'Convites' },
+    { value: 'case', label: 'Caso' },
+  ] as const;
+  const names = { label: 'Partes', idBase: 'family' };
+  const html = renderToStaticMarkup(
+    <Tabs label={names.label} tabs={tabs} value="invites" onChange={noop} idBase={names.idBase} />,
+  );
+
+  it('is a named tablist where only the selected tab is a tab stop and names its panel', () => {
+    expect(html).toMatch(/^<div role="tablist" aria-label="Partes"/);
+    expect(html.match(/role="tab"/g)).toHaveLength(3);
+    expect(html.match(/tabindex="0"/g)).toHaveLength(1);
+    expect(html).toMatch(/id="family-tab-invites"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+    expect(html.match(/aria-controls=/g)).toHaveLength(1);
+    expect(html).toContain('aria-controls="family-panel-invites"');
+    expect(html).toContain('>Pessoas<span');
+  });
+
+  it('labels a panel by its tab', () => {
+    expect(tabPanelProps('family', 'case')).toEqual({
+      id: 'family-panel-case',
+      role: 'tabpanel',
+      'aria-labelledby': 'family-tab-case',
+      tabIndex: 0,
+    });
+  });
+
+  it.each([
+    ['ArrowRight', 1, 2],
+    ['ArrowRight', 2, 0],
+    ['ArrowLeft', 0, 2],
+    ['ArrowLeft', 2, 1],
+    ['Home', 2, 0],
+    ['End', 0, 2],
+    ['Enter', 1, undefined],
+  ])('moves %s from tab %i to %s', (key, from, to) => {
+    expect(nextTabIndex(key, from, 3)).toBe(to);
   });
 });
