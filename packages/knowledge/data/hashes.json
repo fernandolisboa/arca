@@ -394,6 +394,14 @@
     {
       "path": "guides/dk/2",
       "sha256": "b971d3122df3e00d6e777c0ae0cf918e71e7949634703f1b50e425554bcb2461"
+    },
+    {
+      "path": "routes/pt-d7/6",
+      "sha256": "70ba59185cb53c7ce1af18d8cfb657c604f60c0b13dabe8c94c9ba2c9caf41cc"
+    },
+    {
+      "path": "routes/pt-d8/6",
+      "sha256": "69c2f6750dca3a75f9e71884ec0f464b149ae93829aba1d2d18d7a76814158ff"
     }
   ]
 }

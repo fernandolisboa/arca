@@ -7,7 +7,7 @@ import {
   type ReadPage,
   asDataText,
   checkItems,
-  excerptBudget,
+  excerptBudgets,
   excerptPassages,
   excerptText,
   machineReadableUrls,
@@ -81,6 +81,10 @@ const maxFetchedPages = 200;
  * so their cost; any further long page is sent as its opening, cut.
  */
 const maxLocatedPages = 10;
+
+/** The items that cite a page. */
+const itemsCiting = (items: readonly CheckItem[], url: string) =>
+  items.filter(({ urls }) => urls.includes(url));
 
 interface FetchedPage {
   /** The cited URL, which the model, the quotes and the panel name. */
@@ -265,7 +269,7 @@ export function createVersionCheck({
     askLocator: boolean,
     record: Recorder,
   ): Promise<Excerpt> => {
-    const citing = items.filter(({ urls }) => urls.includes(page.url));
+    const citing = itemsCiting(items, page.url);
     const passages = splitPassages(page.text);
     const picks = askLocator
       ? await locate(
@@ -376,8 +380,15 @@ export function createVersionCheck({
           ]
         : [],
     );
-    // Short pages go whole; the long ones share what is left of the budget, as excerpts.
-    const budget = excerptBudget(readPages.map(({ text }) => text));
+    // Short pages go whole; the long ones share what is left of the budget, as excerpts, by how
+    // many items cite each.
+    const budgets = excerptBudgets(
+      readPages.map(({ url, text }) => ({
+        text,
+        citing: itemsCiting(items, url).length,
+      })),
+    );
+    const budgetOf = new Map(readPages.map(({ url }, index) => [url, budgets[index] ?? 0]));
     const longPages = readPages.filter(({ text }) => !sentWhole(text));
     const located = Math.min(longPages.length, maxLocatedPages);
     if (located > 0) await record({ kind: 'locating', pages: located });
@@ -387,7 +398,14 @@ export function createVersionCheck({
           async (page, index) =>
             [
               page.url,
-              await excerptOf(page, items, subject.entry, budget, index < maxLocatedPages, record),
+              await excerptOf(
+                page,
+                items,
+                subject.entry,
+                budgetOf.get(page.url) ?? 0,
+                index < maxLocatedPages,
+                record,
+              ),
             ] as const,
         ),
       ),

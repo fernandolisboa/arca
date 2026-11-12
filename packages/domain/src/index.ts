@@ -279,7 +279,8 @@ export {
 } from './independent-check/answers.js';
 export { asDataText } from './data-text.js';
 export {
-  excerptBudget,
+  excerptBudgets,
+  type CitedText,
   maxCheckPagesText,
   openingExcerpt,
   withinTextBudget,

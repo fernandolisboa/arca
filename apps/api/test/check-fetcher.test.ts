@@ -332,6 +332,16 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     expect(() => createRequire(pdfjs).resolve('@napi-rs/canvas')).toThrow();
   });
 
+  it('reads a PDF past the byte cap of a page, up to the cap of a PDF', async () => {
+    expect(
+      await fetcher({ maxBytes: 10, maxDecompressedBytes: 10 }).fetch(page('/law.pdf'), hosts),
+    ).toMatchObject({ ok: true });
+    expect(await fetcher({ maxPdfBytes: 10 }).fetch(page('/law.pdf'), hosts)).toMatchObject({
+      ok: false,
+      failure: 'too_large',
+    });
+  });
+
   it("cuts a PDF's text past the cap and says so", async () => {
     const read = await fetcher({ maxTextLength: 20 }).fetch(page('/law.pdf'), hosts);
     expect(read).toMatchObject({ ok: true, cut: true, text: 'Residence Act\n\nIncom' });

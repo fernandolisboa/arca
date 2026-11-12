@@ -43,15 +43,40 @@ export function withinTextBudget(
   });
 }
 
+/** A page read, and how many of the check's items cite it. */
+export interface CitedText {
+  readonly text: string;
+  readonly citing: number;
+}
+
 /**
- * What the excerpt of each long page may hold: an equal share of what the pages sent whole leave
- * of the check's budget, and at most the length of a whole page.
+ * What the excerpt of each long page may hold, in page order (0 for a page sent whole): what the
+ * pages sent whole leave of the check's budget, shared among the long pages by how many items cite
+ * each, so a law most items rest on gets the room their provisions take, and at most the length of
+ * a whole page. Room a page cannot take, past that cap, goes to the others.
  */
-export function excerptBudget(texts: readonly string[], budget = maxCheckPagesText): number {
-  const whole = texts.filter(sentWhole);
-  const left = budget - whole.reduce((sum, text) => sum + text.length, 0);
-  const longPages = texts.length - whole.length;
-  return Math.min(maxWholePageText, Math.floor(Math.max(0, left) / Math.max(1, longPages)));
+export function excerptBudgets(pages: readonly CitedText[], budget = maxCheckPagesText): number[] {
+  const shares = pages.map(() => 0);
+  const whole = pages.filter(({ text }) => sentWhole(text));
+  let left = Math.max(0, budget - whole.reduce((sum, { text }) => sum + text.length, 0));
+  let open = pages.flatMap((page, index) => (sentWhole(page.text) ? [] : [index]));
+  while (open.length > 0 && left > 0) {
+    const weights = open.map((index) => Math.max(1, pages[index]?.citing ?? 0));
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    const capped = open.filter(
+      (index, at) => (left * (weights[at] ?? 0)) / total >= maxWholePageText,
+    );
+    if (capped.length === 0) {
+      open.forEach((index, at) => {
+        shares[index] = Math.floor((left * (weights[at] ?? 0)) / total);
+      });
+      break;
+    }
+    for (const index of capped) shares[index] = maxWholePageText;
+    left -= capped.length * maxWholePageText;
+    open = open.filter((index) => !capped.includes(index));
+  }
+  return shares;
 }
 
 /**
