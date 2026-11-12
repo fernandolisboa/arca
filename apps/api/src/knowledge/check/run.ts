@@ -115,6 +115,9 @@ const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
   cacheWriteTokens: reply.cacheWriteTokens ?? null,
 });
 
+/** The most passages found by a provision's number that go ahead of the locator's picks. */
+const maxProvisionPicks = 3;
+
 /** A long page as it is sent, and whether passages were picked for it. */
 interface Excerpt {
   readonly page: ReadPage;
@@ -148,7 +151,11 @@ function sentTexts(sent: readonly ReadPage[]): Map<string, ReadPage> {
       page.url,
       before === undefined
         ? page
-        : { ...before, text: `${before.text}\n${page.text}`, cut: before.cut || page.cut },
+        : {
+            ...before,
+            text: [before.text, page.text].filter((text) => text !== '').join('\n'),
+            cut: before.cut || page.cut,
+          },
     );
   }
   return byUrl;
@@ -324,10 +331,12 @@ export function createVersionCheck({
     const picks = new Map<string, readonly number[]>();
     for (const { key, citations } of citing) {
       const titles = citations.filter(({ url }) => url === page.url).map(({ title }) => title);
+      const provisions = provisionPassages(page.text, passages, titles);
       const merged = [
         ...new Set([
-          ...provisionPassages(page.text, passages, titles),
+          ...provisions.slice(0, maxProvisionPicks),
           ...(located?.get(key) ?? []),
+          ...provisions.slice(maxProvisionPicks),
         ]),
       ];
       if (merged.length > 0) picks.set(key, merged);

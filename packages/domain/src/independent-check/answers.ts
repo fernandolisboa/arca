@@ -1,5 +1,6 @@
 import type { CheckItem } from './items.js';
 import { excerptRuns } from './passages.js';
+import { numberRunBounds } from './number-words.js';
 import { type CheckValue, statesValue } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
@@ -313,6 +314,7 @@ function checkQuote(
   item: CheckItem,
   answered: CheckQuote,
   pages: ReadonlyMap<string, ReadPage>,
+  languages: readonly string[],
 ): QuoteCheck {
   const { url } = answered;
   if (!item.urls.includes(url)) return { ok: false, reason: 'url_not_cited' };
@@ -324,11 +326,37 @@ function checkQuote(
   }
   // An excerpt's gap line stands for text left out, so a quote counts only within one run.
   const runs = page.excerpt === true ? excerptRuns(page.text) : [page.text];
-  if (!runs.some((run) => normalizeWhitespace(run).includes(quote))) {
-    return { ok: false, reason: 'quote_not_on_page' };
-  }
-  if (echoesAddress(quote, page, item.values)) return { ok: false, reason: 'echoes_address' };
-  return { ok: true, quote: { quote, url }, page };
+  const whole = runs
+    .map(normalizeWhitespace)
+    .reduce<string | undefined>(
+      (found, run) => found ?? wholeWords(run, quote, languages),
+      undefined,
+    );
+  if (whole === undefined) return { ok: false, reason: 'quote_not_on_page' };
+  if (whole.length > maxQuoteLength) return { ok: false, reason: 'quote_length' };
+  if (echoesAddress(whole, page, item.values)) return { ok: false, reason: 'echoes_address' };
+  return { ok: true, quote: { quote: whole, url }, page };
+}
+
+/** A letter, mark or digit of a script written with spaces between words. */
+const wordCharacter =
+  /(?![\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}])[\p{L}\p{M}\p{N}]/u;
+
+/**
+ * The quote as it stands in `run`, widened to whole words and to the whole number-word or kanji
+ * runs its ends belong to, so a quote cut out of a number ("2 meses" from "22 meses", "dois
+ * meses" from "vinte e dois meses") states the whole number; undefined when the quote is not in
+ * the run.
+ */
+function wholeWords(run: string, quote: string, languages: readonly string[]): string | undefined {
+  const at = run.indexOf(quote);
+  if (at === -1) return undefined;
+  let start = at;
+  let end = at + quote.length;
+  while (start > 0 && wordCharacter.test(run[start - 1] ?? '')) start -= 1;
+  while (end < run.length && wordCharacter.test(run[end] ?? '')) end += 1;
+  const bounds = numberRunBounds(run, start, end, languages);
+  return run.slice(bounds.start, bounds.end);
 }
 
 function verifyOne(
@@ -349,7 +377,7 @@ function verifyOne(
   }
   const checked: { quote: CheckQuote; page: ReadPage }[] = [];
   for (const quote of answered) {
-    const result = checkQuote(item, quote, pages);
+    const result = checkQuote(item, quote, pages, languages);
     if (!result.ok) return unchecked(item.key, result.reason);
     checked.push(result);
   }

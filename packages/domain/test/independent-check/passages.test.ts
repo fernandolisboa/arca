@@ -244,6 +244,7 @@ describe('the provisions a source title names (ADR-0027)', () => {
     ['Migration Regulations 1994, regulation 1.05A(1): dependent', ['1.05A']],
     ['Residence act, section 4: pensioners', ['4']],
     ['Decree n.º 139/2025: minimum wage', []],
+    ['Order of 12.03.2024, article 5: amounts', ['5']],
     ['Ministry page on the pay limit: DKK 552,000 in 2026', []],
   ])('reads %s', (title, provisions) => {
     expect(namedProvisions(title)).toEqual(provisions);
@@ -290,6 +291,11 @@ describe('the passages that head a named provision (ADR-0027)', () => {
     expect(found.some((text) => text.includes('A member of the family unit is the spouse'))).toBe(
       true,
     );
+  });
+
+  it('ranks the last heading of a provision first, ahead of its table of contents', () => {
+    const [best] = heads(['Foreigners law, article 52.º, n.º 3: refusal']);
+    expect(best).toContain('Text of article 52, in force');
   });
 
   it('finds nothing for a title that names no provision', () => {

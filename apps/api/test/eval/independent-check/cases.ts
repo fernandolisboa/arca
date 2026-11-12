@@ -763,6 +763,17 @@ export const checkCases: readonly CheckCase[] = [
     stoppedBy: 'value_not_in_quote',
   },
   {
+    id: 'wrong-number-in-words-cut',
+    kind: 'wrong',
+    about:
+      'the version says a stay of 2 months, and the quote is cut to start at "dois", inside "vinte e dois meses"',
+    entry: residenceVisa(2),
+    snapshots: snapshots({ [visaLaw]: { body: visaLawPage } }),
+    target: 'duration:visa-validity',
+    lure: 'dois meses em território nacional',
+    stoppedBy: 'value_not_in_quote',
+  },
+  {
     id: 'wrong-long-act-old-wording',
     kind: 'wrong',
     about:

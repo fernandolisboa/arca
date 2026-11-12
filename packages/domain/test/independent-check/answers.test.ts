@@ -397,6 +397,33 @@ describe('verifyAnswers', () => {
     });
   });
 
+  it.each([
+    ['a figure', 'stay of 22 months in the country.', '2 months in the country.', '2'],
+    [
+      'words',
+      'permanecer vinte e dois meses em território nacional.',
+      'dois meses em território nacional',
+      '2',
+    ],
+    ['kanji', '在留期間は十二年を超えない範囲で定める。', '二年を超えない範囲で定める。', '2'],
+  ])('reads a quote cut out of a number in %s as the whole number', (_, text, cut, value) => {
+    const two = { ...item, values: [{ kind: 'number' as const, value }] };
+    const [checked] = verifyAnswers(
+      [two],
+      [{ key: two.key, status: 'matches', ...on(cut) }],
+      new Map([[law, page({ text })]]),
+      ['pt', 'ja', 'en'],
+    );
+    expect(checked).toMatchObject({ status: 'could_not_check', reason: 'value_not_in_quote' });
+  });
+
+  it('keeps a quote widened to the whole words it was cut from', () => {
+    expect(verify(on('onthly income of at least €920,00 for th'))).toMatchObject({
+      status: 'matches',
+      quotes: [{ quote: 'monthly income of at least €920,00 for the', url: law }],
+    });
+  });
+
   it('takes a difference with its quote and a plain note, without the value check', () => {
     expect(
       verify({

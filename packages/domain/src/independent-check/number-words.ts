@@ -20,8 +20,11 @@ interface Spelling {
   readonly tens: readonly (readonly string[])[];
   /** The ways a ten and a unit join, from the ten's and the unit's words. */
   readonly join: (ten: string, unit: string, tenValue: number, unitValue: number) => string[];
-  /** How 1 is written after a ten (twenty-one), where it reads as nothing else. */
-  readonly compoundOne: readonly string[];
+  /**
+   * How a unit is written after a ten where it differs from, or is left out of, `units`: 1, which
+   * alone is also an article (twenty-one), and Italian 2, which alone is an English word (ventidue).
+   */
+  readonly compoundUnits: Readonly<Partial<Record<number, readonly string[]>>>;
 }
 
 const english: Spelling = {
@@ -59,7 +62,7 @@ const english: Spelling = {
     ['ninety'],
   ],
   join: (ten, unit) => [`${ten}-${unit}`, `${ten} ${unit}`],
-  compoundOne: ['one'],
+  compoundUnits: { 1: ['one'] },
 };
 
 const portuguese: Spelling = {
@@ -96,7 +99,7 @@ const portuguese: Spelling = {
     ['noventa'],
   ],
   join: (ten, unit) => [`${ten} e ${unit}`],
-  compoundOne: ['um', 'uma'],
+  compoundUnits: { 1: ['um', 'uma'] },
 };
 
 const spanishTwenties = [
@@ -147,14 +150,14 @@ const spanish: Spelling = {
   ],
   join: (ten, unit, tenValue, unitValue) =>
     tenValue === 20 ? [...(spanishTwenties[unitValue - 1] ?? [])] : [`${ten} y ${unit}`],
-  compoundOne: ['uno', 'un', 'una'],
+  compoundUnits: { 1: ['uno', 'un', 'una'] },
 };
 
 const italian: Spelling = {
   units: [
     ['zero'],
     [],
-    // "due" is also an English word, and English is read too.
+    // "due" is also an English word, and English is read too; ventidue is read.
     [],
     ['tre'],
     ['quattro'],
@@ -189,7 +192,7 @@ const italian: Spelling = {
     const head = unitValue === 1 || unitValue === 8 ? ten.slice(0, -1) : ten;
     return unitValue === 3 ? [`${head}tré`, `${head}tre`] : [`${head}${unit}`];
   },
-  compoundOne: ['uno'],
+  compoundUnits: { 1: ['uno'], 2: ['due'] },
 };
 
 const spellings: Readonly<Record<string, Spelling>> = {
@@ -210,8 +213,8 @@ function wordsFor(spelling: Spelling, value: number): string[] {
       : unitValue === 0
         ? tens
         : tens.flatMap((ten) =>
-            (unitValue === 1 ? spelling.compoundOne : (spelling.units[unitValue] ?? [])).flatMap(
-              (unit) => spelling.join(ten, unit, tenValue, unitValue),
+            (spelling.compoundUnits[unitValue] ?? spelling.units[unitValue] ?? []).flatMap((unit) =>
+              spelling.join(ten, unit, tenValue, unitValue),
             ),
           );
   return words.map(spaced);
@@ -285,7 +288,8 @@ const kanjiUnits = new Map([
  * A run of kanji numerals followed by a counter (years, months, days, age, people, times, weeks),
  * so a numeral inside a word, 一般 or 十分, states nothing.
  */
-const kanjiRun = /([〇一二三四五六七八九十百千]+)(?=年|箇?月|か月|ヶ月|ケ月|日|歳|才|人|回|週)/gu;
+const kanjiRun =
+  /(?<![第〇一二三四五六七八九十百千])([〇一二三四五六七八九十百千]+)(?=年|箇?月|か月|ヶ月|ケ月|日|歳|才|人|回|週)/gu;
 
 /** A run of kanji numerals as its number: 十八 is 18, 二十一 is 21, 五 is 5. */
 function kanjiNumber(run: string): number | undefined {
@@ -353,4 +357,55 @@ export function writesNumberInWords(
     if (numberRuns(lower, vocabulary(spelling)).some((run) => phrases.has(run))) return true;
   }
   return false;
+}
+
+const kanjiNumeral = /[〇一二三四五六七八九十百千]/u;
+const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑]+$/u;
+const wordAfter = /^[\s\-‐‑]+([\p{L}\p{M}]+)/u;
+const edgeWord = /^[\p{L}\p{M}]+|[\p{L}\p{M}]+$/gu;
+/** Enough of the text beside a quote to hold the next word. */
+const lookaround = 40;
+
+/**
+ * The bounds of `text.slice(start, end)` widened to the whole runs of number words, in
+ * `languages`, or of kanji numerals, that its first and last words belong to, so a quote cut out
+ * of a number ("dois meses" from "vinte e dois meses", 一年 from 二十一年) states the whole number.
+ */
+export function numberRunBounds(
+  text: string,
+  start: number,
+  end: number,
+  languages: readonly string[],
+): { start: number; end: number } {
+  const vocabularies = languages.flatMap((language) => {
+    const spelling = spellings[language];
+    return spelling === undefined ? [] : [vocabulary(spelling)];
+  });
+  const isNumberWord = (written: string) => {
+    const word = written.normalize('NFC').toLowerCase();
+    return (
+      joiners.has(word) || multiplier.test(word) || vocabularies.some((words) => words.has(word))
+    );
+  };
+  const inKanjiRun = (at: number) =>
+    kanjiNumeral.test(text[at - 1] ?? '') && kanjiNumeral.test(text[at] ?? '');
+  const kanji = languages.some((language) => kanjiLanguages.has(language));
+  let from = start;
+  let to = end;
+  while (kanji && from > 0 && inKanjiRun(from)) from -= 1;
+  while (kanji && to < text.length && inKanjiRun(to)) to += 1;
+  const before = () => wordBefore.exec(text.slice(Math.max(0, from - lookaround), from));
+  const after = () => wordAfter.exec(text.slice(to, to + lookaround));
+  const [first = '', last = first] = text.slice(from, to).match(edgeWord) ?? [];
+  if (isNumberWord(first)) {
+    for (let word = before(); word !== null && isNumberWord(word[1] ?? ''); word = before()) {
+      from -= word[0].length;
+    }
+  }
+  if (isNumberWord(last)) {
+    for (let word = after(); word !== null && isNumberWord(word[1] ?? ''); word = after()) {
+      to += word[0].length;
+    }
+  }
+  return { start: from, end: to };
 }

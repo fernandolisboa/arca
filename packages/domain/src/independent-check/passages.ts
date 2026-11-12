@@ -240,6 +240,9 @@ export function excerptRuns(excerpt: string): string[] {
 const provisionWord =
   /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)/gu;
 
+/** A date written with dots (12.03.2024), which is not a provision. */
+const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;
+
 /** A number only a provision is written with: an ordinal mark (52.º) or a dotted one (189.211). */
 const markedNumber = /(?<![\p{L}\p{N}.])(\d+(?:\.?[ºª](?:-[A-Z]+)?|(?:\.\d+)+[A-Z]?))(?![\p{N}])/gu;
 
@@ -254,7 +257,9 @@ export function namedProvisions(title: string): string[] {
     ...[...head.matchAll(provisionWord)].map((match) => match[1] ?? ''),
     ...[...head.matchAll(markedNumber)].map((match) => match[1] ?? ''),
   ];
-  const named = [...new Set(found.filter((designator) => designator !== ''))];
+  const named = [
+    ...new Set(found.filter((designator) => designator !== '' && !dottedDate.test(designator))),
+  ];
   // A plain number is too common to look for beside a marked one ("Schedule 2 clause 189.211"),
   // and a plain four-digit one is the year of an act's name.
   const marked = named.filter((designator) => !/^\d+$/u.test(designator));
@@ -272,18 +277,24 @@ const maxPassagesPerProvision = 3;
  * section sign ("Artigo 52.º", "§ 9 a.", "189.211"), as a provision's heading does; a line that
  * mentions it further on cites it, and does not head it.
  */
+const plainDesignator = /^\d+(?: ?[a-zA-Z])?$/u;
+
 function headsProvision(line: string, designator: string): boolean {
   const at = line.indexOf(designator);
   if (at === -1) return false;
   const rest = line.slice(at + designator.length);
   // A heading ends with the number or goes on to its title; "artigo 52.º, pode" is a sentence.
   const heads = /^(?:[.:]?\s*$|[.:]?\s+\p{Lu}|\s*\|\s*\p{Lu}|\s*[-–—]\s)/u.test(rest);
-  return heads && /^\s*(?:[\p{L}]+\.?\s+|§+\s*)?$/u.test(line.slice(0, at));
+  // A plain number ("4", "9 a") also opens numbered paragraphs, so it needs its word or a §.
+  const prefix = plainDesignator.test(designator)
+    ? /^\s*(?:[\p{L}]+\.?\s+|§+\s*)$/u
+    : /^\s*(?:[\p{L}]+\.?\s+|§+\s*)?$/u;
+  return heads && prefix.test(line.slice(0, at));
 }
 
 /**
- * The passages of a page whose heading lines open with a provision the titles name, in page order,
- * the last `maxPassagesPerProvision` for each: the article a source cites is found by its number,
+ * The passages of a page whose heading lines open with a provision the titles name, best first:
+ * the last `maxPassagesPerProvision` for each, last first, the provisions taking turns; the article a source cites is found by its number,
  * whatever a passage locator picks, in any language, since only the number is compared.
  */
 export function provisionPassages(
@@ -303,7 +314,9 @@ export function provisionPassages(
       }
     }
   });
-  for (const [designator, hits] of found)
-    found.set(designator, hits.slice(-maxPassagesPerProvision));
-  return [...new Set([...found.values()].flat())].sort((one, other) => one - other);
+  const ranked = [...found.values()].map((hits) => hits.slice(-maxPassagesPerProvision).reverse());
+  const turns = Array.from({ length: maxPassagesPerProvision }, (_, turn) =>
+    ranked.flatMap((hits) => hits.slice(turn, turn + 1)),
+  );
+  return [...new Set(turns.flat())];
 }

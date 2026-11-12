@@ -22,6 +22,7 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['ventotto giorni', '28', ['it']],
     ['cinco anos e dois meses', '2', ['pt']],
     ['ventitré anni', '23', ['it']],
+    ['ventidue anni', '22', ['it', 'en']],
     ['在留期間は五年', '5', ['ja']],
     ['十八歳未満', '18', ['ja']],
     ['二十一歳', '21', ['ja']],
@@ -34,6 +35,7 @@ describe('numbers a law writes in words (ADR-0027)', () => {
   it.each<[string, string, string[], string]>([
     ['the fee is due on filing', '2', ['en', 'pt'], 'a word of a language not given'],
     ['dos filhos menores', '2', ['pt', 'en'], 'a Portuguese word that is Spanish for two'],
+    ['第五日', '5', ['ja'], 'a kanji ordinal'],
     ['segundo o artigo 52.º', '2', ['pt'], 'a word that also means "according to"'],
     ['nineteen at the office', '9', ['en'], 'a number inside a longer word'],
     ['um dos requisitos', '1', ['pt'], 'an article'],
