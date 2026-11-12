@@ -13,8 +13,11 @@ import {
   Flag,
   House,
   KeyRound,
+  LayoutGrid,
+  List,
   LockKeyhole,
   LogOut,
+  Network,
   Palette,
   PanelsTopLeft,
   Route,
@@ -22,6 +25,7 @@ import {
   Sparkles,
   Star,
   TriangleAlert,
+  UserPlus,
   UserRound,
   UsersRound,
   X,
@@ -55,6 +59,10 @@ const icons = {
   next: ArrowRight,
   ai: Sparkles,
   star: Star,
+  cards: LayoutGrid,
+  list: List,
+  tree: Network,
+  addPerson: UserPlus,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

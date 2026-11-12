@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { card, family, signedIn } from './case-accounts.js';
+import { family, person, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearCheckStarts,
@@ -297,8 +297,10 @@ test('the seed admin gives a member of the case the admin role and takes it away
   expect(await rulesLinkAfterReload(memberPage)).toBe(false);
 
   await page.reload();
-  await expect(card(page, 'Ana (você)').getByText('Administrador', { exact: true })).toBeVisible();
-  const bruno = card(page, 'Bruno');
+  await expect(
+    (await person(page, 'Ana (você)')).getByText('Administrador', { exact: true }),
+  ).toBeVisible();
+  const bruno = await person(page, 'Bruno');
   await expect(bruno.getByText('Administrador', { exact: true })).toHaveCount(0);
   const stepUp = page.waitForRequest((request) =>
     request.url().endsWith('/v1/auth/step-up/options'),

@@ -17,18 +17,36 @@ export async function signedIn(page: Page) {
   return userId;
 }
 
-/** A person's card in the family area. */
-export const card = (page: Page, name: string) =>
-  page.getByRole('listitem').filter({ has: page.getByText(name, { exact: true }) });
+/** Opens a person in the family area and answers the panel that shows them. */
+export async function person(page: Page, name: string) {
+  // On a phone the panel covers the people; going back shows them again.
+  const back = page.getByRole('button', { name: 'Voltar para a família' });
+  if (await back.isVisible()) await back.click();
+  await page.getByRole('button', { name, exact: true }).click();
+  return panel(page, name);
+}
+
+/** The family area's panel while it shows `name`. */
+export const panel = (page: Page, name: string) => page.getByRole('region', { name, exact: true });
+
+/** Adds a person to the case from the family area, in the planning. */
+export async function addPerson(page: Page, name: string) {
+  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
+  await page.getByLabel('Nome', { exact: true }).fill(name);
+  await page.getByRole('button', { name: 'Salvar pessoa' }).click();
+  return panel(page, name);
+}
 
 /** A synthetic family: Ana, who answers, and her child. */
 export async function family(page: Page) {
   await page.goto(`${databaseServer.origin}/family`);
   await page.getByLabel('Seu nome').fill('Ana');
   await page.getByRole('button', { name: 'Começar o caso' }).click();
-  await page.getByLabel('Nome', { exact: true }).fill('Criança');
-  await page.getByRole('button', { name: 'Adicionar pessoa' }).click();
-  await page.getByLabel('Com quem').selectOption({ label: 'Criança' });
-  await page.getByRole('button', { name: 'Anotar vínculo' }).click();
-  await expect(page.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
+  const child = await addPerson(page, 'Criança');
+  await child
+    .getByLabel('Vínculo', { exact: true })
+    .selectOption({ label: 'Criança é filha ou filho de' });
+  await child.getByLabel('Com quem').selectOption({ label: 'Ana' });
+  await child.getByRole('button', { name: 'Anotar vínculo' }).click();
+  await expect(child.getByText('Ana é mãe ou pai de Criança')).toBeVisible();
 }
