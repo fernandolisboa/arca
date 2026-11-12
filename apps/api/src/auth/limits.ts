@@ -92,6 +92,14 @@ export const ruleSummaryLimits = {
 } as const satisfies Record<string, RateLimitRule>;
 
 /**
+ * An admin's own rule checks (ADR-0027): no daily cap, only a burst limit no person tapping the
+ * button reaches, so a looping client or a stolen session cannot drain the shared model budget.
+ */
+export const ruleCheckLimits = {
+  minute: { name: 'rule_check_minute', limit: 10, windowSeconds: 60 },
+} as const satisfies Record<string, RateLimitRule>;
+
+/**
  * Limits on recovery (spec 0003, R10): starting is per email HMAC and per IP; the link's token is
  * 256 random bits and five wrong codes lock the account's recovery, so the rest bound load.
  */

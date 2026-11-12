@@ -72,7 +72,10 @@ function setup({
   refusals = new Map(),
   superseded = new Set<number>(),
   runFails = false,
+  blocked,
 }: {
+  /** The rate-limit rule that refuses, if any. */
+  blocked?: string;
   /** Starting the workflow throws, as when the platform refuses it. */
   runFails?: boolean;
   admitted?: boolean;
@@ -160,6 +163,7 @@ function setup({
     },
     states: () => Promise.resolve(new Map()),
   };
+  const limited: [string, string][] = [];
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -169,7 +173,17 @@ function setup({
       signedIn: () => Promise.resolve(admin),
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: {
+      ...noLimits,
+      limiter: {
+        hit: (rule, subject) => {
+          limited.push([rule.name, subject]);
+          return Promise.resolve(
+            rule.name === blocked ? { allowed: false, retryAfterSeconds: 60 } : { allowed: true },
+          );
+        },
+      },
+    },
     admins,
     knowledge,
     knowledgeVersions: versions,
@@ -263,6 +277,7 @@ function setup({
     activateChecked,
     decided,
     startOne,
+    limited,
     watch,
     watched,
     watchedWhole,
@@ -600,6 +615,18 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
       expect(await (await startOne(number)).json()).toEqual({ started: true });
     }
     expect(runs).toHaveLength(15 + 25);
+  });
+
+  it('counts each request against a per-minute burst limit per admin, and starts nothing past it', async () => {
+    const { startOne, runs, limited } = setup({ count: 1 });
+    await startOne(1);
+    expect(limited).toEqual([['rule_check_minute', admin.accountId]]);
+    const blocked = setup({ count: 1, blocked: 'rule_check_minute' });
+    const response = await blocked.startOne(1);
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ error: { code: 'rate_limited' } });
+    expect(blocked.runs).toEqual([]);
+    expect(runs).toHaveLength(1);
   });
 
   it('answers 404 for a version the app does not bundle', async () => {

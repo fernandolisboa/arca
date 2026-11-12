@@ -88,6 +88,7 @@ import {
   deviceLimits,
   intakeLimits,
   ruleSummaryLimits,
+  ruleCheckLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,
@@ -1550,6 +1551,9 @@ export function createApp({
       const view = await reads.versions.view(routeId, number);
       return view === undefined ? fail(c, 'not_found', 404) : fail(c, 'check_off', 503);
     }
+    if (authLimits === undefined) return fail(c, 'check_off', 503);
+    const limited = await overLimit(c, authLimits, ruleCheckLimits.minute, reads.current.accountId);
+    if (limited !== undefined) return limited;
     const outcome = await versionChecks.startOne(routeId, number);
     if (outcome.ok) return c.json({ started: outcome.started }, 200);
     switch (outcome.reason) {
