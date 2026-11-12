@@ -67,7 +67,7 @@ The owner agreed on 2026-11-12 that a copy he attaches may stand in for an offic
 - A wrong item gets fixed without the owner starting a session: he points, and later activates the version the request links to.
 - The owner does one setup step: create the key in the app and paste it into the corrector's environment. A new key replaces a lost or leaked one.
 - A leaked key lets someone read open requests, mark them taken, or answer with a misleading explanation; it cannot close them, change a rule or reach case data, and the admin still decides every activation. Its uses are audited.
-- Filing needs a signed-in owner-list session, not a step-up: someone holding a stolen owner session could file requests that the run reads every day. Each filed request emails the owner-list admins, so he can close one he did not file, and the run's path gate lets it merge only route data, never code (residual R-12).
+- Filing needs a signed-in owner-list session, not a step-up: someone holding a stolen owner session could file requests that the run reads every day. Each filed request emails the owner-list admins, so he can close one he did not file; closing it does not withdraw a page copy it carries, so he also attaches a right copy and starts a new check (page copies), and the run's path gate lets it merge only route data, never code (residual R-12).
 - A steered run could still merge a wrong route version; it stays proposed, and the check and the admin's reading stand between it and use, as for the monthly run.
 - The Blob store is no longer ciphertext only: it holds plaintext copies of official texts for at most 180 days.
 - A daily run spends Claude Code usage only on days with open requests.

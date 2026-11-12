@@ -15,7 +15,8 @@ export const objectHeadBytes = 1024;
 export const ciphertextType = 'application/octet-stream';
 
 /** Whether the server may read an object: a correction file, never document ciphertext. */
-export const readablePathname = (pathname: string) => pathname.startsWith('corrections/');
+export const readablePathname = (pathname: string) =>
+  /^corrections\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(pathname);
 
 /** A stream's bytes, or undefined once they run past `maxBytes`. */
 export async function bytesWithin(
