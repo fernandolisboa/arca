@@ -13,7 +13,7 @@
 - [ ] Google Play account type: personal (needs a 12-tester, 14-day closed test before production) or organization (requires a company).
 - [ ] iOS builds: a Mac with Xcode, or a cloud build service.
 - [ ] Apple Developer Program enrollment: individual or organization (the seller name shown on the App Store follows it).
-- [ ] Create the corrector key in the app and paste it into the corrector run's cloud environment as `ARCA_CORRECTOR_KEY`, once, when [#417](https://github.com/fernandolisboa/arca/issues/417) starts ([ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)).
+- [ ] Create the corrector key in the app and paste it into the corrector run's cloud environment as `ARCA_CORRECTOR_KEY`, once, by the steps in [SETUP.md](SETUP.md#corrector-run), once [#417](https://github.com/fernandolisboa/arca/issues/417) merges ([ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)).
 
 ## Engineering decisions deferred to a later date
 

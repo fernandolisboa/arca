@@ -7,6 +7,8 @@ import {
   CorrectorError,
   correctorClient,
   correctorKeyPattern,
+  maxExplanation,
+  maxFileBytes,
   paths,
   productionOrigin,
   propose,
@@ -118,6 +120,7 @@ describe('the corrector script (ADR-0029)', () => {
     'https://evil.example/x',
     'https://blob.vercel-storage.com.evil.example/x',
     'https://store1.private.blob.vercel-storage.com:8443/x',
+    'https://user@store1.private.blob.vercel-storage.com/x',
     'not a url',
   ])('refuses to download from %s', async (url) => {
     const { fetchUrl, sent } = fakeFetch(() => jsonResponse(200, { url }));
@@ -240,6 +243,11 @@ describe('pnpm corrector', () => {
     expect(contract).toContain(
       `export const correctorKeyPattern = ${String(correctorKeyPattern)};`,
     );
+    expect(contract).toContain(
+      `export const maxCorrectionExplanation = ${maxExplanation.toLocaleString('en').replace(',', '_')};`,
+    );
+    expect(maxFileBytes).toBe(16 * 1024 * 1024);
+    expect(contract).toContain('fileBytes: 16 * 1024 * 1024,');
     for (const path of Object.values(paths)) {
       expect(contract).toContain(`path: '${path.replace(/^\/v1/, '')}',`);
     }
