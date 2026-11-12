@@ -1,6 +1,6 @@
 # ADR-0015: Identity: invite-only enrollment, purpose-bound step-up and recovery
 
-- Status: Accepted; the `app_backup` grant removed by [ADR-0021](0021-stay-on-vercel-and-neon.md); the sending domain changed to `filx.app` on 2026-11-05 (see Email); the `knowledge_decision` step-up purpose added by [ADR-0022](0022-single-approver-activation.md) and no longer offered since [ADR-0027](0027-admins-and-the-checked-batch-activation.md), which keeps it only to re-verify stored decisions and adds the `admin_grant` purpose
+- Status: Accepted; the `app_backup` grant removed by [ADR-0021](0021-stay-on-vercel-and-neon.md); the sending domain changed to `filx.app` on 2026-11-05 (see Email); the `knowledge_decision` step-up purpose added by [ADR-0022](0022-single-approver-activation.md) and no longer offered since [ADR-0027](0027-admins-and-the-checked-batch-activation.md), which keeps it only to re-verify stored decisions and adds the `admin_grant` purpose; step-up purpose `corrector_key` added by [ADR-0029](0029-correction-requests-and-the-corrector-session.md)
 - Date: 2026-11-02
 - Amends: [ADR-0006](0006-auth.md) (enrollment, step-up mechanics, recovery details, session transport timing, and the production relying-party ID), [ADR-0005](0005-platform-strategy.md) (the production relying-party host; native bearer tokens move to Phase 4) and [ADR-0010](0010-stack-revised.md) (native bearer tokens move to Phase 4)
 - Spec: [0003 identity and access](../specs/0003-identity-and-access.md)
