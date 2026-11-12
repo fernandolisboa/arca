@@ -40,7 +40,6 @@ export {
   maxOpenInvites,
   maxAutomaticStartsPerDay,
   maxQuotes,
-  maxStartsPerDay,
   checkReasons,
   maxPushChannels,
   pendingPasskeyHours,

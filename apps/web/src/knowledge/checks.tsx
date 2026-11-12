@@ -21,7 +21,7 @@ type ReportItem = VersionCheckReport['items'][number];
 
 /**
  * Starts the checks that are due once per visit to the screen, after the list loaded (ADR-0027):
- * the server picks the versions and keeps the daily cap, so the screen sends no identities. A
+ * the server picks the versions and keeps the automatic share, so the screen sends no identities. A
  * failed start changes nothing on screen; the next visit asks again.
  */
 export function useStartChecks(ready: boolean): void {

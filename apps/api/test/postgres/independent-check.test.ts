@@ -72,7 +72,7 @@ describe('knowledge.check_start (ADR-0027)', () => {
     );
   });
 
-  it('never passes 15 automatic starts and 20 in all in 24 hours, even from concurrent screens', async () => {
+  it('never passes 15 automatic starts in 24 hours, even from concurrent screens, and never caps an admin', async () => {
     await clearStarts();
     const starts = postgresCheckStarts(() => testDatabase.apiDb);
     const requests = Array.from({ length: 30 }, (_, index) => ({
@@ -83,15 +83,13 @@ describe('knowledge.check_start (ADR-0027)', () => {
     const started = (await Promise.all([1, 2, 3].map(() => starts.begin(requests)))).flat();
     expect(started).toHaveLength(15);
     expect(new Set(started.map(({ number }) => number)).size).toBe(15);
-    // An admin's own starts use the 5 the automatic share leaves, and then the cap holds.
     const asked = await Promise.all(
       Array.from({ length: 8 }, (_, index) =>
         starts.request({ routeId: 'qm-cap', number: 40 + index }),
       ),
     );
-    expect(asked.filter((each) => each?.began === true)).toHaveLength(5);
-    expect(asked.filter((each) => each === undefined)).toHaveLength(3);
-    expect(await starts.recent()).toHaveLength(20);
+    expect(asked.filter(({ began }) => began)).toHaveLength(8);
+    expect(await starts.recent()).toHaveLength(23);
   });
 
   it('answers a version its live start when asked again, also from concurrent taps', async () => {
@@ -99,8 +97,8 @@ describe('knowledge.check_start (ADR-0027)', () => {
     const starts = postgresCheckStarts(() => testDatabase.apiDb);
     const version = { routeId: 'qm-asked', number: 1 };
     const asked = await Promise.all([1, 2, 3].map(() => starts.request(version)));
-    expect(asked.filter((each) => each?.began === true)).toHaveLength(1);
-    expect(new Set(asked.map((each) => each?.start.id)).size).toBe(1);
+    expect(asked.filter((each) => each.began)).toHaveLength(1);
+    expect(new Set(asked.map((each) => each.start.id)).size).toBe(1);
     // Its report ends the start, so the next request begins another whatever the report says.
     const [first] = asked;
     await postgresCheckReportStore(() => testDatabase.jobsDb).save(
@@ -116,7 +114,7 @@ describe('knowledge.check_start (ADR-0027)', () => {
     const version = { routeId: 'qm-failed', number: 1 };
     const first = await starts.request(version);
     expect(await starts.request(version)).toMatchObject({ began: false });
-    await postgresCheckProgressStore(() => testDatabase.jobsDb).record(first?.start.id ?? '', 0, {
+    await postgresCheckProgressStore(() => testDatabase.jobsDb).record(first.start.id, 0, {
       kind: 'failed',
       code: 'check_failed',
     });

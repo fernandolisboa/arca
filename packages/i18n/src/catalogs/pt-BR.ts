@@ -1223,7 +1223,7 @@ export const ptBR = {
       confirm: 'Analisar agora',
       starting: 'Começando a análise…',
       startFailure:
-        '{reason, select, limited {O limite de {max} análises em 24 horas foi atingido. Uma vaga abre quando a análise mais antiga completa 24 horas.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
+        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
       title: 'Análise com IA',
       back: 'Voltar para as versões',
       loadFailure: 'Não conseguimos carregar o andamento da análise.',

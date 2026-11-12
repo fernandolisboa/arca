@@ -463,7 +463,7 @@ export const startVersionChecks = {
   path: '/knowledge/checks/start',
   operationId: 'startVersionChecks',
   summary:
-    'Starts the independent check of every proposed route version with no current report and no check running, within 15 of the 20 starts in any 24 hours per environment, so 5 are left for the checks an admin asks for; answers how many started. 403 not_admin',
+    'Starts the independent check of every proposed route version with no current report and no check running, within 15 automatic starts in any 24 hours per environment, counting every start in the window; answers how many started. 403 not_admin',
   response: { description: 'Started', schema: StartVersionChecksResponse },
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
@@ -550,7 +550,7 @@ export const startVersionCheck = {
   path: '/knowledge/versions/check/start',
   operationId: 'startVersionCheck',
   summary:
-    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
+    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. No daily cap; 10 requests per minute per account (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
   body: DecideVersionRequest,
   response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
 } as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
@@ -708,7 +708,6 @@ export {
   factTargets,
   maxAutomaticStartsPerDay,
   maxQuotes,
-  maxStartsPerDay,
   relationshipSteps,
   staleAfterDays,
   versionKey,

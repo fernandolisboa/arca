@@ -34251,7 +34251,7 @@
     "/knowledge/checks/start": {
       "post": {
         "operationId": "startVersionChecks",
-        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 15 of the 20 starts in any 24 hours per environment, so 5 are left for the checks an admin asks for; answers how many started. 403 not_admin",
+        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 15 automatic starts in any 24 hours per environment, counting every start in the window; answers how many started. 403 not_admin",
         "responses": {
           "200": {
             "description": "Started",
@@ -34612,7 +34612,7 @@
     "/knowledge/versions/check/start": {
       "post": {
         "operationId": "startVersionCheck",
-        "summary": "Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. Counts against the 20 starts in any 24 hours per environment (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured",
+        "summary": "Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. No daily cap; 10 requests per minute per account (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured",
         "requestBody": {
           "required": true,
           "content": {

@@ -237,8 +237,8 @@ const slugFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9.-]{0,6
 
 /**
  * Starts of the independent check (ADR-0027): one row each time the activation screen starts a
- * check of a route version, so concurrent screens neither pass 20 starts in any 24 hours per
- * environment nor start one version twice. Public rule identities only, with no account. `app_api`
+ * check of a route version, so concurrent screens neither pass the automatic share of any 24 hours
+ * nor start one version twice. Public rule identities only, with no account. `app_api`
  * reads and inserts them under an environment-wide advisory lock; the database sets the time;
  * nobody updates or deletes. Kept, as the record of what the checks cost.
  */
