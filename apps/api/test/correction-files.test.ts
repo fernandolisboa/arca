@@ -1,3 +1,5 @@
+import { correctionFileTypes } from '@arca/api-contract/routes';
+import { correctionFileTypes as storedFileTypes } from '@arca/db/knowledge-schema';
 import { describe, expect, it } from 'vitest';
 import { fitsFileType } from '../src/knowledge/correction-files.js';
 
@@ -8,6 +10,8 @@ describe('fitsFileType', () => {
   it.each<[string, Parameters<typeof fitsFileType>[0], Buffer, boolean]>([
     ['a PDF', 'application/pdf', bytes('%PDF-1.7\n1 0 obj'), true],
     ['text declared a PDF', 'application/pdf', bytes('Art. 1.º'), false],
+    ['a PDF after a few leading bytes', 'application/pdf', bytes('\r\n%PDF-1.4'), true],
+    ['XHTML', 'text/html', bytes('<?xml version="1.0"?><html>'), true],
     ['HTML with a doctype', 'text/html', bytes('\n  <!DOCTYPE html><html lang="pt">'), true],
     ['HTML after a byte order mark', 'text/html', bytes('ï»¿<html><head>'), true],
     ['HTML opening with a comment', 'text/html', bytes('<!-- saved page --><html>'), true],
@@ -24,5 +28,11 @@ describe('fitsFileType', () => {
     ['a PDF declared text', 'text/plain', bytes('%PDF-1.4\n'), false],
   ])('%s', (_label, mediaType, head, fits) => {
     expect(fitsFileType(mediaType, head)).toBe(fits);
+  });
+});
+
+describe('the file types a request takes', () => {
+  it('are the same in the contract and the database check', () => {
+    expect([...storedFileTypes]).toEqual([...correctionFileTypes]);
   });
 });

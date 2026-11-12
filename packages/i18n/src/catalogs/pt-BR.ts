@@ -1040,11 +1040,12 @@ export const ptBR = {
       addFile: 'Anexar arquivo',
       fileHint:
         'Arquivo: só PDF, HTML ou texto de até 16 MB, salvo de um site oficial. Nunca um documento pessoal.',
-      fileRefused: 'Este arquivo não entra: só PDF, HTML ou texto de até 16 MB.',
+      fileRefused: 'Este arquivo não é aceito: só PDF, HTML ou texto de até 16 MB.',
       fileState:
         '{state, select, sending {Enviando…} ready {Anexado} other {O arquivo não subiu. Remova e anexe de novo.}}',
       removeFile: 'Remover',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
+      fileMissing: 'Um arquivo ainda não terminou de subir. Remova e anexe de novo.',
       send: 'Enviar pedido',
       sending: 'Enviando…',
       cancel: 'Cancelar',

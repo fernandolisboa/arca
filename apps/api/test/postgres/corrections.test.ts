@@ -47,6 +47,7 @@ const view = {
 let states: DecisionStates = new Map();
 let notices: string[] = [];
 let objects: MemoryObjectStorage = memoryObjectStorage();
+let presigns: unknown[] = [];
 
 function setup(signedIn: string | null, limiter = noLimits.limiter) {
   const corrections = createCorrections({
@@ -63,7 +64,16 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       notices.push(`${accountId}:${kind}`);
       return Promise.resolve();
     },
-    storage: objects,
+    storage: {
+      ...objects,
+      presignUpload: (pathname, maxBytes, contentType) => {
+        presigns.push({ pathname, maxBytes, contentType });
+        return Promise.resolve({
+          type: 'blob.generate-presigned-url',
+          presignedUrlPayload: { delegationToken: 'd', signature: 's', params: {} },
+        });
+      },
+    },
   });
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -93,6 +103,11 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       app.request(`/v1/knowledge/corrections?routeId=qm-sample&number=${String(number)}`),
     close: (id: string) => post('/close', { id }),
     startUpload: (body: Record<string, unknown>) => post('/uploads', body),
+    presign: (pathname: string) =>
+      post('/uploads/url', {
+        type: 'blob.generate-presigned-url',
+        payload: { pathname, clientPayload: null, multipart: false },
+      }),
     put: (url: string, bytes: Uint8Array) =>
       app.request(url, { method: 'PUT', body: new Uint8Array(bytes) }),
     get: (url: string) => app.request(url),
@@ -172,6 +187,7 @@ beforeEach(async () => {
   states = new Map();
   notices = [];
   objects = memoryObjectStorage();
+  presigns = [];
   await testDatabase.asAdmin(async (client) => {
     await client.query(
       'TRUNCATE knowledge.correction_request, knowledge.correction_upload, knowledge.admin_grant CASCADE',
@@ -409,6 +425,63 @@ describe('files on a correction request (ADR-0029)', () => {
     expect((await routes.file(withFile(randomUUID()))).status).toBe(404);
   });
 
+  it('presigns only the owner’s own unused upload started within the hour, at its size and type', async () => {
+    const routes = setup(owner);
+    const started = await routes.startUpload({
+      mediaType: 'text/html',
+      size: 40,
+      sha256: sha256(pdf),
+    });
+    const { upload } = (await started.json()) as { upload: { url: string } };
+    const pathname = new URL(upload.url, origin).pathname.replace('/internal/objects/', '');
+    expect((await routes.presign(pathname)).status).toBe(200);
+    expect(presigns).toEqual([{ pathname, maxBytes: 40, contentType: 'text/html' }]);
+    expect((await setup(granted).presign(pathname)).status).toBe(403);
+    expect((await setup(member).presign(pathname)).status).toBe(403);
+    expect((await routes.presign(`corrections/${randomUUID()}`)).status).toBe(404);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE knowledge.correction_upload SET created_at = now() - interval '61 minutes'`,
+      ),
+    );
+    expect((await routes.presign(pathname)).status).toBe(404);
+  });
+
+  it('does not presign an upload a request already names', async () => {
+    const uploadId = await uploaded(pdf);
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(200);
+    const pathname = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ pathname: string }>(
+            'SELECT pathname FROM knowledge.correction_upload',
+          )
+        ).rows[0]?.pathname ?? '',
+    );
+    expect((await setup(owner).presign(pathname)).status).toBe(404);
+  });
+
+  it('refuses a file named twice in one request with 400', async () => {
+    const uploadId = await uploaded(pdf);
+    const twice = {
+      sources: [
+        { kind: 'file', uploadId },
+        { kind: 'file', uploadId },
+      ],
+    };
+    expect((await setup(owner).file(twice)).status).toBe(400);
+  });
+
+  it('refuses a file filed more than 2 hours after its upload started', async () => {
+    const uploadId = await uploaded(pdf);
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE knowledge.correction_upload SET created_at = now() - interval '121 minutes'`,
+      ),
+    );
+    expect((await setup(owner).file(withFile(uploadId))).status).toBe(404);
+  });
+
   it('takes an upload in one request only', async () => {
     const uploadId = await uploaded(pdf);
     expect((await setup(owner).file(withFile(uploadId))).status).toBe(200);
@@ -461,6 +534,17 @@ describe('the retention of request contents (ADR-0029)', () => {
     expect((await listed(owner)).requests[0]?.sources).toHaveLength(3);
     expect(await contents().expire(owner, days(181))).toBe(1);
     expect((await listed(owner)).requests[0]).toMatchObject({ note: null, sources: [] });
+  });
+
+  it('keeps a request a correction closed until 180 days after filing, since it can open again', async () => {
+    await setup(owner).file(withFile(await uploaded(pdf)));
+    const [, correction] = identities;
+    if (correction === undefined) throw new Error('no correction');
+    states = new Map([[identityKey(correction), 'active']]);
+    expect((await listed(owner)).requests[0]?.state).toBe('closed');
+    expect(await contents().expire(owner, days(31))).toBe(0);
+    expect((await listed(owner)).requests[0]?.note).toBe(filed.note);
+    expect(await contents().expire(owner, days(181))).toBe(1);
   });
 
   it('deletes an upload no request names a day after it started, with its file', async () => {

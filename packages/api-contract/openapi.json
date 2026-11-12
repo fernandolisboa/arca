@@ -3192,7 +3192,9 @@
                               "admin_granted",
                               "admin_removed",
                               "correction_requested",
-                              "correction_closed"
+                              "correction_closed",
+                              "correction_file_downloaded",
+                              "correction_upload_mismatch"
                             ]
                           },
                           "actorAccountId": {

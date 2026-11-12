@@ -1,6 +1,6 @@
 # Retention schedule
 
-As of 2026-11-06. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md). Every row names how the period is enforced. A new kind of data, or a new processor, adds a row here in the same change, together with its entry in the personal-data registry and the data-flow table in [ARCHITECTURE.md](ARCHITECTURE.md#data-flows).
+As of 2026-11-12. Decided in [ADR-0017](adr/0017-data-lifecycle-and-backups.md). Every row names how the period is enforced. A new kind of data, or a new processor, adds a row here in the same change, together with its entry in the personal-data registry and the data-flow table in [ARCHITECTURE.md](ARCHITECTURE.md#data-flows).
 
 ## In our systems
 

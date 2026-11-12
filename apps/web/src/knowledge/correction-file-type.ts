@@ -11,6 +11,9 @@ const byExtension: Readonly<Record<string, CorrectionFileType>> = {
   txt: 'text/plain',
 };
 
+/** What the file picker offers: the extensions and media types a request takes. */
+export const correctionFileAccept = ['.pdf', '.html', '.htm', '.txt', ...correctionFileTypes];
+
 /** The extension a downloaded file gets, by its media type. */
 export const fileExtensions: Readonly<Record<CorrectionFileType, string>> = {
   'application/pdf': 'pdf',

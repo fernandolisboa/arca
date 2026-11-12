@@ -176,6 +176,12 @@ export function createCorrections({
         !stored.sha256.equals(upload.sha256) ||
         !fitsFileType(upload.media_type, stored.head)
       ) {
+        await audit.record({
+          code: 'correction_upload_mismatch',
+          subjectAccountId: accountId,
+          actorAccountId: accountId,
+          details: { uploadId: source.uploadId },
+        });
         await storage.delete([upload.pathname]);
         return 'upload_mismatch';
       }
@@ -329,7 +335,14 @@ export function createCorrections({
           SELECT knowledge.correction_file(${requestId}, ${position}, ${kind}, ${grantId}) AS pathname`);
         return rows[0]?.pathname ?? null;
       });
-      return pathname === null ? 'not_found' : { url: await storage.downloadUrl(pathname) };
+      if (pathname === null) return 'not_found';
+      await audit.record({
+        code: 'correction_file_downloaded',
+        subjectAccountId: accountId,
+        actorAccountId: accountId,
+        details: { requestId, position },
+      });
+      return { url: await storage.downloadUrl(pathname) };
     },
   };
 }

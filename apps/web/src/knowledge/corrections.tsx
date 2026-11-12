@@ -23,7 +23,12 @@ import {
   type SubmitEvent,
 } from 'react';
 import { api, correctionRequestsQuery } from '../api.js';
-import { correctionFileType, fileExtensions } from './correction-file-type.js';
+import { filePicking } from '../platform.js';
+import {
+  correctionFileAccept,
+  correctionFileType,
+  fileExtensions,
+} from './correction-file-type.js';
 import { saveCorrectionFile, uploadCorrectionFile } from './correction-upload.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -107,12 +112,13 @@ interface FileDraft {
 type Draft = { readonly id: number } & (
   { readonly kind: 'link'; url: string } | { readonly kind: 'text'; text: string } | FileDraft
 );
-type FormState = 'open' | 'sending' | 'limited' | 'corrected' | 'mismatch' | 'failed';
+type FormState = 'open' | 'sending' | 'limited' | 'corrected' | 'mismatch' | 'missing' | 'failed';
 
 const failures = {
   limited: 'knowledge.corrections.tooMany',
   corrected: 'knowledge.corrections.alreadyCorrected',
   mismatch: 'knowledge.corrections.fileMismatch',
+  missing: 'knowledge.corrections.fileMissing',
   failed: 'knowledge.corrections.sendFailure',
 } as const;
 
@@ -163,7 +169,6 @@ function CorrectionForm({
   const remove = (id: number) => {
     setDrafts((current) => current.filter((old) => old.id !== id));
   };
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileRefused, setFileRefused] = useState(false);
   const attach = (file: File) => {
     const mediaType = correctionFileType(file);
@@ -180,7 +185,18 @@ function CorrectionForm({
         change({ ...base, state: 'failed' });
       });
   };
+  const pickFile = () => {
+    filePicking
+      ?.pick({ accept: correctionFileAccept })
+      .then(([file]) => {
+        if (file !== undefined) attach(file);
+      })
+      .catch(() => {
+        setFileRefused(true);
+      });
+  };
   const uploading = drafts.some((draft) => draft.kind === 'file' && draft.state === 'sending');
+  const failedFile = drafts.some((draft) => draft.kind === 'file' && draft.state === 'failed');
   const send = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (note.trim() === '') return;
@@ -199,6 +215,7 @@ function CorrectionForm({
       if (error instanceof ApiError && error.status === 429) setState('limited');
       else if (error instanceof ApiError && error.code === 'already_corrected')
         setState('corrected');
+      else if (error instanceof ApiError && error.code === 'not_uploaded') setState('missing');
       else if (error instanceof ApiError && error.status === 409) setState('mismatch');
       else setState('failed');
     }
@@ -285,29 +302,20 @@ function CorrectionForm({
           >
             {t('knowledge.corrections.addText')}
           </button>
-          <button
-            type="button"
-            className={textLinkClass}
-            onClick={() => {
-              fileInputRef.current?.click();
-            }}
-          >
-            {t('knowledge.corrections.addFile')}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            accept=".pdf,.html,.htm,.txt,application/pdf,text/html,text/plain"
-            onChange={(event) => {
-              const [file] = event.currentTarget.files ?? [];
-              event.currentTarget.value = '';
-              if (file !== undefined) attach(file);
-            }}
-          />
+          {filePicking !== undefined && (
+            <button
+              type="button"
+              className={textLinkClass}
+              onClick={() => {
+                pickFile();
+              }}
+            >
+              {t('knowledge.corrections.addFile')}
+            </button>
+          )}
         </div>
       )}
-      {drafts.length < correctionLimits.sources && (
+      {drafts.length < correctionLimits.sources && filePicking !== undefined && (
         <p className="text-small text-muted">{t('knowledge.corrections.fileHint')}</p>
       )}
       {fileRefused && (
@@ -321,7 +329,10 @@ function CorrectionForm({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={state === 'sending' || uploading || note.trim() === ''}>
+        <Button
+          type="submit"
+          disabled={state === 'sending' || uploading || failedFile || note.trim() === ''}
+        >
           {state === 'sending'
             ? t('knowledge.corrections.sending')
             : t('knowledge.corrections.send')}

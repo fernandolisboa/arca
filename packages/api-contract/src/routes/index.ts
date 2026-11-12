@@ -867,6 +867,13 @@ export const auditEventDetails = {
   }),
   /** An admin closed a correction request (ADR-0029). */
   correction_closed: z.strictObject({ requestId: z.uuid() }),
+  /** An admin minted a download URL for one file of a request (ADR-0029). */
+  correction_file_downloaded: z.strictObject({
+    requestId: z.uuid(),
+    position: z.int().min(0),
+  }),
+  /** A filed file was not what its upload declared, and was deleted (ADR-0029). */
+  correction_upload_mismatch: z.strictObject({ uploadId: z.uuid() }),
 } as const;
 
 export type AuditEventCode = keyof typeof auditEventDetails;

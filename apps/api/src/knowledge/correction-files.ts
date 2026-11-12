@@ -7,7 +7,16 @@ const binaryByte = (byte: number) =>
 const isText = (head: Buffer) => !head.some(binaryByte);
 
 /** How an HTML file may begin, after a byte order mark and white space, in any case. */
-const htmlStarts = ['<!doctype html', '<html', '<head', '<body', '<meta', '<title', '<!--'];
+const htmlStarts = [
+  '<!doctype html',
+  '<html',
+  '<head',
+  '<body',
+  '<meta',
+  '<title',
+  '<!--',
+  '<?xml',
+];
 
 function looksLikeHtml(head: Buffer): boolean {
   const start = head.toString('latin1').replace(/^ï»¿/, '').trimStart().toLowerCase();
@@ -16,12 +25,13 @@ function looksLikeHtml(head: Buffer): boolean {
 
 /**
  * Whether a stored file's first bytes fit the media type its upload declared (ADR-0029): a PDF by
- * its signature, HTML by its opening tag, plain text by holding no binary byte.
+ * its signature in the first kilobyte, HTML by its opening tag, plain text by holding no binary byte.
  */
 export function fitsFileType(mediaType: CorrectionFileType, head: Buffer): boolean {
   switch (mediaType) {
     case 'application/pdf':
-      return head.subarray(0, 5).toString('latin1') === '%PDF-';
+      // Readers take the signature anywhere in the first kilobyte, as the PDF standard allows.
+      return head.includes('%PDF-', 0, 'latin1');
     case 'text/html':
       return isText(head) && looksLikeHtml(head);
     case 'text/plain':

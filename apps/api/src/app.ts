@@ -1713,7 +1713,15 @@ export function createApp({
   v1.openapi(openApiRoutes.correctionUploadUrl, async (c) => {
     const reads = await correctionsOf(c);
     if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
     const { payload } = correctionUploadUrl.body.parse(await c.req.json());
+    const presignLimited = await overLimit(
+      c,
+      authLimits,
+      correctionRequestLimits.presign,
+      reads.current.accountId,
+    );
+    if (presignLimited !== undefined) return presignLimited;
     const outcome = await reads.corrections.presignUpload(
       reads.current.accountId,
       payload.pathname,
@@ -1724,7 +1732,15 @@ export function createApp({
   v1.openapi(openApiRoutes.correctionFileUrl, async (c) => {
     const reads = await correctionsOf(c);
     if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
     const { requestId, position } = CorrectionFileReference.parse(await c.req.json());
+    const downloadLimited = await overLimit(
+      c,
+      authLimits,
+      correctionRequestLimits.download,
+      reads.current.accountId,
+    );
+    if (downloadLimited !== undefined) return downloadLimited;
     const outcome = await reads.corrections.fileUrl(reads.current.accountId, requestId, position);
     if (outcome === 'not_admin') return fail(c, outcome, 403);
     if (outcome === 'not_found') return fail(c, outcome, 404);

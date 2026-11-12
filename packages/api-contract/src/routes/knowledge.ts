@@ -520,13 +520,23 @@ export const ListedCorrectionSource = z.discriminatedUnion('kind', [
 ]);
 export type ListedCorrectionSource = z.infer<typeof ListedCorrectionSource>;
 
-export const FileCorrectionRequest = z.strictObject({
-  routeId: routeIdSchema,
-  versionNumber: z.int().min(1).max(1_000_000),
-  item: CorrectionItem,
-  note: z.string().trim().min(1).max(correctionLimits.note),
-  sources: z.array(CorrectionSource).max(correctionLimits.sources),
-});
+export const FileCorrectionRequest = z
+  .strictObject({
+    routeId: routeIdSchema,
+    versionNumber: z.int().min(1).max(1_000_000),
+    item: CorrectionItem,
+    note: z.string().trim().min(1).max(correctionLimits.note),
+    sources: z.array(CorrectionSource).max(correctionLimits.sources),
+  })
+  .refine(
+    ({ sources }) => {
+      const uploads = sources.flatMap((source) =>
+        source.kind === 'file' ? [source.uploadId] : [],
+      );
+      return new Set(uploads).size === uploads.length;
+    },
+    { message: 'A request names each upload once' },
+  );
 export type FileCorrectionRequest = z.infer<typeof FileCorrectionRequest>;
 
 export const FileCorrectionResponse = z.object({ id: z.uuid() });
