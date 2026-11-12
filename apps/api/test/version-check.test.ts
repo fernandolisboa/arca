@@ -1259,7 +1259,7 @@ describe('a source published as a PDF (ADR-0028)', () => {
         protocol: 'http:',
         port: (server.address() as AddressInfo).port,
       },
-      limits: { ...fetchLimits, maxBytes: 200_000 },
+      limits: { ...fetchLimits, maxBytes: 200_000, maxPdfBytes: 200_000 },
     });
   });
 

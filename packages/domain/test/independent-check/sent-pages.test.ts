@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ReadPage } from '../../src/independent-check/answers.js';
 import { excerptGap, maxWholePageText } from '../../src/independent-check/passages.js';
 import {
-  excerptBudget,
+  excerptBudgets,
   openingExcerpt,
   withinTextBudget,
 } from '../../src/independent-check/sent-pages.js';
@@ -76,14 +76,53 @@ describe('the total page text one check sends (ADR-0027)', () => {
 describe('what the excerpt of a long page may hold (ADR-0027)', () => {
   const short = 'a'.repeat(maxWholePageText);
   const long = 'a'.repeat(maxWholePageText + 1);
+  const cited = (text: string, citing = 1) => ({ text, citing });
 
-  it.each<[string, string[], number, number]>([
-    ['a whole page at most, however much is left', [long, 'aaa'], 200_000, maxWholePageText],
-    ['an equal share among the long pages', [long, long, long, long], 200_000, 50_000],
-    ['what the pages sent whole leave', [short, short, short, long, long], 200_000, 10_000],
-    ['nothing once the whole pages fill the budget', [short, short, long], 100_000, 0],
-  ])('gives %s', (_, texts, budget, expected) => {
-    expect(excerptBudget(texts, budget)).toBe(expected);
+  it.each<[string, { text: string; citing: number }[], number, number[]]>([
+    [
+      'a whole page at most, however much is left',
+      [cited(long), cited('aaa')],
+      200_000,
+      [maxWholePageText, 0],
+    ],
+    [
+      'an equal share among long pages cited alike',
+      [cited(long), cited(long), cited(long), cited(long)],
+      200_000,
+      [50_000, 50_000, 50_000, 50_000],
+    ],
+    [
+      'what the pages sent whole leave',
+      [cited(short), cited(short), cited(short), cited(long), cited(long)],
+      200_000,
+      [0, 0, 0, 10_000, 10_000],
+    ],
+    [
+      'nothing once the whole pages fill the budget',
+      [cited(short), cited(short), cited(long)],
+      100_000,
+      [0, 0, 0],
+    ],
+    [
+      'shares by how many items cite each page',
+      [cited(long, 3), cited(long, 1)],
+      40_000,
+      [30_000, 10_000],
+    ],
+    [
+      'a page no item cites a share as if one did',
+      [cited(long, 0), cited(long, 1)],
+      40_000,
+      [20_000, 20_000],
+    ],
+    [
+      "the room past a page's cap to the other pages",
+      [cited(long, 9), cited(long, 1)],
+      100_000,
+      [maxWholePageText, 40_000],
+    ],
+  ])('gives %s', (_, pages, budget, expected) => {
+    expect(excerptBudgets(pages, budget)).toEqual(expected);
   });
 });
 

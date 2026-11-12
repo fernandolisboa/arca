@@ -7,7 +7,7 @@ import {
   type ReadPage,
   asDataText,
   checkItems,
-  excerptBudget,
+  excerptBudgets,
   excerptPassages,
   excerptText,
   machineReadableUrls,
@@ -376,8 +376,15 @@ export function createVersionCheck({
           ]
         : [],
     );
-    // Short pages go whole; the long ones share what is left of the budget, as excerpts.
-    const budget = excerptBudget(readPages.map(({ text }) => text));
+    // Short pages go whole; the long ones share what is left of the budget, as excerpts, by how
+    // many items cite each.
+    const budgets = excerptBudgets(
+      readPages.map(({ url, text }) => ({
+        text,
+        citing: items.filter(({ urls }) => urls.includes(url)).length,
+      })),
+    );
+    const budgetOf = new Map(readPages.map(({ url }, index) => [url, budgets[index] ?? 0]));
     const longPages = readPages.filter(({ text }) => !sentWhole(text));
     const located = Math.min(longPages.length, maxLocatedPages);
     if (located > 0) await record({ kind: 'locating', pages: located });
@@ -387,7 +394,14 @@ export function createVersionCheck({
           async (page, index) =>
             [
               page.url,
-              await excerptOf(page, items, subject.entry, budget, index < maxLocatedPages, record),
+              await excerptOf(
+                page,
+                items,
+                subject.entry,
+                budgetOf.get(page.url) ?? 0,
+                index < maxLocatedPages,
+                record,
+              ),
             ] as const,
         ),
       ),
