@@ -6,7 +6,7 @@ import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/chec
 import {
   type FetchOutcome,
   type SourceFetcher,
-  textWithinLimits,
+  answerWithinLimits,
 } from '../../../src/knowledge/check/fetcher.js';
 import { type PassageLocator, scriptedLocator } from '../../../src/knowledge/check/locator.js';
 import { createVersionCheck } from '../../../src/knowledge/check/run.js';
@@ -31,10 +31,13 @@ export function caseCatalog({ entry }: CheckCase): CaseCatalog {
 
 const htmlType = 'text/html';
 
-/** A snapshot's text as the real fetcher reads its media type, or undefined for one it does not. */
+/**
+ * A snapshot's text as the real fetcher reads its media type, or undefined for one it does not or
+ * for a PDF, whose text only the fetcher's own reading gives.
+ */
 export function snapshotText({ body, type = htmlType }: Snapshot): string | undefined {
   const format = answerFormat(type);
-  return format === undefined ? undefined : answerText(format, body);
+  return format === undefined || typeof body !== 'string' ? undefined : answerText(format, body);
 }
 
 /**
@@ -61,16 +64,17 @@ export function snapshotFetcher(snapshots: ReadonlyMap<string, Snapshot>): Sourc
         }
       }
       const format = answerFormat(snapshot.type ?? htmlType);
-      const read = format === undefined ? undefined : textWithinLimits(format, snapshot.body);
-      return Promise.resolve<FetchOutcome>(
-        read === undefined
-          ? {
-              ok: false,
-              failure: format === undefined ? 'unsupported_type' : 'no_text',
-              status: 200,
-              chain,
-            }
-          : { ok: true, status: 200, ...read, chain },
+      if (format === undefined) {
+        return Promise.resolve({ ok: false, failure: 'unsupported_type', status: 200, chain });
+      }
+      const { body } = snapshot;
+      const bytes = typeof body === 'string' ? new TextEncoder().encode(body) : body;
+      const text = () => (typeof body === 'string' ? body : new TextDecoder().decode(body));
+      return answerWithinLimits(format, { bytes, text }, AbortSignal.timeout(20_000)).then(
+        (read): FetchOutcome =>
+          read.ok
+            ? { ok: true, status: 200, text: read.text, cut: read.cut, chain }
+            : { ok: false, failure: read.failure, status: 200, chain },
       );
     },
   };

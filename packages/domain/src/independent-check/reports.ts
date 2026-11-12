@@ -17,6 +17,8 @@ export const fetchFailures = [
   'http_status',
   'unsupported_type',
   'no_text',
+  'pdf_no_text',
+  'pdf_unreadable',
   'too_large',
   'timeout',
   'network',

@@ -17,6 +17,8 @@ import {
   maxElementDepth,
   maxElements,
 } from '../src/knowledge/check/html-text.js';
+import { maxPdfPages } from '../src/knowledge/check/pdf-text.js';
+import { syntheticPdf } from './synthetic-pdf.js';
 
 /** Synthetic hosts only; a local server stands in for both. */
 const hosts = ['gov.example'];
@@ -78,10 +80,43 @@ const routes = new Map<string, Handler>([
     },
   ],
   [
-    '/pdf',
+    '/broken.pdf',
     (response) => {
       response.writeHead(200, { 'content-type': 'application/pdf' });
-      response.end('%PDF-1.7');
+      response.end('%PDF-1.7\n1 0 obj << /Type /Catalog');
+    },
+  ],
+  [
+    '/law.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(
+        syntheticPdf([
+          ['Residence Act'],
+          ['Income of at least EUR 920,00.', 'Article 2 (repealed)'],
+        ]),
+      );
+    },
+  ],
+  [
+    '/scan.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(syntheticPdf([[], []]));
+    },
+  ],
+  [
+    '/pages.pdf',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(syntheticPdf(Array.from({ length: maxPdfPages + 1 }, () => ['Page'])));
+    },
+  ],
+  [
+    '/image',
+    (response) => {
+      response.writeHead(200, { 'content-type': 'image/png' });
+      response.end(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
     },
   ],
   [
@@ -230,16 +265,31 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     });
   });
 
+  it('reads a PDF as the text of its pages, line by line, the pages apart', async () => {
+    expect(await fetcher().fetch(page('/law.pdf'), hosts)).toEqual({
+      ok: true,
+      status: 200,
+      text: 'Residence Act\n\nIncome of at least EUR 920,00.\nArticle 2 (repealed)',
+      cut: false,
+      chain: [page('/law.pdf')],
+    });
+  });
+
+  it("cuts a PDF's text past the cap and says so", async () => {
+    const read = await fetcher({ maxTextLength: 20 }).fetch(page('/law.pdf'), hosts);
+    expect(read).toMatchObject({ ok: true, cut: true, text: 'Residence Act\n\nIncom' });
+  });
+
   it('records the address as it is requested, not as it is written', async () => {
     const read = await fetcher().fetch(page('/l\taw'), hosts);
     expect(read).toMatchObject({ ok: true, chain: [page('/law')] });
   });
 
-  it('asks for a page first, then data, then plain text', async () => {
+  it('asks for a page first, then data, then plain text, then a PDF', async () => {
     received.length = 0;
     await fetcher().fetch(page('/law'), hosts);
     expect(received[0]?.accept).toBe(
-      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, */*;q=0.1',
+      'text/html, application/xhtml+xml, application/json;q=0.9, application/xml;q=0.9, text/xml;q=0.9, text/plain;q=0.8, application/pdf;q=0.7, */*;q=0.1',
     );
   });
 
@@ -275,7 +325,10 @@ describe('the cited-source fetcher (ADR-0027)', () => {
     ['a redirect to plain http', page('/downgrade'), 'redirect_refused'],
     ['a redirect loop', page('/loop'), 'too_many_redirects'],
     ['a 404', page('/missing'), 'http_status'],
-    ['a PDF', page('/pdf'), 'unsupported_type'],
+    ['an image', page('/image'), 'unsupported_type'],
+    ['a malformed PDF', page('/broken.pdf'), 'pdf_unreadable'],
+    ['a PDF with no text layer, as a scan is', page('/scan.pdf'), 'pdf_no_text'],
+    ['a PDF with more pages than the cap', page('/pages.pdf'), 'too_large'],
     ['a page that only scripts fill with text', page('/app'), 'no_text'],
     ['a JSON answer that does not parse', page('/broken.json'), 'no_text'],
     ['too many bytes', page('/big'), 'too_large'],

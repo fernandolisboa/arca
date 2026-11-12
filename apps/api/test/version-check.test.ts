@@ -8,7 +8,9 @@ import {
 } from '@arca/domain';
 import type { CountryGuideEntry } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
-import { describe, expect, it } from 'vitest';
+import { request as httpRequest, createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   type RuleCheckRequest,
   type RuleChecker,
@@ -17,8 +19,11 @@ import {
 import {
   type FetchOutcome,
   type SourceFetcher,
+  fetchLimits,
+  httpsSourceFetcher,
   textDigest,
 } from '../src/knowledge/check/fetcher.js';
+import { maxPdfPages } from '../src/knowledge/check/pdf-text.js';
 import {
   type PassageLocateRequest,
   type PassageLocator,
@@ -29,6 +34,7 @@ import { type CheckSubject, createVersionCheck } from '../src/knowledge/check/ru
 import { scriptedCheckerChoice } from '../src/knowledge/check/scripted-checker.js';
 import { memoryCheckReportStore } from '../src/knowledge/check/store.js';
 import { snapshotFetcher } from './eval/independent-check/harness.js';
+import { syntheticPdf } from './synthetic-pdf.js';
 
 /** Synthetic knowledge only: an invented route, hosts and amounts. */
 const law = 'https://www.gov.example/law';
@@ -886,4 +892,70 @@ describe('the independent check of one version (ADR-0027)', () => {
     expect(store.rows).toEqual([]);
     expect(lines).toEqual([expect.objectContaining({ errorCode: 'check_unknown_version' })]);
   });
+});
+
+describe('a source published as a PDF (ADR-0028)', () => {
+  /** The fee table's answer, served by a local server through the real fetcher. */
+  let feeAnswer: Buffer | Uint8Array = Buffer.alloc(0);
+  const server = createServer((request, response) => {
+    if (request.url === '/table') {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(feeAnswer);
+    } else {
+      response.writeHead(200, { 'content-type': 'text/plain' });
+      response.end(lawText);
+    }
+  });
+  let fetcher: SourceFetcher;
+
+  beforeAll(async () => {
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    fetcher = httpsSourceFetcher({
+      resolve: () => Promise.resolve([{ address: '127.0.0.1', family: 4 }]),
+      allowAddress: () => true,
+      transport: {
+        request: httpRequest,
+        protocol: 'http:',
+        port: (server.address() as AddressInfo).port,
+      },
+      limits: { ...fetchLimits, maxBytes: 200_000 },
+    });
+  });
+
+  afterAll(async () => {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  });
+
+  it('confirms an item from the text of a PDF, as from a page', async () => {
+    feeAnswer = syntheticPdf([['Fee table'], ['Application fee: EUR 100.']]);
+    const { check, store } = setup({ fetcher });
+    await check(startId, 'qm-sample', 1);
+    expect(store.rows[0]?.fetchLog[1]).toMatchObject({ outcome: 'read' });
+    expect(store.rows[0]?.items[1]).toMatchObject({ status: 'matches' });
+    expect(store.rows[0]).toMatchObject({ failed: false, clean: true });
+  });
+
+  it.each([
+    ['with no text layer, as a scan is', () => syntheticPdf([[]]), 'pdf_no_text'],
+    ['that is malformed', () => Buffer.from('%PDF-1.7\n1 0 obj << /Type'), 'pdf_unreadable'],
+    [
+      'over the page cap',
+      () => syntheticPdf(Array.from({ length: maxPdfPages + 1 }, () => ['Fee'])),
+      'too_large',
+    ],
+    ['over the byte cap', () => Buffer.alloc(250_000, 0x25), 'too_large'],
+  ])(
+    'leaves the items of a PDF %s could not be checked, with the reason',
+    async (_, file, outcome) => {
+      feeAnswer = file();
+      const { check, store } = setup({ fetcher });
+      await check(startId, 'qm-sample', 1);
+      expect(store.rows[0]?.fetchLog[1]).toMatchObject({ outcome, sha256: null });
+      expect(store.rows[0]?.items[1]).toMatchObject({ reason: 'no_page_read' });
+      // The step completes: the other page's item still stands.
+      expect(store.rows[0]?.items[0]).toMatchObject({ status: 'matches' });
+      expect(store.rows[0]).toMatchObject({ failed: true, clean: false });
+    },
+  );
 });

@@ -2,15 +2,16 @@ import { addressTexts, digitsApart } from '@arca/domain';
 import { htmlToText, markupReader, struckElements, type MarkupReader } from './html-text.js';
 
 /** How the fetcher reads an answer, by its media type. */
-export type AnswerFormat = 'html' | 'plain' | 'json' | 'xml';
+export type AnswerFormat = 'html' | 'plain' | 'json' | 'xml' | 'pdf';
 
 const htmlTypes = new Set(['text/html', 'application/xhtml+xml']);
 const xmlTypes = new Set(['application/xml', 'text/xml']);
 
-/** The format of a media type the check reads, or undefined for one it does not, such as a PDF. */
+/** The format of a media type the check reads, or undefined for one it does not, such as an image. */
 export function answerFormat(type: string): AnswerFormat | undefined {
   if (htmlTypes.has(type)) return 'html';
   if (type === 'text/plain') return 'plain';
+  if (type === 'application/pdf') return 'pdf';
   if (type === 'application/json' || /^application\/[\w.-]+\+json$/u.test(type)) return 'json';
   if (xmlTypes.has(type) || /^application\/[\w.-]+\+xml$/u.test(type)) return 'xml';
   return undefined;
@@ -213,6 +214,7 @@ function textOf(format: AnswerFormat, body: string): string {
     case 'html':
       return htmlToText(body);
     case 'plain':
+    case 'pdf':
       return body;
     case 'json':
       return wholeText(({ read }) => dataLines(jsonStrings(body).map(stringText(read))));
@@ -222,8 +224,8 @@ function textOf(format: AnswerFormat, body: string): string {
 }
 
 /**
- * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain text
- * as it is; a JSON answer as its string values in document order, one to a line; an XML answer as
+ * An answer's text as a reader sees it (ADR-0027). A page's markup through `htmlToText`; plain text,
+ * and a PDF's text layer once `pdfText` has read it, as it is; a JSON answer as its string values in document order, one to a line; an XML answer as
  * its text in document order. A string of either with markup in it is read as a page's markup is.
  * Nothing in a data answer is ever more than text. In every format, a NUL or an unpaired
  * surrogate, which a stored report cannot hold, reads as the replacement character, and the digits

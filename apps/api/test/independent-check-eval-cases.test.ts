@@ -112,11 +112,11 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds nine correct, six wrong and eighteen adversarial cases with unique IDs', () => {
+  it('holds ten correct, six wrong and nineteen adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
-    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(9);
+    expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(10);
     expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(6);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(18);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(19);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 

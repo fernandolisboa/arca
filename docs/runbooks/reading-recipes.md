@@ -171,7 +171,7 @@ For each host:
 **`stjornartidindi.is`** (the gazette; last confirmed 2026-11-11)
 
 - **Read:** `curl` on the PDFs: `https://adverts.stjornartidindi.is/A_nr_<n>_<yyyy>.pdf` for acts, `B_nr_<n>_<yyyy>.pdf` for regulations. The gazette text prevails over the consolidated law (Act 38/2012).
-- **Cite:** the PDF. The checker reads no PDF (#363), and the host answered its fetch with 403 on 2026-11-11.
+- **Cite:** the PDF. The check reads PDFs (ADR-0028), but the host answered its fetch with 403 on 2026-11-11.
 - **Amendments:** search the gazette with a POST to `https://island.is/api/graphql`, query `officialJournalOfIcelandAdverts(input: {search, department: ["a-deild"], pageSize, dateFrom})`. The search is fuzzy; read every candidate.
 
 **`island.is`** (last confirmed 2026-11-09)

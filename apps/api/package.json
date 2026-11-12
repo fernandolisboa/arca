@@ -46,6 +46,7 @@
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "parse5": "catalog:",
+    "pdfjs-dist": "catalog:",
     "workflow": "catalog:",
     "zod": "catalog:"
   }

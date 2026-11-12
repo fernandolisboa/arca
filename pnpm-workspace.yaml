@@ -33,6 +33,10 @@ trustPolicyExclude:
   - '@vercel/oidc@3.8.10'
   - '@vercel/oidc@4.0.3'
 blockExoticSubdeps: true
+# pdfjs-dist renders pages through an optional native canvas; the check only reads the text layer
+# (ADR-0028), so no native code is installed for it.
+ignoredOptionalDependencies:
+  - '@napi-rs/canvas'
 # Peers are declared, never installed implicitly. The Workflow SDK's umbrella package depends on
 # every framework adapter, and the NestJS one would otherwise pull NestJS into an app that does
 # not use it.
@@ -117,6 +121,7 @@ catalog:
   lucide-react: 1.66.0
   nitro: 3.0.260903-beta
   parse5: 8.1.0
+  pdfjs-dist: 6.5.438
   pg: 8.23.1
   prettier: 3.9.10
   react-dom: 19.3.1
