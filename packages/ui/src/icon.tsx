@@ -26,6 +26,7 @@ import {
   Star,
   TriangleAlert,
   UserPlus,
+  Mail,
   UserRound,
   UsersRound,
   X,
@@ -63,6 +64,7 @@ const icons = {
   list: List,
   tree: Network,
   addPerson: UserPlus,
+  invite: Mail,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;
