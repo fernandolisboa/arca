@@ -49,6 +49,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Knowledge seed for the first countries, from official sources.
 - Case model with guided questions first, then AI intake from free text ([spec 0007](specs/0007-case-model-and-guided-intake.md), [spec 0008](specs/0008-free-text-intake.md)), with playback and correction; who sees what, per person; audit log.
 - Admin role, decisions without a passkey prompt, and the AI independent check with country guides and one-tap activation of checked versions ([#325](https://github.com/fernandolisboa/arca/issues/325), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).
+- Correction requests: the owner points at a wrong item with sources, and a daily corrector run answers with a correcting version to activate ([#413](https://github.com/fernandolisboa/arca/issues/413), [ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)).
 - Destination comparison weighted by each person ([#310](https://github.com/fernandolisboa/arca/issues/310), [ADR-0026](adr/0026-destination-comparison-data.md)).
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.

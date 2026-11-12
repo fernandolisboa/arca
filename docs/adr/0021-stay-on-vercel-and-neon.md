@@ -1,6 +1,6 @@
 # ADR-0021: Stay on Vercel and Neon: no AWS
 
-- Status: Accepted
+- Status: Accepted; amended 2026-11-12 by [ADR-0029](0029-correction-requests-and-the-corrector-session.md): the Blob store also holds admins' plaintext copies of official texts attached to correction requests
 - Date: 2026-11-04
 - Supersedes: the off-vendor backups of [ADR-0017](0017-data-lifecycle-and-backups.md#off-vendor-backups)
 - Amends: [ADR-0008](0008-database-security-and-environments.md) (field encryption, backups), [ADR-0010](0010-stack-revised.md) (object storage and keys), [ADR-0018](0018-vault-encryption.md) (document storage, field encryption), [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md) (the `app_backup` grant)
@@ -31,7 +31,7 @@ Facts checked on 2026-11-04:
   - Moving to a paid Neon plan for a longer window is the owner's call, made in Neon's console with no code change.
 - **No erasure tombstones.** They existed so a restore from the daily copy would not bring an erased account back. A Neon restore reaches back at most the history window, and the erasures inside it are visible in the backup branch's audit log. So the tombstone step and its port are removed, and the erasure workflow ends at the `account erased` event.
 - **`app_backup` is retired.** It existed only for the daily copy. Its read policy, grants, guard 10 and production password are removed in the change that ends #75. The role itself stays, unable to log in and holding nothing, because migrations already applied grant to it and must still replay on a new database. The erasure tests count rows as the test server's admin.
-- **Documents go to a private Vercel Blob store in São Paulo**, one per environment, holding client-side ciphertext only ([ADR-0018](0018-vault-encryption.md) is otherwise unchanged).
+- **Documents go to a private Vercel Blob store in São Paulo**, one per environment, holding client-side ciphertext only (and, since [ADR-0029](0029-correction-requests-and-the-corrector-session.md), plaintext copies of official texts attached to correction requests, under their own prefix) ([ADR-0018](0018-vault-encryption.md) is otherwise unchanged).
   - The browser uploads with a client token our API issues after the `vault_write` step-up.
   - Downloads are served through our API, or through a short-lived signed URL after the `vault_unlock` step-up.
   - The store's upload origin joins `connect-src` in place of the S3 bucket's. The exact origin is checked when the vault's storage ticket lands.
