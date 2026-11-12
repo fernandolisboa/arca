@@ -47,6 +47,7 @@ import { MembershipChoice, type Membership } from '../forms/membership-choice.js
 import { TextField } from '../forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
+import { initials, shortName } from '../person-names.js';
 import { passkeys } from '../platform.js';
 
 export const Route = createFileRoute('/family')({ component: Family });
@@ -530,7 +531,9 @@ function FamilySummary({
             className="flex items-center gap-2 rounded-full border border-line py-1 pr-3 pl-1"
           >
             <Avatar person={person} isMe={person.id === view.me} size="small" />
-            <span className="text-small">{shortName(person, view.people)}</span>
+            <span className="text-small">
+              {shortName(person.displayName, othersNames(view.people, person))}
+            </span>
           </li>
         ))}
         {view.people.length > summaryFaces && (
@@ -561,7 +564,7 @@ function NextStep({ view }: { readonly view: CaseView }) {
   const titleId = useId();
   const kept = view.people.filter((person) => person.keptByMe);
   const others = kept.flatMap((person) =>
-    person.id === view.me ? [] : [shortName(person, view.people)],
+    person.id === view.me ? [] : [shortName(person.displayName, othersNames(view.people, person))],
   );
   const questions = kept.length > 0;
   return (
@@ -1004,31 +1007,6 @@ function useSharingLine(view: CaseView) {
           profile: memberNames(person.shares.profile) || t('family.nobody'),
           finances: memberNames(person.shares.finances) || t('family.nobody'),
         });
-}
-
-/** The first letters of the first and last words of a name. */
-function words(name: string) {
-  return name.trim().split(/\s+/u);
-}
-
-/** The first name, or first and last when someone else in the case shares the first. */
-function shortName(person: CasePerson, people: readonly CasePerson[]) {
-  const [first = '', ...rest] = words(person.displayName);
-  const shared = people.some(
-    (other) => other.id !== person.id && words(other.displayName)[0] === first,
-  );
-  return shared && rest.length > 0 ? `${first} ${rest.at(-1) ?? ''}` : first;
-}
-
-function initials(name: string) {
-  const parts = words(name);
-  const graphemes = new Intl.Segmenter('pt-BR', { granularity: 'grapheme' });
-  const first = (word: string | undefined) => {
-    for (const { segment } of graphemes.segment(word ?? '')) return segment;
-    return '';
-  };
-  const letters = first(parts[0]) + (parts.length > 1 ? first(parts.at(-1)) : '');
-  return letters.toLocaleUpperCase('pt-BR');
 }
 
 function PersonDetails({
@@ -1681,6 +1659,11 @@ function RelationshipsSection({
 }
 
 /** The members with an account who could be shown a person: not the viewer, not the person. */
+/** Everyone else's name, so a short name can tell people apart. */
+function othersNames(people: readonly CasePerson[], person: CasePerson) {
+  return people.flatMap((other) => (other.id === person.id ? [] : [other.displayName]));
+}
+
 function othersOf(view: CaseView, person: CasePerson) {
   return view.people.filter(
     (other) => other.accountId !== null && other.id !== view.me && other.id !== person.id,
