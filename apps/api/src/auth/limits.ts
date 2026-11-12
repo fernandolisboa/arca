@@ -93,7 +93,7 @@ export const ruleSummaryLimits = {
 
 /**
  * An admin's own rule checks (ADR-0027): no daily cap, only a burst limit no person tapping the
- * button reaches, so a looping client or a stolen session cannot drain the shared model budget.
+ * button reaches; it slows a looping client or a stolen session but does not bound daily spend.
  */
 export const ruleCheckLimits = {
   minute: { name: 'rule_check_minute', limit: 10, windowSeconds: 60 },
