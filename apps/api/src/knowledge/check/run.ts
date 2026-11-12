@@ -150,6 +150,7 @@ async function fetchPages(
   pages: readonly string[],
   hosts: readonly string[],
 ): Promise<FetchOutcome> {
+  if (pages.length === 0) return { ok: false, failure: 'no_text', status: null, chain: [] };
   const texts: string[] = [];
   const chain: string[] = [];
   let status = 0;

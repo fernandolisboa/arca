@@ -44,7 +44,10 @@ export function addressPages(address: string): string[] {
   const last = Number(range[2]);
   const query = address.indexOf('?');
   const count = last - first + 1;
-  if (query === -1 || range.index < query || count < 1 || count > maxAddressPages) return [];
+  const fragment = address.indexOf('#');
+  if (query === -1 || range.index < query || (fragment !== -1 && fragment < range.index)) return [];
+  if (/^0\d/u.test(range[1] ?? '') || /^0\d/u.test(range[2] ?? '')) return [];
+  if (count < 1 || count > maxAddressPages) return [];
   const before = address.slice(0, range.index);
   const after = address.slice(range.index + range[0].length);
   if (/[{}]/u.test(before + after)) return [];

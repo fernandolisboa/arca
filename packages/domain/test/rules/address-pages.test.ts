@@ -23,6 +23,8 @@ describe('the pages a machine-readable address names (ADR-0027)', () => {
     ['a range that runs backwards', `${api}?page={3..1}`],
     ['too many pages', `${api}?page={0..${String(maxAddressPages)}}`],
     ['a stray brace', `${api}?page={0}`],
+    ['a range in the fragment', `${api}?page=1#{0..2}`],
+    ['a zero-padded range', `${api}?page={01..03}`],
   ])('refuses %s', (_, address) => {
     expect(addressPages(address)).toEqual([]);
     expect(machineReadableUrlSchema.safeParse(address).success).toBe(false);
