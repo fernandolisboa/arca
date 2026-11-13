@@ -3,6 +3,7 @@ import {
   type CheckAnswer,
   type CheckItem,
   type CheckProgressEvent,
+  type CheckReason,
   type CheckedItem,
   type Passage,
   type Pin,
@@ -130,9 +131,11 @@ const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
  */
 const maxItemsPerSecondLook = 2;
 const maxSecondLookCalls = 10;
+/** The most long pages each second look has the locator pick passages of again. */
+const maxSecondLookLocatedPages = 2;
 
 /** The reasons an item may get a second look: the model could not confirm it on what it was sent. */
-const secondLookReasons: ReadonlySet<string> = new Set([
+const secondLookReasons: ReadonlySet<CheckReason> = new Set<CheckReason>([
   'model_could_not_check',
   'value_not_in_quote',
 ]);
@@ -397,7 +400,7 @@ export function createVersionCheck({
    * The passages of a long page picked for each item that cites it, by item key: first those that
    * head a provision its source titles name (ADR-0027), then those the locator picked. Undefined
    * when neither found any. The locator is asked once per page with every citing item, whatever
-   * calls the items are later compared in.
+   * calls the items are later compared in, and again with only the items a second look takes.
    */
   const pick = async (
     page: ReadPage,
@@ -433,6 +436,23 @@ export function createVersionCheck({
     }
     return { passages, picks: picks.size > 0 ? picks : undefined };
   };
+
+  /** The picks of each long page for `items`, the locator asked for the first `located` pages. */
+  const picksFor = async (
+    longPages: readonly ReadPage[],
+    items: readonly CheckItem[],
+    entry: CatalogEntry,
+    record: Recorder,
+    located = maxLocatedPages,
+  ): Promise<Map<string, Picks>> =>
+    new Map(
+      await Promise.all(
+        longPages.map(
+          async (page, index) =>
+            [page.url, await pick(page, items, entry, index < located, record)] as const,
+        ),
+      ),
+    );
 
   /**
    * A long page as the passages picked for the items of one call that cite it, within `budget`.
@@ -631,29 +651,33 @@ export function createVersionCheck({
     return Promise.all(
       groups.slice(0, maxSecondLookCalls).map(async (group) => {
         const cited = longPages.filter(({ url }) => itemsCiting(group, url).length > 0);
-        const picks = new Map(
-          await Promise.all(
-            cited.map(
-              async (page, index) =>
-                [
-                  page.url,
-                  await pick(page, group, subject.entry, index < maxLocatedPages, record),
-                ] as const,
-            ),
-          ),
+        const picks = await picksFor(
+          cited,
+          group,
+          subject.entry,
+          record,
+          maxSecondLookLocatedPages,
         );
+        const namesItems = true;
         const looked = await compare(
           group,
           readPages,
           picks,
-          true,
+          namesItems,
           languages,
           subject,
           guide,
           record,
           secondLookRunOnPassages,
         );
-        return looked.failure === null ? looked : { ...looked, checked: [] };
+        if (looked.failure === null) return looked;
+        // The screen may have shown answers of the failed call, so it gets the first ones back.
+        await Promise.all(
+          group.map(({ key }) =>
+            record({ kind: 'item', key, status: byKey.get(key)?.status ?? 'could_not_check' }),
+          ),
+        );
+        return { ...looked, checked: [] };
       }),
     );
   };
@@ -686,17 +710,7 @@ export function createVersionCheck({
     const longPages = readPages.filter(({ text }) => !sentWhole(text));
     const located = Math.min(longPages.length, maxLocatedPages);
     if (located > 0) await record({ kind: 'locating', pages: located });
-    const picks = new Map(
-      await Promise.all(
-        longPages.map(
-          async (page, index) =>
-            [
-              page.url,
-              await pick(page, items, subject.entry, index < maxLocatedPages, record),
-            ] as const,
-        ),
-      ),
-    );
+    const picks = await picksFor(longPages, items, subject.entry, record);
     const calls = checkCalls(items, readPages);
     const languages = pageLanguages(subject.entry.version.country);
     const compared = await Promise.all(

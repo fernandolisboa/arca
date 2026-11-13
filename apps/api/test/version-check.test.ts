@@ -842,12 +842,78 @@ describe('the independent check of one version (ADR-0027)', () => {
         expect(store.rows[0]).toMatchObject({ failure: null, failed: false });
       });
 
-      it('keeps the first answer, and does not fail the check, when the second look fails', async () => {
-        const checker = readingChecker('fails');
+      it('takes no second look at a quote off the page, or at an item citing only short pages', async () => {
+        const checker = answering({
+          items: [
+            {
+              key: 'requirement:means',
+              status: 'matches',
+              quotes: [{ quote: 'means of at least EUR 920 a week', url: law }],
+            },
+            { key: 'cost:fee', status: 'could_not_check', note: 'Não está.' },
+          ],
+        });
         const locator = locating('Article 201. Means');
         const { check, store } = setup({ checker, fetcher: runOnFetcher, locator });
         await check(startId, 'qm-sample', 1);
+        expect(checker.requests).toHaveLength(1);
+        expect(store.rows[0]?.items.map(({ reason }) => reason)).toEqual([
+          'quote_not_on_page',
+          'model_could_not_check',
+        ]);
+      });
+
+      it('takes at most ten second looks in one check', async () => {
+        const extra = Array.from({ length: 24 }, (_, index) => ({
+          ...version.requirements[0],
+          id: `means-${String(index)}`,
+          title: `Further means ${String(index)}`,
+        }));
+        const many = routeVersionSchema.parse({
+          ...version,
+          requirements: [...version.requirements, ...extra],
+        });
+        const checked: CheckSubject = {
+          ...subject,
+          entry: { ...entry, version: many, identity: versionIdentity(many, 'd'.repeat(64)) },
+        };
+        const requests: RuleCheckRequest[] = [];
+        const checker: RuleChecker = {
+          check(request) {
+            requests.push(request);
+            const reply = {
+              items: request.items.map(({ key }) => ({
+                key,
+                status: 'could_not_check',
+                note: 'Não está.',
+              })),
+            };
+            return Promise.resolve({ reply, model: 'claude-test', promptVersion: 'check-1' });
+          },
+        };
+        const { check } = setup({
+          checker,
+          fetcher: runOnFetcher,
+          locator: locating('Article 201. Means'),
+          checked,
+        });
+        await check(startId, 'qm-sample', 1);
+        // Twenty-six items take four first calls (8, 8, 8 and 2); thirteen second looks would follow.
+        expect(requests.slice(0, 4).map(({ items }) => items.length)).toEqual([8, 8, 8, 2]);
+        expect(requests.slice(4).map(({ items }) => items.length)).toEqual(Array(10).fill(2));
+      });
+
+      it('keeps the first answer, and does not fail the check, when the second look fails', async () => {
+        const checker = readingChecker('fails');
+        const locator = locating('Article 201. Means');
+        const { check, store, events } = setup({ checker, fetcher: runOnFetcher, locator });
+        await check(startId, 'qm-sample', 1);
         expect(checker.requests).toHaveLength(2);
+        expect(
+          events()
+            .filter((event) => event.kind === 'item' && event.key === 'requirement:means')
+            .at(-1),
+        ).toMatchObject({ status: 'could_not_check' });
         expect(store.rows[0]?.items[0]).toMatchObject({
           key: 'requirement:means',
           status: 'could_not_check',

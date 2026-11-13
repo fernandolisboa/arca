@@ -36,17 +36,17 @@ const concurrency = 3;
 /**
  * The most model calls one run may make: up to `maxCallsPerCheck` checker calls and their retries
  * for each route, and a pick of passages for each long page, with room for a catalog that grows.
- * With the check's own caps on what a call reads and writes, this bounds a run to about ten
+ * With the check's own caps on what a call reads and writes, this bounds a run to about fifteen
  * dollars.
  */
 const maxCallsPerRun = 600;
 
 /**
- * No check starts after this long, so even one that then takes its longest, about 13 minutes,
- * ends inside the test's time limit and the report is written; the versions left are reported
- * as not run.
+ * No check starts after this long, so even one that then takes its longest, about 19 minutes with
+ * its second looks, ends inside the test's time limit and the report is written; the versions left
+ * are reported as not run.
  */
-const startWithinMs = 20 * 60_000;
+const startWithinMs = 15 * 60_000;
 
 interface Version {
   readonly routeId: string;
