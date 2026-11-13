@@ -8,7 +8,7 @@ import type { KnowledgeWords } from './words.js';
 export const needTone: Readonly<Record<ReviewNeed, StatusTone>> = {
   differs: 'danger',
   ready: 'ok',
-  unread: 'unknown',
+  unread: 'warn',
   unchecked: 'unknown',
 };
 
@@ -40,8 +40,8 @@ export function ReviewFilters({
   const { t } = words;
   const needsId = useId();
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-6">
-      <div className="md:w-56 md:shrink-0">
+    <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
+      <div className="md:shrink-0">
         <SelectField
           label={t('knowledge.review.filter.country')}
           placeholder={t('knowledge.review.filter.allCountries')}
@@ -52,7 +52,7 @@ export function ReviewFilters({
           }}
         />
       </div>
-      <div role="group" aria-labelledby={needsId} className="flex min-w-0 flex-col gap-1">
+      <div role="group" aria-labelledby={needsId} className="flex min-w-0 flex-1 flex-col gap-1">
         <span id={needsId} className="font-medium">
           {t('knowledge.review.filter.needs')}
         </span>
@@ -65,7 +65,7 @@ export function ReviewFilters({
               onClick={() => {
                 onChange(toggleNeed(filter, need));
               }}
-              className="inline-flex min-h-touch items-center gap-2 rounded-control border border-line bg-surface px-3 text-small hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-soft aria-pressed:font-medium"
+              className="inline-flex min-h-touch items-center gap-1.5 rounded-control border border-line bg-surface px-3 text-small hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-soft aria-pressed:font-medium"
             >
               <span
                 aria-hidden="true"
