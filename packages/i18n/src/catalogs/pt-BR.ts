@@ -1089,10 +1089,10 @@ export const ptBR = {
       stepTitle:
         '{step, select, route {Qual regra falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
       routeLead:
-        'Escolha o país e diga qual visto falta, com o nome que o site oficial usa e o tipo de pessoa a que ele se destina. Sem dados da família. Exemplo: Visto D7, para quem vive de renda ou aposentadoria.',
+        'Escolha o país e diga o nome que o site oficial usa e o perfil de quem pode pedir. Sem dados da família. Exemplo: Visto D7, para quem vive de renda ou aposentadoria.',
       country: 'País',
       pickCountry: 'Escolha o país',
-      note: 'Qual visto falta, e para que tipo de pessoa?',
+      note: 'Qual visto, residência ou cidadania falta, e para que perfil?',
       pagesLead:
         'Abra cada página oficial que fala dessa regra sem entrar em nenhuma conta. Salve como PDF (Imprimir › Salvar como PDF) e anexe aqui com o endereço da página.',
       knownHosts: 'Sites oficiais que o Arca já conhece para {country}: {hosts}.',
