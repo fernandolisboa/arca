@@ -237,7 +237,7 @@ export const ptBR = {
     knowledge: {
       screen: {
         title: 'Revise nesta ordem',
-        body: 'As regras propostas vêm separadas por país. Comece pelas que diferem das fontes. As que a IA conferiu inteiras dá para ativar de uma vez.',
+        body: 'As regras propostas vêm separadas por país. Comece pelas que diferem das fontes. As que o Arca conferiu inteiras dá para ativar de uma vez.',
       },
     },
   },
@@ -1175,14 +1175,14 @@ export const ptBR = {
     /** The proposed versions grouped by country, in the order to review them. */
     review: {
       order:
-        'Ordem de revisão: primeiro o que difere das fontes, depois o que a IA conferiu inteiro, por último o que ela não conseguiu conferir.',
+        'Ordem de revisão: primeiro o que difere das fontes, depois o que o Arca conferiu inteiro, por último o que ele não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Tem diferença} ready {Conferida pela IA} unread {Confira você} unchecked {Sem verificação} other {Sem verificação}}',
+      need: '{need, select, differs {Difere} ready {Tudo bate} unread {Confira} unchecked {Na fila} other {Na fila}}',
       needCount: {
         differs: '{n, plural, one {# com diferença} other {# com diferença}}',
         ready: '{n, plural, one {# conferida} other {# conferidas}}',
         unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
-        unchecked: '{n, plural, one {# sem verificação} other {# sem verificação}}',
+        unchecked: '{n, plural, one {# na fila} other {# na fila}}',
       },
       versions: '{n, plural, one {# versão} other {# versões}}',
       comparisons: 'Comparar destinos',
@@ -1190,13 +1190,13 @@ export const ptBR = {
       hints: {
         title: 'O que fazer em cada caso',
         differs:
-          'A IA achou ao menos um ponto que não bate com a fonte. Abra a versão e leia o trecho marcado. Se a fonte estiver certa, recuse: a regra precisa de correção.',
+          'O Arca achou ao menos um ponto que não bate com a fonte. Abra a versão e leia o trecho marcado. Se a fonte estiver certa, recuse: a regra precisa de correção.',
         ready:
-          'Todos os pontos batem com as fontes oficiais. Dá para ativar todas de uma vez em “Conferidas pela IA”, no topo.',
+          'Todos os pontos batem com as fontes oficiais. Dá para ativar todas de uma vez em “Conferidas pelo Arca”, no topo.',
         unread:
-          'Nada diverge, mas a IA não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
+          'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
-          'A IA ainda não leu esta versão. Ela confere as versões sozinha quando você abre esta tela, algumas por dia. Volte mais tarde.',
+          'Esta versão está na fila. Quando você abre esta tela, o Arca confere algumas versões por dia, inclusive as de verificação vencida ou que falhou. Volte mais tarde.',
       },
       filter: {
         country: 'País',
@@ -1314,29 +1314,29 @@ export const ptBR = {
     summary: {
       button: 'Resumir regra',
       pending: 'Lendo a regra…',
-      title: 'Resumo feito pela IA',
+      title: 'Resumo feito pelo Arca',
       watchPoints: 'Pontos de atenção',
-      noWatchPoints: 'A IA não apontou pontos de atenção.',
-      note: 'A IA pode errar. Use o resumo para ler mais rápido e confira a regra e as fontes antes de ativar ou recusar.',
+      noWatchPoints: 'O Arca não apontou pontos de atenção.',
+      note: 'O Arca usa IA e pode errar. Use o resumo para ler mais rápido e confira a regra e as fontes antes de ativar ou recusar.',
       failure:
-        '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {A IA demorou demais. Tente de novo.} summary_unparsable {A IA não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+        '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {O Arca demorou demais. Tente de novo.} summary_unparsable {O Arca não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       retry: 'Tentar de novo',
     },
     /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
     points: {
       status:
-        '{status, select, matches {Bate com a fonte, segundo a IA.} differs {Difere da fonte, segundo a IA.} other {Confira você.}}',
+        '{status, select, matches {Bate com a fonte, segundo o Arca.} differs {Difere da fonte, segundo o Arca.} other {Confira você.}}',
       matches: '{n, plural, one {# bate} other {# batem}}',
       differs: '{n, plural, one {# difere} other {# diferem}}',
       unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
       checked:
-        'A IA comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
+        'O Arca comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
       needYou:
         '{n, plural, one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
       unconfirmed:
         '{n, plural, one {Nenhum ponto difere. 1 fica para você conferir} other {Nenhum ponto difere. # ficam para você conferir}}',
       allMatch: 'Todos os pontos batem com as fontes',
-      note: 'Feita por IA, que pode errar. “Confira você” quer dizer que a IA não conseguiu confirmar o ponto na fonte, não que a regra está errada: o ponto traz o link oficial, quando cita um, e o que procurar lá. O relatório completo fica no passo Decisão.',
+      note: 'Feita pelo Arca com IA, que pode errar. “Confira você” quer dizer que o Arca não conseguiu confirmar o ponto na fonte, não que a regra está errada: o ponto traz o link oficial, quando cita um, e o que procurar lá. O relatório completo fica no passo Decisão.',
       lookAt: 'Onde olhar',
       opensSite: '(abre o site oficial)',
       lookFor: 'O que deve estar escrito lá: {values}',
@@ -1351,9 +1351,9 @@ export const ptBR = {
         'A verificação independente não lê comparações. Abra as fontes e confira por conta própria antes de decidir.',
       off: 'A verificação independente ainda não está ligada. Abra as fontes e confira por conta própria antes de decidir.',
       listStatus:
-        '{status, select, checked {Conferida pela IA} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
+        '{status, select, checked {Conferida pelo Arca} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
       status:
-        '{status, select, running {A IA está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou a IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
+        '{status, select, running {O Arca está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou o modelo de IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
       startsOnOpen:
         'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até {max} por dia.',
       loadFailure: 'Não conseguimos carregar a verificação.',
@@ -1365,46 +1365,46 @@ export const ptBR = {
       scripted:
         'Verificação de teste: nenhuma IA leu as fontes, então ela não vale como verificação.',
       failure:
-        '{failure, select, check_timeout {A IA demorou demais para responder.} check_unavailable {A IA estava fora do ar.} check_unparsable {A IA respondeu num formato que o Arca não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Depois de um dia, ela roda de novo quando você abrir a lista.',
+        '{failure, select, check_timeout {O Arca demorou demais para responder.} check_unavailable {A IA que o Arca usa estava fora do ar.} check_unparsable {A IA que o Arca usa respondeu num formato que ele não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Depois de um dia, ela roda de novo quando você abrir a lista.',
       checkedAt: 'Verificada em {date}',
       guide: 'Guia usado: {country}, versão {number}',
-      noGuide: 'Sem guia para este país ({country}): a IA leu as fontes sem orientações extras.',
+      noGuide: 'Sem guia para este país ({country}): o Arca leu as fontes sem orientações extras.',
       kind: '{kind, select, requirement {Requisito} assessment {Critério subjetivo} dependent {Dependente} cost {Custo} duration {Prazo} leapDayBirthday {Aniversário em 29 de fevereiro} closure {Encerramento da rota} countrySet {Grupo de países} other {Item}}',
       itemStatus:
         '{status, select, matches {Bate com a fonte} differs {Diferente da fonte} other {Não deu para conferir}}',
       quote: '{total, plural, one {Trecho da página} other {Trecho {n} de {total}}}',
       page: 'Página',
       readAt: 'O Arca leu o texto neste endereço',
-      readFromCopy: 'O site não abriu. A IA leu a cópia anexada a um pedido de correção.',
-      note: 'Observação da IA: {note}',
+      readFromCopy: 'O site não abriu. O Arca leu a cópia anexada a um pedido de correção.',
+      note: 'Observação do Arca: {note}',
       reason:
-        '{reason, select, no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {O Arca não conseguiu ler nenhuma página deste item. O motivo de cada uma está em “Páginas com problema”, no fim.} not_answered {A IA não respondeu sobre este item.} model_could_not_check {A IA leu o que recebeu e não confirmou este item.} quote_count {A IA não citou nenhum trecho, ou citou mais de {max}.} url_not_cited {A IA citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {Esta página não foi lida inteira, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',
+        '{reason, select, no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {O Arca não conseguiu ler nenhuma página deste item. O motivo de cada uma está em “Páginas com problema”, no fim.} not_answered {O Arca não respondeu sobre este item.} model_could_not_check {O Arca leu o que recebeu e não confirmou este item.} quote_count {O Arca não citou nenhum trecho, ou citou mais de {max}.} url_not_cited {O Arca citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {Esta página não foi lida inteira, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',
       pages: 'Páginas com problema',
       outcome:
-        '{outcome, select, read {Lida só em parte: é grande demais, ou a IA não conseguiu escolher os trechos} refused_url {Endereço fora dos sites oficiais} redirect_refused {Redirecionou para fora dos sites oficiais} too_many_redirects {Redirecionou vezes demais} address_refused {Endereço de rede recusado} lookup_failed {Site não encontrado} http_status {O site respondeu com erro {status}} unsupported_type {O site mandou um tipo de arquivo que o Arca não lê, como uma imagem} no_text {A página veio sem texto; é provável que só mostre o conteúdo com JavaScript, que o Arca não roda} pdf_no_text {O PDF não tem texto, só imagens das páginas (digitalizado), e o Arca não lê imagem} pdf_unreadable {O PDF está corrompido ou num formato que o Arca não consegue abrir} too_large {Página grande demais} timeout {O site demorou demais} network {Falha de rede} other {Não deu para ler}}',
+        '{outcome, select, read {Lida só em parte: é grande demais, ou o Arca não conseguiu escolher os trechos} refused_url {Endereço fora dos sites oficiais} redirect_refused {Redirecionou para fora dos sites oficiais} too_many_redirects {Redirecionou vezes demais} address_refused {Endereço de rede recusado} lookup_failed {Site não encontrado} http_status {O site respondeu com erro {status}} unsupported_type {O site mandou um tipo de arquivo que o Arca não lê, como uma imagem} no_text {A página veio sem texto; é provável que só mostre o conteúdo com JavaScript, que o Arca não roda} pdf_no_text {O PDF não tem texto, só imagens das páginas (digitalizado), e o Arca não lê imagem} pdf_unreadable {O PDF está corrompido ou num formato que o Arca não consegue abrir} too_large {Página grande demais} timeout {O site demorou demais} network {Falha de rede} other {Não deu para ler}}',
       footer:
-        'Feita por IA, que pode errar. O Arca confere no código se cada trecho está mesmo na página citada, mas quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, a IA lê só os trechos que uma IA mais rápida escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
+        'Feita pelo Arca com IA, que pode errar. Uma parte não usa IA: o código confere se cada trecho está mesmo na página citada. Quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, o Arca lê só os trechos que um modelo de IA mais rápido escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
     },
     /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
     checkRun: {
-      button: 'Analisar com IA',
+      button: 'Analisar com o Arca',
       running: 'Ver a análise em andamento',
-      confirmTitle: 'Analisar esta versão com IA?',
+      confirmTitle: 'Analisar esta versão com o Arca?',
       confirmLead:
-        'A IA lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
+        'O Arca lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
       cost: 'Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API.',
       lastCost: 'A última análise desta versão custou {cost} do seu crédito da API.',
       spent:
         '{state, select, running {Gasto até agora: {cost}.} other {Esta análise custou {cost}.}}',
       costUnknown:
-        'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou a IA não informou quantos tokens gastou.',
+        'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou o modelo de IA não informou quantos tokens gastou.',
       costScripted: 'Esta foi uma análise de teste, sem IA de verdade. Não custou nada.',
       underCent: 'menos de US$ 0,01',
       confirm: 'Analisar agora',
       starting: 'Começando a análise…',
       startFailure:
         '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
-      title: 'Análise com IA',
+      title: 'Análise do Arca',
       back: 'Voltar para as versões',
       loadFailure: 'Não conseguimos carregar o andamento da análise.',
       none: 'Esta versão não teve nenhuma análise nas últimas 24 horas.',
@@ -1421,7 +1421,7 @@ export const ptBR = {
         '{status, select, done {Feita} current {Agora} skipped {Não precisou} stopped {Parou aqui} other {Na fila}}',
       readDetail: '{done} de {total, plural, one {# página} other {# páginas}}',
       locateDetail:
-        '{n, plural, one {# página longa: a IA lê só os trechos escolhidos.} other {# páginas longas: a IA lê só os trechos escolhidos.}}',
+        '{n, plural, one {# página longa: o Arca lê só os trechos escolhidos.} other {# páginas longas: o Arca lê só os trechos escolhidos.}}',
       compareDetail: '{n, plural, one {# item da regra} other {# itens da regra}}',
       comparedItems: 'Itens já comparados',
       awaiting: 'A seguir: {title}',
@@ -1433,11 +1433,11 @@ export const ptBR = {
     },
     /** Activating every version the independent check found clean, with one tap (ADR-0027). */
     checkedBatch: {
-      title: 'Conferidas pela IA',
+      title: 'Conferidas pelo Arca',
       intro:
         '{n, plural, one {Uma versão proposta bate com as fontes oficiais em todos os itens.} other {# versões propostas batem com as fontes oficiais em todos os itens.}}',
       action: '{n, plural, one {Aprovar a versão conferida} other {Aprovar as # conferidas}}',
-      lead: '{n, plural, one {A IA conferiu esta versão nas fontes oficiais e não achou diferença. Ao confirmar, ela fica ativa e passa a valer a partir da sua data de vigência:} other {A IA conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:}}',
+      lead: '{n, plural, one {O Arca conferiu esta versão nas fontes oficiais e não achou diferença. Ao confirmar, ela fica ativa e passa a valer a partir da sua data de vigência:} other {O Arca conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:}}',
       oneByOne:
         'As versões marcadas para revisão e os dados da comparação continuam sendo decididos um por um.',
       confirm: '{n, plural, one {Ativar} other {Ativar todas}}',

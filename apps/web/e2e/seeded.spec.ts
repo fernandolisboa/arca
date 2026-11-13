@@ -74,7 +74,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
   // The scripted checker's reports are never clean, so no version reads as checked.
-  await expect(proposed.getByRole('button', { name: 'Conferida pela IA 0' })).toBeVisible();
+  await expect(proposed.getByRole('button', { name: 'Tudo bate 0' })).toBeVisible();
   // Every country starts folded; picking one in the filter shows it alone, open.
   const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
   await expect(usa).toHaveAttribute('aria-expanded', 'false');
@@ -108,7 +108,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await reviewStep(page, 'Decisão');
   // Opening the screen started the check; running or done, the panel says a model wrote it.
   await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
-    'Feita por IA, que pode errar.',
+    'Feita pelo Arca com IA, que pode errar.',
   );
   // A report short of clean stays open, so nothing flagged hides behind its title.
   await expect(
@@ -117,9 +117,9 @@ test('the seed admin activates a version, reads and closes its reports, then rej
       .getByRole('button', { name: 'Verificação independente' }),
   ).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('button', { name: 'Resumir regra' }).click();
-  const summary = page.getByRole('region', { name: 'Resumo feito pela IA' });
+  const summary = page.getByRole('region', { name: 'Resumo feito pelo Arca' });
   await expect(summary.getByText('Resumo de teste de EB-5')).toBeVisible();
-  await expect(summary).toContainText('A IA pode errar.');
+  await expect(summary).toContainText('O Arca usa IA e pode errar.');
   // The server keeps the summary, so it is still there after a reload, with no button to ask again.
   // A stored summary starts folded under its title, and the title opens it.
   await page.reload();
@@ -127,7 +127,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
-  const summaryToggle = summary.getByRole('button', { name: 'Resumo feito pela IA' });
+  const summaryToggle = summary.getByRole('button', { name: 'Resumo feito pelo Arca' });
   await expect(summaryToggle).toHaveAttribute('aria-expanded', 'false');
   await expect(summary.getByText('Resumo de teste de EB-5')).toBeHidden();
   await summaryToggle.click();
@@ -348,7 +348,7 @@ test('the seed admin approves the checked versions with one tap, and the server 
   await page.goto(`${databaseServer.origin}/knowledge`);
   await expect(page.getByRole('region', { name: 'Versões propostas' })).toBeVisible();
   // The scripted checker's reports are never clean, so the action is not offered.
-  await expect(page.getByRole('region', { name: 'Conferidas pela IA' })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Conferidas pelo Arca' })).toHaveCount(0);
 
   // The screen is told one EB-5 version is checked; the server reads its own reports instead.
   const { version } = await eb5InEffect(page);
@@ -368,7 +368,7 @@ test('the seed admin approves the checked versions with one tap, and the server 
     });
   });
   await page.reload();
-  const batch = page.getByRole('region', { name: 'Conferidas pela IA' });
+  const batch = page.getByRole('region', { name: 'Conferidas pelo Arca' });
   await batch.getByRole('button', { name: 'Aprovar a versão conferida' }).click();
   await expect(batch.getByRole('listitem')).toHaveText([
     new RegExp(`^EB-5 immigrant investor .* versão ${version} · `),
@@ -447,10 +447,10 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
   // Opening the screen may have started this version's check by itself; the button waits for it.
-  const analyse = page.getByRole('button', { name: 'Analisar com IA' });
+  const analyse = page.getByRole('button', { name: 'Analisar com o Arca' });
   await expect(analyse).toBeVisible({ timeout: 30_000 });
   await analyse.click();
-  const confirmation = page.getByRole('region', { name: 'Analisar esta versão com IA?' });
+  const confirmation = page.getByRole('region', { name: 'Analisar esta versão com o Arca?' });
   await expect(confirmation).toContainText('US$ 0,40 a US$ 0,80');
   const started = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/check/start'),
@@ -459,7 +459,7 @@ test('the seed admin analyses a version with AI on demand and watches it to the 
   expect((await started).postDataJSON()).toEqual({ routeId: 'us-eb5', number: Number(version) });
 
   await expect(page).toHaveURL(new RegExp(`/knowledge/check\\?routeId=us-eb5&number=${version}$`));
-  await expect(page.getByRole('heading', { level: 2, name: 'Análise com IA' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Análise do Arca' })).toBeVisible();
   // On the page body, so a run that ends any other way prints what the screen said instead.
   await expect(page.locator('body')).toContainText('Análise concluída.', { timeout: 30_000 });
   const steps = page.getByRole('list', { name: 'Etapas da análise' });
