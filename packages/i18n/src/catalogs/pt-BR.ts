@@ -213,7 +213,7 @@ export const ptBR = {
       },
       settings: {
         title: 'Do seu jeito',
-        body: 'Em Configurações você muda as cores, a letra e o menu. Para ver este tour de novo, é lá também, em Ajuda.',
+        body: 'Em Configurações você muda as cores, a letra e o menu. Lá, em Ajuda, dá para rever este tour.',
       },
     },
     family: {
@@ -297,7 +297,7 @@ export const ptBR = {
     lead: {
       family: 'Comece contando quem vai com você.',
       questions: 'Responda às perguntas para ver as rotas que servem para a sua família.',
-      routes: 'As rotas da sua família já podem ser vistas.',
+      routes: 'As rotas da sua família estão prontas.',
     },
     nextStep: 'Próximo passo',
     next: {
@@ -876,7 +876,7 @@ export const ptBR = {
     back: 'Voltar para a área da família',
     empty: 'Ainda não há rotas na base de conhecimento.',
     questionsTitle: 'Perguntas que mudam o resultado',
-    questionsLead: 'Responder estas perguntas é o que mais ajuda a definir o resultado das rotas.',
+    questionsLead: 'São as respostas que mais mudam o resultado das rotas.',
     noQuestions: 'Nenhuma pergunta pendente muda o resultado agora.',
     decides: '{n, plural, one {Pode mudar # resultado} other {Pode mudar # resultados}}',
     answer: 'Responder',
@@ -923,7 +923,7 @@ export const ptBR = {
         '{reason, select, outdated {Está desatualizada} wrong_amount {O valor está errado} wrong_condition {A condição está errada} source_mismatch {A fonte não diz isso} other {Outro motivo}}',
       note: 'Quer contar mais? (opcional)',
       noteHint:
-        'Até 500 caracteres. Só você vê esta nota; quem revisa as regras vê apenas o motivo.',
+        'Até 500 caracteres. Só você vê esta nota. Quem revisa as regras vê apenas o motivo.',
       send: 'Enviar aviso',
       sending: 'Enviando…',
       cancel: 'Cancelar',
@@ -1030,7 +1030,7 @@ export const ptBR = {
       open: 'Apontar erro',
       formTitle: 'Apontar erro na regra',
       privacy:
-        'Quem lê este pedido é uma IA. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
+        'Uma IA lê este pedido. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
       note: 'O que está errado?',
       link: 'Link',
       linkHint: 'Endereço completo, começando com https://',
@@ -1046,7 +1046,7 @@ export const ptBR = {
       removeFile: 'Remover',
       copyOf: 'Este arquivo é cópia de qual página da regra?',
       copyOfHint:
-        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Salve a página sem estar logado.',
+        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
       notACopy: 'Nenhuma, é só uma pista',
       copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
@@ -1082,17 +1082,17 @@ export const ptBR = {
     /** "Pedido de regra nova" (ADR-0029, new routes), for owner-list admins. */
     routeRequests: {
       title: 'Regras novas',
-      lead: 'Falta uma regra porque o site oficial não deixa a IA ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas, e ela chega para você ativar.',
+      lead: 'Falta uma regra porque o site oficial não deixa o Arca ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas e manda para você ativar.',
       open: 'Pedir regra nova',
       formTitle: 'Pedido de regra nova',
       stepCount: 'Passo {n} de {total}',
       stepTitle:
-        '{step, select, route {Qual regra falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
+        '{step, select, route {O que falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
       routeLead:
-        'Diga o país e qual visto ou autorização você quer, com o nome que o site oficial usa.',
+        'Escolha o país e diga o nome do visto como está no site oficial e o perfil geral de quem pode pedir. Sem dados da família. Exemplo: Visto D7 de Portugal, para quem vive de renda ou aposentadoria.',
       country: 'País',
       pickCountry: 'Escolha o país',
-      note: 'Qual regra falta, e para quem?',
+      note: 'Qual visto, residência ou cidadania falta, e para que perfil?',
       pagesLead:
         'Abra cada página oficial que fala dessa regra sem entrar em nenhuma conta. Salve como PDF (Imprimir › Salvar como PDF) e anexe aqui com o endereço da página.',
       knownHosts: 'Sites oficiais que o Arca já conhece para {country}: {hosts}.',
@@ -1105,7 +1105,7 @@ export const ptBR = {
       copyHint:
         'PDF, HTML ou texto de até 16 MB, salvo do site oficial. Nunca um documento pessoal.',
       passagesLead:
-        'Cole os trechos que tratam de cada regra. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
+        'Cole os trechos de cada assunto abaixo. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
       topic:
         '{topic, select, requirements {Requisitos} amounts {Valores} deadlines {Prazos} other {Dependentes}}',
       topicHint:
@@ -1125,7 +1125,7 @@ export const ptBR = {
       sent: 'Pedido enviado. A sessão de correção pega o pedido amanhã de manhã.',
       sendFailure: 'Não deu para enviar o pedido agora. Confira os endereços e tente de novo.',
       loadFailure: 'Não deu para carregar os pedidos de regra nova agora.',
-      answerRoute: 'A sessão de correção escreveu a regra. Ela espera a sua ativação.',
+      answerRoute: 'A sessão de correção escreveu a regra. Falta você ativar.',
       openRoute: 'Abrir a versão proposta',
       answerNoRoute: 'A sessão de correção não escreveu a regra:',
     },
