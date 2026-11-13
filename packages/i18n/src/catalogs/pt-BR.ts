@@ -1030,7 +1030,7 @@ export const ptBR = {
       open: 'Apontar erro',
       formTitle: 'Apontar erro na regra',
       privacy:
-        'Quem lê este pedido é uma IA. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
+        'Uma IA lê este pedido. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
       note: 'O que está errado?',
       link: 'Link',
       linkHint: 'Endereço completo, começando com https://',
@@ -1046,7 +1046,7 @@ export const ptBR = {
       removeFile: 'Remover',
       copyOf: 'Este arquivo é cópia de qual página da regra?',
       copyOfHint:
-        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Salve a página sem estar logado.',
+        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Salve a página sem entrar em nenhuma conta.',
       notACopy: 'Nenhuma, é só uma pista',
       copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
@@ -1082,7 +1082,7 @@ export const ptBR = {
     /** "Pedido de regra nova" (ADR-0029, new routes), for owner-list admins. */
     routeRequests: {
       title: 'Regras novas',
-      lead: 'Falta uma regra porque o site oficial não deixa a IA ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas, e ela chega para você ativar.',
+      lead: 'Falta uma regra porque o site oficial não deixa a IA ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas e manda para você ativar.',
       open: 'Pedir regra nova',
       formTitle: 'Pedido de regra nova',
       stepCount: 'Passo {n} de {total}',
@@ -1105,7 +1105,7 @@ export const ptBR = {
       copyHint:
         'PDF, HTML ou texto de até 16 MB, salvo do site oficial. Nunca um documento pessoal.',
       passagesLead:
-        'Cole os trechos que tratam de cada regra. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
+        'Cole os trechos de cada assunto abaixo. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
       topic:
         '{topic, select, requirements {Requisitos} amounts {Valores} deadlines {Prazos} other {Dependentes}}',
       topicHint:
@@ -1125,7 +1125,7 @@ export const ptBR = {
       sent: 'Pedido enviado. A sessão de correção pega o pedido amanhã de manhã.',
       sendFailure: 'Não deu para enviar o pedido agora. Confira os endereços e tente de novo.',
       loadFailure: 'Não deu para carregar os pedidos de regra nova agora.',
-      answerRoute: 'A sessão de correção escreveu a regra. Ela espera a sua ativação.',
+      answerRoute: 'A sessão de correção escreveu a regra. Falta você ativar.',
       openRoute: 'Abrir a versão proposta',
       answerNoRoute: 'A sessão de correção não escreveu a regra:',
     },
