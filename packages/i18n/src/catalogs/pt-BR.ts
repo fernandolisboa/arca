@@ -213,7 +213,7 @@ export const ptBR = {
       },
       settings: {
         title: 'Do seu jeito',
-        body: 'Em Configurações você muda as cores, a letra e o menu. Para ver este tour de novo, é lá também, em Ajuda.',
+        body: 'Em Configurações você muda as cores, a letra e o menu. Este tour também fica lá, em Ajuda.',
       },
     },
     family: {
@@ -297,7 +297,7 @@ export const ptBR = {
     lead: {
       family: 'Comece contando quem vai com você.',
       questions: 'Responda às perguntas para ver as rotas que servem para a sua família.',
-      routes: 'As rotas da sua família já podem ser vistas.',
+      routes: 'As rotas da sua família estão prontas.',
     },
     nextStep: 'Próximo passo',
     next: {
@@ -876,7 +876,7 @@ export const ptBR = {
     back: 'Voltar para a área da família',
     empty: 'Ainda não há rotas na base de conhecimento.',
     questionsTitle: 'Perguntas que mudam o resultado',
-    questionsLead: 'Responder estas perguntas é o que mais ajuda a definir o resultado das rotas.',
+    questionsLead: 'São as respostas que mais mudam o resultado das rotas.',
     noQuestions: 'Nenhuma pergunta pendente muda o resultado agora.',
     decides: '{n, plural, one {Pode mudar # resultado} other {Pode mudar # resultados}}',
     answer: 'Responder',
@@ -923,7 +923,7 @@ export const ptBR = {
         '{reason, select, outdated {Está desatualizada} wrong_amount {O valor está errado} wrong_condition {A condição está errada} source_mismatch {A fonte não diz isso} other {Outro motivo}}',
       note: 'Quer contar mais? (opcional)',
       noteHint:
-        'Até 500 caracteres. Só você vê esta nota; quem revisa as regras vê apenas o motivo.',
+        'Até 500 caracteres. Só você vê esta nota. Quem revisa as regras vê apenas o motivo.',
       send: 'Enviar aviso',
       sending: 'Enviando…',
       cancel: 'Cancelar',
@@ -1046,7 +1046,7 @@ export const ptBR = {
       removeFile: 'Remover',
       copyOf: 'Este arquivo é cópia de qual página da regra?',
       copyOfHint:
-        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
+        'Se o site não abrir na verificação independente, o Arca lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
       notACopy: 'Nenhuma, é só uma pista',
       copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
@@ -1082,7 +1082,7 @@ export const ptBR = {
     /** "Pedido de regra nova" (ADR-0029, new routes), for owner-list admins. */
     routeRequests: {
       title: 'Regras novas',
-      lead: 'Falta uma regra porque o site oficial não deixa a IA ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas e manda para você ativar.',
+      lead: 'Falta uma regra porque o site oficial não deixa o Arca ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas e manda para você ativar.',
       open: 'Pedir regra nova',
       formTitle: 'Pedido de regra nova',
       stepCount: 'Passo {n} de {total}',
