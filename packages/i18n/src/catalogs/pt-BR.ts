@@ -213,7 +213,7 @@ export const ptBR = {
       },
       settings: {
         title: 'Do seu jeito',
-        body: 'Em Configurações você muda as cores, a letra e o menu. Este tour também fica lá, em Ajuda.',
+        body: 'Em Configurações você muda as cores, a letra e o menu. Em Ajuda, lá mesmo, dá para rever este tour.',
       },
     },
     family: {
