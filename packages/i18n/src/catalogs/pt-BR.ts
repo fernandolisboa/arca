@@ -1177,12 +1177,12 @@ export const ptBR = {
       order:
         'Ordem de revisão: primeiro o que difere das fontes, depois o que o Arca conferiu inteiro, por último o que ele não conseguiu conferir.',
       start: 'Comece por aqui',
-      need: '{need, select, differs {Difere} ready {Tudo bate} unread {Confira} unchecked {Não lida} other {Não lida}}',
+      need: '{need, select, differs {Difere} ready {Tudo bate} unread {Confira} unchecked {Na fila} other {Na fila}}',
       needCount: {
         differs: '{n, plural, one {# com diferença} other {# com diferença}}',
         ready: '{n, plural, one {# conferida} other {# conferidas}}',
         unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
-        unchecked: '{n, plural, one {# não lida} other {# não lidas}}',
+        unchecked: '{n, plural, one {# na fila} other {# na fila}}',
       },
       versions: '{n, plural, one {# versão} other {# versões}}',
       comparisons: 'Comparar destinos',
@@ -1196,7 +1196,7 @@ export const ptBR = {
         unread:
           'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
-          'O Arca ainda não leu esta versão. Ele confere as versões sozinho quando você abre esta tela, algumas por dia. Volte mais tarde.',
+          'Esta versão espera a vez dela. O Arca confere as versões sozinho quando você abre esta tela, algumas por dia, e também as que tiveram a verificação vencida ou com falha. Volte mais tarde.',
       },
       filter: {
         country: 'País',
@@ -1363,7 +1363,7 @@ export const ptBR = {
         'Itens que batem com as fontes oficiais: {matches} de {total}. Leia com atenção antes de decidir.',
       noItems: 'Esta versão não tem nenhum item com fonte oficial para verificar.',
       scripted:
-        'Verificação de teste: o Arca não leu as fontes de verdade, então ela não vale como verificação.',
+        'Verificação de teste: nenhuma IA leu as fontes, então ela não vale como verificação.',
       failure:
         '{failure, select, check_timeout {O Arca demorou demais para responder.} check_unavailable {A IA que o Arca usa estava fora do ar.} check_unparsable {A IA que o Arca usa respondeu num formato que ele não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Depois de um dia, ela roda de novo quando você abrir a lista.',
       checkedAt: 'Verificada em {date}',
