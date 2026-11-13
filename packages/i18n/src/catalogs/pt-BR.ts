@@ -1087,9 +1087,9 @@ export const ptBR = {
       formTitle: 'Pedido de regra nova',
       stepCount: 'Passo {n} de {total}',
       stepTitle:
-        '{step, select, route {Qual regra falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
+        '{step, select, route {O que falta} pages {Páginas oficiais} passages {Trechos que importam} other {Revisar e enviar}}',
       routeLead:
-        'Escolha o país e diga o nome que o site oficial usa e o perfil de quem pode pedir. Sem dados da família. Exemplo: Visto D7, para quem vive de renda ou aposentadoria.',
+        'Escolha o país e diga o nome do visto como está no site oficial e o perfil geral de quem pode pedir. Sem dados da família. Exemplo: Visto D7 de Portugal, para quem vive de renda ou aposentadoria.',
       country: 'País',
       pickCountry: 'Escolha o país',
       note: 'Qual visto, residência ou cidadania falta, e para que perfil?',
