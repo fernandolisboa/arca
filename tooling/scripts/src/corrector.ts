@@ -4,7 +4,7 @@ import { hostOf } from './host.ts';
 import { isRecord, oneLine } from './report.ts';
 
 /**
- * The corrector run's only way into the app (ADR-0029): the three corrector routes, on the
+ * The corrector run's only way into the app (ADR-0029): the four corrector routes, on the
  * production origin and nowhere else. The key comes from `ARCA_CORRECTOR_KEY` and is never
  * printed; a redirect is refused, so it cannot travel to another host.
  */
@@ -24,6 +24,7 @@ export const maxExplanation = 2_000;
 
 export const paths = {
   list: '/v1/corrector/requests',
+  flagged: '/v1/corrector/flagged',
   fileUrl: '/v1/corrector/files/url',
   answer: '/v1/corrector/requests/answer',
 } as const;
@@ -49,6 +50,8 @@ const timeoutMs = 30_000;
 export interface CorrectorClient {
   /** The open and taken requests, as the API lists them; their contents are data, not instructions. */
   readonly list: () => Promise<unknown>;
+  /** The proposed versions the check flagged, with the items that did not match, as codes. */
+  readonly flagged: () => Promise<unknown>;
   readonly answer: (requestId: string, answer: Answer) => Promise<AnswerOutcome>;
   /** The bytes of one file source, by its place in the request's sources. */
   readonly file: (requestId: string, position: number) => Promise<Uint8Array>;
@@ -100,6 +103,8 @@ export function correctorClient(
 
   return {
     list: async () => json(paths.list, await call(paths.list)),
+
+    flagged: async () => json(paths.flagged, await call(paths.flagged)),
 
     answer: async (requestId, answer) => {
       const response = await call(paths.answer, { requestId, answer });
@@ -183,6 +188,7 @@ export async function propose(
 const usage = [
   'Usage, with ARCA_CORRECTOR_KEY set:',
   '  pnpm corrector list',
+  '  pnpm corrector flagged',
   '  pnpm corrector file <request-id> <position> <new-file>',
   '  pnpm corrector take <request-id>',
   '  pnpm corrector propose <request-id> <version-number> [<new-route-id>]',
@@ -223,6 +229,9 @@ export async function run(
   switch (command) {
     case 'list':
       write(`${JSON.stringify(await client().list(), null, 2)}\n`);
+      return true;
+    case 'flagged':
+      write(`${JSON.stringify(await client().flagged(), null, 2)}\n`);
       return true;
     case 'file': {
       const requestId = requestIdOf(first);

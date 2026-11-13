@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import {
   type CorrectionAnswer,
+  type CorrectorFlaggedVersions,
   type CorrectorKeyStatus,
   type CorrectorRequests,
   type CreatedCorrectorKey,
@@ -64,6 +65,8 @@ export interface Corrector {
   /** Audits a refused key with identifiers only; the caller rate limits it first. */
   readonly refused: () => Promise<void>;
   readonly list: (key: PresentedKey) => Promise<CorrectorRequests>;
+  /** The open proposals the check flagged; `check_off` where no check runs. */
+  readonly flagged: (key: PresentedKey) => Promise<CorrectorFlaggedVersions | 'check_off'>;
   readonly fileUrl: (
     key: PresentedKey,
     requestId: string,
@@ -88,6 +91,8 @@ export interface CorrectorSettings {
   readonly audit: Pick<AuditLog, 'record'>;
   readonly notify: AccountNotice<'corrector_key_changed'>;
   readonly storage: ObjectStorage;
+  /** The check's flagged open proposals, at most the limit given; absent where no check runs. */
+  readonly flagged?: (limit: number) => Promise<CorrectorFlaggedVersions['versions']>;
 }
 
 interface LiveKey extends Record<string, unknown> {
@@ -138,6 +143,7 @@ export function createCorrector({
   audit,
   notify,
   storage,
+  flagged,
 }: CorrectorSettings): { readonly keys: CorrectorKeys; readonly corrector: Corrector } {
   /** The live key, if its creator is still on the owner list and still has an account. */
   const usableKey = async (): Promise<LiveKey | undefined> => {
@@ -305,6 +311,18 @@ export function createCorrector({
         details: { keyId: key.id, count: requests.length },
       });
       return { requests };
+    },
+
+    flagged: async (key) => {
+      if (flagged === undefined) return 'check_off';
+      const versions = await flagged(correctorListLimit);
+      await audit.record({
+        code: 'corrector_flagged_listed',
+        subjectAccountId: key.creatorId,
+        actorAccountId: null,
+        details: { keyId: key.id, count: versions.length },
+      });
+      return { versions };
     },
 
     fileUrl: async (key, requestId, position) => {

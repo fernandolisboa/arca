@@ -50,6 +50,7 @@ import {
   caseRoutes,
   comparisonRoutes,
   AnswerCorrectionRequest,
+  CorrectorFlaggedVersions,
   CloseCorrectionRequest,
   RevokeCorrectorKey,
   CorrectionFileReference,
@@ -1873,6 +1874,13 @@ export function createApp({
     const run = await correctorOf(c, correctorLimits.list);
     if ('refused' in run) return run.refused;
     return c.json(await run.corrector.list(run.key), 200);
+  });
+  v1.openapi(openApiRoutes.listCorrectorFlaggedVersions, async (c) => {
+    const run = await correctorOf(c, correctorLimits.list);
+    if ('refused' in run) return run.refused;
+    const outcome = await run.corrector.flagged(run.key);
+    if (outcome === 'check_off') return fail(c, outcome, 503);
+    return c.json(CorrectorFlaggedVersions.parse(outcome), 200);
   });
   v1.openapi(openApiRoutes.correctorFileUrl, async (c) => {
     const run = await correctorOf(c, correctorLimits.file);

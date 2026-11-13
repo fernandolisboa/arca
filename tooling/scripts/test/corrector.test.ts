@@ -50,6 +50,14 @@ describe('the corrector script (ADR-0029)', () => {
     }
   });
 
+  it('lists the flagged versions from the production origin with the key', async () => {
+    const { fetchUrl, sent } = fakeFetch(() => jsonResponse(200, { versions: [] }));
+    await expect(correctorClient(key, { fetchUrl }).flagged()).resolves.toEqual({ versions: [] });
+    expect(sent[0]?.url).toBe(`${productionOrigin}${paths.flagged}`);
+    expect(sent[0]?.init.method).toBe('GET');
+    expect(headersOf(sent[0]).get('authorization')).toBe(`Bearer ${key}`);
+  });
+
   it('lists requests from the production origin with the key and no Origin', async () => {
     const { fetchUrl, sent } = fakeFetch(() => jsonResponse(200, { requests: [] }));
     await expect(correctorClient(key, { fetchUrl }).list()).resolves.toEqual({ requests: [] });
@@ -136,6 +144,7 @@ describe('the corrector script (ADR-0029)', () => {
     const waits: number[] = [];
     const client: CorrectorClient = {
       list: () => Promise.reject(new Error('unused')),
+      flagged: () => Promise.reject(new Error('unused')),
       file: () => Promise.reject(new Error('unused')),
       answer: (_id, answer) => {
         answers.push(answer);
@@ -152,6 +161,7 @@ describe('the corrector script (ADR-0029)', () => {
     const waits: number[] = [];
     const client: CorrectorClient = {
       list: () => Promise.reject(new Error('unused')),
+      flagged: () => Promise.reject(new Error('unused')),
       file: () => Promise.reject(new Error('unused')),
       answer: () => Promise.resolve('invalid_version'),
     };
@@ -164,6 +174,7 @@ describe('the corrector script (ADR-0029)', () => {
     let calls = 0;
     const client = (outcome: 'invalid_version' | 'wrong_state'): CorrectorClient => ({
       list: () => Promise.reject(new Error('unused')),
+      flagged: () => Promise.reject(new Error('unused')),
       file: () => Promise.reject(new Error('unused')),
       answer: () => Promise.resolve(((calls += 1), outcome)),
     });
@@ -185,6 +196,7 @@ describe('pnpm corrector', () => {
     const answers: unknown[] = [];
     const client: CorrectorClient = {
       list: () => Promise.resolve({ requests: [] }),
+      flagged: () => Promise.resolve({ versions: [] }),
       file: () => Promise.resolve(new Uint8Array([7])),
       answer: (id, answer) => (answers.push({ id, answer }), Promise.resolve('stored')),
     };
@@ -196,6 +208,12 @@ describe('pnpm corrector', () => {
       out: () => out,
     };
   };
+
+  it('prints the flagged versions', async () => {
+    const { client, write, out } = recorder();
+    await expect(run(['flagged'], client, write)).resolves.toBe(true);
+    expect(JSON.parse(out())).toEqual({ versions: [] });
+  });
 
   it('takes a request and answers no_change from a file', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'corrector-'));

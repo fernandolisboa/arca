@@ -885,6 +885,8 @@ export const auditEventDetails = {
   corrector_key_refused: z.strictObject({}),
   /** The corrector run listed the requests it may work on (ADR-0029). */
   corrector_requests_listed: z.strictObject({ keyId: z.uuid(), count: z.int().min(0) }),
+  /** The corrector run listed the proposed versions the check flagged (ADR-0029). */
+  corrector_flagged_listed: z.strictObject({ keyId: z.uuid(), count: z.int().min(0) }),
   /** The corrector run minted a download URL for one file of a request (ADR-0029). */
   corrector_file_downloaded: z.strictObject({
     keyId: z.uuid(),

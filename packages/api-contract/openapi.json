@@ -3200,6 +3200,7 @@
                               "corrector_key_revoked",
                               "corrector_key_refused",
                               "corrector_requests_listed",
+                              "corrector_flagged_listed",
                               "corrector_file_downloaded",
                               "corrector_use_refused",
                               "correction_answered"
@@ -35976,6 +35977,141 @@
                   },
                   "required": [
                     "requests"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/corrector/flagged": {
+      "get": {
+        "operationId": "listCorrectorFlaggedVersions",
+        "summary": "The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); counted with the request listing, 100 per 24 hours per key; 503 check_off where no check runs",
+        "responses": {
+          "200": {
+            "description": "The flagged versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "versions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "checkedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string",
+                                  "maxLength": 120
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "requirement",
+                                    "assessment",
+                                    "dependent",
+                                    "cost",
+                                    "duration",
+                                    "leapDayBirthday",
+                                    "closure",
+                                    "countrySet"
+                                  ]
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "differs",
+                                    "could_not_check"
+                                  ]
+                                },
+                                "reason": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "enum": [
+                                    "no_source_cited",
+                                    "no_page_read",
+                                    "not_answered",
+                                    "model_could_not_check",
+                                    "quote_count",
+                                    "url_not_cited",
+                                    "page_not_read",
+                                    "page_cut",
+                                    "quote_length",
+                                    "quote_not_on_page",
+                                    "echoes_address",
+                                    "value_not_in_quote",
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "kind",
+                                "status",
+                                "reason"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "routeId",
+                          "number",
+                          "checkedAt",
+                          "items"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "versions"
                   ]
                 }
               }

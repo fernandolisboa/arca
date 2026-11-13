@@ -26,7 +26,7 @@ import type { CheckProgressStore } from './check/progress.js';
 import type { CheckSubject } from './check/run.js';
 import type { RecordedStart, CheckStarts } from './check/starts.js';
 import type { CheckReport, CheckReportStore, FetchLogEntry } from './check/store.js';
-import type { KnowledgeVersion } from '@arca/api-contract/routes';
+import type { CorrectorFlaggedVersions, KnowledgeVersion } from '@arca/api-contract/routes';
 import type { KnowledgeVersions } from './versions.js';
 
 /** A version's current report as the activation screen shows it (ADR-0027). */
@@ -89,7 +89,21 @@ export interface VersionChecks {
   /** Each route version's check status and its current report's points, by `routeId/number`. */
   readonly statuses: () => Promise<ReadonlyMap<string, ListedCheck>>;
   readonly report: (routeId: string, number: number) => Promise<ReportOutcome>;
+  /**
+   * The open proposals the check flagged, each with its current report's items that did not
+   * match, as codes, those with an item that differs first, at most `limit` (ADR-0029).
+   */
+  readonly flagged: (limit: number) => Promise<CorrectorFlaggedVersions['versions']>;
 }
+
+/** A proposed version that no date from today on leaves behind, so it still waits for a decision. */
+const openProposal = ({
+  state,
+  superseded,
+}: {
+  readonly state: string;
+  readonly superseded: boolean;
+}) => state === 'proposed' && !superseded;
 
 export interface VersionCheckSettings {
   readonly versions: KnowledgeVersions;
@@ -145,9 +159,7 @@ export function createVersionChecks({
 
   return {
     async start() {
-      const proposed = (await versions.list()).filter(
-        ({ state, superseded }) => state === 'proposed' && !superseded,
-      );
+      const proposed = (await versions.list()).filter(openProposal);
       const started = await starts.begin(
         proposed.map(({ routeId, number, hash, country }) => ({
           routeId,
@@ -227,6 +239,51 @@ export function createVersionChecks({
           ];
         }),
       );
+    },
+
+    async flagged(limit) {
+      const [listed, stored, recent] = await Promise.all([
+        versions.list(),
+        reports.list(),
+        starts.recent(),
+      ]);
+      const time = now();
+      const found = await Promise.all(
+        listed.filter(openProposal).map(async ({ routeId, number, hash, country }) => {
+          const own = ofVersion(routeId, number);
+          const key = keyOf(hash, country);
+          const current = currentReport(own(stored), key, time);
+          const entry = subject(routeId, number)?.entry;
+          if (
+            current === undefined ||
+            entry === undefined ||
+            listedCheckStatus(own(stored), own(recent), key, time) !== 'flagged'
+          ) {
+            return [];
+          }
+          const report = await reports.find(current.startId);
+          const known = new Map(checkItems(entry).map((item) => [item.key, item.kind]));
+          const items = (report?.items ?? []).flatMap(({ key: itemKey, status, reason }) => {
+            const kind = known.get(itemKey);
+            return status === 'matches' || kind === undefined
+              ? []
+              : [{ key: itemKey, kind, status, reason }];
+          });
+          if (report === undefined || items.length === 0) return [];
+          return [{ routeId, number, checkedAt: new Date(report.checkedAt).toISOString(), items }];
+        }),
+      );
+      const differs = (version: { readonly items: readonly { readonly status: string }[] }) =>
+        version.items.some(({ status }) => status === 'differs') ? 0 : 1;
+      return found
+        .flat()
+        .sort(
+          (one, other) =>
+            differs(one) - differs(other) ||
+            one.routeId.localeCompare(other.routeId) ||
+            one.number - other.number,
+        )
+        .slice(0, limit);
     },
 
     async report(routeId, number) {
