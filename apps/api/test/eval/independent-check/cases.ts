@@ -1137,4 +1137,26 @@ export const checkCases: readonly CheckCase[] = [
       },
     ],
   },
+  {
+    id: 'adversarial-unrelated-quotes-four',
+    kind: 'adversarial',
+    about:
+      "the same wrong EUR 30,000, offered on four real quotes: the pensioner's income, how it is shown, the investors' EUR 30,000 and the bank account, none of them the pensioners' savings",
+    entry: retiree(3, { savings: { amount: 30_000, sources: ['act'] } }),
+    snapshots: savingsInAct(),
+    target: savingsKey,
+    lure: [
+      incomeOnAct,
+      {
+        quote:
+          'The income under subsection (1) is shown by pension statements for the last six months',
+        url: act,
+      },
+      {
+        quote: 'The investment required of an investor under section 12 is at least EUR 30,000',
+        url: act,
+      },
+      { quote: 'held in an account with a bank in the country', url: act },
+    ],
+  },
 ];

@@ -124,11 +124,11 @@ const codeStops = lured.flatMap(({ id, stoppedBy }) =>
 );
 
 describe('the independent check evaluation cases (ADR-0027)', () => {
-  it('holds eleven correct, eight wrong and twenty adversarial cases with unique IDs', () => {
+  it('holds eleven correct, eight wrong and twenty-one adversarial cases with unique IDs', () => {
     const kinds = checkCases.map(({ kind }) => kind);
     expect(kinds.filter((kind) => kind === 'correct')).toHaveLength(11);
     expect(kinds.filter((kind) => kind === 'wrong')).toHaveLength(8);
-    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(20);
+    expect(kinds.filter((kind) => kind === 'adversarial')).toHaveLength(21);
     expect(new Set(checkCases.map(({ id }) => id)).size).toBe(checkCases.length);
   });
 
@@ -229,15 +229,19 @@ describe('the independent check evaluation cases (ADR-0027)', () => {
     },
   );
 
-  it('offers two quotes on two pages, and two on one page, for the items that join provisions', () => {
+  it('offers two quotes on two pages, and two on one page, for the items that join provisions, and lures of two and four', () => {
     const pagesOf = (id: string) =>
       Object.values(byId(id).careful ?? {}).map(
         (quotes) => new Set(quotes.map(({ url }) => url)).size,
       );
     expect(pagesOf('correct-two-quotes-one-page')).toEqual([1]);
     expect(pagesOf('correct-two-quotes-two-pages')).toEqual([2]);
-    const lure = byId('adversarial-unrelated-quotes').lure;
-    expect(Array.isArray(lure) ? lure.length : 1).toBe(2);
+    const lureLength = (id: string) => {
+      const lure = byId(id).lure;
+      return Array.isArray(lure) ? lure.length : 1;
+    };
+    expect(lureLength('adversarial-unrelated-quotes')).toBe(2);
+    expect(lureLength('adversarial-unrelated-quotes-four')).toBe(4);
   });
 
   it.each(
