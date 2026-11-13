@@ -739,7 +739,7 @@ export const closeCorrectionRequest = {
  * The corrector key and the corrector run's routes (ADR-0029). An owner-list admin makes the key
  * with a `corrector_key` step-up and sees it once; a new key replaces the old one, and a key ends
  * after a year, on revocation, or when its creator leaves the owner list or is erased. The run
- * sends it as `Authorization: Bearer <key>` to the three corrector routes, and on the two `POST`
+ * sends it as `Authorization: Bearer <key>` to the four corrector routes, and on the two `POST`
  * routes the production origin as `Origin`, as every state-changing request does.
  */
 
@@ -883,8 +883,10 @@ export const answerCorrectionRequest = {
 
 export const CorrectorFlaggedVersions = z.object({
   /**
-   * The proposed, not superseded route versions whose current check report is flagged, by route,
-   * with the items that did not match: identifiers and codes only, never the model's notes.
+   * At most ten proposed, not superseded route versions whose current check report is flagged,
+   * those with an item that differs first, each with the current report's items that did not
+   * match: identifiers and codes only, never the model's notes. A version whose current report
+   * has no such item is left out.
    */
   versions: z.array(
     z.object({
@@ -909,7 +911,7 @@ export const listCorrectorFlaggedVersions = {
   method: 'get',
   path: '/corrector/flagged',
   operationId: 'listCorrectorFlaggedVersions',
-  summary: `The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. ${correctorAuth}; counted with the request listing, 100 per 24 hours per key`,
+  summary: `The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. ${correctorAuth}; counted with the request listing, 100 per 24 hours per key; 503 check_off where no check runs`,
   response: { description: 'The flagged versions', schema: CorrectorFlaggedVersions },
 } as const satisfies RouteDefinition<typeof CorrectorFlaggedVersions>;
 

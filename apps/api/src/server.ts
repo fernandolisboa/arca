@@ -364,6 +364,9 @@ const { keys: correctorKeys, corrector } = createCorrector({
   audit: lazyAudit,
   notify: async (accountId, kind) => (await authParts()).correctorKeyNotice(accountId, kind),
   storage: documentStorage?.storage ?? unconnectedObjectStorage,
+  ...(versionChecks === undefined
+    ? {}
+    : { flagged: (limit: number) => versionChecks.flagged(limit) }),
 });
 
 const monitored = startMonitoring({ environment, origin: ownOrigin });

@@ -3200,6 +3200,7 @@
                               "corrector_key_revoked",
                               "corrector_key_refused",
                               "corrector_requests_listed",
+                              "corrector_flagged_listed",
                               "corrector_file_downloaded",
                               "corrector_use_refused",
                               "correction_answered"
@@ -36014,7 +36015,7 @@
     "/corrector/flagged": {
       "get": {
         "operationId": "listCorrectorFlaggedVersions",
-        "summary": "The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); counted with the request listing, 100 per 24 hours per key",
+        "summary": "The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited); counted with the request listing, 100 per 24 hours per key; 503 check_off where no check runs",
         "responses": {
           "200": {
             "description": "The flagged versions",

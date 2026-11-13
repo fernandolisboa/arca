@@ -43,6 +43,22 @@ const identity = (number: number, corrects?: number): VersionIdentity => ({
 });
 /** v1; v2 corrects v1; v3 follows; v4 corrects v3. */
 const identities = [identity(1), identity(2, 1), identity(3), identity(4, 3)];
+/** What the check flagged, as `VersionChecks.flagged` answers it. */
+const flaggedVersions = [
+  {
+    routeId: 'qm-sample',
+    number: 4,
+    checkedAt: '2026-11-13T10:00:00.000Z',
+    items: [
+      {
+        key: 'requirement:means',
+        kind: 'requirement' as const,
+        status: 'differs' as const,
+        reason: null,
+      },
+    ],
+  },
+];
 /** A route a corrector run wrote from a request for a new route in the same country. */
 const newRoute = { ...identity(1), routeId: 'qm-new' };
 
@@ -73,6 +89,7 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
       return Promise.resolve();
     },
     storage: objects,
+    flagged: (limit) => Promise.resolve(flaggedVersions.slice(0, limit)),
   });
   const corrections = createCorrections({
     db: () => testDatabase.apiDb,
@@ -123,8 +140,10 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
       app.request('/v1/corrector/requests', {
         headers: { ...asCorrector(key), ...(site === undefined ? {} : { 'sec-fetch-site': site }) },
       }),
-    listFlagged: (key?: string) =>
-      app.request('/v1/corrector/flagged', { headers: asCorrector(key) }),
+    listFlagged: (key?: string, site?: string) =>
+      app.request('/v1/corrector/flagged', {
+        headers: { ...asCorrector(key), ...(site === undefined ? {} : { 'sec-fetch-site': site }) },
+      }),
     fileUrl: (key: string, requestId: string, position: number) =>
       app.request('/v1/corrector/files/url', {
         method: 'POST',
@@ -482,7 +501,7 @@ describe('the corrector routes (ADR-0029)', () => {
     expect(answer.status).toBe(429);
   });
 
-  it('serve the flagged versions to the live key only, counted with the listing', async () => {
+  it('serve the flagged versions to the live key only, counted with the listing and audited', async () => {
     const key = await newKey();
     const hits: string[] = [];
     const limiter: RateLimiter = {
@@ -490,10 +509,18 @@ describe('the corrector routes (ADR-0029)', () => {
       sweep: () => Promise.resolve(0),
     };
     expect((await setup({ limiter }).listFlagged()).status).toBe(401);
+    expect((await setup({ limiter }).listFlagged(key, 'cross-site')).status).toBe(403);
     const response = await setup({ limiter }).listFlagged(key);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ versions: [] });
+    expect(await response.json()).toEqual({ versions: flaggedVersions });
     expect(hits).toContain('corrector_list_key');
+    expect(await auditCodes('corrector_flagged_listed')).toEqual([
+      {
+        subject: owner.signedIn.accountId,
+        actor: null,
+        details: { keyId: expect.any(String) as unknown, count: 1 },
+      },
+    ]);
   });
 
   it('list open and taken requests, oldest first, at most ten, with their sources', async () => {

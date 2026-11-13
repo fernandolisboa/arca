@@ -268,6 +268,7 @@ function setup({
     };
   const watched = async (number: number) => (await watchedWhole(number)).progress;
   return {
+    checks,
     start,
     list,
     points,
@@ -394,6 +395,67 @@ describe('the check status in the version list (ADR-0027)', () => {
     await scripted.start();
     await scripted.report(scripted.runs[0], { clean: false });
     expect(await scripted.points()).toEqual([[1, { matches: 0, differs: 0, unread: 1 }]]);
+  });
+});
+
+describe('the flagged versions for the corrector run (ADR-0029)', () => {
+  const differs = {
+    key: 'requirement:means',
+    status: 'differs' as const,
+    quotes: [{ quote: 'means of at least EUR 920', url: law }],
+    note: 'model text that never leaves the report',
+    reason: null,
+  };
+
+  it('lists each flagged open proposal with its items that did not match, as codes, differing first', async () => {
+    const { checks, start, runs, report } = setup({ count: 4 });
+    await start();
+    const [first, second, third, fourth] = runs as [
+      RecordedStart,
+      RecordedStart,
+      RecordedStart,
+      RecordedStart,
+    ];
+    await report(first);
+    await report(second, {
+      clean: false,
+      items: [{ ...differs, status: 'could_not_check', quotes: [], reason: 'no_page_read' }],
+    });
+    await report(third, { clean: false, items: [differs] });
+    await report(fourth, { clean: false, failure: 'check_failed', items: [] });
+    expect(await checks.flagged(10)).toEqual([
+      {
+        routeId: 'qm-sample',
+        number: 3,
+        checkedAt: new Date(1_000_000_000).toISOString(),
+        items: [{ key: 'requirement:means', kind: 'requirement', status: 'differs', reason: null }],
+      },
+      {
+        routeId: 'qm-sample',
+        number: 2,
+        checkedAt: new Date(1_000_000_000).toISOString(),
+        items: [
+          {
+            key: 'requirement:means',
+            kind: 'requirement',
+            status: 'could_not_check',
+            reason: 'no_page_read',
+          },
+        ],
+      },
+    ]);
+    expect(await checks.flagged(1)).toHaveLength(1);
+  });
+
+  it('leaves out decided and superseded versions', async () => {
+    const { checks, start, runs, report } = setup({
+      count: 3,
+      states: new Map([[1, 'active']]),
+      superseded: new Set([2]),
+    });
+    await start();
+    for (const run of runs) await report(run, { clean: false, items: [differs] });
+    expect((await checks.flagged(10)).map(({ number }) => number)).toEqual([3]);
   });
 });
 

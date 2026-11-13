@@ -50,6 +50,7 @@ import {
   caseRoutes,
   comparisonRoutes,
   AnswerCorrectionRequest,
+  CorrectorFlaggedVersions,
   CloseCorrectionRequest,
   RevokeCorrectorKey,
   CorrectionFileReference,
@@ -133,7 +134,7 @@ import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './know
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { RuleReportReview } from './knowledge/reports.js';
-import { type VersionChecks, flaggedVersions, versionsWithChecks } from './knowledge/checks.js';
+import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
@@ -1877,10 +1878,9 @@ export function createApp({
   v1.openapi(openApiRoutes.listCorrectorFlaggedVersions, async (c) => {
     const run = await correctorOf(c, correctorLimits.list);
     if ('refused' in run) return run.refused;
-    if (knowledgeVersions === undefined || versionChecks === undefined) {
-      return c.json({ versions: [] }, 200);
-    }
-    return c.json(await flaggedVersions(knowledgeVersions, versionChecks), 200);
+    const outcome = await run.corrector.flagged(run.key);
+    if (outcome === 'check_off') return fail(c, outcome, 503);
+    return c.json(CorrectorFlaggedVersions.parse(outcome), 200);
   });
   v1.openapi(openApiRoutes.correctorFileUrl, async (c) => {
     const run = await correctorOf(c, correctorLimits.file);
