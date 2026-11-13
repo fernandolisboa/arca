@@ -1196,7 +1196,7 @@ export const ptBR = {
         unread:
           'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
-          'Esta versão espera a vez dela. O Arca confere as versões sozinho quando você abre esta tela, algumas por dia, e também as que tiveram a verificação vencida ou com falha. Volte mais tarde.',
+          'Esta versão está na fila. Quando você abre esta tela, o Arca confere algumas versões por dia, inclusive as de verificação vencida ou que falhou. Volte mais tarde.',
       },
       filter: {
         country: 'País',
