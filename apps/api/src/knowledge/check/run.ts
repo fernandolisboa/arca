@@ -13,6 +13,7 @@ import {
   excerptBudgets,
   excerptPassages,
   excerptText,
+  secondLookRunOnPassages,
   addressPages,
   machineReadableUrls,
   maxPassagesPerItem,
@@ -122,6 +123,19 @@ const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
   cacheReadTokens: reply.cacheReadTokens ?? null,
   cacheWriteTokens: reply.cacheWriteTokens ?? null,
 });
+
+/**
+ * The most items one second-look call compares, and the most such calls one check makes, which
+ * bound what a second look adds to a check's cost (ADR-0027).
+ */
+const maxItemsPerSecondLook = 2;
+const maxSecondLookCalls = 10;
+
+/** The reasons an item may get a second look: the model could not confirm it on what it was sent. */
+const secondLookReasons: ReadonlySet<string> = new Set([
+  'model_could_not_check',
+  'value_not_in_quote',
+]);
 
 /** The most passages found by a provision's number that go ahead of the locator's picks. */
 const maxProvisionPicks = 3;
@@ -431,12 +445,13 @@ export function createVersionCheck({
     { passages, picks }: Picks,
     items: readonly CheckItem[],
     budget: number,
+    runOn: number | undefined,
   ): Excerpt => {
     const ranked = itemsCiting(items, page.url).map(({ key }) =>
       (picks?.get(key) ?? []).filter((at) => at < passages.length).slice(0, maxPassagesPerItem),
     );
     const picked = new Set(ranked.flat());
-    const chosen = picked.size > 0 ? excerptPassages(passages, ranked, budget) : [];
+    const chosen = picked.size > 0 ? excerptPassages(passages, ranked, budget, runOn) : [];
     if (!chosen.some((index) => picked.has(index))) {
       const text = openingExcerpt(page.text, budget);
       return { page: { ...page, text, cut: true, excerpt: true }, picked: false };
@@ -524,6 +539,7 @@ export function createVersionCheck({
     subject: CheckSubject,
     guide: CountryGuideEntry | undefined,
     record: Recorder,
+    runOn?: number,
   ): Promise<Comparison> => {
     const cited = readPages.filter(({ url }) => itemsCiting(items, url).length > 0);
     const budgets = excerptBudgets(
@@ -533,7 +549,7 @@ export function createVersionCheck({
     const shaped = cited.map((page, index) => {
       const picked = picks.get(page.url);
       if (picked === undefined) return page;
-      const excerpt = excerptOf(page, picked, items, budgets[index] ?? 0);
+      const excerpt = excerptOf(page, picked, items, budgets[index] ?? 0, runOn);
       if (!excerpt.picked) unpicked = true;
       return excerpt.page;
     });
@@ -580,6 +596,66 @@ export function createVersionCheck({
       failure,
       unpicked,
     };
+  };
+
+  /**
+   * A second look at the items the comparisons could not confirm on a long page's excerpt
+   * (ADR-0027): a few at a time, with passages picked for them alone and each provision sent on
+   * to its end, so a provision cut short or crowded out by the other items' picks is read whole.
+   * Only what a second look confirms or finds different replaces the first answer; a failed
+   * second look leaves it as it was, so it never fails the check.
+   */
+  const secondLook = async (
+    items: readonly CheckItem[],
+    byKey: ReadonlyMap<string, CheckedItem>,
+    readPages: readonly ReadPage[],
+    subject: CheckSubject,
+    guide: CountryGuideEntry | undefined,
+    languages: readonly string[],
+    record: Recorder,
+  ): Promise<Comparison[]> => {
+    const longPages = readPages.filter(({ text }) => !sentWhole(text));
+    const unconfirmed = items.filter(({ key, urls }) => {
+      const first = byKey.get(key);
+      return (
+        first?.status === 'could_not_check' &&
+        first.reason !== null &&
+        secondLookReasons.has(first.reason) &&
+        longPages.some(({ url }) => urls.includes(url))
+      );
+    });
+    const groups: CheckItem[][] = [];
+    for (let at = 0; at < unconfirmed.length; at += maxItemsPerSecondLook) {
+      groups.push(unconfirmed.slice(at, at + maxItemsPerSecondLook));
+    }
+    return Promise.all(
+      groups.slice(0, maxSecondLookCalls).map(async (group) => {
+        const cited = longPages.filter(({ url }) => itemsCiting(group, url).length > 0);
+        const picks = new Map(
+          await Promise.all(
+            cited.map(
+              async (page, index) =>
+                [
+                  page.url,
+                  await pick(page, group, subject.entry, index < maxLocatedPages, record),
+                ] as const,
+            ),
+          ),
+        );
+        const looked = await compare(
+          group,
+          readPages,
+          picks,
+          true,
+          languages,
+          subject,
+          guide,
+          record,
+          secondLookRunOnPassages,
+        );
+        return looked.failure === null ? looked : { ...looked, checked: [] };
+      }),
+    );
   };
 
   const check = async (
@@ -629,9 +705,16 @@ export function createVersionCheck({
       ),
     );
     const byKey = new Map(compared.flatMap(({ checked }) => checked.map((c) => [c.key, c])));
+    const looked = await secondLook(items, byKey, readPages, subject, guide, languages, record);
+    for (const { checked } of looked) {
+      for (const item of checked) if (item.status !== 'could_not_check') byKey.set(item.key, item);
+    }
     const checked = items.flatMap(({ key }) => byKey.get(key) ?? []);
     const failure = compared.find((call) => call.failure !== null)?.failure ?? null;
-    const fetchLog = fetchLogOf(fetched, sentTexts(compared.flatMap(({ sent }) => sent)));
+    const fetchLog = fetchLogOf(
+      fetched,
+      sentTexts([...compared, ...looked].flatMap(({ sent }) => sent)),
+    );
     await store.save({
       startId,
       routeId,

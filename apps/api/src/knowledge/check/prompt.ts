@@ -6,7 +6,7 @@ import type { RuleCheckRequest } from './checker.js';
  * prompt bumps the version and lands only after the independent check evaluation passes twice on
  * one commit.
  */
-export const ruleCheckPromptVersion = 'rule-check-5';
+export const ruleCheckPromptVersion = 'rule-check-6';
 
 /**
  * The language notes are written in. A report is stored once and shown to every admin, so its

@@ -39,7 +39,7 @@ const concurrency = 3;
  * With the check's own caps on what a call reads and writes, this bounds a run to about ten
  * dollars.
  */
-const maxCallsPerRun = 400;
+const maxCallsPerRun = 600;
 
 /**
  * No check starts after this long, so even one that then takes its longest, about 13 minutes,
