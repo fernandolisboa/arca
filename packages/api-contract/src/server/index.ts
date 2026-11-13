@@ -136,6 +136,7 @@ export const openApiRoutes = {
   createCorrectorKey: toOpenApiRoute(routes.createCorrectorKey),
   revokeCorrectorKey: toOpenApiRoute(routes.revokeCorrectorKey),
   listCorrectorRequests: toOpenApiRoute(routes.listCorrectorRequests),
+  listCorrectorFlaggedVersions: toOpenApiRoute(routes.listCorrectorFlaggedVersions),
   correctorFileUrl: toOpenApiRoute(routes.correctorFileUrl),
   answerCorrectionRequest: toOpenApiRoute(routes.answerCorrectionRequest),
   startVersionChecks: toOpenApiRoute(routes.startVersionChecks),

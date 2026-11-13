@@ -26,7 +26,7 @@ import type { CheckProgressStore } from './check/progress.js';
 import type { CheckSubject } from './check/run.js';
 import type { RecordedStart, CheckStarts } from './check/starts.js';
 import type { CheckReport, CheckReportStore, FetchLogEntry } from './check/store.js';
-import type { KnowledgeVersion } from '@arca/api-contract/routes';
+import type { CorrectorFlaggedVersions, KnowledgeVersion } from '@arca/api-contract/routes';
 import type { KnowledgeVersions } from './versions.js';
 
 /** A version's current report as the activation screen shows it (ADR-0027). */
@@ -301,4 +301,30 @@ export async function versionsWithChecks(
     const check = statuses.get(versionKey(version));
     return { ...version, check: check?.status ?? 'none', points: check?.points ?? null };
   });
+}
+
+/**
+ * The proposed route versions in force or ahead that the check flagged, with the items that did
+ * not match, for the corrector run (ADR-0029, flagged versions): identifiers and codes only.
+ */
+export async function flaggedVersions(
+  versions: Pick<KnowledgeVersions, 'list'>,
+  checks: Pick<VersionChecks, 'statuses' | 'report'>,
+): Promise<CorrectorFlaggedVersions> {
+  const listed = await versionsWithChecks(versions, checks);
+  const flagged = listed.filter(
+    ({ state, superseded, check }) => state === 'proposed' && !superseded && check === 'flagged',
+  );
+  const found = await Promise.all(
+    flagged.map(async ({ routeId, number }) => {
+      const outcome = await checks.report(routeId, number);
+      if (!outcome.ok || outcome.report === null) return [];
+      const { checkedAt, items } = outcome.report;
+      const unmatched = items.flatMap(({ key, kind, status, reason }) =>
+        status === 'matches' ? [] : [{ key, kind, status, reason }],
+      );
+      return [{ routeId, number, checkedAt: new Date(checkedAt).toISOString(), items: unmatched }];
+    }),
+  );
+  return { versions: found.flat() };
 }

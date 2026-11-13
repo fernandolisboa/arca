@@ -881,6 +881,38 @@ export const answerCorrectionRequest = {
   response: { description: 'Answered', schema: z.object({}) },
 } as const satisfies RouteDefinition;
 
+export const CorrectorFlaggedVersions = z.object({
+  /**
+   * The proposed, not superseded route versions whose current check report is flagged, by route,
+   * with the items that did not match: identifiers and codes only, never the model's notes.
+   */
+  versions: z.array(
+    z.object({
+      routeId: routeIdSchema,
+      number: z.int().min(1),
+      /** When the current report was written. */
+      checkedAt: z.iso.datetime(),
+      items: z.array(
+        z.object({
+          key: z.string().max(maxCheckItemKeyLength),
+          kind: z.enum(checkItemKinds),
+          status: z.enum(checkStatuses).exclude(['matches']),
+          reason: z.enum(checkReasons).nullable(),
+        }),
+      ),
+    }),
+  ),
+});
+export type CorrectorFlaggedVersions = z.infer<typeof CorrectorFlaggedVersions>;
+
+export const listCorrectorFlaggedVersions = {
+  method: 'get',
+  path: '/corrector/flagged',
+  operationId: 'listCorrectorFlaggedVersions',
+  summary: `The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. ${correctorAuth}; counted with the request listing, 100 per 24 hours per key`,
+  response: { description: 'The flagged versions', schema: CorrectorFlaggedVersions },
+} as const satisfies RouteDefinition<typeof CorrectorFlaggedVersions>;
+
 /*
  * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
  * proposed route version that has no current report and no live start, within its share of the 20
@@ -1162,6 +1194,7 @@ export const knowledgeRoutes = {
   listCorrectorRequests,
   correctorFileUrl,
   answerCorrectionRequest,
+  listCorrectorFlaggedVersions,
   startVersionChecks,
   getVersionCheck,
   startVersionCheck,

@@ -123,6 +123,8 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
       app.request('/v1/corrector/requests', {
         headers: { ...asCorrector(key), ...(site === undefined ? {} : { 'sec-fetch-site': site }) },
       }),
+    listFlagged: (key?: string) =>
+      app.request('/v1/corrector/flagged', { headers: asCorrector(key) }),
     fileUrl: (key: string, requestId: string, position: number) =>
       app.request('/v1/corrector/files/url', {
         method: 'POST',
@@ -478,6 +480,20 @@ describe('the corrector routes (ADR-0029)', () => {
     expect((await setup({ limiter }).listRequests(key)).status).toBe(200);
     const answer = await setup({ limiter }).answer(key, randomUUID(), { kind: 'taken' });
     expect(answer.status).toBe(429);
+  });
+
+  it('serve the flagged versions to the live key only, counted with the listing', async () => {
+    const key = await newKey();
+    const hits: string[] = [];
+    const limiter: RateLimiter = {
+      hit: (rule) => (hits.push(rule.name), Promise.resolve({ allowed: true })),
+      sweep: () => Promise.resolve(0),
+    };
+    expect((await setup({ limiter }).listFlagged()).status).toBe(401);
+    const response = await setup({ limiter }).listFlagged(key);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ versions: [] });
+    expect(hits).toContain('corrector_list_key');
   });
 
   it('list open and taken requests, oldest first, at most ten, with their sources', async () => {
