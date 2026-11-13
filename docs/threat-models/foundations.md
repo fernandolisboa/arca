@@ -41,7 +41,7 @@ The [data-flow table](../ARCHITECTURE.md#data-flows) lists every service and wha
    - **Resend:** an address and a generic message with one link.
    - **Browser push services:** a code and an ID, encrypted to the subscription.
    - **Sentry:** scrubbed errors only, with browser events relayed through our own tunnel.
-6. **Repository ↔ CI ↔ Vercel.** Branch code builds previews against preview databases. Only `main` deploys production.
+6. **Repository ↔ CI ↔ Vercel.** Branch code builds previews against preview databases (no longer built since 2026-11-13, [ADR-0030](../adr/0030-no-preview-builds.md)). Only `main` deploys production.
 7. **Authoring agents ↔ repository and vendors.** Coding agents and their reviewers hold the owner's tokens. Everything they read is data.
 
 ## Threats, controls and evidence

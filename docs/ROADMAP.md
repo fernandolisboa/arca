@@ -27,7 +27,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 - Specified in five slices: [0001 scaffold](specs/0001-foundations-scaffold.md); [0006 design system and theming](specs/0006-design-system-and-theming.md); [0003 identity and access](specs/0003-identity-and-access.md); [0004 real-data readiness](specs/0004-real-data-readiness.md), which ends with the real-data gate production must pass before family data enters; [0005 vault, device capabilities and notifications](specs/0005-vault-devices-and-notifications.md).
 - Monorepo with `packages/domain`, `packages/api-contract`, `packages/ui`, `packages/i18n`, `packages/platform`, `apps/api`, `apps/web` ([ARCHITECTURE.md](ARCHITECTURE.md#platforms-and-code-layout)).
-- Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request.
+- Empty app deployed end to end (web, API, a sample workflow, database) in São Paulo, with protected preview deployments per pull request (previews no longer built since 2026-11-13, [ADR-0030](adr/0030-no-preview-builds.md)).
 - Environments per [ADR-0008](adr/0008-database-security-and-environments.md) and [ADR-0012](adr/0012-automation-first-setup.md): a production Neon branch that previews stop forking from before any family data exists, synthetic seed for everything else, secrets per environment.
 - Database roles, forced row-level security and the access-matrix suite in CI before the first table with case data.
 - Supply-chain controls in CI from the first commit (pinned actions, advisories, secret scanning, SBOM, pnpm install-script and release-age settings).
