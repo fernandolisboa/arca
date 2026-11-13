@@ -19,6 +19,12 @@ export const sentWhole = (text: string) => text.length <= maxWholePageText;
  */
 const runOnPassages = 2;
 
+/**
+ * How many passages after a pick a second look sends (ADR-0027): it compares few items, so their
+ * provisions may run on to their end within the budget the first comparison shared among many.
+ */
+export const secondLookRunOnPassages = 8;
+
 /** The most passages a locator may pick for one item on one page. */
 export const maxPassagesPerItem = 6;
 
@@ -163,13 +169,14 @@ export function pageOutline(text: string, passages: readonly Passage[]): string 
  * The passages to send of a long page, within `budget` characters: the page's opening, which
  * carries its title and the date of its text, then, rank by rank, every item's pick and after
  * those the passage that follows each, since a provision often runs on; then, with what is left,
- * the further passages after each pick, up to `runOnPassages`. Out-of-range picks are
+ * the further passages after each pick, up to `runOn`. Out-of-range picks are
  * dropped. When not even the opening fits, nothing is chosen.
  */
 export function excerptPassages(
   passages: readonly Passage[],
   picks: readonly (readonly number[])[],
   budget: number,
+  runOn = runOnPassages,
 ): number[] {
   const chosen = new Set<number>();
   let left = budget;
@@ -195,7 +202,7 @@ export function excerptPassages(
   }
   // Further run-on passages only spend what every rank's picks left over.
   const kept = picks.flat().filter((pick) => chosen.has(pick));
-  for (let after = 2; after <= runOnPassages; after += 1) {
+  for (let after = 2; after <= runOn; after += 1) {
     for (const pick of kept) if (chosen.has(pick + after - 1)) take(pick + after);
   }
   return [...chosen].sort((one, other) => one - other);

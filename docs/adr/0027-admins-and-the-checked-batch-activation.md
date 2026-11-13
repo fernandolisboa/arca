@@ -234,6 +234,14 @@ The catalog check of 2026-11-13 (run 43515305005) confirmed 146 of 299 items; of
 - **Two passages after each pick.** A long page's excerpt still sends, rank by rank, each pick and the passage after it; once every pick is in, what budget is left goes to the second passage after each pick, so a provision's later paragraphs reach the model without pushing a later pick out.
 - **Prompt `rule-check-5`.** The wording is unchanged but for the count it names; it lands, as any prompt change, after the independent check evaluation passes twice on one commit.
 
+### A second look at what the first could not confirm (amendment, 2026-11-13)
+
+After the amendment above, the catalog check (run 43519235575) confirmed 151 of 299 items. Most of the rest still cite a long law whose excerpt left out part of the item: a check compares up to eight items in one call, so each long page's excerpt is shared among their picks and runs each pick on two passages at most. The owner asked to get the proposed rules approvable as soon as possible.
+
+- **The second look.** An item the comparisons left as could not be checked, for `model_could_not_check` or `value_not_in_quote`, and that cites a page sent as an excerpt, is compared again in a call of its own with at most one other such item. The locator picks that page's passages for those items alone, and the excerpt runs each pick on up to eight passages, so a provision cut short or crowded out is read to its end. At most ten such calls per check, each with the locator asked again for at most two pages, which bounds what it adds to the cost and runs them side by side after the first comparisons, adding one call's time (the catalog check's cap goes from 400 to 600 model calls, and it starts no check after 15 minutes instead of 20).
+- **What it may change.** Only a match or a difference from the second look replaces the first answer, verified in code like any other against the text that call sent, which the fetch log records. A second look that fails or still cannot check leaves the first answer as it was and never fails the check. Items the first look confirmed or found different are never asked again.
+- **Prompt `rule-check-6`.** The wording is unchanged; the version moves so that reports made without the second look stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit.
+
 ## Alternatives
 
 | Option | Why not |

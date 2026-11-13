@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   excerptGap,
   excerptPassages,
+  secondLookRunOnPassages,
   excerptRuns,
   excerptText,
   namedProvisions,
@@ -213,6 +214,21 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
       { start: 1_001, end: 1_011 },
     ];
     expect(excerptPassages(firstTooLong, [[1]], 3 * cost)).toEqual([0, 1]);
+  });
+
+  it('runs a pick on as far as a second look asks, within the budget', () => {
+    const tenEach = Array.from({ length: 12 }, (_, index) => ({
+      start: index * 11,
+      end: index * 11 + 10,
+    }));
+    const cost = 10 + overhead;
+    expect(excerptPassages(tenEach, [[2]], 100 * cost)).toEqual([0, 2, 3, 4]);
+    expect(excerptPassages(tenEach, [[2]], 100 * cost, secondLookRunOnPassages)).toEqual([
+      0, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    ]);
+    expect(excerptPassages(tenEach, [[2]], 5 * cost, secondLookRunOnPassages)).toEqual([
+      0, 2, 3, 4, 5,
+    ]);
   });
 
   it('never writes an excerpt longer than its budget', () => {

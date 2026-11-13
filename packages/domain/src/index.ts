@@ -308,6 +308,7 @@ export {
   type Passage,
   excerptGap,
   excerptPassages,
+  secondLookRunOnPassages,
   excerptText,
   maxPassagesPerItem,
   maxWholePageText,
