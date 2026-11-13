@@ -384,7 +384,7 @@ describe('the independent check of one version (ADR-0027)', () => {
         [onLaw, { ...onFees, quote: 'Application fee: EUR 90' }],
         'quote_not_on_page',
       ],
-      ['four quotes', [onLaw, onFees, onLaw, onFees], 'quote_count'],
+      ['six quotes', [onLaw, onFees, onLaw, onFees, onLaw, onFees], 'quote_count'],
     ] as const)('refuses the item on %s', async (_, quotes, reason) => {
       const { check, store } = setup({ checker: answeringMeans(quotes), checked: joinedSubject });
       await check(startId, 'qm-sample', 1);

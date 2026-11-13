@@ -75,7 +75,7 @@ export interface CheckedItem {
 }
 
 /** An item that joins provisions may rest on a few quotes, never on more than this. */
-export const maxQuotes = 3;
+export const maxQuotes = 5;
 export const minQuoteLength = 12;
 export const maxQuoteLength = 800;
 export const maxNoteLength = 300;

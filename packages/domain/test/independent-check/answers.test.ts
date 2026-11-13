@@ -75,8 +75,8 @@ describe('verifyAnswers', () => {
     ['no quote', { quotes: [] }, page(), 'quote_count'],
     ['no quotes at all', {}, page(), 'quote_count'],
     [
-      'four quotes',
-      { quotes: Array.from({ length: 4 }, () => ({ quote, url: law })) },
+      'six quotes',
+      { quotes: Array.from({ length: 6 }, () => ({ quote, url: law })) },
       page(),
       'quote_count',
     ],
@@ -529,10 +529,11 @@ describe('a match on several quotes', () => {
     });
   });
 
-  it('takes three quotes and refuses a fourth', () => {
+  it('takes five quotes and refuses a sixth', () => {
     const third = { quote: 'Article 4. Each dependant adds', url: law };
-    expect(check([principal, dependant, third])?.status).toBe('matches');
-    expect(check([principal, dependant, third, principal])).toMatchObject({
+    const five = [principal, dependant, third, third, third];
+    expect(check(five)?.status).toBe('matches');
+    expect(check([...five, principal])).toMatchObject({
       status: 'could_not_check',
       quotes: [],
       reason: 'quote_count',

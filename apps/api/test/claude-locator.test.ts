@@ -149,6 +149,6 @@ describe("what picks a check's passages, as its reports are stored (ADR-0027)", 
       check: ruleCheckPromptVersion,
       locate: passageLocatePromptVersion,
       model: passageLocateModel,
-    }).toEqual({ check: 'rule-check-4', locate: 'passage-locate-1', model: 'claude-haiku-5-5' });
+    }).toEqual({ check: 'rule-check-5', locate: 'passage-locate-1', model: 'claude-haiku-5-5' });
   });
 });

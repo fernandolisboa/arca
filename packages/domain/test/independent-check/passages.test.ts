@@ -161,8 +161,8 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
   /** What a passage costs beyond its own text: its line break, and a gap line with its own. */
   const overhead = excerptGap.length + 2;
 
-  it('takes the opening, then each pick with the passage after it', () => {
-    expect(excerptPassages(passages, [[5], [2]], 100_000)).toEqual([0, 2, 3, 5, 6]);
+  it('takes the opening, then each pick with the two passages after it', () => {
+    expect(excerptPassages(passages, [[5], [2]], 100_000)).toEqual([0, 2, 3, 4, 5, 6, 7]);
   });
 
   it('serves every item its best pick before any second pick, within the budget', () => {
@@ -180,7 +180,7 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
   });
 
   it('drops picks that are not passages of the page', () => {
-    expect(excerptPassages(passages, [[-1, 999, 1.5, 3]], 100_000)).toEqual([0, 3, 4]);
+    expect(excerptPassages(passages, [[-1, 999, 1.5, 3]], 100_000)).toEqual([0, 3, 4, 5]);
   });
 
   it('chooses nothing when not even the opening fits', () => {
@@ -195,6 +195,24 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
       { start: 1_001, end: 1_011 },
     ];
     expect(excerptPassages(uneven, [[2]], 2 * (10 + overhead))).toEqual([0]);
+  });
+
+  it('sends a second passage after a pick only after the first, and only once every pick is in', () => {
+    const tenEach = Array.from({ length: 8 }, (_, index) => ({
+      start: index * 11,
+      end: index * 11 + 10,
+    }));
+    const cost = 10 + overhead;
+    // The opening, two picks, their first run-ons and one more: the second pick still comes in
+    // before any second run-on.
+    expect(excerptPassages(tenEach, [[2, 5]], 6 * cost)).toEqual([0, 2, 3, 4, 5, 6]);
+    const firstTooLong = [
+      { start: 0, end: 10 },
+      { start: 11, end: 21 },
+      { start: 22, end: 1_000 },
+      { start: 1_001, end: 1_011 },
+    ];
+    expect(excerptPassages(firstTooLong, [[1]], 3 * cost)).toEqual([0, 1]);
   });
 
   it('never writes an excerpt longer than its budget', () => {
