@@ -213,7 +213,7 @@ export const ptBR = {
       },
       settings: {
         title: 'Do seu jeito',
-        body: 'Em Configurações você muda as cores, a letra e o menu. Em Ajuda, lá mesmo, dá para rever este tour.',
+        body: 'Em Configurações você muda as cores, a letra e o menu. Lá, em Ajuda, dá para rever este tour.',
       },
     },
     family: {
@@ -1046,7 +1046,7 @@ export const ptBR = {
       removeFile: 'Remover',
       copyOf: 'Este arquivo é cópia de qual página da regra?',
       copyOfHint:
-        'Se o site não abrir na verificação independente, o Arca lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
+        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
       notACopy: 'Nenhuma, é só uma pista',
       copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
