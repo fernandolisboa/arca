@@ -226,6 +226,14 @@ Amended 2026-11-13 at the owner's request: such items take the amber attention t
 
 A "Conferi" button lets the admin mark each such item once they have read it; the mark is kept in that browser only, keyed by the version's route, number and hash, so it never carries over to another version. It is a reminder and nothing else: the button shows it, while the point keeps the check's own mark, so a mark of the admin's never looks like the check's; it changes no report, no list status and no tally, and a version with such items still stays out of the checked batch, so it is activated one by one, after the admin read what the check could not. Storing the marks on the server so they would count for the batch was set aside: it would need a new table, its access rules and an audit trail for what one activation tap already records.
 
+### Five quotes, and the paragraphs after a pick (amendment, 2026-11-13)
+
+The catalog check of 2026-11-13 (run 43515305005) confirmed 146 of 299 items; of the 151 left, most notes said the provision was cut before the paragraph that carries the item (an article whose numbered paragraphs run past the passage its heading opens), or that the item joins more provisions than three quotes carry (a fee, the age it applies from and the exemption that leaves the rest out). Two items read as differing were such joins seen in part. The owner wants rules corrected or confirmed with him as a last resort only.
+
+- **Up to five quotes.** `maxQuotes` is five: an item that joins provisions may rest on one quote per provision, up to five. Every other rule of the several-quotes amendment holds: each quote verified on a page the item cites, every value in a verified quote, none from a cut page, and the prompt's rule that each quote is the item's own provision. Reports stored before keep reading. The residual of unrelated quotes paired grows with the count; the adversarial cases still stand against it, and the panel still shows each quote with its page.
+- **Two passages after each pick.** A long page's excerpt now sends, in turn and within its budget, the two passages that follow each pick, not one, so a provision's later paragraphs reach the model; the opening and each item's first pick still come first.
+- **Prompt `rule-check-5`.** The wording is unchanged but for the count it names; it lands, as any prompt change, after the independent check evaluation passes twice on one commit.
+
 ## Alternatives
 
 | Option | Why not |

@@ -161,8 +161,8 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
   /** What a passage costs beyond its own text: its line break, and a gap line with its own. */
   const overhead = excerptGap.length + 2;
 
-  it('takes the opening, then each pick with the passage after it', () => {
-    expect(excerptPassages(passages, [[5], [2]], 100_000)).toEqual([0, 2, 3, 5, 6]);
+  it('takes the opening, then each pick with the two passages after it', () => {
+    expect(excerptPassages(passages, [[5], [2]], 100_000)).toEqual([0, 2, 3, 4, 5, 6, 7]);
   });
 
   it('serves every item its best pick before any second pick, within the budget', () => {
@@ -180,7 +180,7 @@ describe('the excerpt sent of a long page (ADR-0027)', () => {
   });
 
   it('drops picks that are not passages of the page', () => {
-    expect(excerptPassages(passages, [[-1, 999, 1.5, 3]], 100_000)).toEqual([0, 3, 4]);
+    expect(excerptPassages(passages, [[-1, 999, 1.5, 3]], 100_000)).toEqual([0, 3, 4, 5]);
   });
 
   it('chooses nothing when not even the opening fits', () => {
