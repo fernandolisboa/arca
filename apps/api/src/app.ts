@@ -2200,6 +2200,13 @@ export function createApp({
       await sweepRateLimits();
       return c.body(null, 204);
     });
+    // The same automatic starts as the activation screen, within the same daily share (ADR-0027),
+    // so proposals are checked and the corrector run sees their reports without anyone opening it.
+    app.get('/internal/cron/rule-checks', fromCron, async (c) => {
+      if (versionChecks === undefined) return c.body(null, 204);
+      await versionChecks.start();
+      return c.body(null, 202);
+    });
   }
   return app;
 }

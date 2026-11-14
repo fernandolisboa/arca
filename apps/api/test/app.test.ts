@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createApp, createRouter } from '../src/app.js';
 import type { CheckDatabase } from '../src/database-health.js';
 import type { AuthService } from '../src/auth/service.js';
+import type { VersionChecks } from '../src/knowledge/checks.js';
 import { createLogger, type Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 
@@ -251,11 +252,18 @@ describe('errors', () => {
 describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
   const secret = 'cron-secret-for-tests';
 
-  function cronSetup(readSecret: () => string = () => secret) {
+  function cronSetup(readSecret: () => string = () => secret, withChecks = true) {
     const started: string[] = [];
+    const versionChecks = {
+      start: () => {
+        started.push('rule-checks');
+        return Promise.resolve(2);
+      },
+    } as unknown as VersionChecks;
     const app = createApp({
       checkDatabase: () => Promise.resolve('ok'),
       logger: silentLogger,
+      ...(withChecks ? { versionChecks } : {}),
       cron: {
         readSecret,
         startHeartbeat: (runDate) => {
@@ -318,6 +326,22 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     const response = await call(`Bearer ${secret}`, '/internal/cron/rate-limit-sweep');
     expect(response.status).toBe(204);
     expect(started).toEqual(['sweep']);
+  });
+
+  it('starts the due rule checks daily, behind the same token (ADR-0027)', async () => {
+    const { call, started } = cronSetup();
+    expect((await call(undefined, '/internal/cron/rule-checks')).status).toBe(401);
+    expect(started).toEqual([]);
+    const response = await call(`Bearer ${secret}`, '/internal/cron/rule-checks');
+    expect(response.status).toBe(202);
+    expect(started).toEqual(['rule-checks']);
+  });
+
+  it('answers 204 to the rule-check cron where no check runs', async () => {
+    const { call, started } = cronSetup(() => secret, false);
+    const response = await call(`Bearer ${secret}`, '/internal/cron/rule-checks');
+    expect(response.status).toBe(204);
+    expect(started).toEqual([]);
   });
 
   it('starts the erasures that are due daily, behind the same token (spec 0004, R9)', async () => {

@@ -24,6 +24,10 @@
     {
       "path": "/internal/cron/rate-limit-sweep",
       "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/internal/cron/rule-checks",
+      "schedule": "0 8 * * *"
     }
   ]
 }
