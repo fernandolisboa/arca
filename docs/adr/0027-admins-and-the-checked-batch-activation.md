@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs, and 2026-11-14 (a daily automatic start)
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -279,4 +279,4 @@ After the amendment above, the catalog check (run 43519235575) confirmed 151 of 
 
 ## Amendment 2026-11-14: a daily automatic start
 
-The owner expects Arca to check proposals by itself; until now the automatic start ran only when an admin opened the activation screen, so a prompt or checker change left every report stale until someone looked. A daily Vercel cron, `/internal/cron/rule-checks` at 08:00 UTC (05:00 in São Paulo, before the corrector run), calls the same automatic start behind `CRON_SECRET`. It shares the screen's 15 starts in any 24 hours and its 30-day rule, so it cannot raise the cost bound; it answers 204 where no check runs.
+The owner expects Arca to check proposals by itself; until now the automatic start ran only when an admin opened the activation screen, so a prompt or checker change left every report stale until someone looked. A daily Vercel cron, `/internal/cron/rule-checks` at 08:00 UTC (05:00 in São Paulo, before the daily corrector run the owner scheduled for 07:13 São Paulo time), calls the same automatic start behind `CRON_SECRET`. It shares the screen's 15 starts in any 24 hours and its 30-day rule, so it cannot raise the cost bound; it answers 204 where no check runs.

@@ -2167,7 +2167,7 @@ export function createApp({
   }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
-  // the OpenAPI document, and the only routes that start workflows.
+  // the OpenAPI document; with the admin and corrector routes, the only routes that start workflows.
   if (cron !== undefined) {
     const {
       readSecret,
@@ -2200,11 +2200,10 @@ export function createApp({
       await sweepRateLimits();
       return c.body(null, 204);
     });
-    // The same automatic starts as the activation screen, within the same daily share (ADR-0027),
-    // so proposals are checked and the corrector run sees their reports without anyone opening it.
+    // The activation screen's automatic start, within its daily share (ADR-0027).
     app.get('/internal/cron/rule-checks', fromCron, async (c) => {
       if (versionChecks === undefined) return c.body(null, 204);
-      await versionChecks.start();
+      await versionChecks.start('/internal/cron/rule-checks');
       return c.body(null, 202);
     });
   }
