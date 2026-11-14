@@ -79,7 +79,7 @@ function Knowledge() {
   const title = t('knowledge.title');
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -92,20 +92,20 @@ function Knowledge() {
     (versions.error instanceof ApiError && versions.error.status === 403)
   ) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.notAdmin')}</p>
       </Page>
     );
   }
   if (versions.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.loadFailure')}</p>
         <Button onClick={() => void versions.refetch()}>{t('knowledge.retry')}</Button>
       </Page>
     );
   }
-  if (versions.data === undefined) return <Page title={title} />;
+  if (versions.data === undefined) return <Page narrow title={title} />;
   if (picked !== null) {
     return (
       <Page title={title}>

@@ -3,7 +3,7 @@ import { Button, cardClass } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { checkProgressQuery, versionCheckQuery } from '../api.js';
 import { useDateFormat } from '../use-date-format.js';
-import { CheckRunLive, CheckRunReport } from './check-run-layout.js';
+import { CheckRunLive, CheckRunReport, sideBySide } from './check-run-layout.js';
 import { pagesSettled } from './check-run-steps.js';
 import {
   CheckRunButton,
@@ -70,9 +70,7 @@ export function CheckRunBody({
   const report = check.data?.enabled === true ? check.data.report : null;
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <section
-        className={`${cardClass} grid gap-5 p-4 sm:p-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8`}
-      >
+      <section className={`${cardClass} grid gap-5 p-4 sm:p-5 ${sideBySide} lg:gap-8`}>
         <div className="flex min-w-0 flex-col items-start gap-3">
           {/* Polite, so a screen reader hears each new stage without losing its place. */}
           <div aria-live="polite" className="flex min-w-0 flex-col gap-1">
@@ -89,16 +87,16 @@ export function CheckRunBody({
             {run.failure === 'check_unknown_version' && (
               <p>{t('knowledge.checkRun.unknownVersion')}</p>
             )}
-            <p className="text-small text-muted">
-              {t('knowledge.checkRun.startedAt', {
-                date: dateFormat.format(new Date(run.startedAt)),
-              })}
-            </p>
-            <CheckRunCost progress={run} words={words} />
-            {run.state === 'running' && (
-              <p className="text-small text-muted">{t('knowledge.checkRun.leave')}</p>
-            )}
           </div>
+          <p className="text-small text-muted">
+            {t('knowledge.checkRun.startedAt', {
+              date: dateFormat.format(new Date(run.startedAt)),
+            })}
+          </p>
+          <CheckRunCost progress={run} words={words} />
+          {run.state === 'running' && (
+            <p className="text-small text-muted">{t('knowledge.checkRun.leave')}</p>
+          )}
           {run.state !== 'running' && button}
           {confirm}
         </div>
@@ -107,7 +105,14 @@ export function CheckRunBody({
           <CheckRunSteps progress={run} words={words} />
         </div>
       </section>
-      {run.state === 'finished' && report !== null ? (
+      {run.state === 'finished' && check.isError ? (
+        <div className="flex flex-col items-start gap-3">
+          <p>{t('knowledge.check.loadFailure')}</p>
+          <Button onClick={() => void check.refetch()}>{t('knowledge.retry')}</Button>
+        </div>
+      ) : run.state === 'finished' && check.data?.enabled === false ? (
+        <p>{t('knowledge.check.off')}</p>
+      ) : run.state === 'finished' && report !== null ? (
         <CheckRunReport report={report} progress={run} country={view.country} words={words} />
       ) : (
         <CheckRunLive progress={run} words={words} />

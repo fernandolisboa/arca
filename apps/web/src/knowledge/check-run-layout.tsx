@@ -1,6 +1,6 @@
-import type { CheckProgress, VersionCheckReport } from '@arca/api-contract/client';
+import { type CheckProgress, type VersionCheckReport, maxQuotes } from '@arca/api-contract/client';
 import { Button, Icon, StatusChip, Tabs, buttonClass, cardClass, tabPanelProps } from '@arca/ui';
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { checkRunItems } from './check-run-steps.js';
 import { CheckRunPages } from './check-run.js';
 import { ReportItemCard, ReportPageNotes, ReportSummary, itemTone, pageReadsOf } from './checks.js';
@@ -12,15 +12,18 @@ type Filter = ItemStatus | 'all';
 const filters: readonly Filter[] = ['all', 'differs', 'could_not_check', 'matches'];
 
 /** On a wide screen a column keeps its own scroll, so the page never grows past the window. */
-const column = `${cardClass} flex min-w-0 flex-col gap-3 p-4 sm:p-5 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]`;
-const detailColumn = 'flex min-w-0 flex-col gap-3 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]';
-const scroller = 'min-h-0 lg:flex-1 lg:overflow-y-auto';
+const cardColumnClass = `${cardClass} flex min-w-0 flex-col gap-3 p-4 sm:p-5 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]`;
+const detailColumnClass =
+  'flex min-w-0 flex-col gap-3 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)]';
+const scrollBodyClass = 'min-h-0 lg:flex-1 lg:overflow-y-auto';
 
 function ItemRow({
   item,
+  scripted,
   words,
 }: {
   readonly item: Pick<ReportItem, 'kind' | 'status' | 'title'>;
+  readonly scripted: boolean;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -33,12 +36,15 @@ function ItemRow({
         <span className="font-medium">{item.title}</span>
       </span>
       <StatusChip
-        tone={itemTone(item.status, false)}
+        tone={itemTone(item.status, scripted)}
         label={t('knowledge.check.itemStatus', { status: item.status })}
       />
     </>
   );
 }
+
+/** The list beside the item it opens, the list the narrower of the two. */
+export const sideBySide = 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]';
 
 const rowClass = 'flex w-full items-start justify-between gap-3 px-2 py-2.5 text-left';
 
@@ -68,7 +74,7 @@ export function CheckRunLive({
                 key={item.key}
                 className={`${rowClass} animate-row-land border-t border-line first:border-t-0`}
               >
-                <ItemRow item={item} words={words} />
+                <ItemRow item={item} scripted={progress.scripted} words={words} />
               </li>
             ))}
           </ul>
@@ -109,12 +115,12 @@ function ScrollColumn({
 }) {
   const titleId = useId();
   return (
-    <section aria-labelledby={titleId} className={column}>
+    <section aria-labelledby={titleId} className={cardColumnClass}>
       <h3 id={titleId} className="font-medium">
         {title}
       </h3>
       {/* Focusable, so the column scrolls from the keyboard too. */}
-      <div tabIndex={0} className={scroller}>
+      <div tabIndex={0} className={scrollBodyClass}>
         {children}
       </div>
     </section>
@@ -144,20 +150,41 @@ export function CheckRunReport({
   const [filter, setFilter] = useState<Filter>('all');
   const [picked, setPicked] = useState<string | null>(null);
   const shown = filter === 'all' ? items : items.filter(({ status }) => status === filter);
-  const firstWorthAlook = items.find(({ status }) => status !== 'matches') ?? items[0];
-  const open = items.find(({ key }) => key === (picked ?? firstWorthAlook?.key));
+  const firstToRead = shown.find(({ status }) => status !== 'matches') ?? shown[0];
+  const shownItem = shown.find(({ key }) => key === (picked ?? firstToRead?.key));
   const countOf = (each: Filter) =>
     each === 'all' ? items.length : items.filter(({ status }) => status === each).length;
   const pageReads = pageReadsOf(report);
+  const footer = (
+    <p className="text-small text-muted">{t('knowledge.check.footer', { max: maxQuotes })}</p>
+  );
+  const backRef = useRef<HTMLButtonElement>(null);
+  const rowsRef = useRef(new Map<string, HTMLButtonElement>());
+  const lastPickRef = useRef<string | null>(null);
+  // On a phone the item replaces the list, so focus follows it there and back to its row.
+  useEffect(() => {
+    if (picked !== null) {
+      lastPickRef.current = picked;
+      if (backRef.current?.offsetParent !== null) {
+        backRef.current?.focus();
+        backRef.current?.scrollIntoView({ block: 'start' });
+      }
+      return;
+    }
+    const last = lastPickRef.current;
+    if (last !== null) rowsRef.current.get(last)?.focus();
+  }, [picked]);
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+    <div className={`grid items-start gap-5 ${sideBySide}`}>
       <section
         aria-label={t('knowledge.checkRun.result')}
-        className={`${column} ${picked === null ? '' : 'max-lg:hidden'}`}
+        className={`${cardColumnClass} ${picked === null ? '' : 'max-lg:hidden'}`}
       >
         <div className="flex shrink-0 flex-col gap-1">
           <ReportSummary report={report} country={country} words={words} />
+          {/* Beside the opened item on a wide screen; here on a phone, where the list stands alone. */}
+          <div className="lg:hidden">{footer}</div>
         </div>
         <Tabs
           className="shrink-0"
@@ -170,7 +197,7 @@ export function CheckRunReport({
             { value: 'pages', label: t('knowledge.checkRun.pages'), count: progress.pages.length },
           ]}
         />
-        <div {...tabPanelProps(tabsId, tab)} className={`flex flex-col gap-3 ${scroller}`}>
+        <div {...tabPanelProps(tabsId, tab)} className={`flex flex-col gap-3 ${scrollBodyClass}`}>
           {tab === 'items' ? (
             <>
               <div
@@ -198,14 +225,18 @@ export function CheckRunReport({
                 {shown.map((item) => (
                   <li key={item.key} className="border-t border-line first:border-t-0">
                     <button
+                      ref={(row) => {
+                        if (row === null) rowsRef.current.delete(item.key);
+                        else rowsRef.current.set(item.key, row);
+                      }}
                       type="button"
-                      aria-current={item.key === open?.key ? 'true' : undefined}
+                      aria-current={item.key === shownItem?.key ? 'true' : undefined}
                       onClick={() => {
                         setPicked(item.key);
                       }}
-                      className={`${rowClass} rounded-control hover:bg-soft focus-visible:outline-2 focus-visible:outline-primary ${item.key === open?.key ? 'lg:bg-soft' : ''}`}
+                      className={`${rowClass} rounded-control hover:bg-soft focus-visible:outline-2 focus-visible:outline-primary ${item.key === shownItem?.key ? 'lg:bg-soft' : ''}`}
                     >
-                      <ItemRow item={item} words={words} />
+                      <ItemRow item={item} scripted={report.scripted} words={words} />
                     </button>
                   </li>
                 ))}
@@ -214,19 +245,20 @@ export function CheckRunReport({
           ) : (
             <>
               <CheckRunPages progress={progress} words={words} />
-              <ReportPageNotes report={report} words={words} subheading="h4" />
+              <ReportPageNotes report={report} words={words} subheading="h3" />
             </>
           )}
         </div>
       </section>
-      {open !== undefined && (
+      {shownItem !== undefined && (
         <section
-          aria-label={open.title}
-          className={`${detailColumn} ${picked === null ? 'max-lg:hidden' : ''}`}
+          aria-label={shownItem.title}
+          className={`${detailColumnClass} ${picked === null ? 'max-lg:hidden' : ''}`}
         >
           <button
+            ref={backRef}
             type="button"
-            className={`${buttonClass('secondary')} self-start lg:hidden`}
+            className={`${buttonClass('secondary')} scroll-mt-20 self-start lg:hidden`}
             onClick={() => {
               setPicked(null);
             }}
@@ -234,14 +266,15 @@ export function CheckRunReport({
             <Icon name="back" size={18} />
             {t('knowledge.checkRun.backToList')}
           </button>
-          <div tabIndex={0} className={scroller}>
+          <div tabIndex={0} className={scrollBodyClass}>
             <ReportItemCard
-              item={open}
+              item={shownItem}
               scripted={report.scripted}
               pageReads={pageReads}
               words={words}
             />
           </div>
+          {footer}
         </section>
       )}
     </div>

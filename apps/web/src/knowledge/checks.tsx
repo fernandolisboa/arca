@@ -77,26 +77,19 @@ export function CheckChip({
 export function CheckReport({
   view,
   words,
-  startsOpen = false,
-  level = 5,
 }: {
   readonly view: VersionView;
   readonly words: KnowledgeWords;
-  /** Open whatever the status, where the report is what the admin came to read. */
-  readonly startsOpen?: boolean;
-  /** The panel's heading level, which follows the screen's outline. */
-  readonly level?: 4 | 5;
 }) {
   const { t } = words;
   const check = useQuery(versionCheckQuery(view.routeId, view.number));
   const status = check.data?.enabled === true ? check.data.status : undefined;
-  const folded = checkFold(check.isPending, status);
-  const fold = startsOpen ? { ...folded, defaultOpen: true } : folded;
+  const fold = checkFold(check.isPending, status);
   return (
     <Disclosure
       key={fold.key}
       title={t('knowledge.check.title')}
-      level={level}
+      level={5}
       icon="ai"
       aside={status !== undefined && <CheckChip status={status} words={words} />}
       defaultOpen={fold.defaultOpen}
@@ -131,7 +124,7 @@ export function CheckReport({
           report={check.data.report}
           country={view.country}
           words={words}
-          subheading={level === 4 ? 'h5' : 'h6'}
+          subheading="h6"
         />
       )}
     </Disclosure>
@@ -155,7 +148,7 @@ function ReportBody({
   readonly report: VersionCheckReport;
   readonly country: string;
   readonly words: KnowledgeWords;
-  readonly subheading: 'h5' | 'h6';
+  readonly subheading: 'h6';
 }) {
   const pageReads = pageReadsOf(report);
   return (
@@ -222,7 +215,7 @@ export function ReportPageNotes({
 }: {
   readonly report: VersionCheckReport;
   readonly words: KnowledgeWords;
-  readonly subheading: 'h4' | 'h5' | 'h6';
+  readonly subheading: 'h3' | 'h6';
 }) {
   const { t } = words;
   const problems = report.fetchLog.filter(

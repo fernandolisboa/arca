@@ -44,14 +44,14 @@ function CheckRunScreen() {
   );
   if (session.isError || (session.isSuccess && !admin)) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t(session.isError ? 'knowledge.signIn' : 'knowledge.notAdmin')}</p>
       </Page>
     );
   }
   if (!known || (view.error instanceof ApiError && view.error.status === 404)) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         {back}
         <p>{t('knowledge.checkRun.unknownVersion')}</p>
       </Page>
@@ -59,14 +59,14 @@ function CheckRunScreen() {
   }
   if (view.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         {back}
         <p>{t('knowledge.loadFailure')}</p>
         <Button onClick={() => void view.refetch()}>{t('knowledge.retry')}</Button>
       </Page>
     );
   }
-  if (view.data === undefined) return <Page title={title} />;
+  if (view.data === undefined) return <Page narrow title={title} />;
   return (
     <Page
       title={title}

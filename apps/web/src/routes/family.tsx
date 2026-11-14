@@ -60,7 +60,7 @@ function Family() {
   const familyCase = useQuery({ ...caseQuery, enabled: session.data?.confirmed === true });
   if (session.isError) {
     return (
-      <Page title={t('family.title')}>
+      <Page narrow title={t('family.title')}>
         <p>{t('family.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -68,17 +68,17 @@ function Family() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={t('family.title')} />;
+  if (!session.isSuccess) return <Page narrow title={t('family.title')} />;
   if (!session.data.confirmed) {
     return (
-      <Page title={t('family.title')}>
+      <Page narrow title={t('family.title')}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
   }
   if (familyCase.isError) {
     return (
-      <Page title={t('family.title')}>
+      <Page narrow title={t('family.title')}>
         <p className="text-ink">{t('family.loadFailure')}</p>
         <Button
           disabled={familyCase.isFetching}
@@ -90,7 +90,7 @@ function Family() {
       </Page>
     );
   }
-  if (!familyCase.isSuccess) return <Page title={t('family.title')} />;
+  if (!familyCase.isSuccess) return <Page narrow title={t('family.title')} />;
   const view = familyCase.data.case;
   return (
     <Page
