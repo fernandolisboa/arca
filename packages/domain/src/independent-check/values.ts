@@ -1,5 +1,5 @@
 import type { CalendarDate } from '../calendar/calendar-date.js';
-import { writesNumberInWords } from './number-words.js';
+import { writesAnniversary, writesNumberInWords } from './number-words.js';
 
 /**
  * A value an item states, which a quote must contain for a match to count (ADR-0027): a number
@@ -282,7 +282,11 @@ export function statesValue(
 ): boolean {
   const numbers = numbersIn(text);
   if (value.kind === 'number') {
-    return numbers.has(value.value) || writesNumberInWords(text, value.value, languages);
+    return (
+      numbers.has(value.value) ||
+      writesNumberInWords(text, value.value, languages) ||
+      writesAnniversary(text, value.value, languages)
+    );
   }
   if (text.includes(value.value)) return true;
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);

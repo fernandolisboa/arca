@@ -20,6 +20,7 @@ Since 2026-11-05 every preview migrates the one shared Neon `development` branch
 - The OWASP ZAP baseline in [SECURITY.md](../SECURITY.md) targets the production origin instead of previews.
 - Accepted risk: the first run of a migration on Neon is production's build. Migrations already must work with the running code, and CI runs them on Postgres first.
 - The Preview-scoped database variables stay set, so previews can be turned back on without an owner step. They are no wider than before: any branch could already build a preview.
+- A fork controls its own `vercel.json`, so neither form of the branch rule is a barrier to a fork's pull request: Git Fork Protection stays on, and a fork's deployment is never authorized.
 - Turning previews back on is removing `git.deploymentEnabled`, after giving each preview its own database or keeping `development` in step with `main`.
 
 ## Amendment 2026-11-14

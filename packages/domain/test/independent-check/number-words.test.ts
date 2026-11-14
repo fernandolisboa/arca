@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   likelyLanguage,
   pageLanguages,
+  writesAnniversary,
   writesNumberInWords,
 } from '../../src/independent-check/number-words.js';
 import { statesValue } from '../../src/independent-check/values.js';
@@ -84,5 +85,22 @@ describe('numbers a law writes in words (ADR-0027)', () => {
 
   it('knows no language for a code that is not a country', () => {
     expect(likelyLanguage('not a country')).toBeUndefined();
+  });
+});
+
+describe('years a law writes as the ordinal of an anniversary (ADR-0027)', () => {
+  it.each<[string, string, string[], boolean]>([
+    ['before the second anniversary of the admission', '2', ['en'], true],
+    ['effective as of such third anniversary', '3', ['en'], true],
+    ['the Second Anniversary', '2', ['en'], true],
+    ['the second anniversary', '3', ['en'], false],
+    ['the twenty-second anniversary', '2', ['en'], false],
+    ['the twenty second anniversary', '2', ['en'], false],
+    ['the second paragraph', '2', ['en'], false],
+    ['the second anniversary', '2', ['pt'], false],
+    ['the first anniversary', '1', ['en'], false],
+  ])('reads %j as %s in %j: %s', (text, value, languages, expected) => {
+    expect(writesAnniversary(text, value, languages)).toBe(expected);
+    expect(statesValue({ kind: 'number', value }, text, languages)).toBe(expected);
   });
 });

@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs, and 2026-11-14 (a daily automatic start)
+- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs, and 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals)
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -277,6 +277,10 @@ After the amendment above, the catalog check (run 43519235575) confirmed 151 of 
   - A granted admin who shares no case with any other admin keeps the role, and no family area shows it, so only a reviewed database change can take it away. Any grant they make still sends the owner-list admins the notice, and the audit log names both accounts.
 - CLAUDE.md rule 5 now says an admin approves while signed in, and the glossary replaces Approver and Approver list with Admin and Owner list.
 
-## Amendment 2026-11-14: a daily automatic start
+## Amendment 2026-11-14: an automatic start without the screen
 
-The owner expects Arca to check proposals by itself; until now the automatic start ran only when an admin opened the activation screen, so a prompt or checker change left every report stale until someone looked. A daily Vercel cron, `/internal/cron/rule-checks` at 08:00 UTC (05:00 in São Paulo, before the daily corrector run the owner scheduled for 07:13 São Paulo time), calls the same automatic start behind `CRON_SECRET`. It shares the screen's 15 starts in any 24 hours and its 30-day rule, so it cannot raise the cost bound; it answers 204 where no check runs.
+The owner expects Arca to check proposals by itself; until now the automatic start ran only when an admin opened the activation screen, so a prompt or checker change left every report stale until someone looked. A Vercel cron, `/internal/cron/rule-checks`, calls the same automatic start behind `CRON_SECRET` at the top of every hour, so a version waits at most an hour once the window has room and the corrector run (07:13 São Paulo time) finds reports. It shares the screen's 15 starts in any 24 hours and the 30-day rule, so running it hourly cannot raise the cost bound; it answers 204 where no check runs.
+
+The same day, a page's byte caps rose from 3 MB received and 6 MB decompressed to 8 MB and 10 MB, and the markup cap with them: the Spanish Civil Code on BOE is 3.9 MB, so the items that take the age of majority from it were left unconfirmed as `too_large`. The text cap and the excerpt budget are unchanged, so the cost of a check is too.
+
+A duration's years also read from an English anniversary ordinal ("before the second anniversary", "such third anniversary"), the way U.S. law dates a conditional status; the ordinal reads only before "anniversary", never after another number word, and a quote cut out of "twenty-second anniversary" widens to the whole number.

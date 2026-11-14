@@ -57,10 +57,10 @@ export interface FetchLimits {
 }
 
 export const fetchLimits: FetchLimits = {
-  maxBytes: 3_000_000,
-  maxDecompressedBytes: 6_000_000,
+  maxBytes: 8_000_000,
+  maxDecompressedBytes: 10_000_000,
   maxPdfBytes: 16_000_000,
-  maxMarkupLength: 6_000_000,
+  maxMarkupLength: 10_000_000,
   maxTextLength: 3_000_000,
   timeoutMs: 20_000,
   maxRedirects: 3,

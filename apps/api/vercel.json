@@ -27,7 +27,7 @@
     },
     {
       "path": "/internal/cron/rule-checks",
-      "schedule": "0 8 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }
