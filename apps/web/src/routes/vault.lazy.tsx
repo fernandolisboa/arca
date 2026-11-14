@@ -336,11 +336,12 @@ function Opened(props: VaultStepProps) {
             >
               {t('vault.lock')}
             </Button>
-            <Rotate {...props} />
+            {props.rotationDue && <Rotate {...props} />}
           </>
         }
       >
         <DocumentsSection vault={props.vault} />
+        {!props.rotationDue && <Rotate {...props} />}
       </PageColumns>
     </Section>
   );

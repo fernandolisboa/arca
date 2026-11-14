@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { casePlaybackQuery, caseQuery, caseQuestionsQuery, sessionQuery } from '../api.js';
 import { caseFailure, writeCase, type CaseFailure } from '../case.js';
 import { textLinkClass } from '../forms/text-link.js';
-import { Page } from '../page.js';
+import { Page, stickyColumnClass } from '../page.js';
 import { passkeys } from '../platform.js';
 import { QuestionEditor, type QuestionContext } from '../questions/editors.js';
 import { sentAnswer } from '../questions/entry.js';
@@ -49,7 +49,7 @@ function Questions() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page narrow title={title} />;
+  if (!session.isSuccess) return <Page title={title} />;
   if (!confirmed) {
     return (
       <Page narrow title={title}>
@@ -87,7 +87,7 @@ function Questions() {
   }
   const view = familyCase.data?.case;
   if (view === undefined || view === null || questions.data === undefined) {
-    return <Page narrow title={title} />;
+    return <Page title={title} />;
   }
   return (
     <Page title={title} lead={t('questions.lead')}>
@@ -175,7 +175,7 @@ function Answering({
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
-      <div className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-20">
+      <div className={`flex min-w-0 flex-col gap-6 ${stickyColumnClass}`}>
         {toggle}
         {questions.people.length > 1 && (
           <ChoiceGroup

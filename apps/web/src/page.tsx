@@ -47,14 +47,15 @@ export function Page({
   );
 }
 
+/** On a wide screen, a column keeps its own scroll, so a long one never grows the page. */
+export const stickyColumnClass =
+  'lg:sticky lg:top-20 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto';
+
 /**
  * A page's content beside a side column on a wide screen: the side holds the actions and forms,
  * the main column what they act on. The side comes first in reading order, so a phone shows it
  * on top.
  */
-/** The grid of a main column beside a side column on a wide screen. */
-export const pageColumnsClass = 'lg:grid-cols-[minmax(0,1fr)_22rem]';
-
 export function PageColumns({
   side,
   children,
@@ -63,8 +64,10 @@ export function PageColumns({
   readonly children: ReactNode;
 }) {
   return (
-    <div className={`grid items-start gap-6 lg:gap-8 ${pageColumnsClass}`}>
-      <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-20 lg:col-start-2 lg:row-start-1">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+      <div
+        className={`flex min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1 ${stickyColumnClass}`}
+      >
         {side}
       </div>
       <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">{children}</div>

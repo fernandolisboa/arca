@@ -45,7 +45,7 @@ function Results() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page narrow title={title} />;
+  if (!session.isSuccess) return <Page title={title} />;
   if (!confirmed) {
     return (
       <Page narrow title={title}>
@@ -80,7 +80,7 @@ function Results() {
   }
   const view = familyCase.data?.case;
   if (view === undefined || evaluations.data === undefined) {
-    return <Page narrow title={title} />;
+    return <Page title={title} />;
   }
   return (
     <Page title={title} lead={t('results.lead', { date: words.date(evaluations.data.rulesAsOf) })}>

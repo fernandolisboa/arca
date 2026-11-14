@@ -168,7 +168,7 @@ function Devices() {
         )}
         {devices.isSuccess && (
           <>
-            <ul aria-label={t('devices.listTitle')} className="grid gap-3 md:grid-cols-2">
+            <ul aria-label={t('devices.listTitle')} className="grid gap-3 xl:grid-cols-2">
               {devices.data.passkeys.map((passkey) => (
                 <PasskeyCard
                   key={passkey.id}

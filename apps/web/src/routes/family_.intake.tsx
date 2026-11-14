@@ -34,7 +34,7 @@ import {
   wholeList,
 } from '../intake/plan.js';
 import { type IntakeProgress, freshProgress, saveIntake } from '../intake/save.js';
-import { Page, pageColumnsClass } from '../page.js';
+import { Page } from '../page.js';
 import { passkeys } from '../platform.js';
 import { useNames } from '../questions/editors.js';
 import { useSentenceText } from '../questions/playback.js';
@@ -61,7 +61,7 @@ function Intake() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page narrow title={title} />;
+  if (!session.isSuccess) return <Page title={title} />;
   if (!confirmed) {
     return (
       <Page narrow title={title}>
@@ -99,7 +99,7 @@ function Intake() {
     );
   }
   const view = familyCase.data?.case;
-  if (view === undefined || questions.data === undefined) return <Page narrow title={title} />;
+  if (view === undefined || questions.data === undefined) return <Page title={title} />;
   return (
     <Page title={title} lead={t('intake.lead')}>
       <Drafting view={view} questions={questions.data} />
@@ -157,7 +157,7 @@ function Drafting({
   const length = text.trim().length;
   return (
     <form
-      className={`grid items-start gap-4 lg:gap-x-8 ${pageColumnsClass}`}
+      className="flex flex-col gap-4"
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         setFailure(undefined);
@@ -172,11 +172,11 @@ function Drafting({
           });
       }}
     >
-      <div className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+      <div className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3">
         <p>{t('intake.privacy')}</p>
         <p className="text-small text-muted">{t('intake.tip')}</p>
       </div>
-      <div className="flex flex-col gap-1 lg:col-start-1">
+      <div className="flex flex-col gap-1">
         <label htmlFor={textId} className="font-medium">
           {t('intake.label')}
         </label>
@@ -197,15 +197,12 @@ function Drafting({
           {t('intake.count', { count: text.length, max: maxIntakeTextLength })}
         </p>
       </div>
-      <div className="lg:col-start-1">
+      <div className="flex flex-col sm:flex-row">
         <Button type="submit" disabled={pending || length === 0} aria-busy={pending}>
           {t('intake.submit')}
         </Button>
       </div>
-      <p
-        role="status"
-        className={`lg:col-start-1 ${failure === undefined ? 'text-muted' : 'text-ink'}`}
-      >
+      <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
         {pending
           ? t('intake.drafting')
           : failure === undefined
@@ -301,7 +298,7 @@ function Review({
       }}
     >
       <p className="text-muted">{t('intake.reviewLead')}</p>
-      <fieldset disabled={locked || pending} className="flex flex-col gap-6">
+      <fieldset disabled={locked || pending} className="grid items-start gap-6 md:grid-cols-2">
         {shown.map((person) => {
           const choice = choices.people.get(person.ref);
           const items = personItems(person);
@@ -390,9 +387,11 @@ function Review({
           </section>
         )}
       </fieldset>
-      <Button type="submit" disabled={pending || !ready} aria-busy={pending}>
-        {locked ? t('questions.retry') : t('intake.save')}
-      </Button>
+      <div className="flex flex-col sm:flex-row">
+        <Button type="submit" disabled={pending || !ready} aria-busy={pending}>
+          {locked ? t('questions.retry') : t('intake.save')}
+        </Button>
+      </div>
       <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
         {pending
           ? t('family.saving')
