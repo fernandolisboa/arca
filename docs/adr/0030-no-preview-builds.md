@@ -1,6 +1,6 @@
 # ADR-0030: Vercel builds production only
 
-- Status: Accepted
+- Status: Accepted, amended in place on 2026-11-14 (branch rules replace `ignoreCommand`; `main` must stay the Vercel production branch)
 - Date: 2026-11-13
 - Amends: [ADR-0010](0010-stack-revised.md) (hosting: no preview deployment per pull request); [ADR-0012](0012-automation-first-setup.md) (Git pushes no longer deploy previews); [ADR-0008](0008-database-security-and-environments.md) (preview deployments)
 
@@ -10,7 +10,7 @@ Since 2026-11-05 every preview migrates the one shared Neon `development` branch
 
 ## Decision
 
-`ignoreCommand` in `apps/api/vercel.json` skips every build whose `VERCEL_ENV` is not `production`. A test in `tooling/scripts/test/vercel-config.test.ts` pins it.
+`git.deploymentEnabled` in `apps/api/vercel.json` deploys `main` only (`"**": false, "main": true`; a branch matching any `true` rule deploys, per [Vercel's git configuration](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled), read 2026-11-14; the first `main` deployment after the change confirms it). A test in `tooling/scripts/test/vercel-config.test.ts` pins it.
 
 ## Consequences
 
@@ -20,4 +20,8 @@ Since 2026-11-05 every preview migrates the one shared Neon `development` branch
 - The OWASP ZAP baseline in [SECURITY.md](../SECURITY.md) targets the production origin instead of previews.
 - Accepted risk: the first run of a migration on Neon is production's build. Migrations already must work with the running code, and CI runs them on Postgres first.
 - The Preview-scoped database variables stay set, so previews can be turned back on without an owner step. They are no wider than before: any branch could already build a preview.
-- Turning previews back on is removing `ignoreCommand`, after giving each preview its own database or keeping `development` in step with `main`.
+- Turning previews back on is removing `git.deploymentEnabled`, after giving each preview its own database or keeping `development` in step with `main`.
+
+## Amendment 2026-11-14
+
+The first form, `ignoreCommand: [ "$VERCEL_ENV" != production ]`, also cancelled every production build: from bb12be5 (#435) to 03e79bf (#438) Vercel marked each `main` deployment CANCELED with no build, and production stayed on 8adb68c. The command behaved as intended in `sh` locally, so the cause, not confirmed, sits in how Vercel runs the ignored build step (likely an empty `VERCEL_ENV` there). Branch rules in `git.deploymentEnabled` need no shell and no system variable, so they replace it.

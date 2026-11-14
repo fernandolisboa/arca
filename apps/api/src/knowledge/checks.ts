@@ -78,7 +78,7 @@ export interface VersionChecks {
    * Starts a check for every proposed route version that is due and not superseded; answers how
    * many started.
    */
-  readonly start: () => Promise<number>;
+  readonly start: (route?: string) => Promise<number>;
   /** An admin's own start of one route version, in any state and whatever its reports say. */
   readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
   /**
@@ -158,7 +158,7 @@ export function createVersionChecks({
   };
 
   return {
-    async start() {
+    async start(route = '/v1/knowledge/checks/start') {
       const proposed = (await versions.list()).filter(openProposal);
       const started = await starts.begin(
         proposed.map(({ routeId, number, hash, country }) => ({
@@ -167,7 +167,7 @@ export function createVersionChecks({
           key: keyOf(hash, country),
         })),
       );
-      await runAll(started, '/v1/knowledge/checks/start');
+      await runAll(started, route);
       return started.length;
     },
 

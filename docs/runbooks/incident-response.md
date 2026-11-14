@@ -133,7 +133,7 @@ Rotate every secret the incident may have reached; when in doubt, all of them. G
 
 ### Stop the crons and running workflows
 
-In Vercel: project `arca` › Settings › Cron Jobs › Disable Cron Jobs ([managing cron jobs](https://vercel.com/docs/cron-jobs/manage-cron-jobs)). That stops the daily heartbeat, the rate-limit sweep and, once they land, the retention and erasure jobs. Cancel any workflow run still in progress from the project's workflow runs in the Vercel dashboard. **Undo:** Enable Cron Jobs.
+In Vercel: project `arca` › Settings › Cron Jobs › Disable Cron Jobs ([managing cron jobs](https://vercel.com/docs/cron-jobs/manage-cron-jobs)). That stops the daily heartbeat, the rate-limit sweep, the rule checks (paid model calls) and, once they land, the retention and erasure jobs. Cancel any workflow run still in progress from the project's workflow runs in the Vercel dashboard. **Undo:** Enable Cron Jobs.
 
 ### Restore the database
 

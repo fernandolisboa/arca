@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs, and 2026-11-14 (a daily automatic start)
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -276,3 +276,7 @@ After the amendment above, the catalog check (run 43519235575) confirmed 151 of 
   - A stolen admin session can spend the daily cap of checks, about ten dollars at most (about twenty-five since the long-page amendment). (Changed 2026-11-12: an admin's own starts have no cap, so a stolen admin session can start checks until the Anthropic Console's spend limit stops them, one live check per version at a time; the page fetches and workflow runs go on past that limit, bounded only by Vercel's own spend controls and the official sites' tolerance; and since one key and one spend limit serve every model call, reaching it also stops free-text intake (which falls back to the guided questions) and rule summaries until it resets.)
   - A granted admin who shares no case with any other admin keeps the role, and no family area shows it, so only a reviewed database change can take it away. Any grant they make still sends the owner-list admins the notice, and the audit log names both accounts.
 - CLAUDE.md rule 5 now says an admin approves while signed in, and the glossary replaces Approver and Approver list with Admin and Owner list.
+
+## Amendment 2026-11-14: a daily automatic start
+
+The owner expects Arca to check proposals by itself; until now the automatic start ran only when an admin opened the activation screen, so a prompt or checker change left every report stale until someone looked. A daily Vercel cron, `/internal/cron/rule-checks` at 08:00 UTC (05:00 in São Paulo, before the daily corrector run the owner scheduled for 07:13 São Paulo time), calls the same automatic start behind `CRON_SECRET`. It shares the screen's 15 starts in any 24 hours and its 30-day rule, so it cannot raise the cost bound; it answers 204 where no check runs.
