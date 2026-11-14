@@ -330,6 +330,7 @@ export {
   type ReportMeta,
   type RequestedStart,
   type StartCandidate,
+  type StartShare,
   currentReport,
   failedReportLifetime,
   listedCheckStatus,

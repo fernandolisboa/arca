@@ -5,6 +5,7 @@ import {
   type CheckedItem,
   type ListedCheckStatus,
   type ReportKey,
+  type StartShare,
   checkCost,
   checkItems,
   checkProgress,
@@ -79,6 +80,11 @@ export interface VersionChecks {
    * many started.
    */
   readonly start: (route?: string) => Promise<number>;
+  /**
+   * An admin's start of every proposed route version that is due and not superseded, with no daily
+   * cap; answers how many started and whether every run began.
+   */
+  readonly startQueued: () => Promise<{ readonly started: number; readonly began: boolean }>;
   /** An admin's own start of one route version, in any state and whatever its reports say. */
   readonly startOne: (routeId: string, number: number) => Promise<RequestedCheckOutcome>;
   /**
@@ -157,19 +163,24 @@ export function createVersionChecks({
     return false;
   };
 
+  const startDue = async (route: string, share: StartShare) => {
+    const proposed = (await versions.list()).filter(openProposal);
+    const started = await starts.begin(
+      proposed.map(({ routeId, number, hash, country }) => ({
+        routeId,
+        number,
+        key: keyOf(hash, country),
+      })),
+      share,
+    );
+    return { started: started.length, began: await runAll(started, route) };
+  };
+
   return {
-    async start(route = '/v1/knowledge/checks/start') {
-      const proposed = (await versions.list()).filter(openProposal);
-      const started = await starts.begin(
-        proposed.map(({ routeId, number, hash, country }) => ({
-          routeId,
-          number,
-          key: keyOf(hash, country),
-        })),
-      );
-      await runAll(started, route);
-      return started.length;
-    },
+    start: async (route = '/v1/knowledge/checks/start') =>
+      (await startDue(route, 'automatic')).started,
+
+    startQueued: () => startDue('/v1/knowledge/checks/start-queued', 'admin'),
 
     async startOne(routeId, number) {
       if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };

@@ -17,6 +17,7 @@ import {
 import { textLinkClass } from '../forms/text-link.js';
 import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
+import { QueuedChecks } from '../knowledge/queued-checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
@@ -170,21 +171,24 @@ function Knowledge() {
             comparisons={proposedComparisons}
             filters={
               proposed.length > 0 && (
-                <ReviewFilters
-                  countries={ordered
-                    .map(({ country }) => country)
-                    .toSorted((left, right) =>
-                      words.country(left).localeCompare(words.country(right)),
-                    )}
-                  counts={needCounts(proposed, filter)}
-                  filter={filter}
-                  onChange={(next) => {
-                    setPicks(next);
-                    const { country } = next;
-                    if (country !== null) setOpenCountries((was) => new Set(was).add(country));
-                  }}
-                  words={words}
-                />
+                <>
+                  <QueuedChecks queued={needCounts(proposed, noFilter).unchecked} words={words} />
+                  <ReviewFilters
+                    countries={ordered
+                      .map(({ country }) => country)
+                      .toSorted((left, right) =>
+                        words.country(left).localeCompare(words.country(right)),
+                      )}
+                    counts={needCounts(proposed, filter)}
+                    filter={filter}
+                    onChange={(next) => {
+                      setPicks(next);
+                      const { country } = next;
+                      if (country !== null) setOpenCountries((was) => new Set(was).add(country));
+                    }}
+                    words={words}
+                  />
+                </>
               )
             }
             filtered={filtered}

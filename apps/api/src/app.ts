@@ -1533,6 +1533,15 @@ export function createApp({
     if ('refused' in reads) return reads.refused;
     return c.json({ started: versionChecks === undefined ? 0 : await versionChecks.start() }, 200);
   });
+  v1.openapi(openApiRoutes.startQueuedChecks, async (c) => {
+    const reads = await adminReads(c);
+    if ('refused' in reads) return reads.refused;
+    if (versionChecks === undefined || authLimits === undefined) return fail(c, 'check_off', 503);
+    const limited = await overLimit(c, authLimits, ruleCheckLimits.minute, reads.current.accountId);
+    if (limited !== undefined) return limited;
+    const { started, began } = await versionChecks.startQueued();
+    return began ? c.json({ started }, 200) : fail(c, 'check_not_started', 502);
+  });
   v1.openapi(openApiRoutes.getVersionCheck, async (c) => {
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;

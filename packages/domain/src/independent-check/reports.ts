@@ -171,16 +171,22 @@ export interface StartCandidate {
   readonly starts: readonly CheckStart[];
 }
 
+/** How many starts a batch may make: the automatic share, or every due version when an admin asks. */
+export type StartShare = 'automatic' | 'admin';
+
 /**
- * The versions the activation screen starts by itself, in the order given: each with no current
- * report and no live start, within what is left of the automatic share of the last 24 hours.
+ * The versions a batch starts, in the order given: each with no current report and no live start.
+ * An automatic batch stays within what is left of its share of the last 24 hours; a batch an admin
+ * asks for has no cap, like an admin's start of one version.
  */
 export function versionsToStart<C extends StartCandidate>(
   candidates: readonly C[],
   startsInWindow: number,
   now: number,
+  share: StartShare = 'automatic',
 ): C[] {
-  const left = Math.max(0, maxAutomaticStartsPerDay - startsInWindow);
+  const left =
+    share === 'admin' ? candidates.length : Math.max(0, maxAutomaticStartsPerDay - startsInWindow);
   return candidates
     .filter(
       (candidate) =>

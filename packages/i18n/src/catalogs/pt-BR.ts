@@ -1196,7 +1196,7 @@ export const ptBR = {
         unread:
           'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
-          'Esta versão está na fila. Quando você abre esta tela, o Arca confere algumas versões por dia, inclusive as de verificação vencida ou que falhou. Volte mais tarde.',
+          'Esta versão está na fila. O Arca confere algumas versões a cada hora, até 15 por dia, inclusive as de verificação vencida ou que falhou. Para não esperar, use “Analisar as versões da fila”, acima dos filtros.',
       },
       filter: {
         country: 'País',
@@ -1386,6 +1386,16 @@ export const ptBR = {
         'Feita pelo Arca com IA, que pode errar. Uma parte não usa IA: o código confere se cada trecho está mesmo na página citada. Quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, o Arca lê só os trechos que um modelo de IA mais rápido escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
     },
     /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
+    /** An admin's check of every version in the queue at once, past the automatic share. */
+    queuedChecks: {
+      button: '{n, plural, one {Analisar a versão da fila} other {Analisar as # versões da fila}}',
+      confirmLead:
+        '{n, plural, one {O Arca começa agora a análise da versão que está na fila, sem esperar a rodada de cada hora.} other {O Arca começa agora a análise das # versões que estão na fila, sem esperar a rodada de cada hora.}} Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API e leva alguns minutos.',
+      confirm: 'Analisar agora',
+      starting: 'Começando as análises…',
+      started:
+        '{n, plural, =0 {Nenhuma versão precisava de análise agora.} one {# análise começou. Ela sai da fila em alguns minutos.} other {# análises começaram. Elas saem da fila em alguns minutos.}}',
+    },
     checkRun: {
       button: 'Analisar com o Arca',
       running: 'Ver a análise em andamento',

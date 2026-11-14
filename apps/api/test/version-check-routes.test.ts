@@ -193,6 +193,8 @@ function setup({
   });
   const start = (headers: Record<string, string> = { origin }) =>
     app.request('/v1/knowledge/checks/start', { method: 'POST', headers });
+  const startQueued = (headers: Record<string, string> = { origin }) =>
+    app.request('/v1/knowledge/checks/start-queued', { method: 'POST', headers });
   const list = async () =>
     (
       (await (await app.request('/v1/knowledge/versions')).json()) as {
@@ -270,6 +272,7 @@ function setup({
   return {
     checks,
     start,
+    startQueued,
     list,
     points,
     read,
@@ -338,6 +341,51 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
     const { start, runs } = setup();
     expect((await start({ origin: 'https://evil.example' })).status).toBe(403);
     expect((await start({ 'sec-fetch-site': 'cross-site' })).status).toBe(403);
+    expect(runs).toEqual([]);
+  });
+});
+
+describe('POST /v1/knowledge/checks/start-queued (ADR-0027, an admin\'s batch)', () => {
+  it('starts every due version past the automatic share, with identifiers only', async () => {
+    const { start, startQueued, runs } = setup({ count: 25 });
+    expect(await (await start()).json()).toEqual({ started: 15 });
+    const response = await startQueued();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ started: 10 });
+    expect(runs.map(({ number }) => number).toSorted((a, b) => a - b)).toEqual(
+      Array.from({ length: 25 }, (_, index) => index + 1),
+    );
+  });
+
+  it('skips a superseded version, a running check and a current report', async () => {
+    const { startQueued, startOne, runs, report } = setup({ count: 3, superseded: new Set([3]) });
+    await startOne(1);
+    await report(runs[0]);
+    await startOne(2);
+    expect(await (await startQueued()).json()).toEqual({ started: 0 });
+    expect(runs).toHaveLength(2);
+  });
+
+  it('counts against the per-minute burst limit per admin, and starts nothing past it', async () => {
+    const { startQueued, limited } = setup({ count: 1 });
+    await startQueued();
+    expect(limited).toEqual([['rule_check_minute', admin.accountId]]);
+    const blocked = setup({ count: 1, blocked: 'rule_check_minute' });
+    expect((await blocked.startQueued()).status).toBe(429);
+    expect(blocked.runs).toEqual([]);
+  });
+
+  it('answers 502 when a run could not begin, and 503 where no checker runs', async () => {
+    expect((await setup({ count: 1, runFails: true }).startQueued()).status).toBe(502);
+    const off = await setup({ count: 1, enabled: false }).startQueued();
+    expect(off.status).toBe(503);
+    expect(await off.json()).toEqual({ error: { code: 'check_off' } });
+  });
+
+  it('is for admins only, from the same origin', async () => {
+    expect((await setup({ admitted: false }).startQueued()).status).toBe(403);
+    const { startQueued, runs } = setup();
+    expect((await startQueued({ origin: 'https://evil.example' })).status).toBe(403);
     expect(runs).toEqual([]);
   });
 });

@@ -936,6 +936,20 @@ export const startVersionChecks = {
   response: { description: 'Started', schema: StartVersionChecksResponse },
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
+export const StartQueuedChecksResponse = z.strictObject({
+  started: z.int().min(0).max(1_000),
+});
+export type StartQueuedChecksResponse = z.infer<typeof StartQueuedChecksResponse>;
+
+export const startQueuedChecks = {
+  method: 'post',
+  path: '/knowledge/checks/start-queued',
+  operationId: 'startQueuedChecks',
+  summary:
+    'Starts, for an admin, the independent check of every proposed route version with no current report and no check running, with no daily cap; answers how many started. 10 requests per minute per account (429 rate_limited). 403 not_admin; 502 check_not_started when a run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
+  response: { description: 'Started', schema: StartQueuedChecksResponse },
+} as const satisfies RouteDefinition<typeof StartQueuedChecksResponse>;
+
 export const VersionCheckReport = z.strictObject({
   checkedAt: z.iso.datetime(),
   /** Every item matches; never for a scripted report. */
@@ -1198,6 +1212,7 @@ export const knowledgeRoutes = {
   answerCorrectionRequest,
   listCorrectorFlaggedVersions,
   startVersionChecks,
+  startQueuedChecks,
   getVersionCheck,
   startVersionCheck,
   getVersionCheckProgress,
