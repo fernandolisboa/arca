@@ -65,6 +65,14 @@ The owner asked on 2026-11-13 why a difference the check found does not become a
 - **Leads, not sources.** A request is a lead: only an official source with an address changes a rule. Pasted text and files help find that source; when none is found, the answer is `no_change`, saying what was looked for.
 - **Nothing from a request reaches the repository.** Route notes and pull requests name the request by its ID and cite the official sources found; they never quote or paraphrase its note, pasted text or files, and never cite a link of it that is not official.
 
+### Started from the app (amendment 2026-11-14)
+
+The owner asked to start the corrector run from the app, not only at its daily time. The run is the owner's scheduled task on claude.ai, a Claude Code session that clones the repository and opens pull requests, so it cannot run inside the API; the app fires the same task through its API trigger instead.
+
+- `POST /v1/knowledge/corrector/run`, for an owner-list admin only (the corrector key screen's check), from the same origin, 4 an hour per account (`corrector_run_account`). It calls `https://api.anthropic.com/v1/claude_code/routines/<task>/fire` (research preview, beta header `experimental-cc-routine-2026-04-01`; [scheduled tasks](https://code.claude.com/docs/en/routines.md), read 2026-11-14) with the task's own token and a fixed text saying the app started it; the task's ID lives in code, the token in the Sensitive Production variable `ARCA_CORRECTOR_FIRE_TOKEN`, which the owner generates on claude.ai and pastes in Vercel. No case or personal data travels; the response is discarded unread.
+- Absent the token the route answers 503 `corrector_off`; when claude.ai does not accept the call, 502 `corrector_not_started`. The button "Rodar o corretor agora" sits beside "Analisar as versões da fila" and confirms first, saying the run spends the owner's subscription.
+- The token can start that one task and nothing else: no repository, no session and no other task. A stolen token can only spend the owner's runs, up to claude.ai's limit of 30 an hour per task; the owner regenerates it on claude.ai, which ends the old one at once.
+
 ### The corrector key
 
 - 32 bytes from the server's CSPRNG, base64url with a fixed `arca_ck_` prefix that the secret scan knows, created by an owner-list admin with a step-up of its own purpose (`corrector_key`, spent in the same `app_auth` transaction that inserts the key), shown once with `Cache-Control: no-store` and kept out of client state, stored as its SHA-256; one key is live and a new one replaces it; it expires after a year. Creating one writes an audit event and emails the owner-list admins. A key stops working when its creator leaves the owner list or is erased, and an owner-list admin can revoke it without a step-up; a revocation is an inserted key event, written through a definer function, audited and emailed like a creation.

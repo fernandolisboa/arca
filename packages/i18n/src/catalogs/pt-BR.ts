@@ -1395,6 +1395,17 @@ export const ptBR = {
       started:
         '{n, plural, =0 {Nenhuma versão precisava de análise agora.} one {# análise começou. Ela sai da fila em alguns minutos.} other {# análises começaram. Elas saem da fila em alguns minutos.}}',
     },
+    /** The owner's corrector run, started from the app (ADR-0029). */
+    correctorRun: {
+      button: 'Rodar o corretor agora',
+      confirmLead:
+        'O corretor lê os pedidos de correção e as versões em que o Arca achou diferença, confere nas fontes oficiais e propõe versões corrigidas, até 3 por vez. Ele roda na sua assinatura do Claude, a mesma da rotina diária, e leva alguns minutos. As versões corrigidas aparecem aqui para você decidir.',
+      confirm: 'Rodar agora',
+      starting: 'Chamando o corretor…',
+      started: 'O corretor começou. Você recebe uma notificação do Claude quando ele terminar.',
+      failure:
+        '{reason, select, limited {O corretor já rodou várias vezes nesta hora. Espere um pouco e tente de novo.} corrector_off {O corretor ainda não está ligado aqui: falta o token da rotina na Vercel.} corrector_not_started {O Claude não aceitou o pedido. Confira se o token da rotina ainda vale e tente de novo.} not_admin {Só quem está na lista de donos pode rodar o corretor.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para rodar o corretor. Tente de novo.}}',
+    },
     /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
     checkRun: {
       button: 'Analisar com o Arca',

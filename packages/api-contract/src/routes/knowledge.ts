@@ -915,6 +915,15 @@ export const listCorrectorFlaggedVersions = {
   response: { description: 'The flagged versions', schema: CorrectorFlaggedVersions },
 } as const satisfies RouteDefinition<typeof CorrectorFlaggedVersions>;
 
+export const startCorrectorRun = {
+  method: 'post',
+  path: '/knowledge/corrector/run',
+  operationId: 'startCorrectorRun',
+  summary:
+    "Starts the owner's corrector run now, the same scheduled task that runs daily, for an owner-list admin. 4 per hour per account (429 rate_limited). 401 when not signed in; 403 not_admin; 502 corrector_not_started when claude.ai did not accept it; 503 corrector_off where its token is not configured",
+  response: { description: 'Started', schema: z.strictObject({}) },
+} as const satisfies RouteDefinition<z.ZodObject<Record<string, never>>>;
+
 /*
  * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
  * proposed route version that has no current report and no live start, within its share of the 20
@@ -1211,6 +1220,7 @@ export const knowledgeRoutes = {
   correctorFileUrl,
   answerCorrectionRequest,
   listCorrectorFlaggedVersions,
+  startCorrectorRun,
   startVersionChecks,
   startQueuedChecks,
   getVersionCheck,

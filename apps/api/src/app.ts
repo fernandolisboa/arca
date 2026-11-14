@@ -98,6 +98,7 @@ import {
   intakeLimits,
   correctionRequestLimits,
   correctorKeyLimits,
+  correctorRunLimits,
   correctorLimits,
   ruleSummaryLimits,
   ruleCheckLimits,
@@ -133,6 +134,7 @@ import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
+import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
@@ -248,6 +250,8 @@ export interface AppDependencies {
   readonly correctorKeys?: CorrectorKeys;
   /** The corrector run's routes (ADR-0029); absent, they answer 401. */
   readonly corrector?: Corrector;
+  /** Starts the owner's corrector run from the app (ADR-0029); absent, its route answers 503. */
+  readonly correctorRun?: CorrectorRun;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -298,6 +302,8 @@ export type ErrorCode =
   | 'rate_limited'
   | 'check_off'
   | 'check_not_started'
+  | 'corrector_off'
+  | 'corrector_not_started'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -472,6 +478,7 @@ export function createApp({
   ruleReports,
   corrections,
   correctorKeys,
+  correctorRun,
   corrector,
   accountConfirmed,
   memoryObjects,
@@ -1843,6 +1850,17 @@ export function createApp({
     // Shown once: no cache along the way may keep it.
     c.header('Cache-Control', 'no-store');
     return c.json(created, 200);
+  });
+  v1.openapi(openApiRoutes.startCorrectorRun, async (c) => {
+    const screen = await keyScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { accountId } = screen.current;
+    const status = await screen.keys.status(accountId);
+    if (status === 'not_admin' || !status.canManage) return fail(c, 'not_admin', 403);
+    if (correctorRun === undefined) return fail(c, 'corrector_off', 503);
+    const limited = await overLimit(c, screen.limits, correctorRunLimits.hour, accountId);
+    if (limited !== undefined) return limited;
+    return (await correctorRun.start()) ? c.json({}, 200) : fail(c, 'corrector_not_started', 502);
   });
   v1.openapi(openApiRoutes.revokeCorrectorKey, async (c) => {
     const screen = await keyScreen(c);
