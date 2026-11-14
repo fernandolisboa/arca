@@ -45,7 +45,7 @@ export function QueuedChecks({
           }}
         >
           <Icon name="ai" size={18} />
-          {t('knowledge.queuedChecks.button', { n: queued })}
+          {t('knowledge.queuedChecks.button')}
         </Button>
       )}
       {confirming && (

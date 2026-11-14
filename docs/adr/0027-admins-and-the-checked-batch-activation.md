@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals); since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)

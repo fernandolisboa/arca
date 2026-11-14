@@ -93,6 +93,20 @@ describe('knowledge.check_start (ADR-0027)', () => {
     expect(await starts.recent()).toHaveLength(23);
   });
 
+  it('starts every due version of concurrent admin batches once, past the automatic share', async () => {
+    await clearStarts();
+    const starts = postgresCheckStarts(() => testDatabase.apiDb);
+    const requests = Array.from({ length: 20 }, (_, index) => ({
+      routeId: 'qm-batch',
+      number: index + 1,
+      key,
+    }));
+    expect(await starts.begin(requests)).toHaveLength(15);
+    const started = (await Promise.all([1, 2].map(() => starts.begin(requests, 'admin')))).flat();
+    expect(started.map(({ number }) => number).sort((a, b) => a - b)).toEqual([16, 17, 18, 19, 20]);
+    expect(await starts.recent()).toHaveLength(20);
+  });
+
   it('answers a version its live start when asked again, also from concurrent taps', async () => {
     await clearStarts();
     const starts = postgresCheckStarts(() => testDatabase.apiDb);

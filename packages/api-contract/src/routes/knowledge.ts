@@ -937,7 +937,7 @@ export const startVersionChecks = {
 } as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
 export const StartQueuedChecksResponse = z.strictObject({
-  started: z.int().min(0).max(1_000),
+  started: z.int().min(0),
 });
 export type StartQueuedChecksResponse = z.infer<typeof StartQueuedChecksResponse>;
 

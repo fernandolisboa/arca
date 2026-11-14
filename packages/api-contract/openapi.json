@@ -36428,8 +36428,7 @@
                   "properties": {
                     "started": {
                       "type": "integer",
-                      "minimum": 0,
-                      "maximum": 1000
+                      "minimum": 0
                     }
                   },
                   "required": [

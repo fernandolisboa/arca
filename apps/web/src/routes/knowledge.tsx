@@ -17,9 +17,9 @@ import {
 import { textLinkClass } from '../forms/text-link.js';
 import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
-import { QueuedChecks } from '../knowledge/queued-checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
+import { QueuedChecks } from '../knowledge/queued-checks.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
 import { RouteRequestsSection } from '../knowledge/route-requests.js';
 import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
@@ -172,7 +172,12 @@ function Knowledge() {
             filters={
               proposed.length > 0 && (
                 <>
-                  <QueuedChecks queued={needCounts(proposed, noFilter).unchecked} words={words} />
+                  <QueuedChecks
+                    queued={
+                      proposed.filter(({ check }) => check === 'stale' || check === 'none').length
+                    }
+                    words={words}
+                  />
                   <ReviewFilters
                     countries={ordered
                       .map(({ country }) => country)
