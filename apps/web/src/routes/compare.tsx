@@ -24,7 +24,7 @@ function Compare() {
   const title = t('compare.title');
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('compare.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -32,10 +32,10 @@ function Compare() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={title} />;
+  if (!session.isSuccess) return <Page narrow title={title} />;
   if (!confirmed) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
@@ -43,7 +43,7 @@ function Compare() {
   const status = read.error instanceof ApiError ? read.error.status : undefined;
   if (familyCase.data?.case === null || status === 404) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('compare.noCase')}</p>
         <Link to="/family" className={textLinkClass}>
           {t('compare.openFamily')}
@@ -53,7 +53,7 @@ function Compare() {
   }
   if (familyCase.isError || (read.isError && editor === undefined)) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p role="alert">{t(status === 429 ? 'compare.tooMany' : 'compare.loadFailure')}</p>
         <Button
           onClick={() => {
@@ -66,9 +66,9 @@ function Compare() {
       </Page>
     );
   }
-  if (editor === undefined) return <Page title={title} wide />;
+  if (editor === undefined) return <Page title={title} />;
   return (
-    <Page title={title} lead={t('compare.lead')} wide>
+    <Page title={title} lead={t('compare.lead')}>
       <Comparison editor={editor} words={words} />
     </Page>
   );

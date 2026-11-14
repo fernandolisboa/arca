@@ -1430,6 +1430,14 @@ export const ptBR = {
       httpStatus: 'O site respondeu com erro.',
       again: 'Analisar de novo',
       result: 'Resultado da análise',
+      lists: 'O que a análise viu',
+      items: 'Itens',
+      pages: 'Páginas',
+      noItems: 'Cada item aparece aqui assim que o Arca termina de compará-lo.',
+      noPages: 'O Arca ainda não abriu nenhuma página.',
+      filter: 'Mostrar os itens',
+      filterStatus: '{status, select, all {Todos} matches {Bate} differs {Difere} other {Confira}}',
+      backToList: 'Voltar para a lista',
     },
     /** Activating every version the independent check found clean, with one tap (ADR-0027). */
     checkedBatch: {

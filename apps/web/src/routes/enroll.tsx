@@ -81,7 +81,7 @@ function RequestLink() {
           : t('enroll.request.failure', { reason: failure });
 
   return (
-    <Page title={t('enroll.request.title')} lead={t('enroll.request.lead')}>
+    <Page narrow title={t('enroll.request.title')} lead={t('enroll.request.lead')}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label={t('enroll.request.code')}
@@ -155,14 +155,14 @@ function Register({
   // While waiting, a session that appears is this registration's own, on its way to the kit.
   if (session.isSuccess && !waiting) {
     return (
-      <Page title={t('enroll.register.title')}>
+      <Page narrow title={t('enroll.register.title')}>
         <SignedInNotice email={session.data.email} />
       </Page>
     );
   }
 
   return (
-    <Page title={t('enroll.register.title')} lead={t('enroll.register.lead')}>
+    <Page narrow title={t('enroll.register.title')} lead={t('enroll.register.lead')}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label={t('enroll.register.code')}

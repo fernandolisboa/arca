@@ -22,7 +22,7 @@ function AcceptInvite() {
   const [token] = useLinkToken();
   if (token === undefined) {
     return (
-      <Page title={t('acceptInvite.title')}>
+      <Page narrow title={t('acceptInvite.title')}>
         <p>{t('acceptInvite.noLink')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('acceptInvite.signIn')}
@@ -89,7 +89,7 @@ function Accept({ token }: { readonly token: string }) {
   const inviter = invite.data?.inviterEmail ?? undefined;
 
   return (
-    <Page title={t('acceptInvite.title')}>
+    <Page narrow title={t('acceptInvite.title')}>
       {inviter !== undefined && (
         <div className="flex flex-col gap-2">
           <p className="text-lead">{t('acceptInvite.from', { email: inviter })}</p>

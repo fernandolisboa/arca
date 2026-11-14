@@ -48,7 +48,7 @@ function listedTone(status: ListedCheck): StatusTone {
 }
 
 /** A scripted report's matches are a test's, never a confirmation, so none shows as one. */
-function itemTone(status: ReportItem['status'], scripted: boolean): StatusTone {
+export function itemTone(status: ReportItem['status'], scripted: boolean): StatusTone {
   if (status === 'matches') return scripted ? 'unknown' : 'ok';
   return status === 'differs' ? 'warn' : 'unknown';
 }
@@ -77,26 +77,19 @@ export function CheckChip({
 export function CheckReport({
   view,
   words,
-  startsOpen = false,
-  level = 5,
 }: {
   readonly view: VersionView;
   readonly words: KnowledgeWords;
-  /** Open whatever the status, where the report is what the admin came to read. */
-  readonly startsOpen?: boolean;
-  /** The panel's heading level, which follows the screen's outline. */
-  readonly level?: 4 | 5;
 }) {
   const { t } = words;
   const check = useQuery(versionCheckQuery(view.routeId, view.number));
   const status = check.data?.enabled === true ? check.data.status : undefined;
-  const folded = checkFold(check.isPending, status);
-  const fold = startsOpen ? { ...folded, defaultOpen: true } : folded;
+  const fold = checkFold(check.isPending, status);
   return (
     <Disclosure
       key={fold.key}
       title={t('knowledge.check.title')}
-      level={level}
+      level={5}
       icon="ai"
       aside={status !== undefined && <CheckChip status={status} words={words} />}
       defaultOpen={fold.defaultOpen}
@@ -131,7 +124,7 @@ export function CheckReport({
           report={check.data.report}
           country={view.country}
           words={words}
-          subheading={level === 4 ? 'h5' : 'h6'}
+          subheading="h6"
         />
       )}
     </Disclosure>
@@ -150,18 +143,47 @@ function ReportBody({
   report,
   country,
   words,
-  subheading: Subheading,
+  subheading,
 }: {
   readonly report: VersionCheckReport;
   readonly country: string;
   readonly words: KnowledgeWords;
-  readonly subheading: 'h5' | 'h6';
+  readonly subheading: 'h6';
+}) {
+  const pageReads = pageReadsOf(report);
+  return (
+    <>
+      <ReportSummary report={report} country={country} words={words} />
+      {report.items.length > 0 && (
+        <ul className="flex flex-col gap-3">
+          {report.items.map((item) => (
+            <li key={item.key}>
+              <ReportItemCard
+                item={item}
+                scripted={report.scripted}
+                pageReads={pageReads}
+                words={words}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      <ReportPageNotes report={report} words={words} subheading={subheading} />
+    </>
+  );
+}
+
+/** What a report found in all, when it was written and which country guide it followed. */
+export function ReportSummary({
+  report,
+  country,
+  words,
+}: {
+  readonly report: VersionCheckReport;
+  readonly country: string;
+  readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const problems = report.fetchLog.filter(
-    ({ outcome, cut, fromCopy }) => outcome !== 'read' || cut || fromCopy,
-  );
-  const pageReads = pageReadsOf(report);
   const checkedAt = new Intl.DateTimeFormat(words.language, { dateStyle: 'long' }).format(
     new Date(report.checkedAt),
   );
@@ -181,39 +203,40 @@ function ReportBody({
               number: report.guide.number,
             })}
       </p>
-      {report.items.length > 0 && (
-        <ul className="flex flex-col gap-3">
-          {report.items.map((item) => (
-            <li key={item.key}>
-              <ReportItemCard
-                item={item}
-                scripted={report.scripted}
-                pageReads={pageReads}
-                words={words}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-      {problems.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <Subheading className="font-medium">{t('knowledge.check.pages')}</Subheading>
-          <ul className="flex flex-col gap-2">
-            {problems.map(({ url, machineReadableUrl, fromCopy, outcome, status, cut }) => (
-              <li key={url} className="flex flex-col gap-1 text-small">
-                {(outcome !== 'read' || cut) && (
-                  <span>
-                    {t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}
-                  </span>
-                )}
-                <span className="font-mono break-all text-muted">{url}</span>
-                <PageReadNote read={{ address: machineReadableUrl, fromCopy }} words={words} />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </>
+  );
+}
+
+/** The pages a report could not read whole, or read from somewhere other than the page. */
+export function ReportPageNotes({
+  report,
+  words,
+  subheading: Subheading,
+}: {
+  readonly report: VersionCheckReport;
+  readonly words: KnowledgeWords;
+  readonly subheading: 'h3' | 'h6';
+}) {
+  const { t } = words;
+  const problems = report.fetchLog.filter(
+    ({ outcome, cut, fromCopy }) => outcome !== 'read' || cut || fromCopy,
+  );
+  if (problems.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <Subheading className="font-medium">{t('knowledge.check.pages')}</Subheading>
+      <ul className="flex flex-col gap-2">
+        {problems.map(({ url, machineReadableUrl, fromCopy, outcome, status, cut }) => (
+          <li key={url} className="flex flex-col gap-1 text-small">
+            {(outcome !== 'read' || cut) && (
+              <span>{t('knowledge.check.outcome', { outcome, status: String(status ?? '') })}</span>
+            )}
+            <span className="font-mono break-all text-muted">{url}</span>
+            <PageReadNote read={{ address: machineReadableUrl, fromCopy }} words={words} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -247,7 +270,7 @@ function PageReadNote({
   );
 }
 
-function ReportItemCard({
+export function ReportItemCard({
   item,
   scripted,
   pageReads,
@@ -261,7 +284,7 @@ function ReportItemCard({
   const { t } = words;
   return (
     <div className={`flex min-w-0 flex-col gap-2 ${surface}`}>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col items-start gap-1">
         <span className="text-small text-muted">
           {t('knowledge.check.kind', { kind: item.kind })}
         </span>

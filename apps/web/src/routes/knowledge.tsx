@@ -79,7 +79,7 @@ function Knowledge() {
   const title = t('knowledge.title');
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -92,23 +92,23 @@ function Knowledge() {
     (versions.error instanceof ApiError && versions.error.status === 403)
   ) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.notAdmin')}</p>
       </Page>
     );
   }
   if (versions.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('knowledge.loadFailure')}</p>
         <Button onClick={() => void versions.refetch()}>{t('knowledge.retry')}</Button>
       </Page>
     );
   }
-  if (versions.data === undefined) return <Page title={title} />;
+  if (versions.data === undefined) return <Page narrow title={title} />;
   if (picked !== null) {
     return (
-      <Page title={title} wide>
+      <Page title={title}>
         <button
           type="button"
           className={`${textLinkClass} self-start`}
@@ -157,7 +157,7 @@ function Knowledge() {
     : listed.filter(({ picked, state }) => picked.subject === 'comparison' && state === 'proposed');
   const others = listed.filter(({ state }) => state !== 'proposed');
   return (
-    <Page title={title} lead={t('knowledge.lead')} wide>
+    <Page title={title} lead={t('knowledge.lead')}>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <CheckedBatch versions={proposed} words={words} />

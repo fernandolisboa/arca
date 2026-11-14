@@ -151,7 +151,7 @@ function Vault() {
 function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <Page title={t('vault.title')} lead={lead ?? t('vault.lead')}>
+    <Page narrow title={t('vault.title')} lead={lead ?? t('vault.lead')}>
       {children}
     </Page>
   );
