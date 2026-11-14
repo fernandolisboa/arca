@@ -263,7 +263,7 @@ function numberRuns(text: string, words: ReadonlySet<string>): string[] {
     run = [];
   };
   for (const [piece] of text.matchAll(/[\p{L}\p{M}]+|[^\p{L}\p{M}]+/gu)) {
-    if (/^[\s\-\u2010\u2011\u2013]+$/u.test(piece)) continue;
+    if (/^[\s\-\u2010\u2011\u2012\u2013\u2014]+$/u.test(piece)) continue;
     const isWord = /^[\p{L}\p{M}]/u.test(piece);
     if (isWord && (words.has(piece) || joiners.has(piece) || multiplier.test(piece))) {
       run.push(piece);

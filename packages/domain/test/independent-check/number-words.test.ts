@@ -43,6 +43,8 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['one of the conditions', '1', ['en'], 'a pronoun'],
     ['under twenty-one years', '20', ['en'], 'the ten of a larger number'],
     ['under twenty-two years', '2', ['en'], 'the unit of a larger number'],
+    ['under twenty—two years', '2', ['en'], 'the unit after an em dash'],
+    ['under twenty‒two years', '2', ['en'], 'the unit after a figure dash'],
     ['vinte e dois anos', '2', ['pt'], 'the unit after a joiner'],
     ['treinta y dos meses', '30', ['es'], 'the ten before a joiner'],
     ['cinco mil euros', '5', ['es'], 'a number of thousands'],
