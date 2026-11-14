@@ -25,7 +25,8 @@ type StartFailure = ReturnType<typeof startFailure>;
 const startCodes = ['check_off', 'check_not_started'] as const;
 const isStartCode = (code: string): code is (typeof startCodes)[number] =>
   (startCodes as readonly string[]).includes(code);
-const startFailure = (error: unknown) =>
+/** Why a start failed, for the check's start messages. */
+export const startFailure = (error: unknown) =>
   commonFailure(error, ({ code }: ApiError) => (isStartCode(code) ? code : undefined));
 
 export interface CheckRunState {

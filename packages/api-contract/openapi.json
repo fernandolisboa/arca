@@ -36414,6 +36414,61 @@
         }
       }
     },
+    "/knowledge/checks/start-queued": {
+      "post": {
+        "operationId": "startQueuedChecks",
+        "summary": "Starts, for an admin, the independent check of every proposed route version with no current report and no check running, with no daily cap; answers how many started. 10 requests per minute per account (429 rate_limited). 403 not_admin; 502 check_not_started when a run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured",
+        "responses": {
+          "200": {
+            "description": "Started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "started": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "started"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/knowledge/versions/check": {
       "get": {
         "operationId": "getVersionCheck",

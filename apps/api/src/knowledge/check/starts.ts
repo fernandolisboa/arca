@@ -4,6 +4,7 @@ import {
   type ReportKey,
   type ReportMeta,
   requestedStart,
+  type StartShare,
   startWindow,
   versionKey,
   versionsToStart,
@@ -38,10 +39,13 @@ export interface RequestedCheckStart {
  */
 export interface CheckStarts {
   /**
-   * Records a start for each requested version that is due, in order, within what is left of the
-   * automatic share of the cap.
+   * Records a start for each requested version that is due, in order: an automatic batch within
+   * what is left of its share of the cap, an admin's batch with no cap.
    */
-  readonly begin: (requests: readonly StartRequest[]) => Promise<readonly RecordedStart[]>;
+  readonly begin: (
+    requests: readonly StartRequest[],
+    share?: StartShare,
+  ) => Promise<readonly RecordedStart[]>;
   /**
    * An admin's start of one version, whatever its reports say: answers its live start when it has
    * one, records a new start otherwise.
@@ -67,6 +71,7 @@ function due(
   starts: readonly RecordedStart[],
   reports: readonly (ReportMeta & { routeId: string; number: number })[],
   now: number,
+  share: StartShare,
 ): StartRequest[] {
   const startsOf = grouped(starts);
   const reportsOf = grouped(reports);
@@ -78,6 +83,7 @@ function due(
     })),
     starts.length,
     now,
+    share,
   );
 }
 
@@ -99,8 +105,8 @@ export function memoryCheckStarts(
     );
   return {
     rows,
-    begin: async (requests) => {
-      const started = due(requests, await recent(), await reports.list(), now()).map(
+    begin: async (requests, share = 'automatic') => {
+      const started = due(requests, await recent(), await reports.list(), now(), share).map(
         ({ routeId, number }) => ({ id: randomUUID(), routeId, number, startedAt: now() }),
       );
       rows.push(...started);
@@ -172,11 +178,11 @@ export function postgresCheckStarts(db: () => Database): CheckStarts {
       : { id: row.id, routeId, number, startedAt: row.started_at };
   };
   return {
-    begin: (requests) =>
+    begin: (requests, share = 'automatic') =>
       db().transaction(async (tx) => {
         const { now, starts, reports } = await ledger(tx);
         const inserted: RecordedStart[] = [];
-        for (const request of due(requests, starts, reports, now)) {
+        for (const request of due(requests, starts, reports, now, share)) {
           const start = await insert(tx, request);
           if (start !== undefined) inserted.push(start);
         }

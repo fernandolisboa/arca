@@ -133,6 +133,13 @@ describe('versionsToStart', () => {
     expect(versionsToStart(candidates, maxAutomaticStartsPerDay, now)).toHaveLength(0);
     expect(versionsToStart(candidates, maxAutomaticStartsPerDay + 5, now)).toHaveLength(0);
   });
+
+  it("starts every due version of an admin's batch, whatever the window holds", () => {
+    const candidates = Array.from({ length: 30 }, (_, index) => candidate(index + 1));
+    expect(versionsToStart(candidates, maxAutomaticStartsPerDay + 5, now, 'admin')).toHaveLength(
+      30,
+    );
+  });
 });
 
 describe('requestedStart', () => {
