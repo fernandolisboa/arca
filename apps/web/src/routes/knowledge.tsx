@@ -108,7 +108,7 @@ function Knowledge() {
   if (versions.data === undefined) return <Page title={title} />;
   if (picked !== null) {
     return (
-      <Page title={title} wide>
+      <Page title={title}>
         <button
           type="button"
           className={`${textLinkClass} self-start`}
@@ -157,7 +157,7 @@ function Knowledge() {
     : listed.filter(({ picked, state }) => picked.subject === 'comparison' && state === 'proposed');
   const others = listed.filter(({ state }) => state !== 'proposed');
   return (
-    <Page title={title} lead={t('knowledge.lead')} wide>
+    <Page title={title} lead={t('knowledge.lead')}>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <CheckedBatch versions={proposed} words={words} />

@@ -31,7 +31,7 @@ function Invites() {
   const session = useQuery(sessionQuery);
   if (session.isError) {
     return (
-      <Page title={t('invites.title')}>
+      <Page narrow title={t('invites.title')}>
         <p>{t('invites.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -39,16 +39,20 @@ function Invites() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={t('invites.title')} />;
+  if (!session.isSuccess) return <Page narrow title={t('invites.title')} />;
   if (!session.data.confirmed) {
     return (
-      <Page title={t('invites.title')}>
+      <Page narrow title={t('invites.title')}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
   }
   return (
-    <Page title={t('invites.title')} lead={t('invites.lead', { hours: inviteLifetimeHours })}>
+    <Page
+      narrow
+      title={t('invites.title')}
+      lead={t('invites.lead', { hours: inviteLifetimeHours })}
+    >
       <SendInvite />
       <InviteList />
     </Page>

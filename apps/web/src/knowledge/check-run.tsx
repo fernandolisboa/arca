@@ -9,11 +9,9 @@ import {
   type CheckRunStep,
   type CheckRunStepStatus,
   checkRunStepStatuses,
-  checkRunItems,
   checkRunSteps,
   pagesSettled,
 } from './check-run-steps.js';
-import { ItemResult, type PageRead } from './checks.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -219,67 +217,9 @@ function StepMarker({ status }: { readonly status: CheckRunStepStatus }) {
   );
 }
 
-const noPageReads: ReadonlyMap<string, PageRead> = new Map();
-
 /**
- * Each item of a check as its answer lands: the result for the answered ones, then the item the
- * check is waiting on while it runs, then how many are left. The progress carries statuses only,
- * so the reason, note and quotes come with the report.
- */
-function CheckRunItems({
-  progress,
-  words,
-}: {
-  readonly progress: CheckProgress;
-  readonly words: KnowledgeWords;
-}) {
-  const { t } = words;
-  const { answered, next, left } = checkRunItems(progress);
-  return (
-    <>
-      {answered.length > 0 && (
-        <ul aria-label={t('knowledge.checkRun.comparedItems')} className="flex flex-col gap-3">
-          {answered.map((item) => (
-            <li key={item.key} className="flex animate-row-land flex-col gap-1 pt-2">
-              <span className="text-small">
-                <span className="font-medium">{item.title}</span>
-                <span className="text-muted">
-                  {' · '}
-                  {t('knowledge.check.kind', { kind: item.kind })}
-                </span>
-              </span>
-              <ItemResult item={item} pageReads={noPageReads} words={words} />
-            </li>
-          ))}
-        </ul>
-      )}
-      {/* Polite, so a screen reader hears which item is next without losing its place. */}
-      <div role="status" className="flex flex-col gap-2">
-        {next !== undefined && (
-          <p className="flex items-center gap-3 border-t border-line pt-3 text-small">
-            <span
-              aria-hidden="true"
-              className="size-2.5 shrink-0 animate-stage-pulse rounded-full bg-primary"
-            />
-            <span className="min-w-0">
-              {t('knowledge.checkRun.awaiting', { title: next.title })}
-            </span>
-          </p>
-        )}
-        {left > 0 && (
-          <p className="text-small text-muted">{t('knowledge.checkRun.left', { n: left })}</p>
-        )}
-      </div>
-    </>
-  );
-}
-
-const pageTone = (outcome: CheckProgress['pages'][number]['outcome']): StatusTone =>
-  outcome === 'read' ? 'ok' : outcome === 'reading' ? 'unknown' : 'warn';
-
-/**
- * A check's steps with where it is now. Everything from the progress is plain text, so no URL
- * becomes a link; each cited page lands as its read begins and settles on its outcome.
+ * A check's steps two by two on a wide screen, each with where it is now: the pages and items
+ * themselves are listed beside the step's detail, not under it.
  */
 export function CheckRunSteps({
   progress,
@@ -307,64 +247,79 @@ export function CheckRunSteps({
     report: null,
   };
   return (
-    <ol aria-label={t('knowledge.checkRun.steps')} className="flex flex-col gap-3">
+    <ol
+      aria-label={t('knowledge.checkRun.steps')}
+      className="grid content-start gap-4 sm:grid-cols-2"
+    >
       {checkRunSteps.map((step) => {
         const status = statuses[step];
         return (
           <li
             key={step}
             aria-current={status === 'current' ? 'step' : undefined}
-            className={`${card} transition-colors duration-(--arca-duration-base) ease-out ${status === 'pending' || status === 'skipped' ? 'text-muted' : ''}`}
+            className={`flex min-w-0 items-start gap-3 transition-colors duration-(--arca-duration-base) ease-out ${status === 'pending' || status === 'skipped' ? 'text-muted' : ''}`}
           >
-            <div className="flex flex-wrap items-center gap-3">
-              <StepMarker status={status} />
-              <span className="min-w-0 flex-1 font-medium">
-                {t('knowledge.checkRun.step', { step })}
+            <StepMarker status={status} />
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="font-medium">{t('knowledge.checkRun.step', { step })}</span>
+              <span className="flex flex-wrap items-center gap-2 text-small">
+                <StatusChip
+                  tone={stepTones[status]}
+                  label={t('knowledge.checkRun.stepStatus', { status })}
+                />
+                {details[step] !== null && status !== 'pending' && (
+                  <span className="text-muted">{details[step]}</span>
+                )}
               </span>
-              <StatusChip
-                tone={stepTones[status]}
-                label={t('knowledge.checkRun.stepStatus', { status })}
-              />
-            </div>
-            {details[step] !== null && status !== 'pending' && (
-              <p className="text-small text-muted">{details[step]}</p>
-            )}
-            {step === 'compare' &&
-              progress.state !== 'finished' &&
-              (status === 'current' || status === 'stopped') && (
-                <CheckRunItems progress={progress} words={words} />
-              )}
-            {step === 'read' && progress.pages.length > 0 && (
-              <ul className="flex flex-col gap-2">
-                {progress.pages.map(({ url, outcome, status: httpStatus }) => (
-                  <li
-                    key={url}
-                    className="flex animate-row-land flex-col gap-1 border-t border-line pt-2 text-small"
-                  >
-                    <span className="font-mono break-all">{url}</span>
-                    <span className="flex flex-wrap items-center gap-2">
-                      <StatusChip
-                        tone={pageTone(outcome)}
-                        label={t('knowledge.checkRun.pageOutcome', { outcome })}
-                      />
-                      {outcome !== 'read' && outcome !== 'reading' && (
-                        <span className="text-muted">
-                          {outcome === 'http_status' && httpStatus === null
-                            ? t('knowledge.checkRun.httpStatus')
-                            : t('knowledge.check.outcome', {
-                                outcome,
-                                status: String(httpStatus ?? ''),
-                              })}
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            </span>
           </li>
         );
       })}
     </ol>
+  );
+}
+
+const pageTone = (outcome: CheckProgress['pages'][number]['outcome']): StatusTone =>
+  outcome === 'read' ? 'ok' : outcome === 'reading' ? 'unknown' : 'warn';
+
+/**
+ * The cited pages, each landing as its read begins and settling on its outcome. Everything from
+ * the progress is plain text, so no URL becomes a link.
+ */
+export function CheckRunPages({
+  progress,
+  words,
+}: {
+  readonly progress: CheckProgress;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  if (progress.pages.length === 0) {
+    return <p className="text-small text-muted">{t('knowledge.checkRun.noPages')}</p>;
+  }
+  return (
+    <ul className="flex flex-col">
+      {progress.pages.map(({ url, outcome, status: httpStatus }) => (
+        <li
+          key={url}
+          className="flex animate-row-land flex-col gap-1 border-t border-line py-2 text-small first:border-t-0"
+        >
+          <span className="font-mono break-all">{url}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            <StatusChip
+              tone={pageTone(outcome)}
+              label={t('knowledge.checkRun.pageOutcome', { outcome })}
+            />
+            {outcome !== 'read' && outcome !== 'reading' && (
+              <span className="text-muted">
+                {outcome === 'http_status' && httpStatus === null
+                  ? t('knowledge.checkRun.httpStatus')
+                  : t('knowledge.check.outcome', { outcome, status: String(httpStatus ?? '') })}
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }

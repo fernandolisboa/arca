@@ -53,7 +53,7 @@ function Intake() {
   const title = t('intake.title');
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('intake.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -61,17 +61,17 @@ function Intake() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={title} />;
+  if (!session.isSuccess) return <Page narrow title={title} />;
   if (!confirmed) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
   }
   if (familyCase.data?.case === null) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('questions.noCase')}</p>
         <Link to="/family" className={textLinkClass}>
           {t('family.title')}
@@ -85,7 +85,7 @@ function Intake() {
     (questions.data === undefined && questions.isError)
   ) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('intake.loadFailure')}</p>
         <Button
           onClick={() => {
@@ -99,9 +99,9 @@ function Intake() {
     );
   }
   const view = familyCase.data?.case;
-  if (view === undefined || questions.data === undefined) return <Page title={title} />;
+  if (view === undefined || questions.data === undefined) return <Page narrow title={title} />;
   return (
-    <Page title={title} lead={t('intake.lead')}>
+    <Page narrow title={title} lead={t('intake.lead')}>
       <Drafting view={view} questions={questions.data} />
       <Link to="/family/questions" className={textLinkClass}>
         {t('intake.toQuestions')}

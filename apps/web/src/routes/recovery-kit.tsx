@@ -86,7 +86,7 @@ function RecoveryKit() {
 function Section({ children }: { readonly children?: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <Page title={t('recoveryKit.title')} lead={t('recoveryKit.lead')}>
+    <Page narrow title={t('recoveryKit.title')} lead={t('recoveryKit.lead')}>
       {children}
     </Page>
   );

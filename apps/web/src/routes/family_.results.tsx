@@ -37,7 +37,7 @@ function Results() {
   );
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('results.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -45,10 +45,10 @@ function Results() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={title} />;
+  if (!session.isSuccess) return <Page narrow title={title} />;
   if (!confirmed) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
@@ -56,7 +56,7 @@ function Results() {
   const status = evaluations.error instanceof ApiError ? evaluations.error.status : undefined;
   if (familyCase.data?.case === null || status === 404) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('results.noCase')}</p>
         {back}
       </Page>
@@ -64,7 +64,7 @@ function Results() {
   }
   if (familyCase.isError || evaluations.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p role="alert">{t(status === 429 ? 'results.tooMany' : 'results.loadFailure')}</p>
         <Button
           onClick={() => {
@@ -80,10 +80,14 @@ function Results() {
   }
   const view = familyCase.data?.case;
   if (view === undefined || evaluations.data === undefined) {
-    return <Page title={title} />;
+    return <Page narrow title={title} />;
   }
   return (
-    <Page title={title} lead={t('results.lead', { date: words.date(evaluations.data.rulesAsOf) })}>
+    <Page
+      narrow
+      title={title}
+      lead={t('results.lead', { date: words.date(evaluations.data.rulesAsOf) })}
+    >
       <Evaluated view={view} evaluations={evaluations.data} words={words} />
       {back}
     </Page>

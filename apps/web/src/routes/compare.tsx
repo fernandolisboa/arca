@@ -66,9 +66,9 @@ function Compare() {
       </Page>
     );
   }
-  if (editor === undefined) return <Page title={title} wide />;
+  if (editor === undefined) return <Page title={title} />;
   return (
-    <Page title={title} lead={t('compare.lead')} wide>
+    <Page title={title} lead={t('compare.lead')}>
       <Comparison editor={editor} words={words} />
     </Page>
   );

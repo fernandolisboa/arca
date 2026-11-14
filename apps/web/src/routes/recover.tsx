@@ -90,7 +90,7 @@ function RequestLink() {
           : t('recover.request.failure', { reason: failure });
 
   return (
-    <Page title={t('recover.request.title')} lead={t('recover.request.lead')}>
+    <Page narrow title={t('recover.request.title')} lead={t('recover.request.lead')}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label={t('recover.request.email')}
@@ -145,7 +145,7 @@ function RedeemCode({
       : t('recover.code.failure', { reason: failure });
 
   return (
-    <Page title={t('recover.code.title')} lead={t('recover.code.lead')}>
+    <Page narrow title={t('recover.code.title')} lead={t('recover.code.lead')}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <TextField
           label={t('recover.code.label')}
@@ -174,7 +174,7 @@ function RedeemCode({
 function NewCode({ code, onKept }: { readonly code: string; readonly onKept: () => void }) {
   const { t } = useTranslation();
   return (
-    <Page title={t('recover.newCode.title')} lead={t('recover.newCode.lead')}>
+    <Page narrow title={t('recover.newCode.title')} lead={t('recover.newCode.lead')}>
       <RecoveryCodeSheet
         code={code}
         onSaved={() => {
@@ -195,6 +195,7 @@ function CreatePasskey({ token }: { readonly token: string }) {
   if (state === 'done') {
     return (
       <Page
+        narrow
         title={t('recover.done.title')}
         lead={t('recover.done.lead', { hours: pendingPasskeyHours })}
       >
@@ -230,6 +231,7 @@ function CreatePasskey({ token }: { readonly token: string }) {
 
   return (
     <Page
+      narrow
       title={t('recover.passkey.title')}
       lead={t('recover.passkey.lead', { hours: pendingPasskeyHours })}
     >

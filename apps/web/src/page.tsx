@@ -2,19 +2,19 @@ import { useId, type ReactNode } from 'react';
 import { pageIntroId } from './tour/tours.js';
 
 /**
- * A page with its title and lead: a narrow centered column, as the account screens use, or the
- * shell's full width for screens that lay out lists and panels side by side.
+ * A page with its title and lead, across the shell's full width so a wide screen lays panels side
+ * by side. `narrow` keeps a centered column, for short forms such as signing in.
  */
 export function Page({
   title,
   lead,
-  wide = false,
+  narrow = false,
   actions,
   children,
 }: {
   readonly title: string;
   readonly lead?: string;
-  readonly wide?: boolean;
+  readonly narrow?: boolean;
   /** Controls for the whole screen, at the top right beside the title. */
   readonly actions?: ReactNode;
   readonly children?: ReactNode;
@@ -32,7 +32,7 @@ export function Page({
   return (
     <section
       aria-labelledby={titleId}
-      className={`flex flex-col gap-5 ${wide ? 'w-full' : 'mx-auto max-w-md'}`}
+      className={`flex flex-col gap-5 ${narrow ? 'mx-auto max-w-md' : 'w-full'}`}
     >
       {actions === undefined ? (
         intro

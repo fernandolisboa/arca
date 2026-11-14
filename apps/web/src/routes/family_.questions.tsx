@@ -41,7 +41,7 @@ function Questions() {
   const title = t('questions.title');
   if (session.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('questions.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -49,10 +49,10 @@ function Questions() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page title={title} />;
+  if (!session.isSuccess) return <Page narrow title={title} />;
   if (!confirmed) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('session.unconfirmed')}</p>
       </Page>
     );
@@ -62,7 +62,7 @@ function Questions() {
     (questions.error instanceof ApiError && questions.error.status === 404);
   if (outside) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('questions.noCase')}</p>
         <Link to="/family" className={textLinkClass}>
           {t('family.title')}
@@ -72,7 +72,7 @@ function Questions() {
   }
   if (familyCase.isError || questions.isError) {
     return (
-      <Page title={title}>
+      <Page narrow title={title}>
         <p>{t('questions.loadFailure')}</p>
         <Button
           onClick={() => {
@@ -87,10 +87,10 @@ function Questions() {
   }
   const view = familyCase.data?.case;
   if (view === undefined || view === null || questions.data === undefined) {
-    return <Page title={title} />;
+    return <Page narrow title={title} />;
   }
   return (
-    <Page title={title} lead={t('questions.lead')}>
+    <Page narrow title={title} lead={t('questions.lead')}>
       {questions.data.people.length === 0 ? (
         <p>{t('questions.noneKept')}</p>
       ) : (

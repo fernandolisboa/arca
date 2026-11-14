@@ -61,7 +61,7 @@ function Devices() {
 
   if (session.isError) {
     return (
-      <Page title={t('devices.title')}>
+      <Page narrow title={t('devices.title')}>
         <p>{t('devices.signIn')}</p>
         <Link to="/sign-in" className={textLinkClass}>
           {t('session.signIn')}
@@ -108,7 +108,7 @@ function Devices() {
         : t('devices.failure', { reason: outcome.failure });
 
   return (
-    <Page title={t('devices.title')} lead={t('devices.lead')}>
+    <Page narrow title={t('devices.title')} lead={t('devices.lead')}>
       {/* One live region whose text changes, so each new state is announced. */}
       <p
         ref={statusRef}

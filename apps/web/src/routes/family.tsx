@@ -96,7 +96,7 @@ function Family() {
     <Page
       title={t('family.title')}
       lead={t(view === null ? 'family.startLead' : 'family.lead')}
-      wide={view !== null}
+      narrow={view === null}
     >
       {view === null ? (
         <StartCase />
