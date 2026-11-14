@@ -10,7 +10,7 @@ Since 2026-11-05 every preview migrates the one shared Neon `development` branch
 
 ## Decision
 
-`git.deploymentEnabled` in `apps/api/vercel.json` deploys `main` only (`"**": false, "main": true`; a branch matching any `true` rule deploys). A test in `tooling/scripts/test/vercel-config.test.ts` pins it.
+`git.deploymentEnabled` in `apps/api/vercel.json` deploys `main` only (`"**": false, "main": true`; a branch matching any `true` rule deploys, per [Vercel's git configuration](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled), read 2026-11-14; the first `main` deployment after the change confirms it). A test in `tooling/scripts/test/vercel-config.test.ts` pins it.
 
 ## Consequences
 
