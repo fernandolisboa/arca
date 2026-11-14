@@ -436,6 +436,12 @@ describe('verifyAnswers', () => {
       'second anniversary of the admission.',
       '2',
     ],
+    [
+      'an anniversary ordinal after an em dash',
+      'effective as of the twenty—second anniversary of the admission.',
+      'second anniversary of the admission.',
+      '2',
+    ],
   ])('reads a quote cut out of a number in %s as the whole number', (_, text, cut, value) => {
     const two = { ...item, values: [{ kind: 'number' as const, value }] };
     const [checked] = verifyAnswers(
