@@ -345,7 +345,7 @@ describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
   });
 });
 
-describe('POST /v1/knowledge/checks/start-queued (ADR-0027, an admin\'s batch)', () => {
+describe("POST /v1/knowledge/checks/start-queued (ADR-0027, an admin's batch)", () => {
   it('starts every due version past the automatic share, with identifiers only', async () => {
     const { start, startQueued, runs } = setup({ count: 25 });
     expect(await (await start()).json()).toEqual({ started: 15 });
