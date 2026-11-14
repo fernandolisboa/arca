@@ -5,7 +5,8 @@
  * number in one language and something else in another ("dos", "sei") never states a value by
  * accident, and a number word that is also an English word ("due", "once") is not read at all. 1
  * is never read alone, since its words are also articles and pronouns, nor are ordinals, which also
- * name paragraphs, weekdays and rooms, except an English one before "anniversary" (`writesAnniversary`). A number is read only as a whole run of number words, never
+ * name paragraphs, weekdays and rooms, except an English one before "anniversary"
+ * (`writesAnniversary`). A number is read only as a whole run of number words, never
  * as part of a larger one. A language with no table here fails closed: its words state nothing
  * and the item stays could not be checked, as before.
  */
@@ -359,7 +360,7 @@ export function writesNumberInWords(
   return false;
 }
 
-/** English ordinals a law writes before "anniversary", for the years a status lasts. */
+/** English ordinals a law writes before "anniversary", for the years a status lasts, from 2. */
 const anniversaryOrdinals = [
   'second',
   'third',
@@ -429,11 +430,22 @@ export function numberRunBounds(
   return { start: from, end: to };
 }
 
+/** Whether the word before an ordinal makes it part of a larger number ("twenty-second", "hundred and second"). */
+function partOfLargerNumber(word: string): boolean {
+  return (
+    /^\d+$/u.test(word) ||
+    joiners.has(word) ||
+    multiplier.test(word) ||
+    vocabulary(english).has(word)
+  );
+}
+
 /**
  * Whether an English text writes the whole number `value` as the ordinal of an anniversary ("the
  * second anniversary" for 2 years), the way U.S. law dates a conditional status. Only this phrase
- * reads an ordinal, since ordinals alone also name paragraphs; one after another number word
- * ("twenty-second anniversary") states nothing.
+ * reads an ordinal, since ordinals alone also name paragraphs; one after a number word, a
+ * multiplier or a joiner ("twenty-second", "hundred and second") states nothing. Cut-quote widening
+ * spans these ordinals anywhere, which only fails closed.
  */
 export function writesAnniversary(
   text: string,
@@ -443,7 +455,6 @@ export function writesAnniversary(
   if (!languages.includes('en') || !/^\d+$/u.test(value)) return false;
   const ordinal = anniversaryOrdinals[Number(value) - 2];
   if (ordinal === undefined) return false;
-  const tens = new Set(english.tens.flat());
   for (const [, before = '', word = ''] of text
     .normalize('NFC')
     .toLowerCase()
@@ -452,7 +463,7 @@ export function writesAnniversary(
       .trim()
       .replace(/[‐‑–-]$/u, '')
       .trim();
-    if (word === ordinal && !tens.has(previous) && !/^\d+$/u.test(previous)) return true;
+    if (word === ordinal && !partOfLargerNumber(previous)) return true;
   }
   return false;
 }

@@ -97,6 +97,8 @@ describe('years a law writes as the ordinal of an anniversary (ADR-0027)', () =>
     ['the twenty-second anniversary', '2', ['en'], false],
     ['the twenty second anniversary', '2', ['en'], false],
     ['the second paragraph', '2', ['en'], false],
+    ['the one hundred and second anniversary', '2', ['en'], false],
+    ['the two-hundred-second anniversary', '2', ['en'], false],
     ['the second anniversary', '2', ['pt'], false],
     ['the first anniversary', '1', ['en'], false],
   ])('reads %j as %s in %j: %s', (text, value, languages, expected) => {
