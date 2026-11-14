@@ -5,7 +5,8 @@
  * number in one language and something else in another ("dos", "sei") never states a value by
  * accident, and a number word that is also an English word ("due", "once") is not read at all. 1
  * is never read alone, since its words are also articles and pronouns, nor are ordinals, which also
- * name paragraphs, weekdays and rooms. A number is read only as a whole run of number words, never
+ * name paragraphs, weekdays and rooms, except an English one before "anniversary"
+ * (`writesAnniversary`). A number is read only as a whole run of number words, never
  * as part of a larger one. A language with no table here fails closed: its words state nothing
  * and the item stays could not be checked, as before.
  */
@@ -262,7 +263,7 @@ function numberRuns(text: string, words: ReadonlySet<string>): string[] {
     run = [];
   };
   for (const [piece] of text.matchAll(/[\p{L}\p{M}]+|[^\p{L}\p{M}]+/gu)) {
-    if (/^[\s\-\u2010\u2011\u2013]+$/u.test(piece)) continue;
+    if (/^[\s\-\u2010\u2011\u2012\u2013\u2014]+$/u.test(piece)) continue;
     const isWord = /^[\p{L}\p{M}]/u.test(piece);
     if (isWord && (words.has(piece) || joiners.has(piece) || multiplier.test(piece))) {
       run.push(piece);
@@ -359,9 +360,24 @@ export function writesNumberInWords(
   return false;
 }
 
+/** English ordinals a law writes before "anniversary", for the years a status lasts, from 2. */
+const anniversaryOrdinals = [
+  'second',
+  'third',
+  'fourth',
+  'fifth',
+  'sixth',
+  'seventh',
+  'eighth',
+  'ninth',
+  'tenth',
+];
+
+const anniversary = /([\p{L}\p{N}]+[\s‐‑‒–—-]+)?([\p{L}]+)\s+anniversar(?:y|ies)\b/gu;
+
 const kanjiNumeral = /[〇一二三四五六七八九十百千]/u;
-const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑–]+$/u;
-const wordAfter = /^[\s\-‐‑–]+([\p{L}\p{M}]+)/u;
+const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑‒–—]+$/u;
+const wordAfter = /^[\s\-‐‑‒–—]+([\p{L}\p{M}]+)/u;
 const edgeWord = /^[\p{L}\p{M}]+|[\p{L}\p{M}]+$/gu;
 /** Enough of the text beside a quote to hold the next word. */
 const lookaround = 40;
@@ -384,7 +400,10 @@ export function numberRunBounds(
   const isNumberWord = (written: string) => {
     const word = written.normalize('NFC').toLowerCase();
     return (
-      joiners.has(word) || multiplier.test(word) || vocabularies.some((words) => words.has(word))
+      joiners.has(word) ||
+      multiplier.test(word) ||
+      vocabularies.some((words) => words.has(word)) ||
+      (languages.includes('en') && anniversaryOrdinals.includes(word))
     );
   };
   const inKanjiRun = (at: number) =>
@@ -409,4 +428,42 @@ export function numberRunBounds(
     }
   }
   return { start: from, end: to };
+}
+
+/** Whether the word before an ordinal makes it part of a larger number ("twenty-second", "hundred and second"). */
+function partOfLargerNumber(word: string): boolean {
+  return (
+    /^\d+$/u.test(word) ||
+    joiners.has(word) ||
+    multiplier.test(word) ||
+    vocabulary(english).has(word)
+  );
+}
+
+/**
+ * Whether an English text writes the whole number `value` as the ordinal of an anniversary ("the
+ * second anniversary" for 2 years), the way U.S. law dates a conditional status. Only this phrase
+ * reads an ordinal, since ordinals alone also name paragraphs; one after a number word, a
+ * multiplier or a joiner ("twenty-second", "hundred and second") states nothing. Cut-quote widening
+ * spans these ordinals anywhere, which only fails closed.
+ */
+export function writesAnniversary(
+  text: string,
+  value: string,
+  languages: readonly string[],
+): boolean {
+  if (!languages.includes('en') || !/^\d+$/u.test(value)) return false;
+  const ordinal = anniversaryOrdinals[Number(value) - 2];
+  if (ordinal === undefined) return false;
+  for (const [, before = '', word = ''] of text
+    .normalize('NFC')
+    .toLowerCase()
+    .matchAll(anniversary)) {
+    const previous = before
+      .trim()
+      .replace(/[‐‑‒–—-]$/u, '')
+      .trim();
+    if (word === ordinal && !partOfLargerNumber(previous)) return true;
+  }
+  return false;
 }
