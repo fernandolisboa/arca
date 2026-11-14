@@ -36,6 +36,7 @@ import { createStepUp, type StepUpService, type StepUpSpender } from './auth/ste
 import { createAdminGrants } from './knowledge/admin-grants.js';
 import { createCorrections } from './knowledge/corrections.js';
 import { createCorrector } from './knowledge/corrector.js';
+import { routineCorrectorRun } from './knowledge/corrector-run.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
@@ -54,6 +55,7 @@ import { postgresCheckReportStore } from './knowledge/check/store.js';
 import {
   databaseTargetFrom,
   readAnthropicApiKey,
+  readCorrectorRunToken,
   readApiSecrets,
   readAuditDatabasePassword,
   readAuthOrigin,
@@ -369,6 +371,12 @@ const { keys: correctorKeys, corrector } = createCorrector({
     : { flagged: (limit: number) => versionChecks.flagged(limit) }),
 });
 
+const correctorRunToken = environment === 'production' ? readCorrectorRunToken() : undefined;
+const correctorRun =
+  correctorRunToken === undefined
+    ? undefined
+    : routineCorrectorRun({ token: correctorRunToken, logger });
+
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
 
@@ -555,6 +563,7 @@ const app = createApp({
     storage: documentStorage?.storage ?? unconnectedObjectStorage,
   }),
   correctorKeys,
+  ...(correctorRun === undefined ? {} : { correctorRun }),
   corrector,
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),

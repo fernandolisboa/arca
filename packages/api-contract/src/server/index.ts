@@ -141,6 +141,7 @@ export const openApiRoutes = {
   answerCorrectionRequest: toOpenApiRoute(routes.answerCorrectionRequest),
   startVersionChecks: toOpenApiRoute(routes.startVersionChecks),
   startQueuedChecks: toOpenApiRoute(routes.startQueuedChecks),
+  startCorrectorRun: toOpenApiRoute(routes.startCorrectorRun),
   getVersionCheck: toOpenApiRoute(routes.getVersionCheck),
   startVersionCheck: toOpenApiRoute(routes.startVersionCheck),
   getVersionCheckProgress: toOpenApiRoute(routes.getVersionCheckProgress),

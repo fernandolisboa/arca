@@ -19,7 +19,7 @@ import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip, useStartChecks } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
-import { QueuedChecks } from '../knowledge/queued-checks.js';
+import { CorrectorRun, QueuedChecks } from '../knowledge/admin-starts.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
 import { RouteRequestsSection } from '../knowledge/route-requests.js';
 import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
@@ -170,14 +170,17 @@ function Knowledge() {
             startHere={first !== undefined && actionable(reviewNeed(first)) ? first : undefined}
             comparisons={proposedComparisons}
             filters={
-              proposed.length > 0 && (
-                <>
+              <>
+                <div className="flex flex-wrap items-start gap-3">
                   <QueuedChecks
                     queued={
                       proposed.filter(({ check }) => check === 'stale' || check === 'none').length
                     }
                     words={words}
                   />
+                  <CorrectorRun words={words} />
+                </div>
+                {proposed.length > 0 && (
                   <ReviewFilters
                     countries={ordered
                       .map(({ country }) => country)
@@ -193,8 +196,8 @@ function Knowledge() {
                     }}
                     words={words}
                   />
-                </>
-              )
+                )}
+              </>
             }
             filtered={filtered}
             onClearFilter={() => {

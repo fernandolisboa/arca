@@ -36469,6 +36469,53 @@
         }
       }
     },
+    "/knowledge/corrector/run": {
+      "post": {
+        "operationId": "startCorrectorRun",
+        "summary": "Starts the owner's corrector run now, the same scheduled task that runs daily, for an owner-list admin. 4 per hour per account (429 rate_limited). 401 when not signed in; 403 not_admin; 502 corrector_not_started when claude.ai did not accept it; 503 corrector_off where its token is not configured",
+        "responses": {
+          "200": {
+            "description": "Started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/knowledge/versions/check": {
       "get": {
         "operationId": "getVersionCheck",
