@@ -2,7 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nitro",
   "buildCommand": "cd ../.. && pnpm --fail-if-no-match --filter @arca/scripts db:build && pnpm turbo run build --filter=@arca/api",
-  "ignoreCommand": "[ \"$VERCEL_ENV\" != production ]",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  },
   "crons": [
     {
       "path": "/internal/cron/heartbeat",
