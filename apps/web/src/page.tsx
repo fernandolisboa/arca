@@ -46,3 +46,25 @@ export function Page({
     </section>
   );
 }
+
+/**
+ * A page's content beside a side column on a wide screen: the side holds the actions and forms,
+ * the main column what they act on. The side comes first in reading order, so a phone shows it
+ * on top.
+ */
+export function PageColumns({
+  side,
+  children,
+}: {
+  readonly side: ReactNode;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+      <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-20 lg:col-start-2 lg:row-start-1">
+        {side}
+      </div>
+      <div className="flex min-w-0 flex-col gap-5 lg:col-start-1 lg:row-start-1">{children}</div>
+    </div>
+  );
+}

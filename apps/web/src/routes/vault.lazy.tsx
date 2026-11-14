@@ -11,7 +11,7 @@ import { DocumentsSection, OpenRetained } from '../documents-section.js';
 import { recoveryCodeInput } from '../forms/inputs.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
-import { Page } from '../page.js';
+import { Page, PageColumns } from '../page.js';
 import { vaultDevice } from '../vault-device.js';
 import { RecoveryCodeSheet } from '../recovery-code.js';
 import { commonFailure, type CommonFailure } from '../requests.js';
@@ -148,10 +148,19 @@ function Vault() {
   return <Opened vault={unlocked} rotationDue={rotationDue} onSecret={setSecret} />;
 }
 
-function Section({ lead, children }: { readonly lead?: string; readonly children?: ReactNode }) {
+function Section({
+  lead,
+  wide = false,
+  children,
+}: {
+  readonly lead?: string;
+  /** The opened vault lists documents; every other step is a short form. */
+  readonly wide?: boolean;
+  readonly children?: ReactNode;
+}) {
   const { t } = useTranslation();
   return (
-    <Page narrow title={t('vault.title')} lead={lead ?? t('vault.lead')}>
+    <Page narrow={!wide} title={t('vault.title')} lead={lead ?? t('vault.lead')}>
       {children}
     </Page>
   );
@@ -317,18 +326,24 @@ function Opened(props: VaultStepProps) {
   // A rotation the account owes comes before the documents, so it is the first thing offered.
   const rotate = <Rotate {...props} />;
   return (
-    <Section>
-      <p role="status">{t('vault.opened', { minutes: vaultIdleMinutes })}</p>
-      <Button
-        onClick={() => {
-          lockVault();
-        }}
+    <Section wide>
+      <PageColumns
+        side={
+          <>
+            <p role="status">{t('vault.opened', { minutes: vaultIdleMinutes })}</p>
+            <Button
+              onClick={() => {
+                lockVault();
+              }}
+            >
+              {t('vault.lock')}
+            </Button>
+            {rotate}
+          </>
+        }
       >
-        {t('vault.lock')}
-      </Button>
-      {props.rotationDue && rotate}
-      <DocumentsSection vault={props.vault} />
-      {!props.rotationDue && rotate}
+        <DocumentsSection vault={props.vault} />
+      </PageColumns>
     </Section>
   );
 }

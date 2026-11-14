@@ -90,7 +90,7 @@ function Questions() {
     return <Page narrow title={title} />;
   }
   return (
-    <Page narrow title={title} lead={t('questions.lead')}>
+    <Page title={title} lead={t('questions.lead')}>
       {questions.data.people.length === 0 ? (
         <p>{t('questions.noneKept')}</p>
       ) : (
@@ -174,62 +174,66 @@ function Answering({
     formerCountries: questions.formerCountries,
   };
   return (
-    <div className="flex flex-col gap-6">
-      {toggle}
-      {questions.people.length > 1 && (
-        <ChoiceGroup
-          legend={t('questions.person')}
-          choices={questions.people.map((entry) => ({
-            value: entry.personId,
-            label: names.get(entry.personId) ?? '',
-          }))}
-          value={person.personId}
-          onChange={(chosen) => {
-            setPersonId(chosen);
-            const next = questions.people.find((entry) => entry.personId === chosen);
-            if (next !== undefined) go(openStep(next));
+    <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
+      <div className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-20">
+        {toggle}
+        {questions.people.length > 1 && (
+          <ChoiceGroup
+            legend={t('questions.person')}
+            choices={questions.people.map((entry) => ({
+              value: entry.personId,
+              label: names.get(entry.personId) ?? '',
+            }))}
+            value={person.personId}
+            onChange={(chosen) => {
+              setPersonId(chosen);
+              const next = questions.people.find((entry) => entry.personId === chosen);
+              if (next !== undefined) go(openStep(next));
+            }}
+          />
+        )}
+        <nav aria-label={t('questions.stepsTitle')}>
+          <ol className="flex flex-wrap gap-2 lg:flex-col">
+            {person.steps.map(({ id, questions: asked }) => (
+              <li key={id}>
+                <button
+                  type="button"
+                  aria-current={id === current.id ? 'step' : undefined}
+                  className="flex min-h-touch w-full flex-col rounded-control border border-line px-3 py-1 text-left aria-[current=step]:border-primary aria-[current=step]:bg-soft"
+                  onClick={() => {
+                    go(id);
+                  }}
+                >
+                  <span className="font-medium">{t(`questions.steps.${id}`)}</span>
+                  <span className="text-small text-muted">
+                    {t('questions.progress', {
+                      answered: asked.filter((question) => answered(question.answer)).length,
+                      total: asked.length,
+                    })}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </div>
+      <div className="flex min-w-0 flex-col gap-6">
+        <StepForm
+          key={`${person.personId}:${current.id}`}
+          name={names.get(person.personId) ?? ''}
+          step={current}
+          context={context}
+          last={at === person.steps.length - 1}
+          onSaved={() => {
+            const next = person.steps[at + 1];
+            if (next !== undefined) setStep(next.id);
+            setSaved(true);
           }}
         />
-      )}
-      <nav aria-label={t('questions.stepsTitle')}>
-        <ol className="flex flex-wrap gap-2">
-          {person.steps.map(({ id, questions: asked }) => (
-            <li key={id}>
-              <button
-                type="button"
-                aria-current={id === current.id ? 'step' : undefined}
-                className="flex min-h-touch flex-col rounded-control border border-line px-3 py-1 text-left aria-[current=step]:border-primary aria-[current=step]:bg-soft"
-                onClick={() => {
-                  go(id);
-                }}
-              >
-                <span className="font-medium">{t(`questions.steps.${id}`)}</span>
-                <span className="text-small text-muted">
-                  {t('questions.progress', {
-                    answered: asked.filter((question) => answered(question.answer)).length,
-                    total: asked.length,
-                  })}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </nav>
-      <StepForm
-        key={`${person.personId}:${current.id}`}
-        name={names.get(person.personId) ?? ''}
-        step={current}
-        context={context}
-        last={at === person.steps.length - 1}
-        onSaved={() => {
-          const next = person.steps[at + 1];
-          if (next !== undefined) setStep(next.id);
-          setSaved(true);
-        }}
-      />
-      <p role="status" className="text-muted">
-        {saved ? t('questions.saved') : ''}
-      </p>
+        <p role="status" className="text-muted">
+          {saved ? t('questions.saved') : ''}
+        </p>
+      </div>
     </div>
   );
 }

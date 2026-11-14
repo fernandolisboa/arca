@@ -1,5 +1,5 @@
 import { inviteLifetimeHours, maxOpenInvites, type Invite } from '@arca/api-contract/client';
-import { Button, ChoiceGroup } from '@arca/ui';
+import { Button, ChoiceGroup, cardClass } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useState, type SubmitEvent } from 'react';
@@ -18,7 +18,7 @@ import {
   type DecisionFailure,
   type SendFailure,
 } from '../invites.js';
-import { Page } from '../page.js';
+import { Page, PageColumns } from '../page.js';
 import { passkeys } from '../platform.js';
 
 export const Route = createFileRoute('/invites')({ component: Invites });
@@ -48,13 +48,10 @@ function Invites() {
     );
   }
   return (
-    <Page
-      narrow
-      title={t('invites.title')}
-      lead={t('invites.lead', { hours: inviteLifetimeHours })}
-    >
-      <SendInvite />
-      <InviteList />
+    <Page title={t('invites.title')} lead={t('invites.lead', { hours: inviteLifetimeHours })}>
+      <PageColumns side={<SendInvite />}>
+        <InviteList />
+      </PageColumns>
     </Page>
   );
 }
@@ -95,7 +92,7 @@ function SendInvite() {
         : t('invites.sendFailure', { reason: failure, max: maxOpenInvites });
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
+    <form onSubmit={submit} className={`${cardClass} flex flex-col gap-4 p-4 sm:p-5`}>
       <TextField
         label={t('invites.email')}
         {...inviteeInput}

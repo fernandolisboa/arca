@@ -101,7 +101,7 @@ function Intake() {
   const view = familyCase.data?.case;
   if (view === undefined || questions.data === undefined) return <Page narrow title={title} />;
   return (
-    <Page narrow title={title} lead={t('intake.lead')}>
+    <Page title={title} lead={t('intake.lead')}>
       <Drafting view={view} questions={questions.data} />
       <Link to="/family/questions" className={textLinkClass}>
         {t('intake.toQuestions')}
@@ -157,7 +157,7 @@ function Drafting({
   const length = text.trim().length;
   return (
     <form
-      className="flex flex-col gap-4"
+      className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-8"
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         setFailure(undefined);
@@ -172,18 +172,18 @@ function Drafting({
           });
       }}
     >
-      <div className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3">
+      <div className="flex flex-col gap-2 rounded-control border border-line bg-soft p-3 lg:col-start-2 lg:row-span-3 lg:row-start-1">
         <p>{t('intake.privacy')}</p>
         <p className="text-small text-muted">{t('intake.tip')}</p>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 lg:col-start-1">
         <label htmlFor={textId} className="font-medium">
           {t('intake.label')}
         </label>
         <textarea
           id={textId}
           aria-describedby={hintId}
-          rows={8}
+          rows={14}
           maxLength={maxIntakeTextLength}
           required
           value={text}
@@ -197,10 +197,15 @@ function Drafting({
           {t('intake.count', { count: text.length, max: maxIntakeTextLength })}
         </p>
       </div>
-      <Button type="submit" disabled={pending || length === 0} aria-busy={pending}>
-        {t('intake.submit')}
-      </Button>
-      <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
+      <div className="lg:col-start-1">
+        <Button type="submit" disabled={pending || length === 0} aria-busy={pending}>
+          {t('intake.submit')}
+        </Button>
+      </div>
+      <p
+        role="status"
+        className={`lg:col-start-1 ${failure === undefined ? 'text-muted' : 'text-ink'}`}
+      >
         {pending
           ? t('intake.drafting')
           : failure === undefined
