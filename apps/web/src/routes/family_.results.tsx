@@ -12,7 +12,7 @@ import { type ReactNode, useEffect, useId } from 'react';
 import { caseEvaluationsQuery, caseQuery, sessionQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
-import { Page } from '../page.js';
+import { Page, PageColumns } from '../page.js';
 import { groupResults, resultsAnchor } from '../results/group.js';
 import { ReportRule } from '../results/report-rule.js';
 import { statusTones } from '../results/status-tone.js';
@@ -45,7 +45,7 @@ function Results() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page narrow title={title} />;
+  if (!session.isSuccess) return <Page title={title} />;
   if (!confirmed) {
     return (
       <Page narrow title={title}>
@@ -80,14 +80,10 @@ function Results() {
   }
   const view = familyCase.data?.case;
   if (view === undefined || evaluations.data === undefined) {
-    return <Page narrow title={title} />;
+    return <Page title={title} />;
   }
   return (
-    <Page
-      narrow
-      title={title}
-      lead={t('results.lead', { date: words.date(evaluations.data.rulesAsOf) })}
-    >
+    <Page title={title} lead={t('results.lead', { date: words.date(evaluations.data.rulesAsOf) })}>
       <Evaluated view={view} evaluations={evaluations.data} words={words} />
       {back}
     </Page>
@@ -114,49 +110,52 @@ function Evaluated({
     if (hash !== '') document.getElementById(hash)?.scrollIntoView();
   }, [hash]);
   return (
-    <>
-      <section aria-labelledby="results-questions" className="flex flex-col gap-3">
-        <h3 id="results-questions" className="font-display text-lead">
-          {t('results.questionsTitle')}
-        </h3>
-        {evaluations.questions.length === 0 ? (
-          <p className="text-muted">{t('results.noQuestions')}</p>
-        ) : (
-          <>
-            <p className="text-muted">{t('results.questionsLead')}</p>
-            <ul className="flex flex-col gap-3">
-              {evaluations.questions.map((question) => {
-                const asked = t(`questions.asked.${question.question}`, {
-                  name: name(question.personId),
-                });
-                return (
-                  <li
-                    key={`${question.personId}:${question.question}`}
-                    className="flex flex-col gap-1 rounded-card border border-line bg-surface p-4"
-                  >
-                    <p>
-                      {question.kept
-                        ? asked
-                        : t('results.askKeeper', {
-                            name: name(question.personId),
-                            question: asked,
-                          })}
-                    </p>
-                    <p className="text-small text-muted">
-                      {t('results.decides', { n: question.decides })}
-                    </p>
-                    {question.kept && (
-                      <Link to="/family/questions" className={`${textLinkClass} self-start`}>
-                        {t('results.answer')}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
-      </section>
+    <PageColumns
+      side={
+        <section aria-labelledby="results-questions" className="flex flex-col gap-3">
+          <h3 id="results-questions" className="font-display text-lead">
+            {t('results.questionsTitle')}
+          </h3>
+          {evaluations.questions.length === 0 ? (
+            <p className="text-muted">{t('results.noQuestions')}</p>
+          ) : (
+            <>
+              <p className="text-muted">{t('results.questionsLead')}</p>
+              <ul className="flex flex-col gap-3">
+                {evaluations.questions.map((question) => {
+                  const asked = t(`questions.asked.${question.question}`, {
+                    name: name(question.personId),
+                  });
+                  return (
+                    <li
+                      key={`${question.personId}:${question.question}`}
+                      className="flex flex-col gap-1 rounded-card border border-line bg-surface p-4"
+                    >
+                      <p>
+                        {question.kept
+                          ? asked
+                          : t('results.askKeeper', {
+                              name: name(question.personId),
+                              question: asked,
+                            })}
+                      </p>
+                      <p className="text-small text-muted">
+                        {t('results.decides', { n: question.decides })}
+                      </p>
+                      {question.kept && (
+                        <Link to="/family/questions" className={`${textLinkClass} self-start`}>
+                          {t('results.answer')}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </section>
+      }
+    >
       {groups.length === 0 && <p className="text-muted">{t('results.empty')}</p>}
       {groups.map(({ country, routes }) => {
         const heading = country === null ? t('results.otherRoutes') : words.country(country);
@@ -168,32 +167,34 @@ function Evaluated({
             className="flex scroll-mt-20 flex-col gap-3"
           >
             <h3 className="font-display text-lead">{heading}</h3>
-            {routes.map((group) => {
-              const routeTitle =
-                group.route?.title ?? t('results.unnamedRoute', { id: group.routeId });
-              return (
-                <article
-                  key={group.routeId}
-                  aria-label={routeTitle}
-                  className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
-                >
-                  <h4 className="font-medium break-words">{routeTitle}</h4>
-                  {group.results.map((result) => (
-                    <PrincipalResult
-                      key={result.principalId}
-                      result={result}
-                      name={name}
-                      people={people}
-                      words={words}
-                    />
-                  ))}
-                </article>
-              );
-            })}
+            <div className="grid items-start gap-3 xl:grid-cols-2">
+              {routes.map((group) => {
+                const routeTitle =
+                  group.route?.title ?? t('results.unnamedRoute', { id: group.routeId });
+                return (
+                  <article
+                    key={group.routeId}
+                    aria-label={routeTitle}
+                    className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
+                  >
+                    <h4 className="font-medium break-words">{routeTitle}</h4>
+                    {group.results.map((result) => (
+                      <PrincipalResult
+                        key={result.principalId}
+                        result={result}
+                        name={name}
+                        people={people}
+                        words={words}
+                      />
+                    ))}
+                  </article>
+                );
+              })}
+            </div>
           </section>
         );
       })}
-    </>
+    </PageColumns>
   );
 }
 

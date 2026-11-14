@@ -61,7 +61,7 @@ function Intake() {
       </Page>
     );
   }
-  if (!session.isSuccess) return <Page narrow title={title} />;
+  if (!session.isSuccess) return <Page title={title} />;
   if (!confirmed) {
     return (
       <Page narrow title={title}>
@@ -99,9 +99,9 @@ function Intake() {
     );
   }
   const view = familyCase.data?.case;
-  if (view === undefined || questions.data === undefined) return <Page narrow title={title} />;
+  if (view === undefined || questions.data === undefined) return <Page title={title} />;
   return (
-    <Page narrow title={title} lead={t('intake.lead')}>
+    <Page title={title} lead={t('intake.lead')}>
       <Drafting view={view} questions={questions.data} />
       <Link to="/family/questions" className={textLinkClass}>
         {t('intake.toQuestions')}
@@ -183,7 +183,7 @@ function Drafting({
         <textarea
           id={textId}
           aria-describedby={hintId}
-          rows={8}
+          rows={14}
           maxLength={maxIntakeTextLength}
           required
           value={text}
@@ -197,9 +197,11 @@ function Drafting({
           {t('intake.count', { count: text.length, max: maxIntakeTextLength })}
         </p>
       </div>
-      <Button type="submit" disabled={pending || length === 0} aria-busy={pending}>
-        {t('intake.submit')}
-      </Button>
+      <div className="flex flex-col sm:flex-row">
+        <Button type="submit" disabled={pending || length === 0} aria-busy={pending}>
+          {t('intake.submit')}
+        </Button>
+      </div>
       <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
         {pending
           ? t('intake.drafting')
@@ -296,7 +298,7 @@ function Review({
       }}
     >
       <p className="text-muted">{t('intake.reviewLead')}</p>
-      <fieldset disabled={locked || pending} className="flex flex-col gap-6">
+      <fieldset disabled={locked || pending} className="grid items-start gap-6 md:grid-cols-2">
         {shown.map((person) => {
           const choice = choices.people.get(person.ref);
           const items = personItems(person);
@@ -385,9 +387,11 @@ function Review({
           </section>
         )}
       </fieldset>
-      <Button type="submit" disabled={pending || !ready} aria-busy={pending}>
-        {locked ? t('questions.retry') : t('intake.save')}
-      </Button>
+      <div className="flex flex-col sm:flex-row">
+        <Button type="submit" disabled={pending || !ready} aria-busy={pending}>
+          {locked ? t('questions.retry') : t('intake.save')}
+        </Button>
+      </div>
       <p role="status" className={failure === undefined ? 'text-muted' : 'text-ink'}>
         {pending
           ? t('family.saving')

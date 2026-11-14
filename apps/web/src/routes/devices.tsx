@@ -24,7 +24,7 @@ import {
   type DeviceFailure,
 } from '../devices.js';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
-import { Page } from '../page.js';
+import { Page, PageColumns } from '../page.js';
 import { passkeys } from '../platform.js';
 import { useDateFormat } from '../use-date-format.js';
 
@@ -108,82 +108,92 @@ function Devices() {
         : t('devices.failure', { reason: outcome.failure });
 
   return (
-    <Page narrow title={t('devices.title')} lead={t('devices.lead')}>
-      {/* One live region whose text changes, so each new state is announced. */}
-      <p
-        ref={statusRef}
-        role="status"
-        tabIndex={-1}
-        className={outcome !== undefined && 'done' in outcome ? 'text-ok-ink' : 'text-ink'}
-      >
-        {message}
-      </p>
-      <RotateOffer
-        due={
-          outcome !== undefined &&
-          'done' in outcome &&
-          outcome.done === 'passkeyRevoked' &&
-          vault.data?.rotationDue === true
-        }
-      />
-      {restricted ? (
-        <p className="text-warn-ink">{t('devices.restricted')}</p>
-      ) : (
-        <section aria-labelledby="add-passkey-title" className="flex flex-col items-start gap-3">
-          <h3 id="add-passkey-title" className="font-display text-lead">
-            {t('devices.addTitle')}
-          </h3>
-          <p className="text-muted">{t('devices.addLead', { hours: pendingPasskeyHours })}</p>
-          <Button
-            disabled={waiting}
-            aria-busy={waiting}
-            onClick={() => {
-              change({ run: () => addPasskey(passkeys), done: 'added' });
-            }}
-          >
-            {t('devices.add')}
-          </Button>
-        </section>
-      )}
-      {devices.isError && (
-        <div className="flex flex-col items-start gap-3">
-          <p className="text-ink">{t('devices.listFailure')}</p>
-          <Button
-            disabled={devices.isFetching}
-            aria-busy={devices.isFetching}
-            onClick={() => void devices.refetch()}
-          >
-            {t('devices.retry')}
-          </Button>
-        </div>
-      )}
-      {devices.isSuccess && (
-        <>
-          <ul aria-label={t('devices.listTitle')} className="flex flex-col gap-3">
-            {devices.data.passkeys.map((passkey) => (
-              <PasskeyCard
-                key={passkey.id}
-                passkey={passkey}
-                waiting={waiting}
-                restricted={restricted}
-                onChange={change}
-              />
-            ))}
-          </ul>
-          {!restricted && (
-            <button
-              type="button"
-              disabled={waiting}
-              className={`${dangerLinkClass} self-start`}
-              onClick={() => {
-                change({ run: () => revokeOtherSessions(passkeys), done: 'othersRevoked' });
-              }}
+    <Page title={t('devices.title')} lead={t('devices.lead')}>
+      <PageColumns
+        side={
+          <>
+            {/* One live region whose text changes, so each new state is announced. */}
+            <p
+              ref={statusRef}
+              role="status"
+              tabIndex={-1}
+              className={outcome !== undefined && 'done' in outcome ? 'text-ok-ink' : 'text-ink'}
             >
-              {t('devices.revokeOthers')}
-            </button>
-          )}
-        </>
-      )}
+              {message}
+            </p>
+            <RotateOffer
+              due={
+                outcome !== undefined &&
+                'done' in outcome &&
+                outcome.done === 'passkeyRevoked' &&
+                vault.data?.rotationDue === true
+              }
+            />
+            {restricted ? (
+              <p className="text-warn-ink">{t('devices.restricted')}</p>
+            ) : (
+              <section
+                aria-labelledby="add-passkey-title"
+                className="flex flex-col items-start gap-3"
+              >
+                <h3 id="add-passkey-title" className="font-display text-lead">
+                  {t('devices.addTitle')}
+                </h3>
+                <p className="text-muted">{t('devices.addLead', { hours: pendingPasskeyHours })}</p>
+                <Button
+                  disabled={waiting}
+                  aria-busy={waiting}
+                  onClick={() => {
+                    change({ run: () => addPasskey(passkeys), done: 'added' });
+                  }}
+                >
+                  {t('devices.add')}
+                </Button>
+              </section>
+            )}
+          </>
+        }
+      >
+        {devices.isError && (
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-ink">{t('devices.listFailure')}</p>
+            <Button
+              disabled={devices.isFetching}
+              aria-busy={devices.isFetching}
+              onClick={() => void devices.refetch()}
+            >
+              {t('devices.retry')}
+            </Button>
+          </div>
+        )}
+        {devices.isSuccess && (
+          <>
+            <ul aria-label={t('devices.listTitle')} className="grid gap-3 xl:grid-cols-2">
+              {devices.data.passkeys.map((passkey) => (
+                <PasskeyCard
+                  key={passkey.id}
+                  passkey={passkey}
+                  waiting={waiting}
+                  restricted={restricted}
+                  onChange={change}
+                />
+              ))}
+            </ul>
+            {!restricted && (
+              <button
+                type="button"
+                disabled={waiting}
+                className={`${dangerLinkClass} self-start`}
+                onClick={() => {
+                  change({ run: () => revokeOtherSessions(passkeys), done: 'othersRevoked' });
+                }}
+              >
+                {t('devices.revokeOthers')}
+              </button>
+            )}
+          </>
+        )}
+      </PageColumns>
     </Page>
   );
 }
