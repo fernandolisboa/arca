@@ -373,7 +373,7 @@ const anniversaryOrdinals = [
   'tenth',
 ];
 
-const anniversary = /([\p{L}\p{N}]+[\s‐‑–-]+)?([\p{L}]+)\s+anniversar(?:y|ies)\b/gu;
+const anniversary = /([\p{L}\p{N}]+[\s‐‑–—-]+)?([\p{L}]+)\s+anniversar(?:y|ies)\b/gu;
 
 const kanjiNumeral = /[〇一二三四五六七八九十百千]/u;
 const wordBefore = /([\p{L}\p{M}]+)[\s\-‐‑–]+$/u;
@@ -461,7 +461,7 @@ export function writesAnniversary(
     .matchAll(anniversary)) {
     const previous = before
       .trim()
-      .replace(/[‐‑–-]$/u, '')
+      .replace(/[‐‑–—-]$/u, '')
       .trim();
     if (word === ordinal && !partOfLargerNumber(previous)) return true;
   }
