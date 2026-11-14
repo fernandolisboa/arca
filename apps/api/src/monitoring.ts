@@ -23,6 +23,7 @@ export const internalPathSegments = [
   'retention',
   'account-erasure',
   'rate-limit-sweep',
+  'rule-checks',
   'outbox',
   'monitoring-check',
   'monitoring',
