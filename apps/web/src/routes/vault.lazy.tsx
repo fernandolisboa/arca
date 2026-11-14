@@ -323,8 +323,6 @@ function NewSecret({ vault, rotationDue, onSecret }: VaultStepProps) {
 
 function Opened(props: VaultStepProps) {
   const { t } = useTranslation();
-  // A rotation the account owes comes before the documents, so it is the first thing offered.
-  const rotate = <Rotate {...props} />;
   return (
     <Section wide>
       <PageColumns
@@ -338,7 +336,7 @@ function Opened(props: VaultStepProps) {
             >
               {t('vault.lock')}
             </Button>
-            {rotate}
+            <Rotate {...props} />
           </>
         }
       >

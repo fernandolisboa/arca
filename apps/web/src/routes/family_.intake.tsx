@@ -34,7 +34,7 @@ import {
   wholeList,
 } from '../intake/plan.js';
 import { type IntakeProgress, freshProgress, saveIntake } from '../intake/save.js';
-import { Page } from '../page.js';
+import { Page, pageColumnsClass } from '../page.js';
 import { passkeys } from '../platform.js';
 import { useNames } from '../questions/editors.js';
 import { useSentenceText } from '../questions/playback.js';
@@ -157,7 +157,7 @@ function Drafting({
   const length = text.trim().length;
   return (
     <form
-      className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-8"
+      className={`grid items-start gap-4 lg:gap-x-8 ${pageColumnsClass}`}
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         setFailure(undefined);
