@@ -257,10 +257,10 @@ export function excerptRuns(excerpt: string): string[] {
 
 /** The words a catalog source title names a provision with, before its number. */
 const provisionWord =
-  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)((?:(?:,\s*|\s+and\s+)\d+[a-z]?(?![\p{L}\p{N}.]))*)/gu;
+  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)((?:(?:, ?| and )\d+[a-z]?(?![\p{L}\p{N}.]))*)/gu;
 
 /** Each further number of a list after a provision's word: "articles 25 and 27", "art. 2, 4". */
-const listedNumber = /(?:,\s*|\s+and\s+)(\d+[a-z]?)/gu;
+const listedNumber = /(?:, ?| and )(\d+[a-z]?)/gu;
 
 /** A date written with dots (12.03.2024), which is not a provision. */
 const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;
@@ -282,7 +282,7 @@ const abbreviatedNumber = String.raw`\d+(?:\.\d+)*(?:-?[A-Z](?![\p{L}])|[a-z](?!
 
 /** Abbreviations English titles name provisions with, beside the full words: "regs. 28 and 29". */
 const provisionAbbreviation = new RegExp(
-  String.raw`\b(?:[Rr]egs?\.|[Pp]aras?\.|[Ss]s?\.)\s*(${abbreviatedNumber}(?:(?:,\s*|\s+and\s+)${abbreviatedNumber})*)`,
+  String.raw`\b(?:[Rr]egs?\.|[Pp]aras?\.|[Ss]s?\.)\s*(${abbreviatedNumber}(?:(?:, ?| and )${abbreviatedNumber})*)`,
   'gu',
 );
 
@@ -305,7 +305,7 @@ function provisionsIn(text: string, marked: boolean): string[] {
       ...[...(match[2] ?? '').matchAll(listedNumber)].map((listed) => listed[1] ?? ''),
     ]),
     ...[...text.matchAll(provisionAbbreviation)].flatMap((match) =>
-      (match[1] ?? '').split(/,\s*|\s+and\s+/u),
+      (match[1] ?? '').split(/, ?| and /u),
     ),
     ...[...text.matchAll(postfixProvision)].map((match) => match[1] ?? ''),
     ...(marked
