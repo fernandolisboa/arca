@@ -2,7 +2,7 @@
 name: auth-crypto-reviewer
 description: Must-pass specialist for any change touching authentication, sessions, passkeys, account recovery, the vault, field encryption or key management. Reviews against OWASP ASVS 5.0 Level 3.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: max
 color: red
 ---

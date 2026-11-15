@@ -2,7 +2,7 @@
 name: ai-safety-reviewer
 description: Must-pass specialist for any change touching prompts, agents, AI adapters, retrieval, rendering of model output, or the evaluation suite. Reviews against the OWASP Top 10 for LLM and Agentic Applications.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: high
 color: pink
 ---

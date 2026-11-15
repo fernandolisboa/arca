@@ -2,7 +2,7 @@
 name: architecture-reviewer
 description: Must-pass reviewer for every change to code or config. Checks layering, ports and adapters, platform portability and compliance with the ADRs. Use proactively before any commit or pull request.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: high
 color: purple
 ---
