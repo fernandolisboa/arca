@@ -242,6 +242,14 @@ After the amendment above, the catalog check (run 43519235575) confirmed 151 of 
 - **What it may change.** Only a match or a difference from the second look replaces the first answer, verified in code like any other against the text that call sent, which the fetch log records. A second look that fails or still cannot check leaves the first answer as it was and never fails the check. Items the first look confirmed or found different are never asked again.
 - **Prompt `rule-check-6`.** The wording is unchanged; the version moves so that reports made without the second look stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit.
 
+### A difference read twice (amendment, 2026-11-15)
+
+On 2026-11-15 the app showed eight proposed versions as "Difere", each on a single item. A full catalog check the same day (run 43731529486) found five of those eight items matching: the model's verdict on an item varies from one call to the next, and one stray "differs" among twenty items marks the whole version. The owner saw the list never clear.
+
+- **The confirmation.** After the comparisons and the second look, every item found different is compared once more in a call of its own, with at most one other such item, the way a second look is: the locator picks the long pages' passages for those items alone and each pick runs to its provision's end. At most five such calls per check; differences beyond the tenth keep their first answer.
+- **What it may change.** If the confirming call finds the item matching, neither answer stands: the item is left as could not be checked, with the new reason `answers_disagree` and no note or quotes, so the admin reads it ("Confira"). It never becomes a match. A confirming call that also finds a difference, cannot check the item or fails keeps the difference, and never fails the check.
+- **Prompt `rule-check-7`.** The wording is unchanged; the version moves so that reports made without the confirmation stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit, which proves the wrong and adversarial cases are still flagged.
+
 ## Alternatives
 
 | Option                                                                          | Why not                                                                                                                                                                                                                                                                                                                                            |

@@ -279,6 +279,7 @@ export {
   type ReadPage,
   addressTexts,
   checkReasons,
+  disagreeing,
   checkStatuses,
   maxNoteLength,
   maxQuoteLength,
