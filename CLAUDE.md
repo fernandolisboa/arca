@@ -59,6 +59,7 @@ Conventions:
 - Every rule version ships with table-driven tests. Every AI-backed feature ships with cases in the synthetic evaluation suite ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#quality)).
 - AI providers sit behind interfaces (ports) so a model can be swapped by configuration and compared on the evaluation suite.
 - Model routing: fast, cheap models for extraction and classification; strong models for strategy and writing.
+- Model spend: start `catalog-check` only with `routes` naming the routes a change touches; the whole catalog runs only when the owner asks. Bump `ruleCheckPromptVersion` only when what a model is told changes, since a bump makes every check report stale ([ADR-0027](docs/adr/0027-admins-and-the-checked-batch-activation.md#what-a-check-costs-amendment-2026-11-15)).
 
 ## Platforms
 
