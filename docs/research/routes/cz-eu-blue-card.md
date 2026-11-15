@@ -6,24 +6,31 @@ Research notes for Czechia's EU Blue Card, route `cz-eu-blue-card` in `packages/
 
 ### 2026-11-15
 
-A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector-session.md)), for version 4, which the independent check flagged and no record named: pull request [#423](https://github.com/fernandolisboa/arca/pull/423) wrote it to add the machine-readable addresses of the Aliens Act (`{0..3}`) and the Employment Act (`{0..1}`) to version 3, with no audit.
+A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector-session.md)), for version 4, which the independent check flagged. Pull request [#423](https://github.com/fernandolisboa/arca/pull/423) wrote version 4 as a correction of version 3 that only adds machine-readable addresses for the Aliens Act (`{0..3}`) and the Employment Act (`{0..1}`), and no audit record named version 4 before this one.
 
 - **Version audited:** 4
 - **Outcome:** no change.
-- **Sources re-read** (on 2026-11-15 UTC, with `curl`):
-  - The Aliens Act at 2026-06-12, whole, through its four pages of the e-Sbírka fragment API, the version's machine-readable address: §§ 42i and 42j read in full, the rest searched for the Blue Card's terms. The act's current text is still the one of 2026-06-12 (`datumUcinnostiZneniOd`).
-  - The Ministry of the Interior's Blue Card page on `ipc.gov.cz`, whole.
-  - Not re-read in full: the other sources, all verified on 2026-11-11 (the Directive on 2026-11-07). The API's metadata shows each cited act's current text still starting on the date the last audit read: Communication No. 44/2026 Sb. on 2026-03-24, Decree No. 205/2023 Sb. on 2023-07-01, the Employment Act on 2026-07-01, the Civil Code on 2026-01-01, and the fees act on 2026-09-01. No version changes, so no `verifiedAt` moves.
-- **Amendments looked for**, up to 2026-11-15: the Aliens Act's related-documents list (`souvislosti`). Act No. 314/2025 Sb. is still the last act that amends it. Of the later acts listed, Government Regulation No. 212/2026 Sb., published and not yet in force, sets up a special work visa for agriculture and does not touch the Blue Card.
-- **Leads:** version 4, flagged by the independent check, report of 2026-11-14: `assessment:contract` differs; could not be checked: `requirement:not-eu-eea-or-swiss-citizen`, `assessment:highly-qualified-job`, `assessment:family-income`, `dependent:children`, `dependent:spouse-children`, `dependent:parents`, `dependent:partner-children`, the five costs, `duration:validity` and `countrySet:eu-free-movement/2`. Not confirmed: § 42j(1)(b) states "nejméně 6 měsíců na zákonem stanovenou týdenní pracovní dobu", as the item says. The portal's opening summary still says "at least one year", while its list of documents says 6 months: the act decides, as the last audit found.
-- **Findings:** none. The contract item is right, and the run below confirmed it.
+- **Sources re-read** (on 2026-11-15 UTC, with `curl` on the e-Sbírka API, from the saved text):
+  - The Aliens Act at 2026-06-12, all four pages of its fragment API. Read in full: the provisions the version cites, § 1 (`aliens-act-eu-citizens`), § 42a (`aliens-act-family`), § 42b (`aliens-act-family-income`), § 42i (`aliens-act-blue-card`), § 42j (`aliens-act-blue-card-contract`), § 44 (`aliens-act-validity`), § 169t (`aliens-act-time-limits`), § 178a (`aliens-act-lone`) and § 180f (`aliens-act-partnership`). The rest of the act was searched for the Blue Card's terms, not read line by line. Its current text is still the one of 2026-06-12.
+  - `fees-act-consular` and `fees-act-in-country`: the Act on Administrative Fees, text of 2026-09-01, tariff items 116 and 162.
+  - `civil-code-age`: the Civil Code, § 30, on the first of its 11 API pages.
+  - `ipc-blue-card`: the Ministry of the Interior's Blue Card page, whole, with `curl`.
+  - Not readable: none. As before, `civil-code-age` has no machine-readable address: its 11 pages are over the 10 a source may name, and its cited page is drawn by scripts.
+  - Not re-read in full: `mpsv-average-wage-2025`, `professional-skill-decree`, `employment-act-eu-citizens` and `ipc-family`, all verified on 2026-11-11, and `blue-card-directive`, verified on 2026-11-07. The API's metadata shows each cited act's current text starting on the same date as when the last audit read it: Communication No. 44/2026 Sb. on 2026-03-24, Decree No. 205/2023 Sb. on 2023-07-01 and the Employment Act on 2026-07-01. No version changes, so no `verifiedAt` moves.
+- **Amendments looked for**, up to 2026-11-15: the Aliens Act's related-documents list (`souvislosti`). Act No. 314/2025 Sb. is still the last act that amends it. Of the later acts listed, Government Regulation No. 212/2026 Sb., in force from 2027-01-01, sets up a special work visa for agriculture and does not touch the Blue Card.
+- **Leads:** version 4, flagged by the independent check, report of 2026-11-14: `assessment:contract` differs; could not be checked: `requirement:not-eu-eea-or-swiss-citizen`, `assessment:highly-qualified-job`, `assessment:family-income`, `dependent:children`, `dependent:spouse-children`, `dependent:parents`, `dependent:partner-children`, `cost:blue-card-fee-embassy`, `cost:blue-card-fee-in-czechia`, `cost:family-fee-embassy`, `cost:family-fee-in-czechia`, `cost:family-fee-in-czechia-under-15`, `duration:validity` and `countrySet:eu-free-movement/2`. The official text does not bear out the difference: § 42j(1)(b) requires a contract "na dobu nejméně 6 měsíců na zákonem stanovenou týdenní pracovní dobu", which is what the item says. The portal's opening summary still says "at least one year", while its list of documents says 6 months. The act decides, as the last audit found.
+- **Findings:** none.
 - **Check loop:** run [43677144219](https://github.com/fernandolisboa/arca/actions/runs/43677144219) on `main`'s version 4: 12 of 23 match, none differs, `assessment:contract` among the matches. The run on this record's own head, the final one, is in the pull request's body. Left over:
-  - `unreadable`: `dependent:children` and `dependent:partner-children`, whose age of majority rests on the Civil Code, § 30. It has 11 pages in the API, over the 10 a source may name, and its page gave no text.
-  - `checker-gap`: `requirement:not-eu-eea-or-swiss-citizen` (the passages given held neither § 1 of the Aliens Act nor the Directive) and `assessment:highly-qualified-job` (the passages held § 42i(1) but not (11)(b), the central register). Both are run-to-run variance from the passage locator over a four-page act.
-  - `checker-gap`: the five costs. The model found each amount in the fees act's tariff items but would not join it to the Aliens Act's conditions on who pays where, which sit in another act.
-  - `checker-gap`: `duration:validity`. The passages given held § 44, but not paragraph (7).
-  - `checker-gap`: the pinned set `eu-free-movement` v2, as in earlier audits.
-- **Watch next:** as the last audit left it. The portal's summary still says one year.
+  - `unreadable`: `dependent:children` and `dependent:partner-children`, whose age of majority rests on Civil Code § 30 (18 years), with no machine-readable address (above). The check got no text from its page.
+  - `checker-gap`: `requirement:not-eu-eea-or-swiss-citizen`. § 1(2) and (3) state it, but the passages given did not hold § 1. The Directive's EUR-Lex page gave the check no text (HTTP 202), so `unreadable` as far as the item rests on the Directive.
+  - `checker-gap`: `assessment:highly-qualified-job`. § 42i(1) and (11)(b) state it, but the passages held (1) and not (11)(b). This is run-to-run variance from the passage locator over a four-page act.
+  - `checker-gap`: `cost:blue-card-fee-embassy`, `cost:blue-card-fee-in-czechia`, `cost:family-fee-embassy`, `cost:family-fee-in-czechia` and `cost:family-fee-in-czechia-under-15`. Tariff items 162(a) and (c) and 116(1)(a) and (b) state the amounts (CZK 2,500, 5,000, 2,500 and 1,000), and the model found them. For the two Blue Card fees, the passages given did not hold the `ipc-blue-card` page's list of who may apply in Czechia. For the three family fees, the model would not join the fees act's amount to the `ipc-family` page, which gives no fee.
+  - `checker-gap`: `duration:validity`. § 44(7) states it, but the passages held § 44 without paragraph (7).
+  - `checker-gap`: the pinned set `eu-free-movement` v2. The pages given do not carry the set's whole member list: the EU page lists the 27 member states, and the others treat the EEA and Switzerland in general terms.
+- **Watch next:**
+  - The average wage communication for 2027-05-01 onward: a new version, then version 5, due by 2027-05-01. The record below and OPEN-QUESTIONS still call it version 4, from before #423.
+  - The fees act's text of 2028-01-01.
+  - The portal's opening summary, which still says one year.
 
 ### 2026-11-11
 
