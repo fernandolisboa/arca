@@ -4,6 +4,30 @@ Research notes for Italian citizenship by descent, route `it-descent` in `packag
 
 ## Audits
 
+### 2026-11-15
+
+A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector-session.md)), for version 2, which the independent check flagged. The record above predates the check loop and names neither item it found differing.
+
+- **Version audited:** 2
+- **Outcome:** correction, version 4 (pull request [#447](https://github.com/fernandolisboa/arca/pull/447)), from version 2's own date, 2026-02-19, which it replaces entirely. Version 3, from 2029-01-01, carries neither item and is unchanged.
+- **Sources re-read** (on 2026-11-15 UTC, with `curl`, from the saved text):
+  - `dlgs-71-2011-consulate-limit` and `dlgs-71-2011-term`: art. 10 of D.Lgs. 71/2011, whole, as replaced by L. 11/2026.
+  - `dlgs-71-2011-fee-table`: the annexed table, version 12, in force from 2026-01-01, read through the `caricaArticolo` address with the act's cookie. The table itself is a graphic ("Parte di provvedimento in formato grafico"). Its notes quote each amending provision: note 12 quotes L. 207/2024, art. 1, comma 639.
+  - `legge-207-2024-consular-fee` and `legge-207-2024-municipal-fee`: art. 1, commi 601 to 700, in the text in force from 2027-01-01. Commi 636 and 639 read as cited.
+  - `dpr-115-2002`: art. 13, comma 1-sexies, in force from 2025-01-01.
+  - `legge-91-1992-art-1` and `legge-91-1992-art-3-bis`: both articles whole. The act's last update was published on 2025-12-30.
+  - `dl-66-2014`: art. 5-bis, which states the original EUR 300. It is dropped from version 4 (below).
+  - Not re-read in full: `dl-36-2025`, `legge-74-2025`, `legge-555-1912`, `legge-555-1912-minors` and `legge-11-2026`, whose pages show the same updates as on 2026-11-11. Also not re-read: the three Constitutional Court rulings and `cassazione-ssuu-24045-2026`. All keep 2026-11-11.
+- **Amendments looked for**, up to 2026-11-15: each act's "Ultimo aggiornamento all'atto" on Normattiva. L. 207/2024 shows an update published on 2026-11-11 and an art. 1 text in force from 2027-01-01, in which commi 636 and 639 are unchanged. D.P.R. 115/2002 shows an update of 2026-10-16, with art. 13 unchanged since 2025-01-01. D.Lgs. 71/2011's last update is still of 2026-02-04 (L. 11/2026). A web search found nothing new on the EU Court of Justice reference of ordinanza 147/2026.
+- **Leads:** version 2, flagged by the independent check, report of 2026-11-14: `assessment:consulate-yearly-limit` and `cost:consular-fee` differ; could not be checked: `requirement:citizen-line` and `cost:municipal-fee`. Both differing items were confirmed as below by the official texts.
+- **Findings:**
+  - `assessment:consulate-yearly-limit`: art. 10, comma 6, counts "i procedimenti di riconoscimento della cittadinanza conclusi", so rejections count too. The title said "recognitions"; it now says "recognition procedures". The years 2025 and 2028 come from comma 5 and the law's entry into force on 2026-02-19 (`legge-11-2026`, also cited).
+  - `cost:consular-fee`: the amount, EUR 600, is right. The item also cited `dl-66-2014`, whose art. 5-bis created art. 7-bis at EUR 300 and states no other amount. It now cites only the table and comma 639, the texts that state EUR 600.
+- **Check loop:** run [43677500354](https://github.com/fernandolisboa/arca/actions/runs/43677500354) on version 4: 3 of 6 match, none differs, `assessment:consulate-yearly-limit` among the matches. The run on this record's own head, the final one, is in the pull request's body. Left over:
+  - `unreadable`: `cost:consular-fee` and `cost:municipal-fee`. The fee table and commi 636 and 639 of L. 207/2024 are served only by `caricaArticolo` addresses that need the session cookie. The cited act addresses open art. 1 of D.Lgs. 71/2011 and commi 1 to 100 of L. 207/2024. An admin reads the table under the act's "Allegato" and the commi in the part 601 to 700.
+  - `unreadable`: `requirement:citizen-line`, as far as it rests on the Constitutional Court's rulings 63/2026 and 147/2026. The check's fetch got a 302 to a bot challenge (`redirect_refused`), as the `cortecostituzionale.it` recipe warns. `checker-gap`: the model also would not join art. 3-bis to the pre-1948 rules of L. 555/1912.
+- **Watch next:** as the record above left it. A machine-readable address for Normattiva's annexes and for the parts of a budget law's single article would let the check read the fees. That is a recipe change for an on-demand session.
+
 ### 2026-11-11
 
 The first full audit by the runbook ([#357](https://github.com/fernandolisboa/arca/issues/357)), on demand.
