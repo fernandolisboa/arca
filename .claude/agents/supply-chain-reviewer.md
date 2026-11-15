@@ -2,7 +2,7 @@
 name: supply-chain-reviewer
 description: Must-pass specialist for any change touching dependencies, the lockfile, CI workflows, build or deploy configuration, CSP, CORS or headers, third-party calls, adding a service or vendor, agent and review configuration (CLAUDE.md, .claude/, docs/agents/, docs/REVIEW.md, the rule audit runbook), or the rule audit's reading recipes.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: high
 color: cyan
 ---

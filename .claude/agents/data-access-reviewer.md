@@ -2,7 +2,7 @@
 name: data-access-reviewer
 description: Must-pass specialist for any change touching API endpoints and authorization, storage, the database schema, migrations, row-level security policies, database roles, queries over case data, the knowledge-base approval flow, telemetry, logging, analytics or notifications, environments or seed data.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: high
 color: orange
 ---

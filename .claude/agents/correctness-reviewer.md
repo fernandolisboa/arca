@@ -2,7 +2,7 @@
 name: correctness-reviewer
 description: Must-pass reviewer for every change to code or config. Checks logic, edge cases, test adequacy and Arca's domain rules. Use proactively before any commit or pull request.
 tools: Read, Grep, Glob, Bash
-model: fable
+model: opus
 effort: high
 color: blue
 ---
