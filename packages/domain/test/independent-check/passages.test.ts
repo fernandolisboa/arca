@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type Passage,
   excerptGap,
   excerptPassages,
   secondLookRunOnPassages,
@@ -281,10 +282,30 @@ describe('the provisions a source title names (ADR-0027)', () => {
     ['Decree n.º 139/2025: minimum wage', []],
     ['Order of 12.03.2024, article 5: amounts', ['5']],
     ['Ministry page on the pay limit: DKK 552,000 in 2026', []],
+    ['Immigration Law, 27. pants (1) 10): up to two years', ['27']],
+    ['Civil Law, Part One (family law): art. 219, minority; art. 221, marriage', ['219', '221']],
+    ['Migration Regulations 1994, Schedule 1 item 1137(4B): invited', ['1', '1137']],
+    ['Employment Permits Regulations 2024, regs. 28 and 29: two years', ['28', '29']],
+    ['Employment Permits Act 2024, s. 8(1)(e): section 7 does not apply', ['8']],
+    ['Aliens Law, 5 straipsnis: the permit', ['5']],
+    ['Ley 25.871, article 23, ñ): family reunification', ['23']],
+    ['Civil and Commercial Code (Ley 26.994), articles 25 and 27: majority', ['25', '27']],
+    ['Lei n.º 13.445, art. 37: family', ['37']],
+    ['SIRI, accompanying family: at least 1.5 to 2 years of cohabitation', []],
+    ['Code, art. 2019: an article numbered like a year', []],
+    ['Immigration Rules, introduction, para. 5C: Irish citizens', ['5C']],
+    ['Ley N.º 21.325, article 74: dependents', ['74']],
   ])('reads %s', (title, provisions) => {
     expect(namedProvisions(title)).toEqual(provisions);
   });
 });
+
+/** The text of the passages `provisionPassages` picks for `titles`, best first. */
+const headsOf = (law: string, passages: readonly Passage[], titles: string[]) =>
+  provisionPassages(law, passages, titles).map((index) => {
+    const { start, end } = passages[index] ?? { start: 0, end: 0 };
+    return law.slice(start, end);
+  });
 
 describe('the passages that head a named provision (ADR-0027)', () => {
   const law = [
@@ -310,11 +331,7 @@ describe('the passages that head a named provision (ADR-0027)', () => {
     'A member of the family unit is the spouse.',
   ].join('\n');
   const passages = splitPassages(law);
-  const heads = (titles: string[]) =>
-    provisionPassages(law, passages, titles).map((index) => {
-      const { start, end } = passages[index] ?? { start: 0, end: 0 };
-      return law.slice(start, end);
-    });
+  const heads = (titles: string[]) => headsOf(law, passages, titles);
 
   it('finds the passage a heading line of the provision opens', () => {
     const found = heads(['Foreigners law, article 52.º, n.º 3: refusal']);
@@ -335,5 +352,132 @@ describe('the passages that head a named provision (ADR-0027)', () => {
 
   it('finds nothing for a title that names no provision', () => {
     expect(heads(['Decree n.º 139/2025: minimum wage'])).toEqual([]);
+  });
+});
+
+describe('the passages that open a named provision in the line its text runs on in', () => {
+  const filler = (label: string) =>
+    Array.from(
+      { length: 40 },
+      (_, index) => `${label} ${String(index)} ${'of filler text '.repeat(8)}`,
+    );
+  const law = [
+    'Contents',
+    ...filler('Before'),
+    `27. pants. (1) Termiņuzturēšanās atļauju ārzemniekam ir tiesības pieprasīt: ${'teksts '.repeat(20)}`,
+    ...filler('Latvian'),
+    `SW 18.1. The applicant will be granted permission until 14 days after the end date. ${'text '.repeat(20)}`,
+    ...filler('Rules'),
+    `ARTICULO 23.- Los extranjeros que soliciten su residencia temporaria ingresarán. ${'texto '.repeat(20)}`,
+    ...filler('Decree'),
+    `Art. 3a. 1. Nie podlega opłacie skarbowej dokonanie czynności urzędowej. ${'tekst '.repeat(20)}`,
+    ...filler('Ustawa'),
+    'Artículo 61',
+    'Residencia temporal no lucrativa',
+    '3. Podrán solicitar la residencia los hijos menores.',
+    ...filler('Reglamento'),
+    `Note 1: The Minister must grant a visa when the applicant asks. ${'text '.repeat(20)}`,
+    ...filler('Notes'),
+    '1137 | Skilled—Independent (Permanent) (Class SI)',
+    ...filler('Schedule'),
+    'Artigo 52.º-A',
+    'Text of article 52-A.',
+    ...filler('Code'),
+    `§ 5 Abs. 2 gilt entsprechend für die Familienangehörigen des Ausländers. ${'Text '.repeat(20)}`,
+    ...filler('Gesetz'),
+    `Art. 5.12. Los extranjeros podrán solicitar la residencia de larga duración. ${'texto '.repeat(20)}`,
+    ...filler('Codigo'),
+    'Section 6 - definitions',
+    'A partner is a spouse or civil partner.',
+    ...filler('Act'),
+    'ARTICULO 29. — Serán causas impedientes del ingreso de extranjeros:',
+    'c) haber sido condenado o tener antecedentes.',
+    ...filler('Ley'),
+    'Chapter 61',
+    'Text of a chapter numbered like the article.',
+    ...filler('Chapters'),
+    'Artículo 70',
+    'Text of article 70 in force.',
+    ...filler('Real'),
+    ...Array.from(
+      { length: 3 },
+      (_, index) =>
+        `Art. 70. Decoy ${String(index)} with a former amount of EUR 1,500 run on. ${'texto '.repeat(20)}`,
+    ),
+  ].join('\n');
+  const passages = splitPassages(law);
+  const heads = (titles: string[]) => headsOf(law, passages, titles);
+  const finds = (title: string, text: string) => {
+    expect(heads([title]).some((passage) => passage.includes(text))).toBe(true);
+  };
+
+  it('finds a provision whose number comes before its word', () => {
+    finds('Immigration Law, 27. pants (3): family', 'Termiņuzturēšanās');
+  });
+
+  it('finds a dotted provision whose text follows on its line', () => {
+    finds('Appendix Skilled Worker, SW 18.1: period of grant', 'until 14 days');
+  });
+
+  it('finds an article whose text follows a dot and a dash', () => {
+    finds('Decreto 616/2010, article 23, last paragraph: family', 'residencia temporaria');
+  });
+
+  it('finds an article whose first paragraph number follows it', () => {
+    finds('Ustawa o opłacie skarbowej, art. 3a ust. 1: no duty', 'Nie podlega');
+  });
+
+  it('finds the article of a paragraph that heads no line of its own', () => {
+    finds('Real Decreto 1155/2024, article 61.3 b): children', 'hijos menores');
+  });
+
+  it('finds a long schedule item that opens a table row', () => {
+    finds('Migration Regulations 1994, Schedule 1 item 1137(4B): invited', 'Class SI');
+  });
+
+  it('never takes a note numbered like the provision for the provision', () => {
+    expect(heads(['Rules, section 1: scope']).some((text) => text.includes('The Minister'))).toBe(
+      false,
+    );
+  });
+
+  it('finds an article whose text follows a dot, a space and a dash', () => {
+    finds('Ley 25.871, article 29, c): crimes', 'condenado o tener antecedentes');
+  });
+
+  it('finds the article of a letter where the article runs its text on in its heading', () => {
+    finds('Decreto 616/2010, article 23 b: family', 'residencia temporaria');
+  });
+
+  it('never takes a chapter numbered like the article of a paragraph for the article', () => {
+    expect(
+      heads(['Real Decreto, article 61.3 b): children']).some((text) =>
+        text.includes('chapter numbered like'),
+      ),
+    ).toBe(false);
+  });
+
+  it('finds a heading whose title follows a dash in lower case', () => {
+    finds('Act, section 6: definitions', 'civil partner');
+  });
+
+  it('ranks a heading line of its own ahead of later lines that run on from the same number', () => {
+    expect(heads(['Reglamento, article 70: fee'])[0]).toContain('Text of article 70 in force');
+  });
+
+  it('never takes a long sentence that cites a section for the section', () => {
+    expect(heads(['Gesetz, § 5: family']).some((text) => text.includes('gilt entsprechend'))).toBe(
+      false,
+    );
+  });
+
+  it('never takes a paragraph numbered under an article for the article', () => {
+    expect(
+      heads(['Codigo, article 5: residence']).some((text) => text.includes('larga duración')),
+    ).toBe(false);
+  });
+
+  it('never takes an article lettered after the number for the number', () => {
+    expect(heads(['Lei, artigo 52.º: recusa']).some((text) => text.includes('52-A'))).toBe(false);
   });
 });
