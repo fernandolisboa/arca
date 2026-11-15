@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "routeId": "it-descent",
   "number": 4,
+  "corrects": 2,
   "title": "Italian citizenship by descent (iure sanguinis) for someone born abroad who applies after 27 March 2025",
   "country": "IT",
   "tags": ["descent", "citizenship"],
@@ -89,7 +90,7 @@
     {
       "id": "dlgs-71-2011-consulate-limit",
       "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
-      "title": "Decreto legislativo 71/2011, art. 10, comma 6: until 31 December 2028 each consulate takes, per year, no more adult applications than the recognitions it concluded in 2025, and never fewer than 100",
+      "title": "Decreto legislativo 71/2011, art. 10, comma 6: until 31 December 2028 each consulate takes, per year, no more adult applications than the recognition procedures it concluded in 2025, at least 100",
       "kind": "official",
       "verifiedAt": "2026-11-15"
     },
@@ -589,6 +590,5 @@
       "max": "P36M",
       "sources": ["dlgs-71-2011-term", "legge-11-2026"]
     }
-  ],
-  "corrects": 2
+  ]
 }
