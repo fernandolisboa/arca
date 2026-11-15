@@ -1684,7 +1684,6 @@ describe('the independent check of one version (ADR-0027)', () => {
           { kind: 'item', key: 'cost:fee', status: 'matches' },
           { kind: 'comparing', keys: ['requirement:means'] },
           { kind: 'item', key: 'requirement:means', status: 'differs' },
-          { kind: 'item', key: 'requirement:means', status: 'differs' },
         ]);
         expect(store.rows[0]?.items.map(({ status }) => status)).toEqual(['differs', 'matches']);
       });

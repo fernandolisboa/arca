@@ -622,13 +622,6 @@ export function createVersionCheck({
   };
 
   /**
-   * A second look at the items the comparisons could not confirm on a long page's excerpt
-   * (ADR-0027): a few at a time, with passages picked for them alone and each provision sent on
-   * to its end, so a provision cut short or crowded out by the other items' picks is read whole.
-   * Only what a second look confirms or finds different replaces the first answer; a failed
-   * second look leaves it as it was, so it never fails the check.
-   */
-  /**
    * One more comparison of a few items in a call of their own: the locator picks the long pages'
    * passages for those items alone, and the excerpt runs each pick to its provision's end. A
    * failed call puts the first answers back on the screen and returns none.
@@ -709,10 +702,11 @@ export function createVersionCheck({
   };
 
   /**
-   * A difference is read twice before it stands (ADR-0027): every item found different is
-   * compared once more in a call of its own. It stays different only if that call does not find
-   * it matching; when the two answers disagree, the item is left as could not be checked, never
-   * as a match. A failed or unsure second answer keeps the difference.
+   * A difference is read twice before it stands (ADR-0027): every item the comparisons found
+   * different is compared once more in a call of its own, beside the second looks so the check
+   * takes no longer. It stays different unless that call finds it matching; then the two answers
+   * disagree and the item is left as could not be checked, never as a match. A failed or unsure
+   * second answer keeps the difference.
    */
   const confirmDifferences = async (
     items: readonly CheckItem[],
@@ -729,15 +723,21 @@ export function createVersionCheck({
         lookAgain(group, byKey, readPages, subject, guide, languages, record),
       ),
     );
-    const again = new Map(confirmed.flatMap(({ checked }) => checked.map((c) => [c.key, c])));
+    const again = confirmed.flatMap(({ checked }) => checked);
+    for (const { key, status } of again) {
+      if (status === 'matches') byKey.set(key, disagreeing(key));
+    }
+    // The screen showed each second answer as it landed; only a changed one is recorded again.
     await Promise.all(
-      differing.map(({ key }) => {
-        if (again.get(key)?.status === 'matches') {
-          byKey.set(key, disagreeing(key));
-          return record({ kind: 'item', key, status: 'could_not_check' });
-        }
-        return record({ kind: 'item', key, status: 'differs' });
-      }),
+      again
+        .filter(({ status }) => status !== 'differs')
+        .map(({ key, status }) =>
+          record({
+            kind: 'item',
+            key,
+            status: status === 'matches' ? 'could_not_check' : 'differs',
+          }),
+        ),
     );
     return confirmed;
   };
@@ -779,19 +779,13 @@ export function createVersionCheck({
       ),
     );
     const byKey = new Map(compared.flatMap(({ checked }) => checked.map((c) => [c.key, c])));
-    const looked = await secondLook(items, byKey, readPages, subject, guide, languages, record);
+    const [looked, confirmed] = await Promise.all([
+      secondLook(items, byKey, readPages, subject, guide, languages, record),
+      confirmDifferences(items, byKey, readPages, subject, guide, languages, record),
+    ]);
     for (const { checked } of looked) {
       for (const item of checked) if (item.status !== 'could_not_check') byKey.set(item.key, item);
     }
-    const confirmed = await confirmDifferences(
-      items,
-      byKey,
-      readPages,
-      subject,
-      guide,
-      languages,
-      record,
-    );
     const checked = items.flatMap(({ key }) => byKey.get(key) ?? []);
     const failure = compared.find((call) => call.failure !== null)?.failure ?? null;
     const fetchLog = fetchLogOf(
