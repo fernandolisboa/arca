@@ -460,7 +460,7 @@ export function provisionPassages(
     const article = articleOf(designator);
     if (own.length > 0 || article === undefined) return own;
     // The article a paragraph belongs to counts only on a line that names it as an article.
-    return (headings.get(article) ?? []).filter((index) => {
+    return hitsOf(article).filter((index) => {
       const { start, end } = passages[index] ?? { start: 0, end: 0 };
       return text
         .slice(start, end)

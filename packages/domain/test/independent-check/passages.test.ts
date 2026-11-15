@@ -393,6 +393,9 @@ describe('the passages that open a named provision in the line its text runs on 
     'ARTICULO 29. — Serán causas impedientes del ingreso de extranjeros:',
     'c) haber sido condenado o tener antecedentes.',
     ...filler('Ley'),
+    'Chapter 61',
+    'Text of a chapter numbered like the article.',
+    ...filler('Chapters'),
     'Artículo 70',
     'Text of article 70 in force.',
     ...filler('Real'),
@@ -440,6 +443,18 @@ describe('the passages that open a named provision in the line its text runs on 
 
   it('finds an article whose text follows a dot, a space and a dash', () => {
     finds('Ley 25.871, article 29, c): crimes', 'condenado o tener antecedentes');
+  });
+
+  it('finds the article of a letter where the article runs its text on in its heading', () => {
+    finds('Decreto 616/2010, article 23 b: family', 'residencia temporaria');
+  });
+
+  it('never takes a chapter numbered like the article of a paragraph for the article', () => {
+    expect(
+      heads(['Real Decreto, article 61.3 b): children']).some((text) =>
+        text.includes('chapter numbered like'),
+      ),
+    ).toBe(false);
   });
 
   it('finds a heading whose title follows a dash in lower case', () => {
