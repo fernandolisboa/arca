@@ -8,6 +8,7 @@ import {
   type Passage,
   type Pin,
   type ReadPage,
+  disagreeing,
   asDataText,
   checkCalls,
   checkItems,
@@ -131,6 +132,8 @@ const usageEvent = (reply: ModelReply): CheckProgressEvent => ({
  */
 const maxItemsPerSecondLook = 2;
 const maxSecondLookCalls = 10;
+/** The most calls one check makes to read its differences a second time. */
+const maxConfirmCalls = 5;
 /** The most long pages each second look has the locator pick passages of again. */
 const maxSecondLookLocatedPages = 2;
 
@@ -619,9 +622,56 @@ export function createVersionCheck({
   };
 
   /**
+   * One more comparison of a few items in a call of their own: the locator picks the long pages'
+   * passages for those items alone, and the excerpt runs each pick to its provision's end. A
+   * failed call puts the first answers back on the screen and returns none.
+   */
+  const lookAgain = async (
+    group: readonly CheckItem[],
+    byKey: ReadonlyMap<string, CheckedItem>,
+    readPages: readonly ReadPage[],
+    subject: CheckSubject,
+    guide: CountryGuideEntry | undefined,
+    languages: readonly string[],
+    record: Recorder,
+  ): Promise<Comparison> => {
+    const longPages = readPages.filter(({ text }) => !sentWhole(text));
+    const cited = longPages.filter(({ url }) => itemsCiting(group, url).length > 0);
+    const picks = await picksFor(cited, group, subject.entry, record, maxSecondLookLocatedPages);
+    const namesItems = true;
+    const looked = await compare(
+      group,
+      readPages,
+      picks,
+      namesItems,
+      languages,
+      subject,
+      guide,
+      record,
+      secondLookRunOnPassages,
+    );
+    if (looked.failure === null) return looked;
+    // The screen may have shown answers of the failed call, so it gets the first ones back.
+    await Promise.all(
+      group.map(({ key }) =>
+        record({ kind: 'item', key, status: byKey.get(key)?.status ?? 'could_not_check' }),
+      ),
+    );
+    return { ...looked, checked: [] };
+  };
+
+  /** Items split into the small groups a second call compares, at most `calls` groups. */
+  const lookGroups = (items: readonly CheckItem[], calls: number): CheckItem[][] => {
+    const groups: CheckItem[][] = [];
+    for (let at = 0; at < items.length && groups.length < calls; at += maxItemsPerSecondLook) {
+      groups.push(items.slice(at, at + maxItemsPerSecondLook));
+    }
+    return groups;
+  };
+
+  /**
    * A second look at the items the comparisons could not confirm on a long page's excerpt
-   * (ADR-0027): a few at a time, with passages picked for them alone and each provision sent on
-   * to its end, so a provision cut short or crowded out by the other items' picks is read whole.
+   * (ADR-0027), so a provision cut short or crowded out by the other items' picks is read whole.
    * Only what a second look confirms or finds different replaces the first answer; a failed
    * second look leaves it as it was, so it never fails the check.
    */
@@ -644,42 +694,52 @@ export function createVersionCheck({
         longPages.some(({ url }) => urls.includes(url))
       );
     });
-    const groups: CheckItem[][] = [];
-    for (let at = 0; at < unconfirmed.length; at += maxItemsPerSecondLook) {
-      groups.push(unconfirmed.slice(at, at + maxItemsPerSecondLook));
-    }
     return Promise.all(
-      groups.slice(0, maxSecondLookCalls).map(async (group) => {
-        const cited = longPages.filter(({ url }) => itemsCiting(group, url).length > 0);
-        const picks = await picksFor(
-          cited,
-          group,
-          subject.entry,
-          record,
-          maxSecondLookLocatedPages,
-        );
-        const namesItems = true;
-        const looked = await compare(
-          group,
-          readPages,
-          picks,
-          namesItems,
-          languages,
-          subject,
-          guide,
-          record,
-          secondLookRunOnPassages,
-        );
-        if (looked.failure === null) return looked;
-        // The screen may have shown answers of the failed call, so it gets the first ones back.
-        await Promise.all(
-          group.map(({ key }) =>
-            record({ kind: 'item', key, status: byKey.get(key)?.status ?? 'could_not_check' }),
-          ),
-        );
-        return { ...looked, checked: [] };
-      }),
+      lookGroups(unconfirmed, maxSecondLookCalls).map((group) =>
+        lookAgain(group, byKey, readPages, subject, guide, languages, record),
+      ),
     );
+  };
+
+  /**
+   * A difference is read twice before it stands (ADR-0027): every item the comparisons found
+   * different is compared once more in a call of its own, beside the second looks so the check
+   * takes no longer. It stays different unless that call finds it matching; then the two answers
+   * disagree and the item is left as could not be checked, never as a match. A failed or unsure
+   * second answer keeps the difference.
+   */
+  const confirmDifferences = async (
+    items: readonly CheckItem[],
+    byKey: Map<string, CheckedItem>,
+    readPages: readonly ReadPage[],
+    subject: CheckSubject,
+    guide: CountryGuideEntry | undefined,
+    languages: readonly string[],
+    record: Recorder,
+  ): Promise<Comparison[]> => {
+    const differing = items.filter(({ key }) => byKey.get(key)?.status === 'differs');
+    const confirmed = await Promise.all(
+      lookGroups(differing, maxConfirmCalls).map((group) =>
+        lookAgain(group, byKey, readPages, subject, guide, languages, record),
+      ),
+    );
+    const again = confirmed.flatMap(({ checked }) => checked);
+    for (const { key, status } of again) {
+      if (status === 'matches') byKey.set(key, disagreeing(key));
+    }
+    // The screen showed each second answer as it landed; only a changed one is recorded again.
+    await Promise.all(
+      again
+        .filter(({ status }) => status !== 'differs')
+        .map(({ key, status }) =>
+          record({
+            kind: 'item',
+            key,
+            status: status === 'matches' ? 'could_not_check' : 'differs',
+          }),
+        ),
+    );
+    return confirmed;
   };
 
   const check = async (
@@ -719,7 +779,10 @@ export function createVersionCheck({
       ),
     );
     const byKey = new Map(compared.flatMap(({ checked }) => checked.map((c) => [c.key, c])));
-    const looked = await secondLook(items, byKey, readPages, subject, guide, languages, record);
+    const [looked, confirmed] = await Promise.all([
+      secondLook(items, byKey, readPages, subject, guide, languages, record),
+      confirmDifferences(items, byKey, readPages, subject, guide, languages, record),
+    ]);
     for (const { checked } of looked) {
       for (const item of checked) if (item.status !== 'could_not_check') byKey.set(item.key, item);
     }
@@ -727,7 +790,7 @@ export function createVersionCheck({
     const failure = compared.find((call) => call.failure !== null)?.failure ?? null;
     const fetchLog = fetchLogOf(
       fetched,
-      sentTexts([...compared, ...looked].flatMap(({ sent }) => sent)),
+      sentTexts([...compared, ...looked, ...confirmed].flatMap(({ sent }) => sent)),
     );
     await store.save({
       startId,
