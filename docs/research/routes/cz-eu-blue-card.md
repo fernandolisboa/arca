@@ -4,6 +4,27 @@ Research notes for Czechia's EU Blue Card, route `cz-eu-blue-card` in `packages/
 
 ## Audits
 
+### 2026-11-15
+
+A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector-session.md)), for version 4, which the independent check flagged and no record named: pull request [#423](https://github.com/fernandolisboa/arca/pull/423) wrote it to add the machine-readable addresses of the Aliens Act (`{0..3}`) and the Employment Act (`{0..1}`) to version 3, with no audit.
+
+- **Version audited:** 4
+- **Outcome:** no change.
+- **Sources re-read** (on 2026-11-15 UTC, with `curl`):
+  - The Aliens Act at 2026-06-12, whole, through its four pages of the e-Sbírka fragment API, the version's machine-readable address: §§ 42i and 42j read in full, the rest searched for the Blue Card's terms. The act's current text is still the one of 2026-06-12 (`datumUcinnostiZneniOd`).
+  - The Ministry of the Interior's Blue Card page on `ipc.gov.cz`, whole.
+  - Not re-read in full: the other sources, all verified on 2026-11-11 (the Directive on 2026-11-07). The API's metadata shows each cited act's current text still starting on the date the last audit read: Communication No. 44/2026 Sb. on 2026-03-24, Decree No. 205/2023 Sb. on 2023-07-01, the Employment Act on 2026-07-01, the Civil Code on 2026-01-01, and the fees act on 2026-09-01. No version changes, so no `verifiedAt` moves.
+- **Amendments looked for**, up to 2026-11-15: the Aliens Act's related-documents list (`souvislosti`). Act No. 314/2025 Sb. is still the last act that amends it. Of the later acts listed, Government Regulation No. 212/2026 Sb., published and not yet in force, sets up a special work visa for agriculture and does not touch the Blue Card.
+- **Leads:** version 4, flagged by the independent check, report of 2026-11-14: `assessment:contract` differs; could not be checked: `requirement:not-eu-eea-or-swiss-citizen`, `assessment:highly-qualified-job`, `assessment:family-income`, `dependent:children`, `dependent:spouse-children`, `dependent:parents`, `dependent:partner-children`, the five costs, `duration:validity` and `countrySet:eu-free-movement/2`. Not confirmed: § 42j(1)(b) states "nejméně 6 měsíců na zákonem stanovenou týdenní pracovní dobu", as the item says. The portal's opening summary still says "at least one year", while its list of documents says 6 months: the act decides, as the last audit found.
+- **Findings:** none. The contract item is right, and the run below confirmed it.
+- **Check loop:** run [43677144219](https://github.com/fernandolisboa/arca/actions/runs/43677144219) on `main`'s version 4: 12 of 23 match, none differs, `assessment:contract` among the matches. The run on this record's own head, the final one, is in the pull request's body. Left over:
+  - `unreadable`: `dependent:children` and `dependent:partner-children`, whose age of majority rests on the Civil Code, § 30. It has 11 pages in the API, over the 10 a source may name, and its page gave no text.
+  - `checker-gap`: `requirement:not-eu-eea-or-swiss-citizen` (the passages given held neither § 1 of the Aliens Act nor the Directive) and `assessment:highly-qualified-job` (the passages held § 42i(1) but not (11)(b), the central register). Both are run-to-run variance from the passage locator over a four-page act.
+  - `checker-gap`: the five costs. The model found each amount in the fees act's tariff items but would not join it to the Aliens Act's conditions on who pays where, which sit in another act.
+  - `checker-gap`: `duration:validity`. The passages given held § 44, but not paragraph (7).
+  - `checker-gap`: the pinned set `eu-free-movement` v2, as in earlier audits.
+- **Watch next:** as the last audit left it. The portal's summary still says one year.
+
 ### 2026-11-11
 
 The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on demand, in one pull request with the Danish, Latvian, Georgian and Icelandic routes ([Danish](dk-pay-limit.md), [Latvian](lv-capital-investment.md), [Georgian](ge-property-short-term.md) and [Icelandic](is-remote-work.md) records).
