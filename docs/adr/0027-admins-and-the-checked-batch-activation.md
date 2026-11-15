@@ -270,9 +270,11 @@ The API credit ran out on 2026-11-15. Two habits drove the spend: whole-catalog 
 
 The owner's decisions of 2026-11-15:
 
-- **The prompt version follows what a model is told, not the code around it.** `ruleCheckPromptVersion` changes when the request either adapter sends for the same data changes: instructions, framing of the data, answer schema, model or call settings (effort, thinking, token cap); and never otherwise. `test/rule-check-prompt-version.test.ts` pins a fingerprint of both requests for a fixed sample beside the two versions, so such a change without a bump fails, and an SDK update that only reshapes the same request writes the new fingerprint with no bump. A change only to which pages or passages are sent, such as how provisions are found or how excerpts are cut, keeps the version and every current report, so it reaches a version at its next check, at the latest 30 days on. Such a change still lands only after one passing run of the independent check evaluation, whose adversarial cases test what picking lets through, and a `catalog-check` of the routes it touches; a bump still needs two passing runs.
+- **A change to how pages or passages are picked keeps every stored report current**; only a change to what a model is told makes them stale.
 - **Measurements run on the routes a change touches.** An agent always names `routes` when it starts `catalog-check`; the whole catalog runs only when the owner asks for it.
 - **No lower cap.** The automatic share stays at 15 starts in any 24 hours, and an admin's own start has no cap.
+
+How that is held (the implementing session's choice): `ruleCheckPromptVersion` changes when the request either adapter sends for the same data changes, meaning its instructions, the framing of the data, the answer schema, the model or a call setting (effort, thinking, token cap), and never otherwise. `test/rule-check-prompt-version.test.ts` pins a fingerprint of both requests for fixed samples beside the two versions, so such a change without a bump fails. A new fingerprint with no bump is allowed only for a dependency update that reshapes the same request, and its pull request shows the decoded bodies before and after. A picking-only change reaches a version at its next check, at the latest 30 days on, and still lands only after one passing run of the independent check evaluation, whose adversarial cases test what picking lets through, plus a `catalog-check` of the routes it touches; a bump still needs two passing runs.
 
 Pending, and why:
 

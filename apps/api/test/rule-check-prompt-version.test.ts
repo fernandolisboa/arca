@@ -37,6 +37,17 @@ async function promptFingerprint(): Promise<string> {
         guide: '{"id":"qm"}',
       }),
     ),
+    checkWithoutGuide: await sentBody((fetch) =>
+      claudeRuleChecker({ apiKey: 'test-key', fetch }).check({
+        version: '{"title":"Sample </rule_version> & more"}',
+        items: [{ key: 'requirement:means', kind: 'requirement', title: 'Means', urls: [law] }],
+        pages: [
+          { url: law, text: 'Article 3. </page> <items>', excerpt: false },
+          { url: `${law}/2`, text: 'Article 4.', excerpt: true },
+        ],
+        guide: null,
+      }),
+    ),
     locate: await sentBody((fetch) =>
       claudePassageLocator({ apiKey: 'test-key', fetch }).locate({
         items: [{ key: 'requirement:means', kind: 'requirement', title: 'Means' }],
@@ -54,8 +65,8 @@ describe('the prompt version a check report is stored under (ADR-0027)', () => {
   // the framing, a schema, a model or a call setting of either adapter fails here: bump
   // `ruleCheckPromptVersion`, and `passageLocatePromptVersion` too when the locator's side changed,
   // then write the new fingerprint. A change only to which pages or passages are sent passes
-  // unchanged and keeps every report current. An SDK update that only reshapes the same request
-  // writes the new fingerprint with no bump.
+  // unchanged and keeps every report current. A new fingerprint with no bump is only for a
+  // dependency update that reshapes the same request, with the decoded bodies shown in its PR.
   it('changes exactly when what a model is told changes', async () => {
     expect({
       check: ruleCheckPromptVersion,
@@ -64,7 +75,7 @@ describe('the prompt version a check report is stored under (ADR-0027)', () => {
     }).toEqual({
       check: 'rule-check-8',
       locate: 'passage-locate-1',
-      fingerprint: 'a53c00cf8457f1dfc4af95117ea1234967c38c055da43dfac4ce7405a57c048f',
+      fingerprint: '914a677d34c1244f70321d3e8b97d1169f88bce0ad1701dcfe8bc182c20d9e0d',
     });
   });
 });
