@@ -41,7 +41,14 @@
     {
       "id": "ley-25871-serious-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction, final or not, or a record (indictment, committal to trial) for a crime punished with 3 years or more; the waiver and its bars",
+      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction or record, here or abroad, for a crime Argentine law punishes with 3 years or more; the waiver and its bars",
+      "kind": "official",
+      "verifiedAt": "2026-11-15"
+    },
+    {
+      "id": "decreto-616-2010-record",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "title": "Decreto 616/2010, article 29: a conviction is a final judgment; a record is a conviction not yet final or a final indictment order; one abroad counts only for a crime under Argentine law",
       "kind": "official",
       "verifiedAt": "2026-11-15"
     },
@@ -209,9 +216,9 @@
   "assessments": [
     {
       "id": "serious-crime",
-      "title": "No conviction, final or not, nor indictment or committal to trial, here or abroad, for a crime punished with 3+ years of prison; waivable, never for intentional crimes on life, sex or the State",
+      "title": "No conviction, final or not, nor final indictment order, here or abroad, for an act Argentine law punishes with 3+ years of prison; waivable, never for intentional crimes on life, sex or the State",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["ley-25871-serious-crimes"]
+      "sources": ["ley-25871-serious-crimes", "decreto-616-2010-record"]
     },
     {
       "id": "lesser-crime-conviction",
