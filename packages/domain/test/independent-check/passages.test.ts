@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type Passage,
   excerptGap,
   excerptPassages,
   secondLookRunOnPassages,
@@ -284,13 +285,27 @@ describe('the provisions a source title names (ADR-0027)', () => {
     ['Immigration Law, 27. pants (1) 10): up to two years', ['27']],
     ['Civil Law, Part One (family law): art. 219, minority; art. 221, marriage', ['219', '221']],
     ['Migration Regulations 1994, Schedule 1 item 1137(4B): invited', ['1', '1137']],
-    ['Employment Permits Regulations 2024, regs. 28 and 29: two years', ['28']],
+    ['Employment Permits Regulations 2024, regs. 28 and 29: two years', ['28', '29']],
+    ['Employment Permits Act 2024, s. 8(1)(e): section 7 does not apply', ['8']],
+    ['Aliens Law, 5 straipsnis: the permit', ['5']],
+    ['Ley 25.871, article 23, ñ): family reunification', ['23']],
+    ['Civil and Commercial Code (Ley 26.994), articles 25 and 27: majority', ['25', '27']],
+    ['Lei n.º 13.445, art. 37: family', ['37']],
+    ['SIRI, accompanying family: at least 1.5 to 2 years of cohabitation', []],
+    ['Code, art. 2019: an article numbered like a year', []],
     ['Immigration Rules, introduction, para. 5C: Irish citizens', ['5C']],
     ['Ley N.º 21.325, article 74: dependents', ['74']],
   ])('reads %s', (title, provisions) => {
     expect(namedProvisions(title)).toEqual(provisions);
   });
 });
+
+/** The text of the passages `provisionPassages` picks for `titles`, best first. */
+const headsOf = (law: string, passages: readonly Passage[], titles: string[]) =>
+  provisionPassages(law, passages, titles).map((index) => {
+    const { start, end } = passages[index] ?? { start: 0, end: 0 };
+    return law.slice(start, end);
+  });
 
 describe('the passages that head a named provision (ADR-0027)', () => {
   const law = [
@@ -316,11 +331,7 @@ describe('the passages that head a named provision (ADR-0027)', () => {
     'A member of the family unit is the spouse.',
   ].join('\n');
   const passages = splitPassages(law);
-  const heads = (titles: string[]) =>
-    provisionPassages(law, passages, titles).map((index) => {
-      const { start, end } = passages[index] ?? { start: 0, end: 0 };
-      return law.slice(start, end);
-    });
+  const heads = (titles: string[]) => headsOf(law, passages, titles);
 
   it('finds the passage a heading line of the provision opens', () => {
     const found = heads(['Foreigners law, article 52.º, n.º 3: refusal']);
@@ -371,14 +382,31 @@ describe('the passages that open a named provision in the line its text runs on 
     ...filler('Schedule'),
     'Artigo 52.º-A',
     'Text of article 52-A.',
+    ...filler('Code'),
+    `§ 5 Abs. 2 gilt entsprechend für die Familienangehörigen des Ausländers. ${'Text '.repeat(20)}`,
+    ...filler('Gesetz'),
+    `Art. 5.12. Los extranjeros podrán solicitar la residencia de larga duración. ${'texto '.repeat(20)}`,
+    ...filler('Codigo'),
+    'Section 6 - definitions',
+    'A partner is a spouse or civil partner.',
+    ...filler('Act'),
+    'ARTICULO 29. — Serán causas impedientes del ingreso de extranjeros:',
+    'c) haber sido condenado o tener antecedentes.',
+    ...filler('Ley'),
+    'Artículo 70',
+    'Text of article 70 in force.',
+    ...filler('Real'),
+    ...Array.from(
+      { length: 3 },
+      (_, index) =>
+        `Art. 70. Decoy ${String(index)} with a former amount of EUR 1,500 run on. ${'texto '.repeat(20)}`,
+    ),
   ].join('\n');
   const passages = splitPassages(law);
-  const heads = (titles: string[]) =>
-    provisionPassages(law, passages, titles).map((index) => {
-      const { start, end } = passages[index] ?? { start: 0, end: 0 };
-      return law.slice(start, end);
-    });
-  const finds = (title: string, text: string) => { expect(heads([title]).some((passage) => passage.includes(text))).toBe(true); };
+  const heads = (titles: string[]) => headsOf(law, passages, titles);
+  const finds = (title: string, text: string) => {
+    expect(heads([title]).some((passage) => passage.includes(text))).toBe(true);
+  };
 
   it('finds a provision whose number comes before its word', () => {
     finds('Immigration Law, 27. pants (3): family', 'Termiņuzturēšanās');
@@ -408,6 +436,30 @@ describe('the passages that open a named provision in the line its text runs on 
     expect(heads(['Rules, section 1: scope']).some((text) => text.includes('The Minister'))).toBe(
       false,
     );
+  });
+
+  it('finds an article whose text follows a dot, a space and a dash', () => {
+    finds('Ley 25.871, article 29, c): crimes', 'condenado o tener antecedentes');
+  });
+
+  it('finds a heading whose title follows a dash in lower case', () => {
+    finds('Act, section 6: definitions', 'civil partner');
+  });
+
+  it('ranks a heading line of its own ahead of later lines that run on from the same number', () => {
+    expect(heads(['Reglamento, article 70: fee'])[0]).toContain('Text of article 70 in force');
+  });
+
+  it('never takes a long sentence that cites a section for the section', () => {
+    expect(heads(['Gesetz, § 5: family']).some((text) => text.includes('gilt entsprechend'))).toBe(
+      false,
+    );
+  });
+
+  it('never takes a paragraph numbered under an article for the article', () => {
+    expect(
+      heads(['Codigo, article 5: residence']).some((text) => text.includes('larga duración')),
+    ).toBe(false);
   });
 
   it('never takes an article lettered after the number for the number', () => {

@@ -257,7 +257,10 @@ export function excerptRuns(excerpt: string): string[] {
 
 /** The words a catalog source title names a provision with, before its number. */
 const provisionWord =
-  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)/gu;
+  /(?:\b(?:[Aa]rticles?|[Aa]rt\.|[Ss]ections?|[Cc]lauses?|[Rr]egulations?|[Rr]ules?|[Pp]aragraphs?|[Ii]tems?|[Ss]chedules?|[Aa]nnex(?:es)?)|§§?)\s*(\d+(?:\.\d+)*(?:\.?[ºª])?(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?(?: [a-z](?![\p{L}]))?)((?:(?:,\s*|\s+and\s+)\d+[a-z]?(?![\p{L}\p{N}.]))*)/gu;
+
+/** Each further number of a list after a provision's word: "articles 25 and 27", "art. 2, 4". */
+const listedNumber = /(?:,\s*|\s+and\s+)(\d+[a-z]?)/gu;
 
 /** A date written with dots (12.03.2024), which is not a provision. */
 const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;
@@ -274,44 +277,64 @@ const postfixWord = String.raw`(?:pants|panta|straipsnis|straipsnio)(?![\p{L}])`
 /** A number with a word after it that names a provision: `27. pants` names `27`. */
 const postfixProvision = new RegExp(String.raw`(?<![\p{L}\p{N}.])(\d+)\.?\s*${postfixWord}`, 'gu');
 
-/** Abbreviations English titles name provisions with, beside the full words. */
-const provisionAbbreviation =
-  /\b(?:[Rr]egs?\.|[Pp]aras?\.)\s*(\d+(?:\.\d+)*(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?)/gu;
+/** The number and letter of a provision named by an abbreviation, and of each one listed after it. */
+const abbreviatedNumber = String.raw`\d+(?:\.\d+)*(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?`;
 
-/** What comes before an act's own number ("Ley N.º 21.325", "Act No. 3.1"), which is not a provision. */
-const actNumber = /(?:N\.?\s?[ºo°]|No\.|n\.)\s*$/u;
+/** Abbreviations English titles name provisions with, beside the full words: "regs. 28 and 29". */
+const provisionAbbreviation = new RegExp(
+  String.raw`\b(?:[Rr]egs?\.|[Pp]aras?\.|[Ss]s?\.)\s*(${abbreviatedNumber}(?:(?:,\s*|\s+and\s+)${abbreviatedNumber})*)`,
+  'gu',
+);
+
+/** What comes before an act's own number ("Ley N.º 21.325", "Lei n.º 13.445", "Ley 18.250"). */
+const actNumber =
+  /(?:\b[Nn]\.?\s?[ºo°]|\bNo\.|\bn\.|\b(?:Ley|Lei|Legge|Law|Act|Decreto|Decree))\s*$/u;
 
 /** A year, which a plain four-digit number in an act's name ("Regulations 1994") is. */
 const year = /^(?:1[89]|20)\d\d$/u;
 
-/** The provisions one piece of a source title names, unfiltered. */
-function provisionsIn(text: string): string[] {
+/**
+ * The provisions one piece of a source title names: after a word or abbreviation, before a postfix
+ * word, and, when `marked`, any number written only the way provisions are, save an act's own
+ * number. Years are left out.
+ */
+function provisionsIn(text: string, marked: boolean): string[] {
   return [
-    ...[...text.matchAll(provisionWord)].map((match) => match[1] ?? ''),
-    ...[...text.matchAll(provisionAbbreviation)].map((match) => match[1] ?? ''),
+    ...[...text.matchAll(provisionWord)].flatMap((match) => [
+      match[1] ?? '',
+      ...[...(match[2] ?? '').matchAll(listedNumber)].map((listed) => listed[1] ?? ''),
+    ]),
+    ...[...text.matchAll(provisionAbbreviation)].flatMap((match) =>
+      (match[1] ?? '').split(/,\s*|\s+and\s+/u),
+    ),
     ...[...text.matchAll(postfixProvision)].map((match) => match[1] ?? ''),
-    ...[...text.matchAll(markedNumber)]
-      .filter(({ index }) => !actNumber.test(text.slice(0, index)))
-      .map((match) => match[1] ?? ''),
-  ].filter((designator) => designator !== '' && !dottedDate.test(designator));
+    ...(marked
+      ? [...text.matchAll(markedNumber)]
+          .filter(({ index }) => !actNumber.test(text.slice(0, index)))
+          .map((match) => match[1] ?? '')
+      : []),
+  ].filter(
+    (designator) => designator !== '' && !dottedDate.test(designator) && !year.test(designator),
+  );
 }
 
 /**
- * The provisions a source title names, before its first colon, or anywhere in it when that part
- * names none ("Civil Law, Part One: art. 219"): the number after a word such as "article",
- * "section", "clause", "reg." or "§" ("§ 9 a(4)" names `9 a`), the number before a word that some
- * languages write after it ("27. pants"), and any number written the way only provisions are
- * (`52.º`, `24.º-B`, `189.211`). Catalog titles are written in English, citing provisions as the
- * law does.
+ * The provisions a source title names, before its first colon, or after it when that part names
+ * none ("Civil Law, Part One: art. 219"): the number after a word such as "article", "section",
+ * "clause", "reg." or "§" ("§ 9 a(4)" names `9 a`), the number before a word that some languages
+ * write after it ("27. pants"), and, before the colon, any number written the way only provisions
+ * are (`52.º`, `24.º-B`, `189.211`). Catalog titles are written in English, citing provisions as
+ * the law does.
  */
 export function namedProvisions(title: string): string[] {
   const head = title.split(':')[0] ?? '';
-  const inHead = provisionsIn(head);
-  const named = [...new Set(inHead.length > 0 ? inHead : provisionsIn(title))];
-  // A plain number is too common to look for beside a marked one ("Schedule 2 clause 189.211"),
-  // and a plain year is that of an act's name.
+  const inHead = provisionsIn(head, true);
+  // After the colon a title describes the provision, so only numbers a word names count there:
+  // its amounts and act numbers ("1.5 to 2 years", "Ley 18.250") are not provisions.
+  const named = [...new Set(inHead.length > 0 ? inHead : provisionsIn(title, false))];
+  // A plain number is too common to look for beside a marked one ("Schedule 2 clause 189.211").
   const marked = named.filter((designator) => !/^\d+$/u.test(designator));
-  return marked.length > 0 ? marked : named.filter((designator) => !year.test(designator));
+  return marked.length > 0 ? marked : named;
 }
 
 /**
@@ -320,11 +343,7 @@ export function namedProvisions(title: string): string[] {
  */
 const maxPassagesPerProvision = 3;
 
-/**
- * Whether `line` opens with `designator` as a token of its own, after at most one word or a
- * section sign ("Artigo 52.º", "§ 9 a.", "189.211"), as a provision's heading does; a line that
- * mentions it further on cites it, and does not head it.
- */
+/** A designator that is a bare number, with at most a letter: it also numbers paragraphs and rows. */
 const plainDesignator = /^\d+(?: ?[a-zA-Z])?$/u;
 
 /**
@@ -333,8 +352,20 @@ const plainDesignator = /^\d+(?: ?[a-zA-Z])?$/u;
  * or a table cell, with an ordinal mark first where the law writes one ("Artículo 4°.-").
  */
 const headingRest =
-  /^[ºª°]?(?:[.:]?\s*$|(?:[.:][-–—]*\s*|\s*[-–—]+\s+|\s+)(?:\d+\.\s+|\(\d+\)\s*)?\p{Lu}|\s*\|\s*\p{Lu})/u;
+  /^[ºª°]?(?:[.:]?\s*$|(?:[.:]?\s*[-–—]+\s+|[.:][-–—]*\s*|\s+)\p{Lu}|[.:][-–—]*\s+(?:\d+\.|\(\d+\))\s*\p{Lu}|\s*[-–—]\s|\s*\|\s*\p{Lu})/u;
 
+/**
+ * On a line too long to be a heading, the number must be followed by a dot, colon or dash before
+ * the text ("SW 18.1. The", "ARTICULO 23.- Los"); a bare space ("§ 5 Abs. 2 gilt") is a sentence
+ * that cites it.
+ */
+const runOnRest = /^[ºª°]?(?:[.:]|\s*[-–—]+\s)/u;
+
+/**
+ * Whether `line` opens with `designator` as a token of its own, after at most one word or a
+ * section sign ("Artigo 52.º", "§ 9 a.", "189.211"), as a provision's heading does; a line that
+ * mentions it further on cites it, and does not head it.
+ */
 function headsProvision(line: string, designator: string): boolean {
   const at = line.indexOf(designator);
   if (at === -1) return false;
@@ -354,23 +385,32 @@ function headsProvision(line: string, designator: string): boolean {
 /** A line that opens with a word for an article, in the languages that write one before its number. */
 const articleWord = /^\s*(?:art(?:\.|[ií]culo|icle|igo|ikel|ykuł|icolo)|§)/iu;
 
+/** A line that opens with a number and a word written after a provision's number: `27. pants`. */
+const postfixHeading = new RegExp(String.raw`^\s*(\d+)\.?\s*${postfixWord}`, 'u');
+
 /** Whether `line` opens with `designator` and a word written after a provision's number. */
 function opensWithPostfixWord(line: string, designator: string): boolean {
-  if (!/^\d+$/u.test(designator) || !line.trimStart().startsWith(designator)) return false;
-  return new RegExp(String.raw`^\s*${designator}\.?\s*${postfixWord}`, 'u').test(line);
+  return postfixHeading.exec(line)?.[1] === designator;
 }
 
+/** How a line opens a provision: as a heading of its own, or with the text run on after it. */
+type Opening = 'heading' | 'run-on';
+
 /**
- * Whether `line` opens the provision `designator`: as a heading of its own, or as the first words
- * of a paragraph where the law runs its text on in the heading's line ("SW 18.1. The applicant",
- * "27. pants. (1)"), which is told from a mere mention by where the number stands and what follows.
+ * Whether `line` opens the provision `designator`, and how: as a heading of its own, or as the
+ * first words of a paragraph where the law runs its text on in the heading's line ("SW 18.1. The
+ * applicant", "ARTICULO 23.- Los"). A run-on line needs a dot, colon or dash after the number, and
+ * a plain number needs a word for an article before it, so "Note 1: The" and "§ 5 Abs. 2 gilt" cite
+ * and do not open.
  */
-function opensProvision(line: string, designator: string): boolean {
-  if (opensWithPostfixWord(line, designator)) return true;
-  if (!headsProvision(line, designator)) return false;
-  // A plain number after any word ("Note 1: The") opens a heading's line only when short, or
-  // after a word for an article ("Art. 3a. 1. Nie", "ARTICULO 23.- Los").
-  return headingLike(line) || !plainDesignator.test(designator) || articleWord.test(line);
+function opensProvision(line: string, designator: string): Opening | undefined {
+  if (opensWithPostfixWord(line, designator)) return 'heading';
+  if (!headsProvision(line, designator)) return undefined;
+  if (headingLike(line)) return 'heading';
+  const rest = line.slice(line.indexOf(designator) + designator.length);
+  const runsOn =
+    runOnRest.test(rest) && (!plainDesignator.test(designator) || articleWord.test(line));
+  return runsOn ? 'run-on' : undefined;
 }
 
 /**
@@ -383,9 +423,10 @@ function articleOf(designator: string): string | undefined {
 }
 
 /**
- * The passages of a page whose heading lines open with a provision the titles name, best first:
- * the last `maxPassagesPerProvision` for each, last first, the provisions taking turns; the article a source cites is found by its number,
- * whatever a passage locator picks, in any language, since only the number is compared.
+ * The passages of a page with a line that opens a provision the titles name, best first: the last
+ * `maxPassagesPerProvision` for each, last first, the provisions taking turns. The article a source
+ * cites is found by its number, whatever a passage locator picks; a few closed lists of words
+ * (`postfixWord`, `articleWord`) only add the forms some languages write, and never remove a pick.
  */
 export function provisionPassages(
   text: string,
@@ -396,19 +437,36 @@ export function provisionPassages(
   if (designators.length === 0) return [];
   const articles = designators.flatMap((designator) => articleOf(designator) ?? []);
   const sought = [...new Set([...designators, ...articles])];
-  const hitsOf = new Map<string, number[]>(sought.map((designator) => [designator, []]));
+  const headings = new Map<string, number[]>(sought.map((designator) => [designator, []]));
+  const runOns = new Map<string, number[]>(sought.map((designator) => [designator, []]));
   passages.forEach(({ start, end }, index) => {
     for (const line of text.slice(start, end).split('\n')) {
       for (const designator of sought) {
-        const hits = hitsOf.get(designator) ?? [];
-        if (hits.at(-1) !== index && opensProvision(line, designator)) hits.push(index);
+        const opening = opensProvision(line, designator);
+        if (opening === undefined) continue;
+        const hits = (opening === 'heading' ? headings : runOns).get(designator) ?? [];
+        if (hits.at(-1) !== index) hits.push(index);
       }
     }
   });
+  // A heading line of its own outranks a line the text runs on in, so a later paragraph that
+  // happens to open with the same number never crowds the heading out.
+  const hitsOf = (designator: string) => {
+    const own = headings.get(designator) ?? [];
+    return own.length > 0 ? own : (runOns.get(designator) ?? []);
+  };
   const found = designators.map((designator) => {
-    const own = hitsOf.get(designator) ?? [];
+    const own = hitsOf(designator);
     const article = articleOf(designator);
-    return own.length > 0 || article === undefined ? own : (hitsOf.get(article) ?? []);
+    if (own.length > 0 || article === undefined) return own;
+    // The article a paragraph belongs to counts only on a line that names it as an article.
+    return (headings.get(article) ?? []).filter((index) => {
+      const { start, end } = passages[index] ?? { start: 0, end: 0 };
+      return text
+        .slice(start, end)
+        .split('\n')
+        .some((line) => articleWord.test(line) && opensProvision(line, article) !== undefined);
+    });
   });
   const ranked = found.map((hits) => hits.slice(-maxPassagesPerProvision).reverse());
   const turns = Array.from({ length: maxPassagesPerProvision }, (_, turn) =>
