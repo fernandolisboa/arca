@@ -422,6 +422,14 @@
     {
       "path": "routes/it-descent/5",
       "sha256": "4b6f8ac789900d9843e91611f82b5c66c5154e967a45c8fdfc9add6db6439f56"
+    },
+    {
+      "path": "routes/au-skilled-independent/3",
+      "sha256": "67af6311370d3e1eb4aa7d25029ff6a2057d7898c696c004f838bc0049537ff1"
+    },
+    {
+      "path": "routes/ar-mercosur-temporary/4",
+      "sha256": "741b42d6d2509d535fbc93a0174f600f134163be483107c4378744b78c0b47b8"
     }
   ]
 }
