@@ -6,17 +6,18 @@ Research notes for Australia's Skilled Independent visa (subclass 189), points-t
 
 ### 2026-11-15
 
-An on-demand correction, found while measuring the independent check after pull request [#451](https://github.com/fernandolisboa/arca/pull/451), in one pull request with the Argentine correction ([Argentine record](ar-mercosur-temporary.md)).
+An on-demand correction, found while measuring the independent check after pull request [#451](https://github.com/fernandolisboa/arca/pull/451), in one pull request with the Argentine correction, so that both are reviewed and merged together ([Argentine record](ar-mercosur-temporary.md)).
 
 - **Version audited:** 2
 - **Outcome:** correction, version 3, from version 2's date, 2026-07-01, which it replaces entirely.
-- **Sources re-read** (2026-11-15 UTC, the volume 2 compilation the sources already name as `machineReadableUrl`): Schedule 2, clause 189.211, read whole. Not re-read: the rest, verified 2026-11-11 and untouched by this version.
+- **Sources re-read** (2026-11-15 UTC, a copy saved with `curl` this day of the volume 2 compilation `https://www.legislation.gov.au/F1996B03551/2026-11-01/2026-11-01/text/original/epub/OEBPS/document_2/document_2.html`, the sources' `machineReadableUrl`): `regs-189-character` and the new `regs-189-character-family`, clause 189.211 read whole. Not re-read: the rest, verified 2026-11-11 and untouched by this version.
 - **Amendments looked for:** not again; the 2026-11-11 audit looked up to that date.
+- **Leads:** the catalog check's `differs` on `assessment:character` (run [43736647876](https://github.com/fernandolisboa/arca/actions/runs/43736647876)); the clause itself settles it.
 - **Findings:**
   - Corrected: the character criteria. Clause 189.211(1) names public interest criteria 4001, 4002, 4003, 4003B, 4004, 4020 and 4021 for the applicant; version 2 named only 4001 to 4004. The catalog check read version 2 as `differs` for that reason (run [43736647876](https://github.com/fernandolisboa/arca/actions/runs/43736647876)).
   - Corrected, now an assessment of its own: each family member applying meets 4001, 4002, 4003, 4003B, 4004, 4010 and 4020 (clause 189.211(3) and (4)), cited to a source of its own with the same addresses. No fact records any of them, so both assessments show the principal's visa refusals, as version 2 did.
-  - The cases file is version 2's.
-- **Check loop:** see the pull request; left over as in the 2026-11-11 record.
+- **Check loop:** not run yet. From about 16:40 UTC on 2026-11-15 every model call from CI answered "unavailable" (run [43737104187](https://github.com/fernandolisboa/arca/actions/runs/43737104187): 0 of 38 items answered, both routes), so the pull request stays open until a run with `routes=au-skilled-independent,ar-mercosur-temporary` answers on its head; its runs and what is left go here. Not checked yet: `assessment:character` and the new `assessment:character-family`.
+- **Cases:** version 2's file, unchanged: a case states an outcome, dependents and missing facts, not an assessment's wording, so no case tells the corrected criteria apart.
 - **Watch next:** as in the 2026-11-11 record.
 
 ### 2026-11-11

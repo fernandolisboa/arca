@@ -41,7 +41,7 @@
     {
       "id": "ley-25871-serious-crimes",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction or record, here or abroad, for a crime Argentine law punishes with 3 years or more; the waiver and its bars",
+      "title": "Ley 25.871, article 29, c), and closing paragraphs: a conviction or record, in Argentina or abroad, for a crime punished with 3 years or more; the exceptional dispensation and its bars",
       "kind": "official",
       "verifiedAt": "2026-11-15"
     },
@@ -57,7 +57,7 @@
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
       "title": "Ley 25.871, article 29, d), and closing paragraphs: a conviction for a crime Argentine law punishes with less than three years of prison; the exceptional dispensation and its bars",
       "kind": "official",
-      "verifiedAt": "2026-11-11"
+      "verifiedAt": "2026-11-15"
     },
     {
       "id": "decreto-616-2010-nationality",
@@ -216,7 +216,7 @@
   "assessments": [
     {
       "id": "serious-crime",
-      "title": "No conviction, final or not, nor final indictment order, here or abroad, for an act Argentine law punishes with 3+ years of prison; waivable, never for intentional crimes on life, sex or the State",
+      "title": "No conviction, final or not, nor final indictment order, in Argentina or abroad, for a crime punished with 3+ years, save a dispensation, never for intentional crimes on life, sex or the State",
       "evidence": ["principal.visaRefusals"],
       "sources": ["ley-25871-serious-crimes", "decreto-616-2010-record"]
     },

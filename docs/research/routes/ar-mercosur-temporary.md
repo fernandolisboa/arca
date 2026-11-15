@@ -6,16 +6,18 @@ Research notes for Argentina's temporary residence by nationality for natives of
 
 ### 2026-11-15
 
-An on-demand correction, found while measuring the independent check after pull request [#451](https://github.com/fernandolisboa/arca/pull/451), in one pull request with the Australian correction ([Australian record](au-skilled-independent.md)).
+An on-demand correction, found while measuring the independent check after pull request [#451](https://github.com/fernandolisboa/arca/pull/451), in one pull request with the Australian correction, so that both are reviewed and merged together ([Australian record](au-skilled-independent.md)).
 
 - **Version audited:** 3
 - **Outcome:** correction, version 4, from version 3's date, 2025-05-29, which it replaces entirely.
-- **Sources re-read** (2026-11-15 UTC, the saved pages): the consolidated Ley 25.871, article 29, c) and d) and the closing paragraphs; the original Decreto 616/2010, article 29. Not re-read: the rest, verified 2026-11-11 and untouched by this version. The directorate's pages on `argentina.gob.ar` answered 500 to a plain Node request while `curl` read them; not worked around.
-- **Amendments looked for:** not again; the 2026-11-11 audit looked up to that date. Decreto 616/2010, article 29, was not adapted to the 2025 changes to the law.
+- **Sources re-read** (2026-11-15 UTC, copies saved this day): `ley-25871-serious-crimes` and `ley-25871-lesser-crimes`, the consolidated Ley 25.871 at `https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion`, article 29 whole; the new `decreto-616-2010-record`, the original Decreto 616/2010 at `https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto`, article 29; and Decreto 366/2025, which substituted article 29 of the law and leaves the regulation's article 29 as it was. Not re-read: the rest, verified 2026-11-11 and untouched by this version. The directorate's pages answered 500 to a plain Node request while `curl` read them; not worked around.
+- **Amendments looked for:** not again; the 2026-11-11 audit looked up to that date.
+- **Leads:** the catalog check's note on `serious-crime` in run [43731529486](https://github.com/fernandolisboa/arca/actions/runs/43731529486), that the decree defines a record; the texts themselves settle it.
 - **Findings:**
   - Corrected: `assessment:serious-crime`. Article 29, c), of the law bars a person "condenado" or with "antecedentes", in Argentina or abroad, for a crime Argentine law punishes with three years of prison or more, and does not define either word. Article 29 of Decreto 616/2010 does: a conviction is a final judgment, and a record ("antecedente") is a conviction not yet final or a final indictment order ("procesamiento firme"); one abroad counts only when the act is a crime under Argentine law. Version 3 said "record" alone, which reads as a criminal history, so a person indicted but not tried could take the item as not reaching them. The item now names the final indictment order and cites the decree as a new source, `decreto-616-2010-record`; the waiver and its bar for intentional crimes against life, sexual integrity or the constitutional order are unchanged.
-  - The cases file is version 3's.
-- **Check loop:** see the pull request; left over as in the 2026-11-11 record.
+  - Open: since 2025 the law has the courts report a committal to trial ("requisitoria de citación a juicio o acto procesal equiparable") and a conviction "aun sin encontrarse firme", but defines a record nowhere; the decree's definition, the only one, names the final indictment order of the former procedure. The item follows the decree; whether the directorate counts a committal to trial under the accusatory code as a record is not written down.
+- **Check loop:** not run yet. From about 16:40 UTC on 2026-11-15 every model call from CI answered "unavailable" (run [43737104187](https://github.com/fernandolisboa/arca/actions/runs/43737104187): 0 of 38 items answered, both routes), so the pull request stays open until a run with `routes=au-skilled-independent,ar-mercosur-temporary` answers on its head; its runs and what is left go here. Not checked yet: `assessment:serious-crime`.
+- **Cases:** version 3's file, unchanged: a case states an outcome, dependents and missing facts, not an assessment's wording, so no case tells the corrected item apart.
 - **Watch next:** as in the 2026-11-11 record.
 
 ### 2026-11-11
