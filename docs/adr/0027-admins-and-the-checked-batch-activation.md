@@ -242,6 +242,20 @@ After the amendment above, the catalog check (run 43519235575) confirmed 151 of 
 - **What it may change.** Only a match or a difference from the second look replaces the first answer, verified in code like any other against the text that call sent, which the fetch log records. A second look that fails or still cannot check leaves the first answer as it was and never fails the check. Items the first look confirmed or found different are never asked again.
 - **Prompt `rule-check-6`.** The wording is unchanged; the version moves so that reports made without the second look stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit.
 
+### Provisions written the way more laws write them (amendment, 2026-11-15)
+
+The catalog check of 2026-11-15 (run 43731529486) confirmed 179 of 299 items; 105 of the 117 left were the model saying the provision was not in the text given, on pages that were read. Matching each source title against the cached pages showed why: for 124 of the 315 citations of a long page, code found no passage that opens the cited provision, so the excerpt rested on the locator alone. The rule "a number after its word, on a short heading line" missed laws that write it otherwise. Code now also finds:
+
+- a number before its word, as Latvian and Lithuanian write it ("27. pants", "5 straipsnis"), on the line that opens the article;
+- the abbreviations English titles use ("reg. 27", "regs. 28 and 29", "para. 5C"), and the provisions a title names after its first colon when the part before names none ("Civil Law, Part One: art. 219");
+- a provision whose text runs on in its heading's line ("SW 18.1. The applicant", "ARTICULO 23.- Los", "Art. 3a. 1. Nie"): a number only provisions are written with, or a plain number after a word for an article, followed by a dot, colon or dash and the text; a plain number after any other word still opens a provision only on a short heading line, so "Note 1: The Minister" is never section 1;
+- a long schedule item that opens a table row ("1137 | Skilled—Independent"), three digits or more, since a short one also numbers rows;
+- the article of a paragraph or letter that heads no line of its own ("61.3", "38 b" find "Artículo 61", "Artículo 38") when the paragraph itself is found nowhere.
+
+A four-digit number is dropped only when it is a year (1800 to 2099), so "item 1137" counts and "Migration Regulations 1994" does not, and a dotted number after "N.º" or "No." is an act's own number ("Ley N.º 21.325"), not a provision. A number followed by a dash and a letter ("52.º-A") is another article. Against the same cached pages, the citations with no passage found went from 124 to 27, and no citation that had one lost it. What is left: U.S. Code subsections, Irish statutory instruments whose sections are bare numbers, and the Latvian Civil Law's bare "219.".
+
+- **Prompt `rule-check-7`.** The wording is unchanged; the version moves so that reports made with the earlier picks stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit.
+
 ## Alternatives
 
 | Option                                                                          | Why not                                                                                                                                                                                                                                                                                                                                            |

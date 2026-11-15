@@ -266,23 +266,52 @@ const dottedDate = /^\d{1,2}\.\d{1,2}\.\d{2,4}$/u;
 const markedNumber = /(?<![\p{L}\p{N}.])(\d+(?:\.?[ºª](?:-[A-Z]+)?|(?:\.\d+)+[A-Z]?))(?![\p{N}])/gu;
 
 /**
- * The provisions a source title names, before its first colon: the number after a word such as
- * "article", "section", "clause" or "§" ("§ 9 a(4)" names `9 a`), and any number written the way
- * only provisions are (`52.º`, `24.º-B`, `189.211`). Catalog titles are written in English.
+ * The words some languages write after a provision's number, as Latvian "27. pants" and Lithuanian
+ * "5 straipsnis" do.
+ */
+const postfixWord = String.raw`(?:pants|panta|straipsnis|straipsnio)(?![\p{L}])`;
+
+/** A number with a word after it that names a provision: `27. pants` names `27`. */
+const postfixProvision = new RegExp(String.raw`(?<![\p{L}\p{N}.])(\d+)\.?\s*${postfixWord}`, 'gu');
+
+/** Abbreviations English titles name provisions with, beside the full words. */
+const provisionAbbreviation =
+  /\b(?:[Rr]egs?\.|[Pp]aras?\.)\s*(\d+(?:\.\d+)*(?:-?[A-Z](?![\p{L}])|[a-z](?![\p{L}]))?)/gu;
+
+/** What comes before an act's own number ("Ley N.º 21.325", "Act No. 3.1"), which is not a provision. */
+const actNumber = /(?:N\.?\s?[ºo°]|No\.|n\.)\s*$/u;
+
+/** A year, which a plain four-digit number in an act's name ("Regulations 1994") is. */
+const year = /^(?:1[89]|20)\d\d$/u;
+
+/** The provisions one piece of a source title names, unfiltered. */
+function provisionsIn(text: string): string[] {
+  return [
+    ...[...text.matchAll(provisionWord)].map((match) => match[1] ?? ''),
+    ...[...text.matchAll(provisionAbbreviation)].map((match) => match[1] ?? ''),
+    ...[...text.matchAll(postfixProvision)].map((match) => match[1] ?? ''),
+    ...[...text.matchAll(markedNumber)]
+      .filter(({ index }) => !actNumber.test(text.slice(0, index)))
+      .map((match) => match[1] ?? ''),
+  ].filter((designator) => designator !== '' && !dottedDate.test(designator));
+}
+
+/**
+ * The provisions a source title names, before its first colon, or anywhere in it when that part
+ * names none ("Civil Law, Part One: art. 219"): the number after a word such as "article",
+ * "section", "clause", "reg." or "§" ("§ 9 a(4)" names `9 a`), the number before a word that some
+ * languages write after it ("27. pants"), and any number written the way only provisions are
+ * (`52.º`, `24.º-B`, `189.211`). Catalog titles are written in English, citing provisions as the
+ * law does.
  */
 export function namedProvisions(title: string): string[] {
   const head = title.split(':')[0] ?? '';
-  const found = [
-    ...[...head.matchAll(provisionWord)].map((match) => match[1] ?? ''),
-    ...[...head.matchAll(markedNumber)].map((match) => match[1] ?? ''),
-  ];
-  const named = [
-    ...new Set(found.filter((designator) => designator !== '' && !dottedDate.test(designator))),
-  ];
+  const inHead = provisionsIn(head);
+  const named = [...new Set(inHead.length > 0 ? inHead : provisionsIn(title))];
   // A plain number is too common to look for beside a marked one ("Schedule 2 clause 189.211"),
-  // and a plain four-digit one is the year of an act's name.
+  // and a plain year is that of an act's name.
   const marked = named.filter((designator) => !/^\d+$/u.test(designator));
-  return marked.length > 0 ? marked : named.filter((designator) => !/^\d{4}$/u.test(designator));
+  return marked.length > 0 ? marked : named.filter((designator) => !year.test(designator));
 }
 
 /**
@@ -298,17 +327,59 @@ const maxPassagesPerProvision = 3;
  */
 const plainDesignator = /^\d+(?: ?[a-zA-Z])?$/u;
 
+/**
+ * What follows a provision's number on the line that opens it: nothing, or its title or first
+ * sentence after a dot, colon, dash or space ("ARTICULO 23.- Los", "Art. 3a. 1. Nie", "SW 18.1. The"),
+ * or a table cell, with an ordinal mark first where the law writes one ("Artículo 4°.-").
+ */
+const headingRest =
+  /^[ºª°]?(?:[.:]?\s*$|(?:[.:][-–—]*\s*|\s*[-–—]+\s+|\s+)(?:\d+\.\s+|\(\d+\)\s*)?\p{Lu}|\s*\|\s*\p{Lu})/u;
+
 function headsProvision(line: string, designator: string): boolean {
   const at = line.indexOf(designator);
   if (at === -1) return false;
   const rest = line.slice(at + designator.length);
   // A heading ends with the number or goes on to its title; "artigo 52.º, pode" is a sentence.
-  const heads = /^(?:[.:]?\s*$|[.:]?\s+\p{Lu}|\s*\|\s*\p{Lu}|\s*[-–—]\s)/u.test(rest);
-  // A plain number ("4", "9 a") also opens numbered paragraphs, so it needs its word or a §.
-  const prefix = plainDesignator.test(designator)
-    ? /^\s*(?:[\p{L}]+\.?\s+|§+\s*)$/u
-    : /^\s*(?:[\p{L}]+\.?\s+|§+\s*)?$/u;
+  const heads = headingRest.test(rest);
+  // A plain number ("4", "9 a") also opens numbered paragraphs, so it needs its word or a §,
+  // unless a long one opens a table row ("1137 | Skilled—Independent"), as a schedule's items do.
+  const tableItem = /^\d{3,}$/u.test(designator) && /^\s*\|/u.test(rest);
+  const prefix =
+    plainDesignator.test(designator) && !tableItem
+      ? /^\s*(?:[\p{L}]+\.?\s+|§+\s*)$/u
+      : /^\s*(?:[\p{L}]+\.?\s+|§+\s*)?$/u;
   return heads && prefix.test(line.slice(0, at));
+}
+
+/** A line that opens with a word for an article, in the languages that write one before its number. */
+const articleWord = /^\s*(?:art(?:\.|[ií]culo|icle|igo|ikel|ykuł|icolo)|§)/iu;
+
+/** Whether `line` opens with `designator` and a word written after a provision's number. */
+function opensWithPostfixWord(line: string, designator: string): boolean {
+  if (!/^\d+$/u.test(designator) || !line.trimStart().startsWith(designator)) return false;
+  return new RegExp(String.raw`^\s*${designator}\.?\s*${postfixWord}`, 'u').test(line);
+}
+
+/**
+ * Whether `line` opens the provision `designator`: as a heading of its own, or as the first words
+ * of a paragraph where the law runs its text on in the heading's line ("SW 18.1. The applicant",
+ * "27. pants. (1)"), which is told from a mere mention by where the number stands and what follows.
+ */
+function opensProvision(line: string, designator: string): boolean {
+  if (opensWithPostfixWord(line, designator)) return true;
+  if (!headsProvision(line, designator)) return false;
+  // A plain number after any word ("Note 1: The") opens a heading's line only when short, or
+  // after a word for an article ("Art. 3a. 1. Nie", "ARTICULO 23.- Los").
+  return headingLike(line) || !plainDesignator.test(designator) || articleWord.test(line);
+}
+
+/**
+ * The article a paragraph or letter designator ("61.3", "61.2 b", "38 b") belongs to, looked for
+ * when the paragraph itself heads no line, as a law that numbers paragraphs within each article
+ * writes it.
+ */
+function articleOf(designator: string): string | undefined {
+  return /^(\d+)(?:\.\d| [a-z]$)/u.exec(designator)?.[1];
 }
 
 /**
@@ -323,17 +394,23 @@ export function provisionPassages(
 ): number[] {
   const designators = [...new Set(titles.flatMap(namedProvisions))];
   if (designators.length === 0) return [];
-  const found = new Map<string, number[]>(designators.map((designator) => [designator, []]));
+  const articles = designators.flatMap((designator) => articleOf(designator) ?? []);
+  const sought = [...new Set([...designators, ...articles])];
+  const hitsOf = new Map<string, number[]>(sought.map((designator) => [designator, []]));
   passages.forEach(({ start, end }, index) => {
     for (const line of text.slice(start, end).split('\n')) {
-      if (!headingLike(line)) continue;
-      for (const designator of designators) {
-        const hits = found.get(designator) ?? [];
-        if (hits.at(-1) !== index && headsProvision(line, designator)) hits.push(index);
+      for (const designator of sought) {
+        const hits = hitsOf.get(designator) ?? [];
+        if (hits.at(-1) !== index && opensProvision(line, designator)) hits.push(index);
       }
     }
   });
-  const ranked = [...found.values()].map((hits) => hits.slice(-maxPassagesPerProvision).reverse());
+  const found = designators.map((designator) => {
+    const own = hitsOf.get(designator) ?? [];
+    const article = articleOf(designator);
+    return own.length > 0 || article === undefined ? own : (hitsOf.get(article) ?? []);
+  });
+  const ranked = found.map((hits) => hits.slice(-maxPassagesPerProvision).reverse());
   const turns = Array.from({ length: maxPassagesPerProvision }, (_, turn) =>
     ranked.flatMap((hits) => hits.slice(turn, turn + 1)),
   );
