@@ -2,9 +2,8 @@ import { asDataText, maxPassagesPerItem } from '@arca/domain';
 import type { PassageLocateRequest } from './locator.js';
 
 /**
- * The passage locator's prompt (ADR-0027). A change here changes what the check reads, so it
- * bumps `ruleCheckPromptVersion` too and lands only after the independent check evaluation passes
- * twice on one commit.
+ * The passage locator's prompt (ADR-0027). A change to it bumps this version and
+ * `ruleCheckPromptVersion`, which reports are stored under.
  */
 export const passageLocatePromptVersion = 'passage-locate-1';
 

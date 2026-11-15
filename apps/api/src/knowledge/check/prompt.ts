@@ -2,9 +2,10 @@ import { asDataText, excerptGap, maxQuoteLength, maxQuotes, minQuoteLength } fro
 import type { RuleCheckRequest } from './checker.js';
 
 /**
- * The independent check prompt (ADR-0027). Versioned: a change here or to the passage locator's
- * prompt bumps the version and lands only after the independent check evaluation passes twice on
- * one commit.
+ * The independent check prompt (ADR-0027). Versioned: a change to what a model is told in a
+ * check (either adapter's instructions, framing, schema, model or call settings) bumps it, which
+ * makes every stored report stale; `test/rule-check-prompt-version.test.ts` enforces it. A change
+ * only to which pages or passages are sent keeps it.
  */
 export const ruleCheckPromptVersion = 'rule-check-8';
 

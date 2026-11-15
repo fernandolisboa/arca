@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-15 (what a check costs, below); 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -262,7 +262,24 @@ The catalog check of 2026-11-15 (run 43731529486) confirmed 179 of 299 items; 10
 
 So this departs from comparing the number alone: two short, closed lists of words (`postfixWord`, the words for "article" in `articleWord`) are looked for on page lines. They only add picks and never remove one, and a law written another way is still found by the locator, as before; a new country whose laws need another word is a one-line code change with its test. A year (1800 to 2099) is never a provision, nor is a dotted number after "N.º", "No." or an act's name ("Ley N.º 21.325", "Lei n.º 13.445"); a number followed by a dash and a letter ("52.º-A") is another article. Against the same cached pages, the citations with no passage found went from 124 to 30, and no citation that had one lost it. What is left: U.S. Code subsections, Irish statutory instruments whose sections are bare numbers, and the Latvian Civil Law's bare "219.". Every line of a long page is now tested, not only short ones, which keeps the scan linear but slower (about half a second of CPU for forty items on a 3,000,000-character page).
 
-- **Prompt `rule-check-8`.** The wording is unchanged; the version moves so that reports made with the earlier picks stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit.
+- **Prompt `rule-check-8`.** The wording is unchanged; the version moves so that reports made with the earlier picks stop counting as current and versions are checked again. It lands after the independent check evaluation passes twice on one commit. (Since the amendment below, a change like this one keeps the version.)
+
+### What a check costs (amendment, 2026-11-15)
+
+The API credit ran out on 2026-11-15. Two habits drove the spend: whole-catalog runs of `catalog-check` (US$1.70 to US$5 each in the runs the real-data gate records, estimated up to US$15 since the second looks) and prompt-version bumps whose wording did not change (`rule-check-8`), each of which made every stored report stale, so the hourly start checked the open versions again.
+
+The owner's decisions of 2026-11-15:
+
+- **A change to how pages or passages are picked keeps every stored report current**; only a change to what a model is told makes them stale.
+- **Measurements run on the routes a change touches.** An agent always names `routes` when it starts `catalog-check`; the whole catalog runs only when the owner asks for it.
+- **No lower cap.** The automatic share stays at 15 starts in any 24 hours, and an admin's own start has no cap.
+
+How that is held (the implementing session's choice): `ruleCheckPromptVersion` changes when the request either adapter sends for the same data changes, meaning its instructions, the framing of the data, the answer schema, the model or a call setting (effort, thinking, token cap), and never otherwise. `test/rule-check-prompt-version.test.ts` pins a fingerprint of both requests for fixed samples beside the two versions, so such a change without a bump fails. A new fingerprint with no bump is allowed only for a dependency update that reshapes the same request, and its pull request shows the decoded bodies before and after. A picking-only change reaches a version at its next check, at the latest 30 days on, and still lands only after one passing run of the independent check evaluation, whose adversarial cases test what picking lets through, plus a `catalog-check` of the routes it touches; a bump still needs two passing runs.
+
+Pending, and why:
+
+- **Message batches (half price).** A transport that sends each call as a one-request message batch is written and kept aside, for `catalog-check` first. It changes the shared Claude adapter, which lands only with an evaluation run, and its first real run is its proof, so it waits until the API answers again (2026-12-01). The hourly start is a harder case: a batch can take hours, longer than one workflow step may run, so the check would need to wait for its batch in rounds; the owner is asked whether to build that.
+- **Caching the law pages across a check's calls.** Nothing could be measured with the credit gone, so this is an estimate. The comparisons put the items before the pages, so no two calls share a page in their prefix; what they share is the version and the guide (about 10,000 tokens), and the guide comes last. The locator is asked again with the same outline for second looks, after the items too. Moving the guide, version and pages or outline before the items, with a breakpoint after them, would let the second looks and the reading of differences read them from the cache: a few cents a check on the comparison model (cache reads at a twentieth of the price, writes at 1.25 times for five minutes), well under a cent on the locator. It changes the message order the instructions describe, so it bumps the version and needs two evaluation runs; and caching rule data and page text, not only Arca's instructions, needs an [ADR-0004](0004-ai-providers-behind-ports.md) amendment and the data-flow row updated. It waits for the next prompt change that needs the evaluation anyway, with the saving measured then.
 
 ## Alternatives
 
