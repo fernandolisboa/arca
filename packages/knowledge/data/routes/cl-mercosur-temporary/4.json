@@ -162,7 +162,7 @@
     },
     {
       "id": "no-criminal-record",
-      "title": "Adults show a criminal record certificate from the country of origin or where they lived in the last 5 years; the origin country's certificate is valid for at most 60 days from issue",
+      "title": "Adults show a criminal record certificate from the country of origin or where they lived in the last 5 years, attached within 60 days of issue; the origin country's is valid 60 days at most",
       "evidence": ["principal.visaRefusals"],
       "sources": ["sermig-mercosur", "agreement-records"]
     }
