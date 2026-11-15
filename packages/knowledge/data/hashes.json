@@ -410,6 +410,10 @@
     {
       "path": "routes/cl-mercosur-temporary/3",
       "sha256": "7977d505b3f7c54d7cfb7bb2bbc4affa9d680203a5fe899a392326430b94aa26"
+    },
+    {
+      "path": "routes/cl-mercosur-temporary/4",
+      "sha256": "787c388364e06fd119d727d5136bfe8397a69977425277be8ccc4b69ad1306c2"
     }
   ]
 }
