@@ -26,8 +26,9 @@ export interface CheckProgressStore {
 
 /**
  * The most events one start records: two per cited page, one per model call, a handful of stages
- * with one `comparing` per checker call and retry, and at most one item event per item for each
- * attempt of the one call that compares it, since each item is in one call only.
+ * with one `comparing` per checker call and retry, and a few item events per item: one for each
+ * attempt of each call that compares it (its first comparison, then at most one second look or
+ * one reading of its difference again, ADR-0027) and one when such a call fails or changes it.
  */
 export const maxProgressEvents = 1_000;
 

@@ -1,5 +1,6 @@
 import {
   type CatalogEntry,
+  type CheckedItem,
   excerptGap,
   maxPassagesPerItem,
   maxWholePageText,
@@ -923,6 +924,112 @@ describe('the independent check of one version (ADR-0027)', () => {
       });
     });
 
+    describe('a difference read twice before it stands', () => {
+      const [means, fee] = matchesBoth.items;
+      const differs = { ...means, status: 'differs', note: 'Other amount.' };
+      const firstCall = { entries: [], end: { items: [differs, fee] } };
+      const meansOf = (rows: readonly { items: readonly CheckedItem[] }[]) =>
+        rows[0]?.items.find(({ key }) => key === 'requirement:means');
+
+      it('reads only the differing item again, in a call of its own', async () => {
+        const checker = streaming(firstCall, { entries: [], end: { items: [differs] } });
+        const { check, store } = setup({ checker });
+        await check(startId, 'qm-sample', 1);
+        expect(checker.requests.map(({ items }) => items.map(({ key }) => key))).toEqual([
+          ['requirement:means', 'cost:fee'],
+          ['requirement:means'],
+        ]);
+        expect(meansOf(store.rows)).toMatchObject({ status: 'differs', note: 'Other amount.' });
+      });
+
+      it('leaves an item two answers disagree on as could not be checked, never as a match', async () => {
+        const checker = streaming(firstCall, { entries: [], end: { items: [means] } });
+        const { check, store, events } = setup({ checker });
+        await check(startId, 'qm-sample', 1);
+        expect(meansOf(store.rows)).toEqual({
+          key: 'requirement:means',
+          status: 'could_not_check',
+          quotes: [],
+          note: null,
+          reason: 'answers_disagree',
+        });
+        expect(store.rows[0]?.items.find(({ key }) => key === 'cost:fee')?.status).toBe('matches');
+        expect(
+          events()
+            .filter((event) => event.kind === 'item' && event.key === 'requirement:means')
+            .at(-1),
+        ).toMatchObject({ status: 'could_not_check' });
+        expect(store.rows[0]).toMatchObject({ failure: null, failed: false });
+      });
+
+      it('keeps the difference when the second answer cannot check the item', async () => {
+        const checker = streaming(firstCall, {
+          entries: [],
+          end: {
+            items: [{ key: 'requirement:means', status: 'could_not_check', note: 'Não está.' }],
+          },
+        });
+        const { check, store } = setup({ checker });
+        await check(startId, 'qm-sample', 1);
+        expect(meansOf(store.rows)).toMatchObject({ status: 'differs' });
+      });
+
+      it('keeps the difference, and does not fail the check, when the second call fails', async () => {
+        const checker = streaming(firstCall, {
+          entries: [],
+          end: new RuleCheckerError('check_timeout'),
+        });
+        const { check, store, events } = setup({ checker });
+        await check(startId, 'qm-sample', 1);
+        expect(meansOf(store.rows)).toMatchObject({ status: 'differs' });
+        expect(
+          events()
+            .filter((event) => event.kind === 'item' && event.key === 'requirement:means')
+            .at(-1),
+        ).toMatchObject({ status: 'differs' });
+        expect(store.rows[0]).toMatchObject({ failure: null, failed: false });
+      });
+
+      it('reads at most ten differences again, five calls of two, and keeps the rest', async () => {
+        const extra = Array.from({ length: 11 }, (_, index) => ({
+          ...version.requirements[0],
+          id: `means-${String(index)}`,
+          title: `Further means ${String(index)}`,
+        }));
+        const many = routeVersionSchema.parse({
+          ...version,
+          requirements: [...version.requirements, ...extra],
+        });
+        const checked: CheckSubject = {
+          ...subject,
+          entry: { ...entry, version: many, identity: versionIdentity(many, 'e'.repeat(64)) },
+        };
+        const requests: RuleCheckRequest[] = [];
+        const checker: RuleChecker = {
+          check(request) {
+            requests.push(request);
+            const first = requests.length === 1;
+            const reply = {
+              items: request.items.map(({ key }) =>
+                key === 'cost:fee' ? fee : { ...means, key, status: first ? 'differs' : 'matches' },
+              ),
+            };
+            return Promise.resolve({ reply, model: 'claude-test', promptVersion: 'check-1' });
+          },
+        };
+        const { check, store } = setup({ checker, checked });
+        await check(startId, 'qm-sample', 1);
+        // Thirteen items on short pages go in one first call; twelve differ, and ten are read again.
+        expect(requests.map(({ items }) => items.length)).toEqual([
+          13,
+          ...Array<number>(5).fill(2),
+        ]);
+        const statuses = store.rows[0]?.items.map(({ status }) => status) ?? [];
+        expect(statuses.filter((status) => status === 'could_not_check')).toHaveLength(10);
+        expect(statuses.filter((status) => status === 'differs')).toHaveLength(2);
+      });
+    });
+
     it('keeps the answers of the other calls when one call fails', async () => {
       const extra = Array.from({ length: 9 }, (_, index) => ({
         ...version.requirements[0],
@@ -1567,13 +1674,16 @@ describe('the independent check of one version (ADR-0027)', () => {
         );
         const { check, events, store } = setup({ checker });
         await check(startId, 'qm-sample', 1);
-        expect(checker.requests).toHaveLength(2);
+        // The third call reads the difference again and finds it too.
+        expect(checker.requests).toHaveLength(3);
         expect(events().filter(({ kind }) => kind === 'item' || kind === 'comparing')).toEqual([
           { kind: 'comparing' },
           { kind: 'item', key: 'requirement:means', status: 'matches' },
           { kind: 'comparing' },
           { kind: 'item', key: 'requirement:means', status: 'differs' },
           { kind: 'item', key: 'cost:fee', status: 'matches' },
+          { kind: 'comparing', keys: ['requirement:means'] },
+          { kind: 'item', key: 'requirement:means', status: 'differs' },
         ]);
         expect(store.rows[0]?.items.map(({ status }) => status)).toEqual(['differs', 'matches']);
       });
