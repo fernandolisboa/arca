@@ -26,7 +26,10 @@ A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector
 - **Check loop:** run [43677500354](https://github.com/fernandolisboa/arca/actions/runs/43677500354) on version 4: 3 of 6 match, none differs, `assessment:consulate-yearly-limit` among the matches. The run on this record's own head, the final one, is in the pull request's body. Left over:
   - `unreadable`: `cost:consular-fee` and `cost:municipal-fee`. The fee table and commi 636 and 639 of L. 207/2024 are served only by `caricaArticolo` addresses that need the session cookie. The cited act addresses open art. 1 of D.Lgs. 71/2011 and commi 1 to 100 of L. 207/2024. An admin reads the table under the act's "Allegato" and the commi in the part 601 to 700.
   - `unreadable`: `requirement:citizen-line`, as far as it rests on the Constitutional Court's rulings 63/2026 and 147/2026. The check's fetch got a 302 to a bot challenge (`redirect_refused`), as the `cortecostituzionale.it` recipe warns. `checker-gap`: the model also would not join art. 3-bis to the pre-1948 rules of L. 555/1912.
-- **Watch next:** as the record above left it. A machine-readable address for Normattiva's annexes and for the parts of a budget law's single article would let the check read the fees. That is a recipe change for an on-demand session.
+- **Watch next:**
+  - The EU Court of Justice's answer to ordinanza 147/2026. An answer against art. 3-bis is a new version.
+  - The ministerial rules for the central office before 2029-01-01, and any law that moves that date. Version 3 is re-read before it takes effect.
+  - A machine-readable address for Normattiva's annexes, and for the parts of a budget law's single article, would let the check read the fees. That is a recipe change for an on-demand session.
 
 ### 2026-11-11
 
