@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-15 (what a check costs, below); 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); 2026-11-16 (no automatic start, which ends the hourly and screen-opening starts); partly superseded 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): the independent check, its starts, country guides, the checked batch, the audit loop and the catalog check give way to update requests, and are removed by [#463](https://github.com/fernandolisboa/arca/issues/463); admins, decisions and the admin grant stand; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-15 (what a check costs, below); 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); 2026-11-16 (no automatic start, which ends the hourly and screen-opening starts); partly superseded 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): the independent check, its starts, country guides, the checked batch, the audit loop and the catalog check give way to update requests, and are removed by [#463](https://github.com/fernandolisboa/arca/issues/463); admins and the admin grant stand, and decisions take a `knowledge_decision` step-up again; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -36,6 +36,8 @@ Facts behind those choices:
 
 ### Decisions without a step-up
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an admin activates or rejects with a step-up of the `knowledge_decision` purpose bound to the content hash again, since a session can now also write content (Edit item); decisions stored under this section keep counting as it says.
+
 - A signed-in admin activates or rejects a route version or a comparison version with one request.
 - **Who writes what:** only `app_auth` inserts decisions and admin grants. Before its transaction, the API checks on `app_api`, under row-level security, that a grantee is confirmed and shares a case with the admin; the small race between the two transactions is accepted. The `app_auth` transaction sets the request's account as its identity, takes transaction advisory locks keyed by the accounts involved, in a fixed order (the author for a decision; the granting admin and the grantee for a grant or a removal), checks the role, and inserts. `app_auth` reads admin grants, decisions and check reports for that; `app_api` only reads decisions and grants.
 - The decision's insert policy requires the author to be the transaction's own account and the proof to be `session`, and the database sets the row's time with `clock_timestamp()` after the lock, as it does for grant rows. The row also records why its author was an admin: the owner list, or the grant row in force. A database check keeps the proof and the step-up fields consistent: a `step_up` row has every assertion field, a `session` row has none.
@@ -46,7 +48,7 @@ Facts behind those choices:
 
 ### The independent check
 
-> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an update request's validation and code checks replace this check; the sections from here to "What a check costs" record how it worked until its removal.
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an update request's validation and code checks replace this check. This section, every amendment section after it (through "What a check costs") and the amendments of 2026-11-14 and 2026-11-16 at the end record how the check worked until its removal by #463.
 
 It is ADR-0014's check, now built, with these choices.
 

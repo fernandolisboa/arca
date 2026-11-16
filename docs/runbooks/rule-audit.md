@@ -1,5 +1,7 @@
 # Rule audit
 
+> Ending under [ADR-0031](../adr/0031-rule-updates-on-request.md) (2026-11-16): once the import puts rules in the database ([#457](https://github.com/fernandolisboa/arca/issues/457)), rules change only through update requests in the app, and the monthly and corrector runs stop; this runbook is removed with the old loop ([#463](https://github.com/fernandolisboa/arca/issues/463)). Until the import, an on-demand audit the owner asks for may still follow it.
+
 A rule audit checks one route against the law, not only against the pages it cites. It re-reads the route's official sources whole, looks for amendments made since they were verified, follows leads from the open web, and looks for what the rule leaves out. When it finds something, it writes a correction or a new version. Either way it leaves a record ([spec #351](https://github.com/fernandolisboa/arca/issues/351)).
 
 The audit is a procedure for an authoring session, the kind of session that wrote the rules, with web search and its usual tools. Nothing in the app runs it. Its only API spend is [the check loop](#the-check-loop), about twenty-five U.S. cents a route a run. It is started three ways:

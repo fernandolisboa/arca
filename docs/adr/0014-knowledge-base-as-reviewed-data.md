@@ -38,6 +38,8 @@
 
 ### Approval in two steps
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): step 1 becomes an update request's proposal stored as database rows, not a pull request; step 2 keeps the passkey step-up bound to the content hash.
+
 1. **Proposal.** A change reaches `main` through a pull request like any other, reviewed by the reviewer subagents ([ADR-0019](0019-reviewers-in-the-authoring-session.md)). Merged versions are *proposed*: they exist in the catalog, but the engine does not evaluate them for any case.
 2. **Decision.** An approver either *activates* or *rejects* a version in the app, with a passkey step-up bound to its content hash.
    - Only an active version is evaluated.
@@ -105,6 +107,8 @@ The owner chose to be the only approver, helped by a specialized agent, over a d
 
 ### Reporting a wrong rule
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): a member's report becomes an update request an admin releases; its note, links and file still never reach a model, and only links on an approved official-domain list feed research, as addresses.
+
 - A person in a case can mark a rule shown to them as possibly wrong, with a reason from a fixed list and optionally a note.
 - The server takes the route ID, version number and requirement key from an evaluation in the reporter's own case, never from client input. Reports are rate-limited per person and merged per route, version and requirement into one open research task, which carries only those identifiers and the reason code.
 - The note is case data under row-level security. No note or user-supplied link ever reaches an agent or a model. The owner sees identifiers, reason codes and counts, and a note only if its author explicitly shares it. A public link enters a task only if the owner adds it, and is then fetched under the fetch tool's rules.
@@ -112,7 +116,7 @@ The owner chose to be the only approver, helped by a specialized agent, over a d
 
 ### Trust roots in their own pull requests
 
-> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): official-domain lists become database rows; a new country's first list is part of a new-route proposal, which an admin approves with the route.
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): official-domain lists become database rows; a new country's first list is part of a new-route proposal, each host citing a registry page code checks, and is decided on its own before the route; a request never widens an approved list.
 
 Official-domain lists decide what counts as official. The `knowledge-immutable` check fails a pull request that changes them together with any other knowledge data, except an append to `hashes.json` (spec 0002, R6). A host added to a list cites proof on a host already in a merged list version; the first list for an issuer, which has no such host, cites a registry such as the country's domain authority and gets its own reviewed pull request. Until registries are listed as data, `knowledge-immutable` enforces the first rule and the reviewer checks the registry citation. Country guides get the same rule when slice 2 adds them, and the approver list when slice 3 adds it.
 

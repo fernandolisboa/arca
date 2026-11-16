@@ -1,6 +1,6 @@
 # ADR-0002: Immigration rules as versioned data, evaluated deterministically
 
-- Status: Accepted; where route versions live, the shape of their sources (a list of sourced entries, official ones on pinned domain lists, per [spec 0002](../specs/0002-rules-engine-and-knowledge-base.md) R4), the country dataset (CLDR) and how approval is recorded amended by [ADR-0014](0014-knowledge-base-as-reviewed-data.md)
+- Status: Accepted; where route versions live, the shape of their sources (a list of sourced entries, official ones on pinned domain lists, per [spec 0002](../specs/0002-rules-engine-and-knowledge-base.md) R4), the country dataset (CLDR) and how approval is recorded amended by [ADR-0014](0014-knowledge-base-as-reviewed-data.md); where route versions live amended again 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): insert-only database rows
 - Date: 2026-11-01
 
 ## Context
