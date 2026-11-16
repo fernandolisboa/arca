@@ -76,11 +76,6 @@ export interface ListedCheck {
 /** The independent check as the activation screen reaches it (ADR-0027). */
 export interface VersionChecks {
   /**
-   * Starts a check for every proposed route version that is due and not superseded; answers how
-   * many started.
-   */
-  readonly start: (route?: string) => Promise<number>;
-  /**
    * An admin's start of every proposed route version that is due and not superseded, with no daily
    * cap; answers how many started and whether every run began.
    */
@@ -177,9 +172,6 @@ export function createVersionChecks({
   };
 
   return {
-    start: async (route = '/v1/knowledge/checks/start') =>
-      (await startDue(route, 'automatic')).started,
-
     startQueued: () => startDue('/v1/knowledge/checks/start-queued', 'admin'),
 
     async startOne(routeId, number) {

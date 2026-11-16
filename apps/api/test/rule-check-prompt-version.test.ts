@@ -60,7 +60,7 @@ async function promptFingerprint(): Promise<string> {
 }
 
 describe('the prompt version a check report is stored under (ADR-0027)', () => {
-  // A new prompt version makes every stored report stale, and the hourly start checks them all
+  // A new prompt version makes every stored report stale, until an admin checks them all
   // again, so it changes only when what a model is told changes. A change to the instructions,
   // the framing, a schema, a model or a call setting of either adapter fails here: bump
   // `ruleCheckPromptVersion`, and `passageLocatePromptVersion` too when the locator's side changed,

@@ -293,65 +293,20 @@ function setup({
 
 const minute = 60_000;
 
-describe('POST /v1/knowledge/checks/start (ADR-0027)', () => {
-  it('starts a check of every proposed route version, with identifiers only', async () => {
-    const { start, runs } = setup({ states: new Map([[2, 'active']]) });
-    const response = await start();
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ started: 2 });
-    expect(runs.map(({ routeId, number }) => [routeId, number])).toEqual([
-      ['qm-sample', 1],
-      ['qm-sample', 3],
-    ]);
-  });
-
-  it('starts no check of a superseded proposed version', async () => {
-    const { start, runs } = setup({ superseded: new Set([1, 2]) });
-    expect(await (await start()).json()).toEqual({ started: 1 });
-    expect(runs.map(({ number }) => number)).toEqual([3]);
-  });
-
-  it('starts nothing again while a check runs, and again once its start dies', async () => {
-    const { start, advance } = setup();
-    await start();
-    expect(await (await start()).json()).toEqual({ started: 0 });
-    advance(31 * minute);
-    expect(await (await start()).json()).toEqual({ started: 3 });
-  });
-
-  it('starts nothing for a version with a current report', async () => {
-    const { start, runs, report, advance } = setup({ count: 1 });
-    await start();
-    await report(runs[0]);
-    advance(31 * minute);
-    expect(await (await start()).json()).toEqual({ started: 0 });
-  });
-
-  it('stays within 15 starts in any 24 hours', async () => {
-    const { start, advance } = setup({ count: 25 });
-    expect(await (await start()).json()).toEqual({ started: 15 });
-    advance(31 * minute);
-    expect(await (await start()).json()).toEqual({ started: 0 });
-    advance(24 * 60 * minute);
-    expect(await (await start()).json()).toEqual({ started: 15 });
-  });
-
-  it('is for admins only, from the same origin', async () => {
-    expect((await setup({ admitted: false }).start()).status).toBe(403);
+describe('POST /v1/knowledge/checks/start (removed 2026-11-16, ADR-0027)', () => {
+  it('starts nothing: a check starts only when an admin asks for a version or the queue', async () => {
     const { start, runs } = setup();
-    expect((await start({ origin: 'https://evil.example' })).status).toBe(403);
-    expect((await start({ 'sec-fetch-site': 'cross-site' })).status).toBe(403);
+    expect((await start()).status).toBe(404);
     expect(runs).toEqual([]);
   });
 });
 
 describe("POST /v1/knowledge/checks/start-queued (ADR-0027, an admin's batch)", () => {
-  it('starts every due version past the automatic share, with identifiers only', async () => {
-    const { start, startQueued, runs } = setup({ count: 25 });
-    expect(await (await start()).json()).toEqual({ started: 15 });
+  it('starts every due version, with identifiers only', async () => {
+    const { startQueued, runs } = setup({ count: 25 });
     const response = await startQueued();
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ started: 10 });
+    expect(await response.json()).toEqual({ started: 25 });
     expect(runs.map(({ number }) => number).toSorted((a, b) => a - b)).toEqual(
       Array.from({ length: 25 }, (_, index) => index + 1),
     );
@@ -392,7 +347,7 @@ describe("POST /v1/knowledge/checks/start-queued (ADR-0027, an admin's batch)", 
 
 describe('the check status in the version list (ADR-0027)', () => {
   it('reads running, checked, flagged, stale and none, and starts nothing', async () => {
-    const { start, list, runs, report, advance } = setup({ count: 4 });
+    const { startQueued, list, runs, report, advance } = setup({ count: 4 });
     expect(await list()).toEqual([
       [1, 'none'],
       [2, 'none'],
@@ -400,7 +355,7 @@ describe('the check status in the version list (ADR-0027)', () => {
       [4, 'none'],
     ]);
     expect(runs).toEqual([]);
-    await start();
+    await startQueued();
     const [first, second, third] = runs as [RecordedStart, RecordedStart, RecordedStart];
     await report(first);
     await report(second, {
@@ -432,15 +387,15 @@ describe('the check status in the version list (ADR-0027)', () => {
   });
 
   it('carries the current report’s points, a scripted match counted as not confirmed', async () => {
-    const { start, points, runs, report } = setup({ count: 2 });
-    await start();
+    const { startQueued, points, runs, report } = setup({ count: 2 });
+    await startQueued();
     await report(runs[0]);
     expect(await points()).toEqual([
       [1, { matches: 1, differs: 0, unread: 0 }],
       [2, null],
     ]);
     const scripted = setup({ count: 1, model: 'fake' });
-    await scripted.start();
+    await scripted.startQueued();
     await scripted.report(scripted.runs[0], { clean: false });
     expect(await scripted.points()).toEqual([[1, { matches: 0, differs: 0, unread: 1 }]]);
   });
@@ -456,8 +411,8 @@ describe('the flagged versions for the corrector run (ADR-0029)', () => {
   };
 
   it('lists each flagged open proposal with its items that did not match, as codes, differing first', async () => {
-    const { checks, start, runs, report } = setup({ count: 4 });
-    await start();
+    const { checks, startQueued, runs, report } = setup({ count: 4 });
+    await startQueued();
     const [first, second, third, fourth] = runs as [
       RecordedStart,
       RecordedStart,
@@ -496,12 +451,12 @@ describe('the flagged versions for the corrector run (ADR-0029)', () => {
   });
 
   it('leaves out decided and superseded versions', async () => {
-    const { checks, start, runs, report } = setup({
+    const { checks, startQueued, runs, report } = setup({
       count: 3,
       states: new Map([[1, 'active']]),
       superseded: new Set([2]),
     });
-    await start();
+    await startQueued();
     for (const run of runs) await report(run, { clean: false, items: [differs] });
     expect((await checks.flagged(10)).map(({ number }) => number)).toEqual([3]);
   });
@@ -509,8 +464,8 @@ describe('the flagged versions for the corrector run (ADR-0029)', () => {
 
 describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
   it('answers the current report with each item named, as plain data', async () => {
-    const { start, read, runs, report } = setup({ count: 1 });
-    await start();
+    const { startQueued, read, runs, report } = setup({ count: 1 });
+    await startQueued();
     await report(runs[0]);
     const response = await read(1);
     expect(response.status).toBe(200);
@@ -552,9 +507,9 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
   });
 
   it('answers no report while a check runs or when only a stale one exists', async () => {
-    const { start, read, runs, report, advance } = setup({ count: 1 });
+    const { startQueued, read, runs, report, advance } = setup({ count: 1 });
     expect(await (await read(1)).json()).toEqual({ enabled: true, status: 'none', report: null });
-    await start();
+    await startQueued();
     expect(await (await read(1)).json()).toEqual({
       enabled: true,
       status: 'running',
@@ -566,8 +521,8 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
   });
 
   it('marks a scripted report as such, never clean', async () => {
-    const { start, read, runs, report } = setup({ count: 1, model: 'fake' });
-    await start();
+    const { startQueued, read, runs, report } = setup({ count: 1, model: 'fake' });
+    await startQueued();
     await report(runs[0], { clean: false });
     expect(await (await read(1)).json()).toMatchObject({
       status: 'flagged',
@@ -576,15 +531,15 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
   });
 
   it('never shows or counts as checked a report the report schema refuses', async () => {
-    const { start, read, runs, report } = setup({ count: 1, unreadable: true });
-    await start();
+    const { startQueued, read, runs, report } = setup({ count: 1, unreadable: true });
+    await startQueued();
     await report(runs[0]);
     expect(await (await read(1)).json()).toEqual({ enabled: true, status: 'stale', report: null });
   });
 
   it('starts nothing and says the check is off where no checker is configured', async () => {
-    const { start, read, list, runs } = setup({ count: 2, enabled: false });
-    expect(await (await start()).json()).toEqual({ started: 0 });
+    const { startQueued, read, list, runs } = setup({ count: 2, enabled: false });
+    expect((await startQueued()).status).toBe(503);
     expect(runs).toEqual([]);
     expect(await list()).toEqual([
       [1, 'none'],
@@ -615,11 +570,11 @@ const flaggedItem = {
 
 describe('POST /v1/knowledge/versions/activate-checked (ADR-0027)', () => {
   it('activates each checked version, one decision each, and skips the rest with a reason', async () => {
-    const { start, runs, report, advance, activateChecked, decided } = setup({
+    const { startQueued, runs, report, advance, activateChecked, decided } = setup({
       count: 6,
       states: new Map([[5, 'rejected']]),
     });
-    await start();
+    await startQueued();
     // The rejected version 5 is never started; version 6 gets no report.
     const [first, second, third, fourth] = runs;
     await report(first);
@@ -650,11 +605,11 @@ describe('POST /v1/knowledge/versions/activate-checked (ADR-0027)', () => {
   });
 
   it('skips a version an admin can no longer activate when its own decision refuses it', async () => {
-    const { start, runs, report, activateChecked } = setup({
+    const { startQueued, runs, report, activateChecked } = setup({
       count: 2,
       refusals: new Map([[2, 'already_rejected']]),
     });
-    await start();
+    await startQueued();
     for (const recorded of runs) await report(recorded);
     expect(await (await activateChecked({ versions: [shown(1), shown(2)] })).json()).toEqual({
       activated: [
@@ -697,8 +652,8 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
   );
 
   it('starts over a current report', async () => {
-    const { start, startOne, runs, report } = setup({ count: 1 });
-    await start();
+    const { startQueued, startOne, runs, report } = setup({ count: 1 });
+    await startQueued();
     await report(runs[0]);
     expect(await (await startOne(1)).json()).toEqual({ started: true });
     expect(runs).toHaveLength(2);
@@ -716,21 +671,21 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
     expect(runs).toHaveLength(3);
   });
 
-  it('answers the live start an automatic start began', async () => {
-    const { start, startOne, runs } = setup({ count: 1 });
-    await start();
+  it('answers the live start a queue start began', async () => {
+    const { startQueued, startOne, runs } = setup({ count: 1 });
+    await startQueued();
     expect(await (await startOne(1)).json()).toEqual({ started: false });
     expect(runs).toHaveLength(1);
   });
 
-  it('starts every version an admin asks for, past the automatic share, with no daily cap', async () => {
-    const { start, startOne, runs, advance } = setup({ count: 25 });
-    await start();
+  it('starts every version an admin asks for, with no daily cap', async () => {
+    const { startQueued, startOne, runs, advance } = setup({ count: 25 });
+    await startQueued();
     advance(31 * minute);
     for (let number = 1; number <= 25; number += 1) {
       expect(await (await startOne(number)).json()).toEqual({ started: true });
     }
-    expect(runs).toHaveLength(15 + 25);
+    expect(runs).toHaveLength(25 + 25);
   });
 
   it('counts each request against a per-minute burst limit per admin, and starts nothing past it', async () => {

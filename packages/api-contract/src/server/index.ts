@@ -139,7 +139,6 @@ export const openApiRoutes = {
   listCorrectorFlaggedVersions: toOpenApiRoute(routes.listCorrectorFlaggedVersions),
   correctorFileUrl: toOpenApiRoute(routes.correctorFileUrl),
   answerCorrectionRequest: toOpenApiRoute(routes.answerCorrectionRequest),
-  startVersionChecks: toOpenApiRoute(routes.startVersionChecks),
   startQueuedChecks: toOpenApiRoute(routes.startQueuedChecks),
   startCorrectorRun: toOpenApiRoute(routes.startCorrectorRun),
   getVersionCheck: toOpenApiRoute(routes.getVersionCheck),

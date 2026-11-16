@@ -16,7 +16,7 @@ import {
 } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { CheckedBatch } from '../knowledge/checked-batch.js';
-import { CheckChip, useStartChecks } from '../knowledge/checks.js';
+import { CheckChip } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { CorrectorRun, QueuedChecks } from '../knowledge/admin-starts.js';
@@ -76,7 +76,6 @@ function Knowledge() {
   }, []);
   const [picks, setPicks] = useState<ReviewFilter>(noFilter);
   const [openCountries, setOpenCountries] = useState<ReadonlySet<string>>(() => new Set());
-  useStartChecks(versions.isSuccess);
   const title = t('knowledge.title');
   if (session.isError) {
     return (

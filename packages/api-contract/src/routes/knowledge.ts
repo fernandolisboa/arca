@@ -14,7 +14,6 @@ import {
   pageProgressOutcomes,
   progressFailures,
   maxNoteLength,
-  maxAutomaticStartsPerDay,
   maxQuoteLength,
   maxQuotes,
   comparisonCriterionSchema,
@@ -925,25 +924,10 @@ export const startCorrectorRun = {
 } as const satisfies RouteDefinition<z.ZodObject<Record<string, never>>>;
 
 /*
- * The independent check (ADR-0027). The activation screen asks, when it opens, for checks of every
- * proposed route version that has no current report and no live start, within its share of the 20
- * starts in any 24 hours per environment; listing versions starts nothing. A report is model output that code
+ * The independent check (ADR-0027). A check starts only when an admin asks, for one version or for
+ * the queue; listing versions starts nothing. A report is model output that code
  * checked against the cited official pages: plain text, quotes and URLs included, never links.
  */
-
-export const StartVersionChecksResponse = z.strictObject({
-  started: z.int().min(0).max(maxAutomaticStartsPerDay),
-});
-export type StartVersionChecksResponse = z.infer<typeof StartVersionChecksResponse>;
-
-export const startVersionChecks = {
-  method: 'post',
-  path: '/knowledge/checks/start',
-  operationId: 'startVersionChecks',
-  summary:
-    'Starts the independent check of every proposed route version with no current report and no check running, within 15 automatic starts in any 24 hours per environment, counting every start in the window; answers how many started. 403 not_admin',
-  response: { description: 'Started', schema: StartVersionChecksResponse },
-} as const satisfies RouteDefinition<typeof StartVersionChecksResponse>;
 
 export const StartQueuedChecksResponse = z.strictObject({
   started: z.int().min(0),
@@ -1221,7 +1205,6 @@ export const knowledgeRoutes = {
   answerCorrectionRequest,
   listCorrectorFlaggedVersions,
   startCorrectorRun,
-  startVersionChecks,
   startQueuedChecks,
   getVersionCheck,
   startVersionCheck,

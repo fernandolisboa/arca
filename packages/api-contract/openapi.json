@@ -36359,62 +36359,6 @@
         }
       }
     },
-    "/knowledge/checks/start": {
-      "post": {
-        "operationId": "startVersionChecks",
-        "summary": "Starts the independent check of every proposed route version with no current report and no check running, within 15 automatic starts in any 24 hours per environment, counting every start in the window; answers how many started. 403 not_admin",
-        "responses": {
-          "200": {
-            "description": "Started",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "started": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 15
-                    }
-                  },
-                  "required": [
-                    "started"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "pattern": "^[a-z_]{1,64}$"
-                        }
-                      },
-                      "required": [
-                        "code"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/knowledge/checks/start-queued": {
       "post": {
         "operationId": "startQueuedChecks",

@@ -1196,7 +1196,7 @@ export const ptBR = {
         unread:
           'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
         unchecked:
-          'Esta versão está na fila. O Arca confere algumas versões a cada hora, até 15 por dia, inclusive as de verificação vencida ou que falhou. Para não esperar, use “Analisar as versões da fila”, acima dos filtros.',
+          'Esta versão está na fila. O Arca só confere quando você pede: use “Analisar com o Arca” nesta versão ou “Analisar as versões da fila”, acima dos filtros.',
       },
       filter: {
         country: 'País',
@@ -1354,8 +1354,6 @@ export const ptBR = {
         '{status, select, checked {Conferida pelo Arca} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
       status:
         '{status, select, running {O Arca está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou o modelo de IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
-      startsOnOpen:
-        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até {max} por dia.',
       loadFailure: 'Não conseguimos carregar a verificação.',
       clean:
         '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',
@@ -1365,7 +1363,7 @@ export const ptBR = {
       scripted:
         'Verificação de teste: nenhuma IA leu as fontes, então ela não vale como verificação.',
       failure:
-        '{failure, select, check_timeout {O Arca demorou demais para responder.} check_unavailable {A IA que o Arca usa estava fora do ar.} check_unparsable {A IA que o Arca usa respondeu num formato que ele não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Depois de um dia, ela roda de novo quando você abrir a lista.',
+        '{failure, select, check_timeout {O Arca demorou demais para responder.} check_unavailable {A IA que o Arca usa estava fora do ar.} check_unparsable {A IA que o Arca usa respondeu num formato que ele não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Para tentar de novo, use “Analisar com o Arca”.',
       checkedAt: 'Verificada em {date}',
       guide: 'Guia usado: {country}, versão {number}',
       noGuide: 'Sem guia para este país ({country}): o Arca leu as fontes sem orientações extras.',
@@ -1385,11 +1383,11 @@ export const ptBR = {
       footer:
         'Feita pelo Arca com IA, que pode errar. Uma parte não usa IA: o código confere se cada trecho está mesmo na página citada. Quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, o Arca lê só os trechos que um modelo de IA mais rápido escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
     },
-    /** An admin's check of every version in the queue at once, past the automatic share. */
+    /** An admin's check of every version in the queue at once. */
     queuedChecks: {
       button: 'Analisar as versões da fila',
       confirmLead:
-        '{n, plural, one {O Arca começa agora a análise da versão que está na fila, sem esperar a rodada de cada hora.} other {O Arca começa agora a análise das # versões que estão na fila, sem esperar a rodada de cada hora.}} Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API e leva alguns minutos.',
+        '{n, plural, one {O Arca começa agora a análise da versão que está na fila.} other {O Arca começa agora a análise das # versões que estão na fila.}} Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API e leva alguns minutos.',
       confirm: 'Analisar agora',
       starting: 'Começando as análises…',
       started:

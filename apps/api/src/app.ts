@@ -1535,11 +1535,6 @@ export function createApp({
     ]);
     return c.json({ versions, comparisons: [...comparisons] }, 200);
   });
-  v1.openapi(openApiRoutes.startVersionChecks, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    return c.json({ started: versionChecks === undefined ? 0 : await versionChecks.start() }, 200);
-  });
   v1.openapi(openApiRoutes.startQueuedChecks, async (c) => {
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
@@ -2226,12 +2221,6 @@ export function createApp({
     app.get('/internal/cron/rate-limit-sweep', fromCron, async (c) => {
       await sweepRateLimits();
       return c.body(null, 204);
-    });
-    // The activation screen's automatic start, within its daily share (ADR-0027).
-    app.get('/internal/cron/rule-checks', fromCron, async (c) => {
-      if (versionChecks === undefined) return c.body(null, 204);
-      await versionChecks.start('/internal/cron/rule-checks');
-      return c.body(null, 202);
     });
   }
   return app;
