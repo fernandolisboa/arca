@@ -1,6 +1,6 @@
 # ADR-0027: Admins decide while signed in, helped by the independent check
 
-- Status: Accepted, amended 2026-11-15 (what a check costs, below); 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); 2026-11-16 (no automatic start, which ends the hourly and screen-opening starts); since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
+- Status: Accepted, amended 2026-11-15 (what a check costs, below); 2026-11-09 (long pages and reasons; a match on several quotes), 2026-11-10 (machine-readable addresses) 2026-11-11 (the audit closes the loop; on demand, with progress) and 2026-11-12 (excerpt room by the items that rest on a page; no cap on the button), below; 2026-11-14 (an hourly automatic start; larger page caps; anniversary ordinals; an admin's start of the whole queue); 2026-11-16 (no automatic start, which ends the hourly and screen-opening starts); partly superseded 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): the independent check, its starts, country guides, the checked batch, the audit loop and the catalog check give way to update requests, and are removed by [#463](https://github.com/fernandolisboa/arca/issues/463); admins, decisions and the admin grant stand; since [ADR-0028](0028-pdf-text-in-the-independent-check.md) the check reads PDFs
 - Date: 2026-11-07
 - Spec: [#325](https://github.com/fernandolisboa/arca/issues/325)
 - Supersedes: [ADR-0022](0022-single-approver-activation.md) for new decisions (its stored decisions keep counting as it says)
@@ -45,6 +45,8 @@ Facts behind those choices:
 - A forged `session` activation counts if its author was an admin at the row's time; that needs a write as `app_auth` or the owner role, the attacker ADR-0022 already accepts.
 
 ### The independent check
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an update request's validation and code checks replace this check; the sections from here to "What a check costs" record how it worked until its removal.
 
 It is ADR-0014's check, now built, with these choices.
 
@@ -93,16 +95,22 @@ A quote that fails, a missing item, an item that cites no official page or none 
 
 ### Country guides
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): country guides served only the check and go with it.
+
 - One file per country and version under the knowledge data, immutable and hashed like other knowledge files: the laws and regulations that govern the country's routes (each with a URL on a pinned official-domain list), how they are usually amended, and known pitfalls. A guide never widens what counts as official and is never a source.
 - A guide is a trust root: the `knowledge-immutable` check makes it land in its own pull request, as it does for official-domain lists, and it needs no activation. A check runs with no guide when the country has none, and the panel says so.
 
 ### Activating the checked versions together
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an admin approves an update request's proposal one at a time, as a decision bound to its content hash; there is no checked batch.
 
 - A **checked version** is a proposed route version whose current report is clean; a **flagged version** has a current report that is not clean.
 - The activation screen offers one action for every checked version. The client sends the identities (route, number, content hash) it showed; the server activates only those that are still proposed, still checked under a current report and still match the bundled hash, and answers which were activated and which were skipped, with a reason code each. Each activation is its own decision row and audit event. The statuses are read once, before the decisions and outside their transactions, so a report written while a batch runs is not seen; one decision accepts the same window for a rejection stored after it read the states (#331).
 - This reverses ADR-0014's rule that a report never enables or shortens the activate action, for checked versions only. Flagged versions, versions with no current report and every comparison version are decided one at a time, with no step-up either.
 
 ### Evaluation
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): the check's evaluation suite goes with the check; update requests get their own synthetic cases ([#465](https://github.com/fernandolisboa/arca/issues/465)).
 
 - `apps/api/test/eval/independent-check`, run by the manual `intake-eval` workflow with a call cap, on recorded page snapshots through a fake fetcher, so runs repeat.
 - Cases: ADR-0014's known-wrong versions (a changed threshold, a dropped dependent condition, an expired rule) and correct ones; ADR-0014's adversarial cases (instructions on a cited page to report a match, a quote that is not on the page, a page changed since `verifiedAt`, a redirect to a lookalike host, a guide that contradicts its source); and new ones: instructions inside the version's own text, an instruction hidden by a style sheet, a guide that steers toward a match, a page that reflects its query string, and a wrong number whose quote really is on the page.
@@ -166,6 +174,8 @@ Decided:
 - No new host is reached: every address is on a list the version already pins. The first ones in the data, from the us-eb5 audit ([#355](https://github.com/fernandolisboa/arca/issues/355)), are on `www.ecfr.gov` and `www.govinfo.gov`, hosts those versions already cite; later audits add more by new versions. An address that answers only part of the text leaves its items could not be checked, so an audit names one only when it answers the whole text as HTML, plain text, JSON, XML or, since [ADR-0028](0028-pdf-text-in-the-independent-check.md), a PDF with a text layer.
 
 ### The audit closes the loop (amendment, 2026-11-11)
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): no loop: an update request ends after at most two rounds.
 
 The catalog check of 2026-11-11 confirmed 29 of 170 items. Nearly all the rest were not wrong rules: pages the check cannot read, provisions the passage picker never saw (an index page, a list split over two pages), and items that claim what no text says, such as a leap-day convention cited to a general time-reckoning provision. Each left a flagged version, and so an item for the owner to read. The owner asked that the work loop until the parts agree, instead of handing him the gap.
 

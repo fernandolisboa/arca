@@ -1,6 +1,6 @@
 # ADR-0029: Correction requests, answered by a scheduled corrector run
 
-- Status: Accepted
+- Status: Superseded 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): the correction request becomes the update request, run by a bounded pipeline inside the app; the corrector run, its key, its trigger and the flagged-versions route are removed by [#463](https://github.com/fernandolisboa/arca/issues/463). This text records how it worked until then
 - Date: 2026-11-12
 - Issue: [#413](https://github.com/fernandolisboa/arca/issues/413)
 - Amends: [ADR-0006](0006-auth.md) and [ADR-0015](0015-identity-enrollment-step-up-and-recovery.md) (a step-up purpose, `corrector_key`); [ADR-0008](0008-database-security-and-environments.md) (roles for the request tables and the corrector key); [ADR-0010](0010-stack-revised.md) and [ADR-0021](0021-stay-on-vercel-and-neon.md) (a second kind of object in the Blob store); [ADR-0014](0014-knowledge-base-as-reviewed-data.md) (how a fix starts; a second unwatched authoring run)
