@@ -3,17 +3,11 @@ import {
   type ComparisonEntry,
   type Pin,
   type RuleCaseSummary,
-  ruleCaseSummarySchema,
 } from '@arca/domain';
 import { z } from 'zod';
-import { parseComparisons, parseEntries, sha256Schema } from './entries.js';
-import {
-  caseData,
-  catalogData,
-  comparisonData,
-  hostData,
-  officialDomainData,
-} from './generated/catalog.js';
+import { parseComparisons } from './entries.js';
+import { comparisonData, comparisonHostData } from './generated/runtime.js';
+import { type RuleData, ruleContent } from './rule-rows.js';
 
 /**
  * Every version of a route, whatever its decision state, with each version's cases; and every
@@ -38,42 +32,33 @@ export interface DisplayCatalog {
   readonly newestOfficialHosts: (id: string) => readonly string[];
 }
 
-const caseDataSchema = z.array(
-  z.strictObject({ hash: sha256Schema, cases: z.array(ruleCaseSummarySchema) }),
-);
-
 const hostDataSchema = z.record(z.string(), z.string().nullable());
 
-const officialDomainDataSchema = z.array(
-  z.strictObject({
-    id: z.string(),
-    number: z.int().min(1),
-    hosts: z.array(z.string().min(1).max(253)).min(1),
-  }),
-);
+const comparisons = [...parseComparisons(comparisonData).values()];
+const comparisonHosts = hostDataSchema.parse(comparisonHostData);
 
-export function createDisplayCatalog(
-  entries: ReadonlyMap<string, CatalogEntry>,
-  cases: unknown,
-  hosts: unknown,
-  comparisons: ReadonlyMap<string, ComparisonEntry>,
-  officialDomains: unknown = [],
-): DisplayCatalog {
-  const all = [...entries.values()];
-  const allComparisons = [...comparisons.values()];
-  const byHash = new Map(caseDataSchema.parse(cases).map((entry) => [entry.hash, entry.cases]));
-  const byUrl = new Map(Object.entries(hostDataSchema.parse(hosts)));
-  const parsedLists = officialDomainDataSchema.parse(officialDomains);
+/**
+ * The content of every route and comparison version for the activation screen (spec 0007, R7;
+ * ADR-0026), proposed and rejected ones included: route versions from the rules the API read
+ * (ADR-0031), comparison versions from the bundle. Lint allows importing this entry point only
+ * where that screen's view is built, never where `evaluateRoute` runs, so nothing read here reaches
+ * an evaluation (spec 0002, R5); the rules read are opaque everywhere else.
+ */
+export function createDisplayCatalog(data: RuleData): DisplayCatalog {
+  const rules = ruleContent(data);
+  const all = [...rules.entries.values()];
+  const byHash = new Map(rules.cases.map((entry) => [entry.hash, entry.cases]));
+  const byUrl = new Map(Object.entries({ ...comparisonHosts, ...rules.hosts }));
   const lists = new Map(
-    parsedLists.map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
+    rules.officialDomains.map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
   );
   const newest = new Map<string, { number: number; hosts: readonly string[] }>();
-  for (const { id, number, hosts } of parsedLists) {
+  for (const { id, number, hosts } of rules.officialDomains) {
     if ((newest.get(id)?.number ?? 0) < number) newest.set(id, { number, hosts });
   }
   return {
     entries: () => all,
-    comparisons: () => allComparisons,
+    comparisons: () => comparisons,
     versions: (routeId) => all.filter(({ identity }) => identity.routeId === routeId),
     cases: (hash) => byHash.get(hash) ?? [],
     hostOf: (url) => byUrl.get(url) ?? undefined,
@@ -89,17 +74,3 @@ export function createDisplayCatalog(
     newestOfficialHosts: (id) => newest.get(id)?.hosts ?? [],
   };
 }
-
-/**
- * The content of every route and comparison version for the activation screen (spec 0007, R7;
- * ADR-0026), proposed and rejected ones included. Lint allows importing this entry point only where
- * that screen's view is built, never where `evaluateRoute` runs, so nothing read here reaches an
- * evaluation (spec 0002, R5).
- */
-export const displayCatalog = createDisplayCatalog(
-  parseEntries(catalogData),
-  caseData,
-  hostData,
-  parseComparisons(comparisonData),
-  officialDomainData,
-);

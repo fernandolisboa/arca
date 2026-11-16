@@ -740,3 +740,112 @@ export const correctionEvent = knowledge.table(
     }),
   ],
 );
+
+const ruleFileIdFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9-]{0,63}$'`;
+const contentHashFormat = (column: unknown) => sql`${column} ~ '^[0-9a-f]{64}$'`;
+
+/**
+ * The policies of a rule table (ADR-0031): `app_api` and `app_jobs` read every row, since every
+ * evaluation and every view reads the rules; only `app_migrator`, which owns the table and runs
+ * the reviewed import, inserts. With no update or delete policy under forced row-level security,
+ * and no such grant to any role, nobody changes or deletes a row.
+ */
+const ruleRowPolicies = (name: string) => [
+  pgPolicy(`${name}_read`, { for: 'select', to: ['app_api', 'app_jobs'], using: sql`true` }),
+  pgPolicy(`${name}_import_read`, { for: 'select', to: 'app_migrator', using: sql`true` }),
+  pgPolicy(`${name}_import`, { for: 'insert', to: 'app_migrator', withCheck: sql`true` }),
+];
+
+/**
+ * Route versions (ADR-0031): one immutable row per route ID and number, with the version's
+ * content, its content hash over everything it pins (spec 0002, R6) and its table-driven cases
+ * (R8). The content names the ID and number the row is stored under. The API recomputes the hash
+ * when it reads a row and leaves out one that does not match, so a row changed behind the grants is
+ * never evaluated. Public rule data, no account.
+ */
+export const routeVersion = knowledge.table(
+  'route_version',
+  {
+    routeId: text('route_id').notNull(),
+    number: integer('number').notNull(),
+    content: jsonb('content').notNull(),
+    contentHash: text('content_hash').notNull(),
+    /**
+     * The version's cases file, if it has one, outside the hash: the activation screen shows it and
+     * the rule summary reads it, so it must be bound to a hash before a role other than the migrator
+     * inserts rows (ADR-0031).
+     */
+    cases: jsonb('cases'),
+    /** Set by the database when the row is inserted. */
+    insertedAt: timestamp('inserted_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    primaryKey({ name: 'route_version_pkey', columns: [table.routeId, table.number] }),
+    check('route_version_route_id_format', routeIdFormat(table.routeId)),
+    check('route_version_number_positive', sql`${table.number} > 0`),
+    check('route_version_content_hash_format', contentHashFormat(table.contentHash)),
+    check(
+      'route_version_content_identity',
+      sql`${table.content} ->> 'routeId' = ${table.routeId}
+        AND ${table.content} -> 'number' = pg_catalog.to_jsonb(${table.number})`,
+    ),
+    ...ruleRowPolicies('route_version'),
+  ],
+);
+
+/** Country sets (ADR-0031), on the same terms as route versions. */
+export const countrySet = knowledge.table(
+  'country_set',
+  {
+    setId: text('set_id').notNull(),
+    number: integer('number').notNull(),
+    content: jsonb('content').notNull(),
+    contentHash: text('content_hash').notNull(),
+    insertedAt: timestamp('inserted_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    primaryKey({ name: 'country_set_pkey', columns: [table.setId, table.number] }),
+    check('country_set_set_id_format', ruleFileIdFormat(table.setId)),
+    check('country_set_number_positive', sql`${table.number} > 0`),
+    check('country_set_content_hash_format', contentHashFormat(table.contentHash)),
+    check(
+      'country_set_content_identity',
+      sql`${table.content} ->> 'id' = ${table.setId}
+        AND ${table.content} -> 'number' = pg_catalog.to_jsonb(${table.number})`,
+    ),
+    ...ruleRowPolicies('country_set'),
+  ],
+);
+
+/**
+ * Official-domain lists (ADR-0031), on the same terms. A list pins nothing, so its hash covers its
+ * content alone, in the same `{ version, pinned }` form.
+ */
+export const officialDomainList = knowledge.table(
+  'official_domain_list',
+  {
+    listId: text('list_id').notNull(),
+    number: integer('number').notNull(),
+    content: jsonb('content').notNull(),
+    contentHash: text('content_hash').notNull(),
+    insertedAt: timestamp('inserted_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    primaryKey({ name: 'official_domain_list_pkey', columns: [table.listId, table.number] }),
+    check('official_domain_list_list_id_format', ruleFileIdFormat(table.listId)),
+    check('official_domain_list_number_positive', sql`${table.number} > 0`),
+    check('official_domain_list_content_hash_format', contentHashFormat(table.contentHash)),
+    check(
+      'official_domain_list_content_identity',
+      sql`${table.content} ->> 'id' = ${table.listId}
+        AND ${table.content} -> 'number' = pg_catalog.to_jsonb(${table.number})`,
+    ),
+    ...ruleRowPolicies('official_domain_list'),
+  ],
+);

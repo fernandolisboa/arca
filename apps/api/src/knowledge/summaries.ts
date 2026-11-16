@@ -69,8 +69,9 @@ export function readRuleSummary(
 /**
  * What the model reads is summarized once per prompt and model: the summary is stored by that
  * content's digest, and a request for a summary still on its way in this instance waits for that
- * same call. A failure is not stored, so the next request asks again. Only bundled versions reach
- * the model, so the store holds one row per catalog version's content, prompt and model. The
+ * same call. A failure is not stored, so the next request asks again. Only stored versions whose
+ * rows passed the hash check reach the model, so the store holds one row per version's content,
+ * prompt and model. The
  * content and the reply never reach a log line or an error.
  */
 export function createRuleSummaries({

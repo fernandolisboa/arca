@@ -64,7 +64,7 @@ export interface CheckSubject {
 }
 
 export interface VersionCheckSettings {
-  readonly subject: (routeId: string, number: number) => CheckSubject | undefined;
+  readonly subject: (routeId: string, number: number) => Promise<CheckSubject | undefined>;
   readonly guide: (country: string) => CountryGuideEntry | undefined;
   readonly fetcher: SourceFetcher;
   /** Copies of cited pages attached to correction requests, read where a page cannot be. */
@@ -817,7 +817,7 @@ export function createVersionCheck({
 
   return async (startId, routeId, number) => {
     const record = recorderFor(startId);
-    const subject = subjectOf(routeId, number);
+    const subject = await subjectOf(routeId, number);
     if (subject === undefined) {
       logger.error({ route, errorCode: 'check_unknown_version' });
       await record({ kind: 'failed', code: 'check_unknown_version' });

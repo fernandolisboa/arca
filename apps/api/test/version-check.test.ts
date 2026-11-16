@@ -215,7 +215,8 @@ function setup({
   };
   const fetched: [string, readonly string[]][] = [];
   const check = createVersionCheck({
-    subject: (routeId, number) => (routeId === 'qm-sample' && number === 1 ? checked : undefined),
+    subject: (routeId, number) =>
+      Promise.resolve(routeId === 'qm-sample' && number === 1 ? checked : undefined),
     guide: () => guide,
     fetcher: {
       fetch: (url, hosts) => {
@@ -494,7 +495,7 @@ describe('the independent check of one version (ADR-0027)', () => {
   it('refuses every page when the catalog lacks a pinned list', async () => {
     const lacking = setup();
     const check = createVersionCheck({
-      subject: () => ({ ...subject, officialHosts: () => undefined }),
+      subject: () => Promise.resolve({ ...subject, officialHosts: () => undefined }),
       guide: () => undefined,
       fetcher: {
         fetch: (url, hosts) => {

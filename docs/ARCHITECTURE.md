@@ -54,7 +54,9 @@ packages/
                 the personal-data registry and the synthetic seed
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
                 lists, the countries files, and the country indicators and comparison versions of the
-                destination comparison; validated, hashed and bundled into the API until the import ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md),
+                destination comparison; validated and hashed; route versions, country sets and official-domain
+                lists were imported once into the database, which the API reads, and the rest is bundled
+                into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md),
                 [ADR-0026](adr/0026-destination-comparison-data.md))
   telemetry/    the one scrubber every log, error, trace and LLM-trace exporter uses (ADR-0016)
   vault/        client-side document encryption in the age format (ADR-0018); never used by the API
@@ -99,7 +101,7 @@ Entities, not final schema:
 - `aspiration`: priorities, deal-breakers, budget, timeline, risk tolerance and preferred execution mode, per person.
 - `country`, `destination_choice`: catalog countries and the ones each person selected, with priority and the stay-together constraint.
 - `ancestor`: parents and grandparents with country, dates, naturalization and certificates.
-- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Files in `packages/knowledge` ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md)) until they move, with country sets and official-domain lists, to insert-only rows in the `knowledge` schema, imported once with their hashes ([ADR-0031](adr/0031-rule-updates-on-request.md)); admins' decisions on them are stored in `knowledge.decision` (spec 0007 R7, ADR-0027), and who held the admin role when in `knowledge.admin_grant`, insert-only with account IDs only.
+- `route`, `route_version`: routes per country; declarative requirements, costs, dependents covered, `sources` (URL, kind, `verifiedAt`), effective dates, pinned country sets and official-domain lists. Insert-only rows in the `knowledge` schema (`route_version`, `country_set`, `official_domain_list`), imported once with their hashes from the files `packages/knowledge` held ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md)); the API recomputes each hash on read and withholds a route with a failing row; admins' decisions on them are stored in `knowledge.decision` (spec 0007 R7, ADR-0027), and who held the admin role when in `knowledge.admin_grant`, insert-only with account IDs only.
 - `country_indicator`, `comparison_version`: country data for the destination comparison and the criteria that read it. Files in `packages/knowledge`, activated as a whole; their decisions sit in `knowledge.decision` under the subject kind `comparison` ([ADR-0026](adr/0026-destination-comparison-data.md)).
 - `comparison_preferences`: one adult's weights, ratings, own criteria and hidden countries, one JSON row per case member, private to its account ([ADR-0026](adr/0026-destination-comparison-data.md)).
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).

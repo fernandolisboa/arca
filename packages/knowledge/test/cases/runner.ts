@@ -18,7 +18,7 @@ import {
   type RuleCase,
   casesFileSchema,
   describeMissingFact,
-} from '../../scripts/cases.ts';
+} from '../../src/cases.ts';
 import { hashesFileSchema } from '../../scripts/files.ts';
 import { loadData, readKnowledgeFile } from '../../scripts/load.ts';
 import type { ReproductionLookup } from '../../src/reproduction.ts';

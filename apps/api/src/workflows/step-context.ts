@@ -28,6 +28,7 @@ import { postgresCheckProgressStore } from '../knowledge/check/progress.js';
 import { noPageCopies, storedPageCopies } from '../knowledge/check/page-copies.js';
 import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js';
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
+import { postgresRuleStore } from '../knowledge/rule-store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
 import { createCorrectionContents } from '../knowledge/correction-contents.js';
 import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
@@ -184,7 +185,7 @@ export const checkSteps = once((): Promise<VersionCheck> => {
   }
   return Promise.resolve(
     createVersionCheck({
-      subject: createCheckSubjects(),
+      subject: createCheckSubjects(postgresRuleStore(jobsDatabase, stepLogger).data),
       guide: countryGuide,
       fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
       copies: pageCopies(),

@@ -1,6 +1,6 @@
 # @arca/knowledge
 
-The knowledge base as data: route versions, country sets, official-domain lists, country guides and the countries files, validated, hashed and bundled into the API ([spec 0002](../../docs/specs/0002-rules-engine-and-knowledge-base.md), [ADR-0014](../../docs/adr/0014-knowledge-base-as-reviewed-data.md)).
+The knowledge base as data: route versions, country sets, official-domain lists, country guides and the countries files, validated and hashed ([spec 0002](../../docs/specs/0002-rules-engine-and-knowledge-base.md), [ADR-0014](../../docs/adr/0014-knowledge-base-as-reviewed-data.md)). Route versions, country sets and official-domain lists now live in the database's `knowledge` schema ([ADR-0031](../../docs/adr/0031-rule-updates-on-request.md)): the files here were imported once, and the API reads the rows. The countries files, comparisons and guides are still bundled into the API.
 
 ## Layout
 
@@ -18,7 +18,8 @@ data/hashes.json                            committed content hashes, append-onl
 scripts/                                    load, validate, hash and write the catalog; generate countries
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
 src/                                        the runtime entry; pure, no I/O
-src/generated/catalog.ts                    written by the build, not checked in
+src/generated/catalog.ts                    route data, written by the build, not checked in; only the bundled entry reads it
+src/generated/runtime.ts                    what the API ships: countries files, comparisons, guides; written by the build
 test/fixtures/data/                         fixture routes on user-assigned codes, with cases (R8)
 test/cases/                                 the cases runner
 test/history.test.ts                        selection over the fixture version histories, with decision states (R5, R8)
@@ -36,7 +37,13 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources and their machine-readable addresses (`machineReadableUrl`, an optional data address of the same text, on an official source only) sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
 4. Hashes each route version, country set, country indicator, comparison version and country guide: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
-6. Writes `src/generated/catalog.ts`. Any issue fails the build and deletes the module, so no tool keeps serving an earlier catalog.
+6. Writes `src/generated/catalog.ts` (route data) and `src/generated/runtime.ts` (what the API ships). Any issue fails the build and deletes both modules, so no tool keeps serving an earlier catalog.
+
+## The import into the database
+
+`scripts/rule-import.ts` (`pnpm --filter @arca/knowledge import:sql`) writes the migration `packages/db/migrations/<timestamp>_knowledge_rule_import/migration.sql` from `data`: every route version (with its cases file), country set and official-domain list, each with the hash the build computed, inserted with `ON CONFLICT DO NOTHING` after a check that aborts if a stored row has another hash ([ADR-0031](../../docs/adr/0031-rule-updates-on-request.md)). It ran once with the migrations; the migration journal never runs it again, and it is never edited. `test/rule-rows.test.ts` generates it again and compares it with the committed file, so any change to a route version, country set or official-domain list in `data` fails the tests: rules now change through update requests in the app, never here.
+
+An official-domain list pins nothing, so its hash is the same `{ version, pinned }` form with no pins. `src/rule-rows.ts` reads rows back as the build read the files: each row parses by its schema, names the ID and number it is stored under and hashes, over everything it pins, to its stored hash; a row that does not, or that pins one that does not, is refused.
 
 ## Countries
 
@@ -119,5 +126,7 @@ A source is stale when it was verified more than 90 days before the context's `t
 
 ## Runtime entry points
 
-- `@arca/knowledge` exports `routeCatalog`, the `RouteCatalog` the engine reads: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active. It also exports `countryGuide`, the lookup of each country's current guide.
-- `@arca/knowledge/reproduction` exports `reproductionEntry(routeId, number, hash)`, which ignores decision states so an old evaluation stays reproducible. Modules and folders named `reproduction` are reserved for it: lint allows importing them only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, and those files may not re-export it with `export … from` (passing it on any other way is for review to catch). Inside this package only the two entry points read the built catalog.
+- `@arca/knowledge` exports `ruleDataFromRows`, which reads rule rows into the versions whose hashes still hold, and `createRouteCatalog`, the `RouteCatalog` the engine reads over them: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active. It also exports `countryFiles`, `comparisonCatalog`, `pinnedCountries` and `countryGuide`, the lookup of each country's current guide.
+- `@arca/knowledge/bundled` exports the rules as `data` holds them (`bundledRuleData`, `routeCatalog`, `routeIds`), for tests and tools. The API never imports it; a test of the Nitro build checks that no route version reaches the server bundle.
+- `@arca/knowledge/display` exports `createDisplayCatalog(rules)`, every version whatever its state, for the activation screen only.
+- `@arca/knowledge/reproduction` exports `createReproductionLookup(entries)`, which ignores decision states so an old evaluation stays reproducible. Modules and folders named `reproduction` are reserved for it: lint allows importing them only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, and those files may not re-export it with `export … from` (passing it on any other way is for review to catch). Inside this package only the entry points read the generated modules.

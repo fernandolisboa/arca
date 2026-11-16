@@ -493,6 +493,9 @@ importers:
       '@arca/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint-config
+      '@arca/scripts':
+        specifier: workspace:*
+        version: link:../../tooling/scripts
       '@arca/security-policy':
         specifier: workspace:*
         version: link:../../tooling/security-policy

@@ -136,7 +136,12 @@ export const databaseTestFiles = ['test/postgres/**', 'e2e/postgres/**'];
 export const knowledgeRuntimeFiles = ['src/**'];
 
 /** The knowledge runtime files that read the built catalog, each behind its own entry point. */
-export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', 'src/display.ts'];
+export const knowledgeCatalogReaders = [
+  'src/index.ts',
+  'src/bundled.ts',
+  'src/reproduction.ts',
+  'src/display.ts',
+];
 
 /**
  * packages/knowledge: only the entry points read the built catalog, so no other module can hand
@@ -147,12 +152,31 @@ export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', '
 export const rawCatalog = {
   patterns: [
     {
-      regex: '(?:^|/)generated/catalog(?:\\.[jt]s)?$',
+      regex: '(?:^|/)generated/(?:catalog|runtime)(?:\\.[jt]s)?$',
       message:
-        'Only the entry points read the built catalog; the runtime reaches it through routeCatalog (spec 0002, R5).',
+        'Only the entry points read the built catalog; the API reads rules from the database (spec 0002, R5; ADR-0031).',
     },
   ],
 };
+
+/**
+ * apps/api source: the rules come from the database (ADR-0031), so neither the bundled rules nor
+ * the build tooling reach the server bundle. Tests may read both.
+ *
+ * @type {Restrictions}
+ */
+export const apiRuntimeRules = {
+  patterns: [
+    {
+      regex: '^(?:@arca/knowledge/bundled|@arca/scripts(?:/.*)?)$',
+      message:
+        'The API reads rules from the database; only tests import the bundled rules or the build tooling (ADR-0031).',
+    },
+  ],
+};
+
+/** The apps/api files allowed to import the bundled rules and the build tooling. */
+export const apiRuleTestFiles = ['test/**'];
 
 const reproductionOnly =
   'Modules named reproduction are the reproduction path: they ignore decision states, so only the cases runner and the reproduction path import them (spec 0002, R5).';

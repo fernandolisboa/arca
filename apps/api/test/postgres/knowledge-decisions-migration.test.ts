@@ -70,7 +70,10 @@ describe('the session-decision migration (ADR-0027)', () => {
       db: apiDb,
       authDb: () => authDb,
       audit: auditLog(auditDb),
-      catalog: { identities: (routeId) => (routeId === version.routeId ? [version] : []) },
+      catalog: () =>
+        Promise.resolve({
+          identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
+        }),
       comparisons: { identities: () => [] },
       role: adminRole(() => apiDb, [approver.signedIn.accountId]),
       origin,

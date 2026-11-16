@@ -1,15 +1,24 @@
-import { createRouteCatalog } from './catalog.js';
 import { createComparisonCatalog } from './comparisons.js';
-import { parseComparisons, parseEntries } from './entries.js';
+import { parseComparisons } from './entries.js';
 import { createGuideLookup } from './guides.js';
 import { countryCodeSchema } from '@arca/domain';
 import { z } from 'zod';
-import { catalogData, comparisonData, countryData, guideData } from './generated/catalog.js';
+import type { Json } from './canonical.js';
+import { comparisonData, countryData, countryFileData, guideData } from './generated/runtime.js';
 
-const entries = parseEntries(catalogData);
-
-/** The built knowledge catalog. Nothing reads the data directory at runtime (spec 0002, R6). */
-export const routeCatalog = createRouteCatalog(entries);
+export { createRouteCatalog } from './catalog.js';
+export {
+  type PinnedFileRow,
+  type RouteVersionRow,
+  type RuleData,
+  type RuleEngineData,
+  type RuleRowReading,
+  type RuleRows,
+  refusedRows,
+  ruleDataFromRows,
+  ruleEngineData,
+} from './rule-rows.js';
+export type { Json } from './canonical.js';
 
 /** The destination comparison's versions (ADR-0026); content only for an active one. */
 export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));
@@ -18,11 +27,6 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 export const countryGuide = createGuideLookup(guideData);
 
 export type { CountryGuideEntry, CountryGuideLookup } from './guides.js';
-
-/** Every route the catalog has a version of, in a stable order. */
-export const routeIds: readonly string[] = [
-  ...new Set([...entries.values()].map(({ identity }) => identity.routeId)),
-].sort();
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z
@@ -33,3 +37,11 @@ export const pinnedCountries = z
   .parse(countryData);
 
 export type PinnedCountries = typeof pinnedCountries;
+
+/**
+ * The countries and former-countries files, keyed `<kind>/<id>/<number>`: they stay in the
+ * repository (ADR-0031), and a route version's or country set's hash covers the ones it pins.
+ */
+export const countryFiles: Readonly<Record<string, Json>> = z
+  .record(z.string(), z.json())
+  .parse(countryFileData);

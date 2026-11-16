@@ -182,8 +182,11 @@ export interface CaseFilesSettings {
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
   readonly evaluation: {
-    readonly catalog: RouteCatalog;
-    readonly routeIds: readonly string[];
+    /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
+    readonly rules: () => Promise<{
+      readonly catalog: RouteCatalog;
+      readonly routeIds: readonly string[];
+    }>;
     /** The destination comparison's versions (ADR-0026). */
     readonly comparisons: ComparisonCatalog;
     readonly states: () => Promise<DecisionStates>;
@@ -424,15 +427,22 @@ export function createCaseFiles({
       asOf: EvaluatedAsOf,
     ) => Promise<T>,
   ): Promise<T | null> => {
-    const states = await evaluation.states();
+    const [states, { catalog, routeIds }] = await Promise.all([
+      evaluation.states(),
+      evaluation.rules(),
+    ]);
     const today = evaluation.today();
     return withIdentity(db(), { accountId }, async (tx) => {
       const rows = await readCase(tx, accountId);
       if (rows === undefined) return null;
-      return work(tx, rows, caseEvaluations(rows, { ...evaluation, states, today }), {
+      const evaluated = caseEvaluations(rows, {
+        catalog,
+        routeIds,
         states,
         today,
+        engineCommit: evaluation.engineCommit,
       });
+      return work(tx, rows, evaluated, { states, today, routeIds });
     });
   };
 
@@ -454,7 +464,6 @@ export function createCaseFiles({
   ) =>
     destinationComparison(rows, accountId, evaluated, preferences, {
       catalog: evaluation.comparisons,
-      routeIds: evaluation.routeIds,
       ...asOf,
     });
 
@@ -793,7 +802,7 @@ export function createCaseFiles({
             await storedPreferences(tx, accountId),
             request,
             newOwnCriterionId,
-            comparedCountries(evaluation.routeIds),
+            comparedCountries(asOf.routeIds),
           );
           if (next === undefined) return { ok: false, reason: 'case_invalid' };
           await tx.execute(sql`

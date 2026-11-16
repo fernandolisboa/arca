@@ -83,7 +83,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Step-up | Confirmação com chave de acesso | A fresh passkey verification for one sensitive action, bound to that action |
 | Content hash | Código do conteúdo | SHA-256 of the canonical JSON of a version and every file it pins; what a decision is bound to |
 | Passkey | Chave de acesso | The WebAuthn credential a person signs in and confirms sensitive actions with |
-| Knowledge catalog | Internal, no UI label | The validated, hashed route data that `packages/knowledge` builds and the API bundles; not the pnpm catalog of dependency versions. Moves to insert-only rows in the `knowledge` schema ([ADR-0031](docs/adr/0031-rule-updates-on-request.md)) |
+| Knowledge catalog | Internal, no UI label | The validated, hashed route versions, country sets and official-domain lists, held as insert-only rows in the `knowledge` schema and re-hashed on read ([ADR-0031](docs/adr/0031-rule-updates-on-request.md)); not the pnpm catalog of dependency versions |
 | Admin grant | Internal, no UI label | An insert-only record that an admin gave the admin role to a confirmed account sharing a case with them (with a step-up), or took it away |
 | Owner list | Internal, no UI label | The reviewed file in the repository that names, by account ID and per environment, the accounts that are always admins and cannot lose the role in the app; formerly the approver list |
 | Activation screen | Tela de ativação | Where an admin reviews a proposed version as data, with its check report apart, and activates or rejects it |

@@ -73,8 +73,10 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
   const versions = {
     view: () => Promise.resolve(undefined),
     identities: (routeId: string) =>
-      routeId === 'qm-sample' ? identities : routeId === 'qm-new' ? [newRoute] : [],
-    officialHosts: () => [],
+      Promise.resolve(
+        routeId === 'qm-sample' ? identities : routeId === 'qm-new' ? [newRoute] : [],
+      ),
+    officialHosts: () => Promise.resolve([]),
   };
   const { keys, corrector } = createCorrector({
     db: () => testDatabase.apiDb,

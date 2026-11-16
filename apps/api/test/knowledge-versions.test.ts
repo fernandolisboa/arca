@@ -1,10 +1,12 @@
 import { comparisonIdentityKey, identityKey, parseCalendarDate } from '@arca/domain';
-import { displayCatalog } from '@arca/knowledge/display';
+import { bundledRuleData } from '@arca/knowledge/bundled';
+import { createDisplayCatalog } from '@arca/knowledge/display';
 import { describe, expect, it } from 'vitest';
 import { ComparisonVersionView, VersionView } from '@arca/api-contract/routes';
 import { todayInSaoPaulo } from '../src/calendar.js';
 import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 
+const displayCatalog = createDisplayCatalog(bundledRuleData);
 const entries = displayCatalog.entries();
 /** A route with one version, so rejecting it leaves no fallback whatever other routes hold. */
 const singleVersionEntry = entries.find(
@@ -17,6 +19,7 @@ const versions = createKnowledgeVersions({
   states: () =>
     Promise.resolve(new Map([[identityKey(singleVersionEntry.identity), 'active' as const]])),
   today: () => parseCalendarDate('2026-11-06'),
+  rules: () => Promise.resolve(bundledRuleData),
 });
 
 describe('the activation screen reads (spec 0007, R7)', () => {
@@ -98,6 +101,7 @@ describe('the activation screen reads (spec 0007, R7)', () => {
       states: () =>
         Promise.resolve(new Map([[comparisonIdentityKey(comparison.identity), 'active' as const]])),
       today: () => parseCalendarDate('2026-11-06'),
+      rules: () => Promise.resolve(bundledRuleData),
     });
     const [listed] = await decided.comparisons();
     expect(listed?.state).toBe('active');

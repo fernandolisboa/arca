@@ -12,18 +12,19 @@ import {
   supersededVersions,
   versionView,
 } from '@arca/domain';
-import { type DisplayCatalog, displayCatalog } from '@arca/knowledge/display';
+import type { RuleData } from '@arca/knowledge';
+import { type DisplayCatalog, createDisplayCatalog } from '@arca/knowledge/display';
 import type { CheckSubject } from './check/run.js';
 import { checkContent } from './version-content.js';
 
 export interface KnowledgeVersions {
-  /** Every bundled version with its state, the newest first (spec 0007, R7). */
+  /** Every stored version with its state, the newest first (spec 0007, R7; ADR-0031). */
   readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check' | 'points'>[]>;
   readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
   /** A route's version identities, which never carry a version's content. */
-  readonly identities: (routeId: string) => readonly VersionIdentity[];
+  readonly identities: (routeId: string) => Promise<readonly VersionIdentity[]>;
   /** The hosts of a country's newest official-domain list, by its lower-case code; none without one. */
-  readonly officialHosts: (country: string) => readonly string[];
+  readonly officialHosts: (country: string) => Promise<readonly string[]>;
   /** Every bundled comparison version with its state, the newest first (ADR-0026). */
   readonly comparisons: () => Promise<readonly KnowledgeComparisonVersion[]>;
   readonly comparisonView: (
@@ -36,7 +37,20 @@ export interface KnowledgeVersionSettings {
   readonly states: () => Promise<DecisionStates>;
   /** Today in São Paulo, the date evaluations select versions at (spec 0007, R6). */
   readonly today: () => CalendarDate;
-  readonly catalog?: DisplayCatalog;
+  /** The rules in the database (ADR-0031). */
+  readonly rules: () => Promise<RuleData>;
+}
+
+const displays = new WeakMap<RuleData, DisplayCatalog>();
+
+/** The display catalog over the rules read, built once for each reading. */
+function displayOf(rules: RuleData): DisplayCatalog {
+  let display = displays.get(rules);
+  if (display === undefined) {
+    display = createDisplayCatalog(rules);
+    displays.set(rules, display);
+  }
+  return display;
 }
 
 /**
@@ -46,11 +60,12 @@ export interface KnowledgeVersionSettings {
 export function createKnowledgeVersions({
   states,
   today,
-  catalog = displayCatalog,
+  rules,
 }: KnowledgeVersionSettings): KnowledgeVersions {
+  const displayed = async () => displayOf(await rules());
   return {
     list: async () => {
-      const decided = await states();
+      const [decided, catalog] = await Promise.all([states(), displayed()]);
       const asOf = today();
       const entries = catalog.entries();
       const superseded = new Map(
@@ -82,11 +97,13 @@ export function createKnowledgeVersions({
         );
     },
 
-    identities: (routeId) => catalog.versions(routeId).map(({ identity }) => identity),
+    identities: async (routeId) =>
+      (await displayed()).versions(routeId).map(({ identity }) => identity),
 
-    officialHosts: (country) => catalog.newestOfficialHosts(country),
+    officialHosts: async (country) => (await displayed()).newestOfficialHosts(country),
 
     view: async (routeId, number) => {
+      const catalog = await displayed();
       const versions = catalog.versions(routeId);
       const entry = versions.find(({ identity }) => identity.number === number);
       if (entry === undefined) return undefined;
@@ -101,7 +118,7 @@ export function createKnowledgeVersions({
     },
 
     comparisons: async () => {
-      const decided = await states();
+      const [decided, catalog] = await Promise.all([states(), displayed()]);
       return catalog
         .comparisons()
         .map(({ identity, version }) => ({
@@ -115,6 +132,7 @@ export function createKnowledgeVersions({
     },
 
     comparisonView: async (comparisonId, number) => {
+      const catalog = await displayed();
       const entries = catalog
         .comparisons()
         .filter(({ identity }) => identity.comparisonId === comparisonId);
@@ -129,15 +147,16 @@ export function createKnowledgeVersions({
 }
 
 /**
- * What the independent check reads about a bundled route version (ADR-0027): its entry, its
+ * What the independent check reads about a stored route version (ADR-0027): its entry, its
  * content as the activation view lays it out, and the hosts of the lists it pins. Read here, where
  * the display catalog may be, since a proposed version's content is what the check is for. The
  * view needs no decision states: the content the check reads leaves the state out.
  */
 export function createCheckSubjects(
-  catalog: DisplayCatalog = displayCatalog,
-): (routeId: string, number: number) => CheckSubject | undefined {
-  return (routeId, number) => {
+  rules: () => Promise<RuleData>,
+): (routeId: string, number: number) => Promise<CheckSubject | undefined> {
+  return async (routeId, number) => {
+    const catalog = displayOf(await rules());
     const versions = catalog.versions(routeId);
     const entry = versions.find(({ identity }) => identity.number === number);
     if (entry === undefined) return undefined;
@@ -152,4 +171,18 @@ export function createCheckSubjects(
     if (view === undefined) return undefined;
     return { entry, content: checkContent(view), officialHosts: catalog.officialHosts };
   };
+}
+
+/** Each named route's version identities, read once per route. */
+export async function identitiesOf(
+  versions: Pick<KnowledgeVersions, 'identities'>,
+  routeIds: Iterable<string>,
+): Promise<ReadonlyMap<string, readonly VersionIdentity[]>> {
+  return new Map(
+    await Promise.all(
+      [...new Set(routeIds)].map(
+        async (routeId) => [routeId, await versions.identities(routeId)] as const,
+      ),
+    ),
+  );
 }

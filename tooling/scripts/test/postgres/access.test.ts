@@ -523,6 +523,64 @@ async function schemaShape(schema: string) {
   });
 }
 
+const ruleTables = {
+  'knowledge.route_version': [
+    'route_id',
+    'number',
+    'content',
+    'content_hash',
+    'cases',
+    'inserted_at',
+  ],
+  'knowledge.country_set': ['set_id', 'number', 'content', 'content_hash', 'inserted_at'],
+  'knowledge.official_domain_list': ['list_id', 'number', 'content', 'content_hash', 'inserted_at'],
+};
+
+describe('the rule tables access matrix (ADR-0031)', () => {
+  it.each(['app_api', 'app_jobs'])('lets %s only read the rule rows', async (role) => {
+    for (const [table, columns] of Object.entries(ruleTables)) {
+      expect(await columnPrivileges(role, table, columns), table).toEqual({
+        usage: true,
+        create: false,
+        columns: onEvery(columns, ['SELECT']),
+        table: [],
+      });
+    }
+  });
+
+  it.each([
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
+    ...retiredRoles,
+  ])('gives %s no access to the rule rows', async (role) => {
+    for (const [table, columns] of Object.entries(ruleTables)) {
+      const privileges = await columnPrivileges(role, table, columns);
+      expect(privileges.columns, table).toEqual(onEvery(columns, []));
+      expect(privileges.table, table).toEqual([]);
+    }
+  });
+
+  it('leaves the migrator, which owns them, able to read and insert, never to change, delete or truncate', async () => {
+    for (const [table, columns] of Object.entries(ruleTables)) {
+      expect(await columnPrivileges('app_migrator', table, columns), table).toEqual({
+        usage: true,
+        create: true,
+        columns: onEvery(columns, ['SELECT', 'INSERT']),
+        table: [],
+      });
+    }
+  });
+
+  it.each(Object.keys(ruleTables))('refuses changing or deleting a row of %s', async (table) => {
+    await withClient(migratorTarget(database), async (client) => {
+      await expect(client.query(`UPDATE ${table} SET number = number`)).rejects.toThrow(
+        /permission denied/,
+      );
+      await expect(client.query(`DELETE FROM ${table}`)).rejects.toThrow(/permission denied/);
+      await expect(client.query(`TRUNCATE ${table}`)).rejects.toThrow(/permission denied/);
+    });
+  });
+});
+
 describe('the audit schema access matrix (spec 0003, R7)', () => {
   it('has only the event table, with no foreign keys and forced row-level security', async () => {
     expect(await schemaShape('audit')).toEqual({
@@ -567,7 +625,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, decision, rule summary, check, correction request and corrector key tables, with forced row-level security', async () => {
+  it('has only the admin grant, decision, rule summary, check, correction request, corrector key and rule tables, with forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
@@ -578,8 +636,11 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'correction_source', forced: true },
         { name: 'correction_upload', forced: true },
         { name: 'corrector_key', forced: true },
+        { name: 'country_set', forced: true },
         { name: 'decision', forced: true },
         { name: 'independent_check', forced: true },
+        { name: 'official_domain_list', forced: true },
+        { name: 'route_version', forced: true },
         { name: 'rule_summary', forced: true },
       ],
       // A correction request's sources and events, which go with it, a file source's upload, the

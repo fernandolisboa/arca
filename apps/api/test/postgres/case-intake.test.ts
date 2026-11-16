@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { parseCalendarDate } from '@arca/domain';
-import { comparisonCatalog, routeCatalog, routeIds } from '@arca/knowledge';
+import { comparisonCatalog } from '@arca/knowledge';
+import { routeCatalog, routeIds } from '@arca/knowledge/bundled';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -22,8 +23,7 @@ beforeAll(async () => {
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'IT', 'PT', 'US'], formerCountries: [] },
     evaluation: {
-      catalog: routeCatalog,
-      routeIds,
+      rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,
       states: () => Promise.resolve(new Map()),
       today: () => parseCalendarDate('2026-11-06'),

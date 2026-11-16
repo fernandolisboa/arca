@@ -1,10 +1,10 @@
 import { readFile } from 'node:fs/promises';
-import { routeCatalog } from '@arca/knowledge';
+import { routeCatalog } from '@arca/knowledge/bundled';
 import { describe, expect, it } from 'vitest';
 import { ownerList } from '../src/knowledge/owner-list.js';
 
 describe('knowledge catalog', () => {
-  it('bundles the knowledge catalog', () => {
+  it('keeps no fixture route in the bundled rules', () => {
     expect(routeCatalog.identities('qm-work')).toEqual([]);
   });
 });

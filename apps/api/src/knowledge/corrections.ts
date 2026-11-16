@@ -24,7 +24,7 @@ import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
 import type { ObjectStorage } from '../storage/object-storage.js';
 import { fitsFileType } from './correction-files.js';
-import type { KnowledgeVersions } from './versions.js';
+import { type KnowledgeVersions, identitiesOf } from './versions.js';
 
 type FilingRefusal = 'not_admin' | 'owner_list_only';
 
@@ -316,7 +316,7 @@ export function createCorrections({
       const corrected = correctionState({
         versionNumber: request.versionNumber,
         events: [],
-        identities: versions.identities(request.routeId),
+        identities: await versions.identities(request.routeId),
         states: await states(),
       });
       if (corrected === 'closed') return 'already_corrected';
@@ -361,12 +361,23 @@ export function createCorrections({
         ),
         states(),
       ]);
+      const proposedRoutes = new Set(
+        rows.flatMap(
+          ({ events }) => events.find((event) => event.kind === 'answered')?.proposedRouteId ?? [],
+        ),
+      );
+      const [hosts, proposedIdentities] = await Promise.all([
+        Promise.all(
+          [...knownCountries].sort().map(async (code) => ({
+            code,
+            officialHosts: [...(await versions.officialHosts(code))],
+          })),
+        ),
+        identitiesOf(versions, proposedRoutes),
+      ]);
       return {
         canFile: basis.basis === 'owner_list',
-        countries: [...knownCountries].sort().map((code) => ({
-          code,
-          officialHosts: [...versions.officialHosts(code)],
-        })),
+        countries: hosts,
         requests: rows.map((row) => {
           const answered = row.events.find((event) => event.kind === 'answered');
           const proposedRoute = answered?.proposedRouteId;
@@ -383,7 +394,8 @@ export function createCorrections({
                   ? { kind: event.kind, proposedVersion: event.proposedVersion ?? null }
                   : { kind: event.kind },
               ),
-              identities: proposedRoute === undefined ? [] : versions.identities(proposedRoute),
+              identities:
+                proposedRoute === undefined ? [] : (proposedIdentities.get(proposedRoute) ?? []),
               states: decided,
             }),
             answer: routeAnswer(answered),
@@ -395,7 +407,7 @@ export function createCorrections({
     list: async (accountId, routeId, number) => {
       const basis = await basisOf(accountId);
       if (basis === undefined) return 'not_admin';
-      const identities = versions.identities(routeId);
+      const identities = await versions.identities(routeId);
       if (!identities.some((identity) => identity.number === number)) return 'not_found';
       const { basis: kind, grantId } = basisArguments(basis);
       const [{ rows, files, events }, decided] = await Promise.all([

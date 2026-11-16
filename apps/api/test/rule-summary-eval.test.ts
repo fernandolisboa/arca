@@ -1,4 +1,5 @@
 import { parseCalendarDate } from '@arca/domain';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import { describe, expect, it } from 'vitest';
 import { summaryAttempts } from '../src/knowledge/summaries.js';
 import { createKnowledgeVersions } from '../src/knowledge/versions.js';
@@ -100,6 +101,7 @@ describe('the rule summary evaluation checks', () => {
     const bundled = await createKnowledgeVersions({
       states: () => Promise.resolve(new Map()),
       today: () => parseCalendarDate('2026-11-06'),
+      rules: () => Promise.resolve(bundledRuleData),
     }).list();
     const newest = new Map<string, number>();
     for (const { routeId, number } of bundled) {

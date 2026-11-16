@@ -7,7 +7,8 @@ import {
   storedProfileFactsSchema,
 } from '@arca/domain';
 import { withIdentity } from '@arca/db';
-import { comparisonCatalog, routeCatalog, routeIds } from '@arca/knowledge';
+import { comparisonCatalog } from '@arca/knowledge';
+import { routeCatalog, routeIds } from '@arca/knowledge/bundled';
 import { CaseEvaluations } from '@arca/api-contract/routes';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
@@ -36,8 +37,7 @@ beforeAll(async () => {
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
     evaluation: {
-      catalog: routeCatalog,
-      routeIds,
+      rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,
       states: () => Promise.resolve(activeStates),
       today: () => parseCalendarDate('2026-11-06'),
@@ -948,8 +948,7 @@ describe('evaluating the case (spec 0007, R6)', () => {
       today: () => new Date('2026-11-06T12:00:00Z'),
       countries: { countries: ['BR'], formerCountries: [] },
       evaluation: {
-        catalog: routeCatalog,
-        routeIds,
+        rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
         comparisons: comparisonCatalog,
         states: () => Promise.resolve(new Map()),
         today: () => parseCalendarDate('2026-11-06'),

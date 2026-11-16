@@ -59,8 +59,8 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
     versions: {
       view: (routeId, number) =>
         Promise.resolve(routeId === 'qm-sample' && number <= 2 ? view : undefined),
-      identities: (routeId) => (routeId === 'qm-sample' ? identities : []),
-      officialHosts: (country) => (country === 'lt' ? ['example.gov'] : []),
+      identities: (routeId) => Promise.resolve(routeId === 'qm-sample' ? identities : []),
+      officialHosts: (country) => Promise.resolve(country === 'lt' ? ['example.gov'] : []),
     },
     states: () => Promise.resolve(states),
     countries: ['QM', 'LT'],

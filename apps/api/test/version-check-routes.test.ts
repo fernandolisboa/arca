@@ -113,18 +113,20 @@ function setup({
       ),
     // Only the disabled check's read route asks; it needs to know the version exists.
     view: (_, number) => Promise.resolve(number <= count ? ({} as VersionView) : undefined),
-    identities: () => [],
-    officialHosts: () => [],
+    identities: () => Promise.resolve([]),
+    officialHosts: () => Promise.resolve([]),
     comparisons: () => Promise.resolve([]),
     comparisonView: () => Promise.resolve(undefined),
   };
-  const subject = (routeId: string, number: number): CheckSubject | undefined => {
+  const subject = (routeId: string, number: number): Promise<CheckSubject | undefined> => {
     const entry = entries.find(
       ({ identity }) => identity.routeId === routeId && identity.number === number,
     );
-    return entry === undefined
-      ? undefined
-      : { entry, content: '{}', officialHosts: () => ['gov.example'] };
+    return Promise.resolve(
+      entry === undefined
+        ? undefined
+        : { entry, content: '{}', officialHosts: () => ['gov.example'] },
+    );
   };
   const reports = memoryCheckReportStore(now);
   const progress = memoryCheckProgressStore();

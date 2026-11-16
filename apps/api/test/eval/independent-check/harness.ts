@@ -1,5 +1,7 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
-import { hostMatches } from '@arca/domain';
+import { hostMatches, identityKey, sourceUrls } from '@arca/domain';
+import type { RuleData } from '@arca/knowledge';
+import { sealRuleData } from '@arca/knowledge/bundled';
 import type { Logger } from '@arca/telemetry';
 import { answerFormat, answerText } from '../../../src/knowledge/check/answer-text.js';
 import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
@@ -19,20 +21,20 @@ import { type CheckReport, memoryCheckReportStore } from '../../../src/knowledge
 import { createCheckSubjects } from '../../../src/knowledge/versions.js';
 import { type CheckCase, type Snapshot, officialHosts } from './cases.js';
 
-/** The catalog shape the check reads a version through, without importing the display catalog. */
-type CaseCatalog = NonNullable<Parameters<typeof createCheckSubjects>[0]>;
-
-/** The catalog one case's version is read through, as the activation view reads the real one. */
-export function caseCatalog({ entry }: CheckCase): CaseCatalog {
-  return {
-    entries: () => [entry],
-    comparisons: () => [],
-    versions: (routeId) => (routeId === entry.version.routeId ? [entry] : []),
-    cases: () => [],
-    hostOf: (url) => new URL(url).hostname,
-    officialHosts: (pins) => (pins.every(({ id }) => id === 'qm') ? officialHosts : undefined),
-    newestOfficialHosts: () => [],
-  };
+/** The rules one case's version is read from, as the activation view reads the stored ones. */
+export function caseRules({ entry }: CheckCase): () => Promise<RuleData> {
+  const data: RuleData = sealRuleData({
+    entries: new Map([[identityKey(entry.identity), entry]]),
+    cases: [],
+    hosts: Object.fromEntries(
+      entry.version.sources.flatMap(sourceUrls).map((url) => [url, new URL(url).hostname]),
+    ),
+    officialDomains: entry.version.officialDomains
+      .filter(({ id }) => id === 'qm')
+      .map(({ id, number }) => ({ id, number, hosts: officialHosts })),
+    refused: [],
+  });
+  return () => Promise.resolve(data);
 }
 
 const htmlType = 'text/html';
@@ -112,7 +114,7 @@ export async function checkCase(
 ): Promise<CheckReport> {
   const store = memoryCheckReportStore();
   const check = createVersionCheck({
-    subject: createCheckSubjects(caseCatalog(evalCase)),
+    subject: createCheckSubjects(caseRules(evalCase)),
     guide: () => evalCase.guide,
     fetcher: snapshotFetcher(evalCase.snapshots),
     copies: noPageCopies,

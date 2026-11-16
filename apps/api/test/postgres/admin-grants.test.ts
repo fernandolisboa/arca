@@ -55,7 +55,10 @@ const decisions = () =>
     db: testDatabase.apiDb,
     authDb: () => testDatabase.authDb,
     audit: auditLog(testDatabase.auditDb),
-    catalog: { identities: (routeId) => (routeId === version.routeId ? [version] : []) },
+    catalog: () =>
+      Promise.resolve({
+        identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
+      }),
     comparisons: { identities: () => [] },
     role: role(),
     origin,
