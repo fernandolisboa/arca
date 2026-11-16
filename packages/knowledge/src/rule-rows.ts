@@ -2,8 +2,10 @@ import {
   type CatalogEntry,
   type CountrySet,
   type Pin,
+  type RouteCatalog,
   type RouteVersion,
   type RuleCaseSummary,
+  type VersionIdentity,
   countrySetSchema,
   identityKey,
   officialDomainListSchema,
@@ -13,6 +15,7 @@ import {
 } from '@arca/domain';
 import { type Json, canonicalize } from './canonical.js';
 import { caseSummaries } from './cases.js';
+import { createRouteCatalog } from './catalog.js';
 
 /** A route version as the `knowledge.route_version` table holds it (ADR-0031). */
 export interface RouteVersionRow {
@@ -53,10 +56,10 @@ export interface VersionCases {
 }
 
 /**
- * The rules the runtime reads: every route version whose content still hashes to its stored hash,
+ * What the rules read hold: every route version whose content still hashes to its stored hash,
  * with its cases, the host of each cited URL, and the hosts of each official-domain list.
  */
-export interface RuleData {
+export interface RuleContent {
   readonly entries: ReadonlyMap<string, CatalogEntry>;
   readonly cases: readonly VersionCases[];
   readonly hosts: Readonly<Record<string, string | null>>;
@@ -64,6 +67,21 @@ export interface RuleData {
   /** `<kind>/<id>/<number>` of every row left out, because it does not hash to its stored hash. */
   readonly refused: readonly string[];
 }
+
+declare const ruleDataBrand: unique symbol;
+
+/**
+ * The rules read, opaque: every version is in it whatever its decision state, so only the display
+ * and reproduction entry points, whose imports lint restricts, and the engine catalog, which hands
+ * out full content only for active versions, open it (spec 0002, R5).
+ */
+export interface RuleData {
+  readonly [ruleDataBrand]: true;
+}
+
+export const sealRuleData = (content: RuleContent): RuleData => content as unknown as RuleData;
+
+export const ruleContent = (data: RuleData): RuleContent => data as unknown as RuleContent;
 
 export interface RuleRowReading {
   /** The repository's countries and former-countries files, keyed `<kind>/<id>/<number>`. */
@@ -150,9 +168,7 @@ export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleD
     sets.set(key, { content: row.content, set: parsed.data, pinned });
   }
 
-  const entries = new Map<string, CatalogEntry>();
-  const cases: VersionCases[] = [];
-  const hosts: Record<string, string | null> = {};
+  const read: { identity: VersionIdentity; entry: CatalogEntry; cases: Json | null }[] = [];
   const ordered = [...rows.routeVersions].sort(
     (left, right) => left.routeId.localeCompare(right.routeId, 'en') || left.number - right.number,
   );
@@ -161,36 +177,83 @@ export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleD
     const parsed = routeVersionSchema.safeParse(row.content);
     const pinned = parsed.success ? commonPins(parsed.data) : undefined;
     const pinnedSets = parsed.success
-      ? parsed.data.countrySets.map((pin) => sets.get(keyOf('country-sets', pin.id, pin.number)))
+      ? parsed.data.countrySets.map((pin) => {
+          const set = sets.get(keyOf('country-sets', pin.id, pin.number));
+          return set && { key: keyOf('country-sets', pin.id, pin.number), ...set };
+        })
       : [];
+    const found = pinnedSets.filter((set) => set !== undefined);
     if (
       !parsed.success ||
       pinned === undefined ||
-      pinnedSets.some((set) => set === undefined) ||
+      found.length !== pinnedSets.length ||
       parsed.data.routeId !== row.routeId ||
       parsed.data.number !== row.number
     ) {
       refused.push(key);
       continue;
     }
-    const countrySets: CountrySet[] = [];
-    for (const [index, set] of pinnedSets.entries()) {
-      const pin = parsed.data.countrySets[index];
-      if (set === undefined || pin === undefined) continue;
-      pinned[keyOf('country-sets', pin.id, pin.number)] = set.content;
+    for (const set of found) {
+      pinned[set.key] = set.content;
       Object.assign(pinned, set.pinned);
-      countrySets.push(set.set);
     }
     if (hashOf(row.content, pinned) !== row.contentHash) {
       refused.push(key);
       continue;
     }
     const identity = versionIdentity(parsed.data, row.contentHash);
-    entries.set(identityKey(identity), { identity, version: parsed.data, countrySets });
-    cases.push({ hash: row.contentHash, cases: caseSummaries(row.cases) });
-    for (const url of parsed.data.sources.flatMap(sourceUrls)) {
+    read.push({
+      identity,
+      entry: { identity, version: parsed.data, countrySets: found.map(({ set }) => set) },
+      cases: row.cases,
+    });
+  }
+
+  // A route with a refused version is withheld whole, so selection never falls back to a version
+  // the refused one superseded or corrected.
+  const withheld = new Set(
+    refused.filter((key) => key.startsWith('routes/')).map((key) => key.split('/')[1]),
+  );
+  const entries = new Map<string, CatalogEntry>();
+  const cases: VersionCases[] = [];
+  const hosts: Record<string, string | null> = {};
+  for (const { identity, entry, cases: file } of read) {
+    if (withheld.has(identity.routeId)) {
+      if (!refused.includes(keyOf('routes', identity.routeId, identity.number))) {
+        refused.push(keyOf('routes', identity.routeId, identity.number));
+      }
+      continue;
+    }
+    entries.set(identityKey(identity), entry);
+    cases.push({ hash: identity.hash, cases: caseSummaries(file) });
+    for (const url of entry.version.sources.flatMap(sourceUrls)) {
       hosts[url] = reading.hostOf(url) ?? null;
     }
   }
-  return { entries, cases, hosts, officialDomains, refused };
+  return sealRuleData({ entries, cases, hosts, officialDomains, refused });
 }
+
+/** The engine's catalog over the rules read, and every route it has a version of, in order. */
+export interface RuleEngineData {
+  readonly catalog: RouteCatalog;
+  readonly routeIds: readonly string[];
+}
+
+const engines = new WeakMap<RuleData, RuleEngineData>();
+
+/** The engine's view of the rules read, built once for each reading (spec 0002, R5). */
+export function ruleEngineData(data: RuleData): RuleEngineData {
+  let engine = engines.get(data);
+  if (engine === undefined) {
+    const { entries } = ruleContent(data);
+    engine = {
+      catalog: createRouteCatalog(entries),
+      routeIds: [...new Set([...entries.values()].map(({ identity }) => identity.routeId))].sort(),
+    };
+    engines.set(data, engine);
+  }
+  return engine;
+}
+
+/** `<kind>/<id>/<number>` of every row the reading left out: public rule identifiers only. */
+export const refusedRows = (data: RuleData): readonly string[] => ruleContent(data).refused;

@@ -72,7 +72,9 @@ ${keys.map(([id, number, hash]) => `      (${literal(id)}, ${String(number)}, ${
     RAISE EXCEPTION 'knowledge import: a stored ${what} has another content hash';
   END IF;`,
   );
-  const pinnedInsert = (name: string, idColumn: string, pinned: readonly PinnedFileRow[]) =>
+  const [lists, sets, routes] = tables(rows);
+  if (lists === undefined || sets === undefined || routes === undefined) throw new Error('Tables');
+  const pinnedInsert = ({ name, idColumn }: Table, pinned: readonly PinnedFileRow[]) =>
     `INSERT INTO "knowledge"."${name}" (${idColumn}, number, content, content_hash) VALUES
 ${pinned.map((row) => `  (${literal(row.id)}, ${String(row.number)}, ${json(row.content)}, ${literal(row.contentHash)})`).join(',\n')}
 ON CONFLICT (${idColumn}, number) DO NOTHING;`;
@@ -87,11 +89,11 @@ BEGIN
 ${checks.join('\n')}
 END
 $check$;`,
-    pinnedInsert('official_domain_list', 'list_id', rows.officialDomainLists),
-    pinnedInsert('country_set', 'set_id', rows.countrySets),
-    `INSERT INTO "knowledge"."route_version" (route_id, number, content, content_hash, cases) VALUES
+    pinnedInsert(lists, rows.officialDomainLists),
+    pinnedInsert(sets, rows.countrySets),
+    `INSERT INTO "knowledge"."${routes.name}" (${routes.idColumn}, number, content, content_hash, cases) VALUES
 ${rows.routeVersions.map((row) => `  (${literal(row.routeId)}, ${String(row.number)}, ${json(row.content)}, ${literal(row.contentHash)}, ${row.cases === null ? 'NULL' : json(row.cases)})`).join(',\n')}
-ON CONFLICT (route_id, number) DO NOTHING;`,
+ON CONFLICT (${routes.idColumn}, number) DO NOTHING;`,
   ]
     .join('\n--> statement-breakpoint\n')
     .concat('\n');

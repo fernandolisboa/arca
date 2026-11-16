@@ -117,6 +117,8 @@ The record holds public law only: no case data, no person's facts.
 
 ## The monthly run
 
+> **Stop first.** Since [#457](https://github.com/fernandolisboa/arca/issues/457) rules no longer change in the repository ([ADR-0031](../adr/0031-rule-updates-on-request.md)). A run that fires writes nothing, pushes nothing and starts no check: it ends at once with its closing message, saying the task should be paused.
+
 The owner asked for an audit every month, so that nobody has to ask for each one ([#361](https://github.com/fernandolisboa/arca/issues/361)). A scheduled task named "Monthly rule audit (Arca)" fires on the 2nd of each month, at 02:17 in São Paulo, into the project thread of the monthly audit ("Auditar as regras todo mês"). Each firing is one monthly run. The task is created, or created again after a stop, only once the owner has revoked the fine-grained GitHub token that the thread's session still holds ([SETUP.md](../SETUP.md#agent-session-and-ci)); the session that creates it confirms that with him first. The run is that thread's session, an authoring session like any other, and this section leaves it nothing to decide. The [safety rules](#safety) hold at every step, and where this section is stricter, it wins.
 
 The task sends this prompt. The copy here is the reviewed one: a change to the prompt is a pull request to this section first, then the same text in the task.
@@ -215,6 +217,8 @@ Only the owner's own message changes the schedule, and an on-demand session make
 - **The monthly run now:** the owner asks in the monthly thread, and the session follows this section as if the task had fired.
 
 ## The corrector run
+
+> **Stop first.** Since [#457](https://github.com/fernandolisboa/arca/issues/457) rules no longer change in the repository ([ADR-0031](../adr/0031-rule-updates-on-request.md)). A run that fires writes nothing, pushes nothing and starts no check: it ends at once with its closing message, saying the task should be paused.
 
 An owner-list admin files a correction request ("Pedido de correção") on a version's item, with a note and sources as leads ([ADR-0029](../adr/0029-correction-requests-and-the-corrector-session.md)). A scheduled task named "Daily correction requests (Arca)" fires every day at 07:13 in São Paulo and starts a fresh session in the cloud environment "Arca corrector", with a push notification to the owner when it ends; a project thread cannot run in another environment. Each firing is one corrector run: an authoring session like the monthly run, in that environment of its own, which holds only `ARCA_CORRECTOR_KEY` and reaches GitHub through the Claude GitHub App. Everything [the monthly run](#the-monthly-run) requires of an unwatched run holds here, except where this section says otherwise; where it is stricter, it wins.
 

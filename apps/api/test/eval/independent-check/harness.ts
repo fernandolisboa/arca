@@ -1,6 +1,7 @@
 // What the independent check evaluation reads a case through, shared with its offline test.
 import { hostMatches, identityKey, sourceUrls } from '@arca/domain';
 import type { RuleData } from '@arca/knowledge';
+import { sealRuleData } from '@arca/knowledge/bundled';
 import type { Logger } from '@arca/telemetry';
 import { answerFormat, answerText } from '../../../src/knowledge/check/answer-text.js';
 import type { RuleChecker, RuleCheckerChoice } from '../../../src/knowledge/check/checker.js';
@@ -22,7 +23,7 @@ import { type CheckCase, type Snapshot, officialHosts } from './cases.js';
 
 /** The rules one case's version is read from, as the activation view reads the stored ones. */
 export function caseRules({ entry }: CheckCase): () => Promise<RuleData> {
-  const data: RuleData = {
+  const data: RuleData = sealRuleData({
     entries: new Map([[identityKey(entry.identity), entry]]),
     cases: [],
     hosts: Object.fromEntries(
@@ -32,7 +33,7 @@ export function caseRules({ entry }: CheckCase): () => Promise<RuleData> {
       .filter(({ id }) => id === 'qm')
       .map(({ id, number }) => ({ id, number, hosts: officialHosts })),
     refused: [],
-  };
+  });
   return () => Promise.resolve(data);
 }
 

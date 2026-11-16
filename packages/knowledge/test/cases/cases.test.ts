@@ -5,7 +5,7 @@ import { caseSnapshotSchema, maxKnowledgeJsonDepth } from '@arca/domain';
 import { parseJsonSubset } from '@arca/scripts/json';
 import { describe, expect, it } from 'vitest';
 import { readKnowledgeFile } from '../../scripts/load.ts';
-import { bundledRuleData } from '../../src/bundled.ts';
+import { bundledRuleData, ruleContent } from '../../src/bundled.ts';
 import { createReproductionLookup } from '../../src/reproduction.ts';
 import { fixtureEntries, fixturesDir } from '../data.ts';
 import { runCases } from './runner.ts';
@@ -19,7 +19,7 @@ describe('table-driven cases', () => {
     const run = await runCases(
       join(packageDir, 'data'),
       familiesDir,
-      createReproductionLookup(bundledRuleData.entries),
+      createReproductionLookup(ruleContent(bundledRuleData).entries),
     );
     expect(run.problems).toEqual([]);
   }, 60_000);

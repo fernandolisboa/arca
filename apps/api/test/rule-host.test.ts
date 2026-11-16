@@ -1,5 +1,5 @@
 import { hostOf as buildHostOf } from '@arca/scripts/host';
-import { bundledRuleData } from '@arca/knowledge/bundled';
+import { bundledRuleData, ruleContent } from '@arca/knowledge/bundled';
 import { describe, expect, it } from 'vitest';
 import { hostOf } from '../src/knowledge/host.js';
 
@@ -7,7 +7,7 @@ import { hostOf } from '../src/knowledge/host.js';
 describe('hostOf', () => {
   it('answers what the build answers', () => {
     const urls = [
-      ...Object.keys(bundledRuleData.hosts),
+      ...Object.keys(ruleContent(bundledRuleData).hosts),
       'https://www.gov.example/law',
       'https://WWW.Gov.Example./a?b#c',
       'https://bücher.example/',

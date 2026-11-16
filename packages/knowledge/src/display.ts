@@ -7,7 +7,7 @@ import {
 import { z } from 'zod';
 import { parseComparisons } from './entries.js';
 import { comparisonData, comparisonHostData } from './generated/runtime.js';
-import type { RuleData } from './rule-rows.js';
+import { type RuleData, ruleContent } from './rule-rows.js';
 
 /**
  * Every version of a route, whatever its decision state, with each version's cases; and every
@@ -42,9 +42,10 @@ const comparisonHosts = hostDataSchema.parse(comparisonHostData);
  * ADR-0026), proposed and rejected ones included: route versions from the rules the API read
  * (ADR-0031), comparison versions from the bundle. Lint allows importing this entry point only
  * where that screen's view is built, never where `evaluateRoute` runs, so nothing read here reaches
- * an evaluation (spec 0002, R5).
+ * an evaluation (spec 0002, R5); the rules read are opaque everywhere else.
  */
-export function createDisplayCatalog(rules: RuleData): DisplayCatalog {
+export function createDisplayCatalog(data: RuleData): DisplayCatalog {
+  const rules = ruleContent(data);
   const all = [...rules.entries.values()];
   const byHash = new Map(rules.cases.map((entry) => [entry.hash, entry.cases]));
   const byUrl = new Map(Object.entries({ ...comparisonHosts, ...rules.hosts }));

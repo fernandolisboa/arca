@@ -8,7 +8,7 @@ import { buildKnowledge } from '../scripts/build.ts';
 import { generatedImport, importDate, importMigrationFile } from '../scripts/rule-import.ts';
 import { bundledRuleData } from '../src/bundled.ts';
 import type { Json } from '../src/canonical.ts';
-import { type RuleRows, ruleDataFromRows } from '../src/rule-rows.ts';
+import { type RuleRows, ruleContent, ruleDataFromRows } from '../src/rule-rows.ts';
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const dataDir = join(packageDir, 'data');
@@ -19,9 +19,16 @@ async function built() {
   expect(issues).toEqual([]);
   return {
     rows,
-    read: (from: RuleRows) => ruleDataFromRows(from, { countryFiles, sha256, hostOf }),
+    read: (from: RuleRows) => ruleContent(ruleDataFromRows(from, { countryFiles, sha256, hostOf })),
   };
 }
+
+const bundled = ruleContent(bundledRuleData);
+
+const routeKeys = (rows: RuleRows, routeId: string) =>
+  rows.routeVersions
+    .filter((row) => row.routeId === routeId)
+    .map((row) => `routes/${routeId}/${String(row.number)}`);
 
 const withContent = (content: Json, change: Record<string, Json>): Json => ({
   ...(content as Record<string, Json>),
@@ -33,31 +40,30 @@ describe('rule rows (ADR-0031)', () => {
     const { rows, read } = await built();
     const data = read(rows);
     expect(data.refused).toEqual([]);
-    expect([...data.entries.keys()].sort()).toEqual([...bundledRuleData.entries.keys()].sort());
+    expect([...data.entries.keys()].sort()).toEqual([...bundled.entries.keys()].sort());
     for (const [key, entry] of data.entries) {
-      expect(entry).toEqual(bundledRuleData.entries.get(key));
+      expect(entry).toEqual(bundled.entries.get(key));
     }
     expect(new Map(data.cases.map((each) => [each.hash, each.cases]))).toEqual(
-      new Map(bundledRuleData.cases.map((each) => [each.hash, each.cases])),
+      new Map(bundled.cases.map((each) => [each.hash, each.cases])),
     );
-    expect(data.hosts).toEqual(bundledRuleData.hosts);
-    expect(data.officialDomains).toEqual(
-      expect.arrayContaining([...bundledRuleData.officialDomains]),
-    );
-    expect(data.officialDomains).toHaveLength(bundledRuleData.officialDomains.length);
+    expect(data.hosts).toEqual(bundled.hosts);
+    expect(data.officialDomains).toEqual(expect.arrayContaining([...bundled.officialDomains]));
+    expect(data.officialDomains).toHaveLength(bundled.officialDomains.length);
   });
 
-  it('refuses a route version whose content no longer hashes to its stored hash', async () => {
+  it('refuses a changed route version and withholds its whole route', async () => {
     const { rows, read } = await built();
     const [first, ...rest] = rows.routeVersions;
     if (first === undefined) throw new Error('A route version expected');
     const changed = { ...first, content: withContent(first.content, { title: 'Changed' }) };
     const data = read({ ...rows, routeVersions: [changed, ...rest] });
-    expect(data.refused).toEqual([`routes/${first.routeId}/${String(first.number)}`]);
-    expect([...data.entries.values()].map(({ identity }) => identity.hash)).not.toContain(
-      first.contentHash,
+    const withheld = routeKeys(rows, first.routeId);
+    expect(new Set(data.refused)).toEqual(new Set(withheld));
+    expect([...data.entries.values()].map(({ identity }) => identity.routeId)).not.toContain(
+      first.routeId,
     );
-    expect(data.entries.size).toBe(rest.length);
+    expect(data.entries.size).toBe(rows.routeVersions.length - withheld.length);
   });
 
   it('refuses a version stored under another ID or number than its content names', async () => {
@@ -65,7 +71,10 @@ describe('rule rows (ADR-0031)', () => {
     const [first, ...rest] = rows.routeVersions;
     if (first === undefined) throw new Error('A route version expected');
     const data = read({ ...rows, routeVersions: [{ ...first, number: 999 }, ...rest] });
-    expect(data.refused).toEqual([`routes/${first.routeId}/999`]);
+    expect(data.refused).toContain(`routes/${first.routeId}/999`);
+    expect([...data.entries.values()].map(({ identity }) => identity.routeId)).not.toContain(
+      first.routeId,
+    );
   });
 
   it('refuses every set and version that pins a changed official-domain list', async () => {
@@ -84,6 +93,26 @@ describe('rule rows (ADR-0031)', () => {
     );
     expect(pinsEu.length).toBeGreaterThan(0);
     for (const row of pinsEu) {
+      expect(data.refused).toContain(`routes/${row.routeId}/${String(row.number)}`);
+    }
+  });
+
+  it('refuses every version that pins a changed country set, but not the list it pins', async () => {
+    const { rows, read } = await built();
+    const set = rows.countrySets.find(({ id }) => id === 'eu-free-movement');
+    if (set === undefined) throw new Error('The eu-free-movement set expected');
+    const changed = { ...set, content: withContent(set.content, { title: 'Changed' }) };
+    const data = read({
+      ...rows,
+      countrySets: rows.countrySets.map((each) => (each === set ? changed : each)),
+    });
+    expect(data.refused).toContain('country-sets/eu-free-movement/1');
+    expect(data.refused).not.toContain('official-domains/eu/1');
+    const pinsSet = rows.routeVersions.filter(({ content }) =>
+      JSON.stringify(content).includes('"eu-free-movement"'),
+    );
+    expect(pinsSet.length).toBeGreaterThan(0);
+    for (const row of pinsSet) {
       expect(data.refused).toContain(`routes/${row.routeId}/${String(row.number)}`);
     }
   });

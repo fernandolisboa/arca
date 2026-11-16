@@ -63,14 +63,18 @@ describe('the rule import (ADR-0031)', () => {
     expect(await counts()).toEqual(before);
   });
 
-  it('aborts when a stored row has another hash', async () => {
+  it.each([
+    ['route_version', 'route_id', 'route version'],
+    ['country_set', 'set_id', 'country set'],
+    ['official_domain_list', 'list_id', 'official-domain list'],
+  ])('aborts when a stored %s row has another hash', async (table, idColumn, what) => {
     await withClient(adminTarget(database), (client) =>
       client.query(`
-        ALTER TABLE knowledge.route_version DISABLE ROW LEVEL SECURITY;
-        UPDATE knowledge.route_version SET content_hash = repeat('0', 64)
-          WHERE (route_id, number) = (SELECT route_id, number FROM knowledge.route_version LIMIT 1);
-        ALTER TABLE knowledge.route_version ENABLE ROW LEVEL SECURITY;`),
+        ALTER TABLE knowledge.${table} DISABLE ROW LEVEL SECURITY;
+        UPDATE knowledge.${table} SET content_hash = repeat('0', 64)
+          WHERE (${idColumn}, number) = (SELECT ${idColumn}, number FROM knowledge.${table} LIMIT 1);
+        ALTER TABLE knowledge.${table} ENABLE ROW LEVEL SECURITY;`),
     );
-    await expect(runImport()).rejects.toThrow(/a stored route version has another content hash/);
+    await expect(runImport()).rejects.toThrow(`a stored ${what} has another content hash`);
   });
 });

@@ -770,7 +770,11 @@ export const routeVersion = knowledge.table(
     number: integer('number').notNull(),
     content: jsonb('content').notNull(),
     contentHash: text('content_hash').notNull(),
-    /** The version's cases file, if it has one; display only, outside the hash. */
+    /**
+     * The version's cases file, if it has one, outside the hash: the activation screen shows it and
+     * the rule summary reads it, so it must be bound to a hash before a role other than the migrator
+     * inserts rows (ADR-0031).
+     */
     cases: jsonb('cases'),
     /** Set by the database when the row is inserted. */
     insertedAt: timestamp('inserted_at', { withTimezone: true })

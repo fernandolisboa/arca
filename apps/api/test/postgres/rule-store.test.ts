@@ -1,5 +1,5 @@
 import { identityKey, parseCalendarDate } from '@arca/domain';
-import { bundledRuleData, routeCatalog, routeIds } from '@arca/knowledge/bundled';
+import { bundledRuleData, routeCatalog, routeIds, ruleContent } from '@arca/knowledge/bundled';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
@@ -27,13 +27,14 @@ const states = new Map(
 describe('the rule store (ADR-0031)', () => {
   it('reads every imported version with the hash, cases and hosts the bundle held', async () => {
     const store = postgresRuleStore(() => testDatabase.apiDb, silentLogger);
-    const data = await store.data();
+    const data = ruleContent(await store.data());
+    const bundled = ruleContent(bundledRuleData);
     expect(data.refused).toEqual([]);
-    expect(new Map(data.entries)).toEqual(new Map(bundledRuleData.entries));
+    expect(new Map(data.entries)).toEqual(new Map(bundled.entries));
     expect(new Map(data.cases.map(({ hash, cases }) => [hash, cases]))).toEqual(
-      new Map(bundledRuleData.cases.map(({ hash, cases }) => [hash, cases])),
+      new Map(bundled.cases.map(({ hash, cases }) => [hash, cases])),
     );
-    expect(data.hosts).toEqual(bundledRuleData.hosts);
+    expect(data.hosts).toEqual(bundled.hosts);
     const engine = await store.engine();
     expect(engine.routeIds).toEqual(routeIds);
     for (const routeId of routeIds) {
@@ -58,13 +59,13 @@ describe('the rule store (ADR-0031)', () => {
     expect(await fromDatabase.view(first, 1)).toEqual(await fromBundle.view(first, 1));
   });
 
-  it('reads the rows again only once one is added, and leaves out and logs a changed row', async () => {
+  it("reads the rows again only once one is added, and withholds and logs a changed row's route", async () => {
     const logged: unknown[] = [];
     const logger: Logger = { info: () => undefined, error: (entry) => logged.push(entry) };
     const store = postgresRuleStore(() => testDatabase.apiDb, logger);
     const first = await store.data();
     expect(await store.data()).toBe(first);
-    const [row] = bundledRuleData.entries.values();
+    const [row] = ruleContent(bundledRuleData).entries.values();
     if (row === undefined) throw new Error('No version');
     const { routeId, number } = row.identity;
     // Behind the grants, as only an owner connection could: a copy of a version with a new title.
@@ -81,8 +82,36 @@ describe('the rule store (ADR-0031)', () => {
     });
     const after = await store.data();
     expect(after).not.toBe(first);
-    expect(after.refused).toEqual([`routes/${routeId}/999`]);
-    expect(after.entries.size).toBe(first.entries.size);
+    const versions = routeCatalog.identities(routeId);
+    expect(new Set(ruleContent(after).refused)).toEqual(
+      new Set(
+        [999, ...versions.map((each) => each.number)].map((n) => `routes/${routeId}/${String(n)}`),
+      ),
+    );
+    expect(ruleContent(after).entries.size).toBe(ruleContent(first).entries.size - versions.length);
+    expect((await store.engine()).routeIds).not.toContain(routeId);
     expect(logged).toEqual([{ errorName: 'KnowledgeRowRefused' }]);
+  });
+
+  it('refuses, on a fresh read, a version changed in place behind the grants', async () => {
+    const [row] = ruleContent(bundledRuleData).entries.values();
+    if (row === undefined) throw new Error('No version');
+    const { routeId, number } = row.identity;
+    await testDatabase.asAdmin(async (client) => {
+      await client.query(`ALTER TABLE knowledge.route_version DISABLE ROW LEVEL SECURITY`);
+      await client.query(
+        `UPDATE knowledge.route_version SET content = jsonb_set(content, '{title}', '"Changed"')
+          WHERE route_id = $1 AND number = $2`,
+        [routeId, number],
+      );
+      await client.query(`ALTER TABLE knowledge.route_version ENABLE ROW LEVEL SECURITY`);
+    });
+    const data = ruleContent(
+      await postgresRuleStore(() => testDatabase.apiDb, silentLogger).data(),
+    );
+    expect(data.refused).toContain(`routes/${routeId}/${String(number)}`);
+    expect([...data.entries.values()].some(({ identity }) => identity.routeId === routeId)).toBe(
+      false,
+    );
   });
 });

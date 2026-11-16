@@ -5,6 +5,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import {
+  apiRuleTestFiles,
+  apiRuntimeRules,
   client,
   contractSurface,
   contractSurfaceFiles,
@@ -48,7 +50,7 @@ const restrictionsByKind = {
   /** apps/web: the API contract only through its client entry. */
   web: [web],
   /** apps/api: workflows start only through the shared helper; no AI Gateway. */
-  api: [workflowStart, modelGateway],
+  api: [workflowStart, modelGateway, apiRuntimeRules],
   /** packages/api-contract: ./routes and ./client import no Hono (restricted per file below). */
   contract: [],
   /** packages/db: the role pool, the one place a database driver is imported (R7). */
@@ -142,14 +144,26 @@ export function arcaConfig({ rootDir, kinds = [] }) {
       ? { files: [workflowStartHelper], rules: scoped([workflowStart]) }
       : [],
     kinds.includes('api') ? { files: [credentialReader], rules: scoped([credentialRows]) } : [],
+    kinds.includes('api') ? { files: apiRuleTestFiles, rules: scoped([apiRuntimeRules]) } : [],
     restrictions.includes(databaseDrivers)
       ? {
           files: kinds.includes('db') ? databaseDriverFiles : databaseTestFiles,
-          rules: scoped([databaseDrivers]),
+          rules: scoped([databaseDrivers, apiRuntimeRules]),
         }
       : [],
-    { files: reproductionLookupFiles, rules: scoped([reproductionLookup], [reproductionReexport]) },
-    { files: displayLookupFiles, rules: scoped([displayLookup], [displayReexport]) },
+    ...[
+      { files: reproductionLookupFiles, exempt: reproductionLookup, added: reproductionReexport },
+      { files: displayLookupFiles, exempt: displayLookup, added: displayReexport },
+    ].map(({ files, exempt, added }) => [
+      { files, rules: scoped([exempt], [added]) },
+      // Their tests also keep the API tests' exemption above, since this block replaces it.
+      {
+        files: files.filter((file) =>
+          apiRuleTestFiles.some((tests) => file.startsWith(tests.replace('**', ''))),
+        ),
+        rules: scoped([exempt, apiRuntimeRules], [added]),
+      },
+    ]),
     kinds.includes('knowledge')
       ? [
           {

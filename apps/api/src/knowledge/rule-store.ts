@@ -1,13 +1,14 @@
 import { createHash } from 'node:crypto';
 import type { Database } from '@arca/db';
 import { countrySet, officialDomainList, routeVersion } from '@arca/db/knowledge-schema';
-import type { RouteCatalog } from '@arca/domain';
 import {
   type Json,
   type RuleData,
+  type RuleEngineData,
   countryFiles,
-  createRouteCatalog,
+  refusedRows,
   ruleDataFromRows,
+  ruleEngineData,
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { sql } from 'drizzle-orm';
@@ -24,21 +25,19 @@ export interface RuleStore {
   readonly engine: () => Promise<RuleEngineData>;
 }
 
-export interface RuleEngineData {
-  readonly catalog: RouteCatalog;
-  readonly routeIds: readonly string[];
-}
+export type { RuleEngineData };
 
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
 
 /**
  * Reads the rule rows on the given pool. Rows are insert-only, so the row counts tell whether
- * anything was added: the rows are read and their hashes recomputed again only then, and a row that
- * does not hash to its stored hash is left out and logged, never evaluated.
+ * anything was added: the rows are read and their hashes recomputed again only then. A change made
+ * in place behind the grants keeps the counts, so a running instance keeps the content it already
+ * verified, and the next cold start refuses the changed row. A refused row's route is left out
+ * whole and logged, never evaluated.
  */
 export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore {
   let cached: { counts: string; data: Promise<RuleData> } | undefined;
-  const derived = new WeakMap<RuleData, RuleEngineData>();
 
   const read = async (): Promise<RuleData> => {
     const rows = await db().transaction(
@@ -86,7 +85,7 @@ export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore
       },
       { countryFiles, sha256, hostOf },
     );
-    if (data.refused.length > 0) logger.error({ errorName: 'KnowledgeRowRefused' });
+    if (refusedRows(data).length > 0) logger.error({ errorName: 'KnowledgeRowRefused' });
     return data;
   };
 
@@ -108,20 +107,7 @@ export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore
     return cached.data;
   };
 
-  const engine = async (): Promise<RuleEngineData> => {
-    const current = await data();
-    let known = derived.get(current);
-    if (known === undefined) {
-      known = {
-        catalog: createRouteCatalog(current.entries),
-        routeIds: [
-          ...new Set([...current.entries.values()].map(({ identity }) => identity.routeId)),
-        ].sort(),
-      };
-      derived.set(current, known);
-    }
-    return known;
-  };
+  const engine = async (): Promise<RuleEngineData> => ruleEngineData(await data());
 
   return { data, engine };
 }

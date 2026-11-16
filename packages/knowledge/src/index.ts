@@ -8,14 +8,15 @@ import { comparisonData, countryData, countryFileData, guideData } from './gener
 
 export { createRouteCatalog } from './catalog.js';
 export {
-  type OfficialDomainHosts,
   type PinnedFileRow,
   type RouteVersionRow,
   type RuleData,
+  type RuleEngineData,
   type RuleRowReading,
   type RuleRows,
-  type VersionCases,
+  refusedRows,
   ruleDataFromRows,
+  ruleEngineData,
 } from './rule-rows.js';
 export type { Json } from './canonical.js';
 

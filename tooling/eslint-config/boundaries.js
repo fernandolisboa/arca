@@ -159,6 +159,25 @@ export const rawCatalog = {
   ],
 };
 
+/**
+ * apps/api source: the rules come from the database (ADR-0031), so neither the bundled rules nor
+ * the build tooling reach the server bundle. Tests may read both.
+ *
+ * @type {Restrictions}
+ */
+export const apiRuntimeRules = {
+  patterns: [
+    {
+      regex: '^(?:@arca/knowledge/bundled|@arca/scripts(?:/.*)?)$',
+      message:
+        'The API reads rules from the database; only tests import the bundled rules or the build tooling (ADR-0031).',
+    },
+  ],
+};
+
+/** The apps/api files allowed to import the bundled rules and the build tooling. */
+export const apiRuleTestFiles = ['test/**'];
+
 const reproductionOnly =
   'Modules named reproduction are the reproduction path: they ignore decision states, so only the cases runner and the reproduction path import them (spec 0002, R5).';
 // The lookup's entry point, and any relative import of a module or folder named reproduction.

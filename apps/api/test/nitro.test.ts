@@ -2,7 +2,7 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { bundledRuleData } from '@arca/knowledge/bundled';
+import { bundledRuleData, ruleContent } from '@arca/knowledge/bundled';
 import { securityHeaders } from '@arca/security-policy';
 import { build, copyPublicAssets, createNitro, prepare } from 'nitro/builder';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -57,7 +57,9 @@ describe('the server bundle (ADR-0031)', () => {
     const files = (await readdir(serverDir, { recursive: true })).filter((file) =>
       /\.m?js$/.test(file),
     );
-    const titles = [...bundledRuleData.entries.values()].map(({ version }) => version.title);
+    const titles = [...ruleContent(bundledRuleData).entries.values()].map(
+      ({ version }) => version.title,
+    );
     expect(titles.length).toBeGreaterThan(0);
     for (const file of files) {
       const code = await readFile(join(serverDir, file), 'utf8');
