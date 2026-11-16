@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { createApp, createRouter } from '../src/app.js';
 import type { CheckDatabase } from '../src/database-health.js';
 import type { AuthService } from '../src/auth/service.js';
-import type { VersionChecks } from '../src/knowledge/checks.js';
 import { createLogger, type Logger } from '@arca/telemetry';
 import { noLimits } from './limits.js';
 
@@ -252,18 +251,11 @@ describe('errors', () => {
 describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
   const secret = 'cron-secret-for-tests';
 
-  function cronSetup(readSecret: () => string = () => secret, withChecks = true) {
+  function cronSetup(readSecret: () => string = () => secret) {
     const started: string[] = [];
-    const versionChecks = {
-      start: () => {
-        started.push('rule-checks');
-        return Promise.resolve(2);
-      },
-    } as unknown as VersionChecks;
     const app = createApp({
       checkDatabase: () => Promise.resolve('ok'),
       logger: silentLogger,
-      ...(withChecks ? { versionChecks } : {}),
       cron: {
         readSecret,
         startHeartbeat: (runDate) => {
@@ -326,13 +318,6 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     const response = await call(`Bearer ${secret}`, '/internal/cron/rate-limit-sweep');
     expect(response.status).toBe(204);
     expect(started).toEqual(['sweep']);
-  });
-
-  it('starts no rule check from a cron: a check runs only when an admin asks for one', async () => {
-    const { call, started } = cronSetup();
-    const response = await call(`Bearer ${secret}`, '/internal/cron/rule-checks');
-    expect(response.status).toBe(404);
-    expect(started).toEqual([]);
   });
 
   it('starts the erasures that are due daily, behind the same token (spec 0004, R9)', async () => {

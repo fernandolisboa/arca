@@ -1535,11 +1535,6 @@ export function createApp({
     ]);
     return c.json({ versions, comparisons: [...comparisons] }, 200);
   });
-  v1.openapi(openApiRoutes.startVersionChecks, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    return c.json({ started: versionChecks === undefined ? 0 : await versionChecks.start() }, 200);
-  });
   v1.openapi(openApiRoutes.startQueuedChecks, async (c) => {
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;

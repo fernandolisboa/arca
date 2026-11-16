@@ -34,8 +34,7 @@ export interface RequestedCheckStart {
 }
 
 /**
- * The start ledger (ADR-0027): automatic starts within their share of any 24 hours, never two
- * live for a version.
+ * The start ledger (ADR-0027): an admin's starts, never two live for a version.
  */
 export interface CheckStarts {
   /**
