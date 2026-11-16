@@ -58,7 +58,7 @@ function decisions(
     db: testDatabase.apiDb,
     authDb: () => testDatabase.authDb,
     audit: auditLog(testDatabase.auditDb),
-    catalog: identities,
+    catalog: () => Promise.resolve(identities),
     comparisons,
     role: adminRole(() => testDatabase.apiDb, owners),
     origin,

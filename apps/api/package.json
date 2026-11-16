@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@arca/eslint-config": "workspace:*",
+    "@arca/scripts": "workspace:*",
     "@arca/security-policy": "workspace:*",
     "@arca/tsconfig": "workspace:*",
     "@types/node": "catalog:",

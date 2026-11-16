@@ -136,7 +136,12 @@ export const databaseTestFiles = ['test/postgres/**', 'e2e/postgres/**'];
 export const knowledgeRuntimeFiles = ['src/**'];
 
 /** The knowledge runtime files that read the built catalog, each behind its own entry point. */
-export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', 'src/display.ts'];
+export const knowledgeCatalogReaders = [
+  'src/index.ts',
+  'src/bundled.ts',
+  'src/reproduction.ts',
+  'src/display.ts',
+];
 
 /**
  * packages/knowledge: only the entry points read the built catalog, so no other module can hand
@@ -147,9 +152,9 @@ export const knowledgeCatalogReaders = ['src/index.ts', 'src/reproduction.ts', '
 export const rawCatalog = {
   patterns: [
     {
-      regex: '(?:^|/)generated/catalog(?:\\.[jt]s)?$',
+      regex: '(?:^|/)generated/(?:catalog|runtime)(?:\\.[jt]s)?$',
       message:
-        'Only the entry points read the built catalog; the runtime reaches it through routeCatalog (spec 0002, R5).',
+        'Only the entry points read the built catalog; the API reads rules from the database (spec 0002, R5; ADR-0031).',
     },
   ],
 };

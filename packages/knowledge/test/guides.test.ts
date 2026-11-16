@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge, catalogModule, formatIssue } from '../scripts/build.ts';
+import { buildKnowledge, formatIssue, runtimeModule } from '../scripts/build.ts';
 import { createGuideLookup } from '../src/guides.ts';
 import { baseTree, buildDate, emptyHashes, fixtures, writeTree } from './data.ts';
 
@@ -127,9 +127,9 @@ describe('country guides in the build (ADR-0027)', () => {
     expect(guides).toEqual([]);
   });
 
-  it('puts the guides in the catalog module as data', async () => {
+  it('puts the guides in the runtime module as data', async () => {
     const { entries, guides } = await build(withGuides(guide()));
-    const module = catalogModule({ entries, guides });
+    const module = runtimeModule({ entries, guides });
     const literal = /^export const guideData: unknown = JSON\.parse\((.*)\);$/m.exec(module)?.[1];
     expect(JSON.parse(JSON.parse(literal ?? '') as string)).toEqual(guides);
   });

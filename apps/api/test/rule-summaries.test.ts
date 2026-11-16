@@ -1,4 +1,5 @@
 import { identityKey, parseCalendarDate } from '@arca/domain';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import type { LogEntry, Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createRuleSummaries } from '../src/knowledge/summaries.js';
@@ -15,6 +16,7 @@ import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 const catalog = await createKnowledgeVersions({
   states: () => Promise.resolve(new Map()),
   today: () => parseCalendarDate('2026-11-06'),
+  rules: () => Promise.resolve(bundledRuleData),
 }).list();
 const [firstListed, secondListed] = catalog;
 if (firstListed === undefined || secondListed === undefined) {
@@ -42,6 +44,7 @@ function setup(
   const versions = createKnowledgeVersions({
     states: () => Promise.resolve(new Map([[firstKey, state]])),
     today: () => parseCalendarDate('2026-11-06'),
+    rules: () => Promise.resolve(bundledRuleData),
   });
   const sent: string[] = [];
   const summarizer: Summarizer = {

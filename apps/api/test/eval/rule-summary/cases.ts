@@ -1,6 +1,7 @@
 // The rule summary evaluation's cases (ADR-0025): the newest version of every bundled route, public
 // rule data, and copies of one carrying instructions in its own text.
 import { parseCalendarDate, type VersionView } from '@arca/domain';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import { summaryContent } from '../../../src/knowledge/version-content.js';
 import { createKnowledgeVersions } from '../../../src/knowledge/versions.js';
 import { newestOfEachRoute } from '../newest-versions.js';
@@ -15,6 +16,7 @@ export interface SummaryCase {
 const versions = createKnowledgeVersions({
   states: () => Promise.resolve(new Map()),
   today: () => parseCalendarDate('2026-11-06'),
+  rules: () => Promise.resolve(bundledRuleData),
 });
 
 const injections = [

@@ -560,6 +560,24 @@ export const registry: Registry = {
         "A model's summary of a route version's public content for the admin (ADR-0025), keyed by the version's hash, prompt and model; it names no account.",
     },
     {
+      table: 'knowledge.route_version',
+      personalData: 'none',
+      reason:
+        'A route version (ADR-0031): public rule content, its content hash and its synthetic cases; it names no account.',
+    },
+    {
+      table: 'knowledge.country_set',
+      personalData: 'none',
+      reason:
+        'A country set (ADR-0031): public rule content and its content hash; it names no account.',
+    },
+    {
+      table: 'knowledge.official_domain_list',
+      personalData: 'none',
+      reason:
+        'An official-domain list (ADR-0031): the hosts of public bodies and its content hash; it names no account.',
+    },
+    {
       table: 'cases.case_file',
       personalData: 'none',
       reason: 'A case: its ID and creation time only; it ends with its last member.',

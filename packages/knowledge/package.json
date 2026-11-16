@@ -15,6 +15,10 @@
     "./reproduction": {
       "types": "./dist/reproduction.d.ts",
       "default": "./dist/reproduction.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "default": "./dist/bundled.js"
     }
   },
   "scripts": {
@@ -25,7 +29,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "staleness-report": "node scripts/staleness-report.ts"
+    "staleness-report": "node scripts/staleness-report.ts",
+    "import:sql": "node scripts/rule-import.ts"
   },
   "dependencies": {
     "@arca/domain": "workspace:*",

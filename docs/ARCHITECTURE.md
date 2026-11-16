@@ -54,7 +54,9 @@ packages/
                 the personal-data registry and the synthetic seed
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
                 lists, the countries files, and the country indicators and comparison versions of the
-                destination comparison; validated, hashed and bundled into the API until the import ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md),
+                destination comparison; validated and hashed; route versions, country sets and official-domain
+                lists were imported once into the database, which the API reads, and the rest is bundled
+                into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md),
                 [ADR-0026](adr/0026-destination-comparison-data.md))
   telemetry/    the one scrubber every log, error, trace and LLM-trace exporter uses (ADR-0016)
   vault/        client-side document encryption in the age format (ADR-0018); never used by the API

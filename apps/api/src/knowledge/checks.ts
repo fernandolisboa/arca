@@ -108,7 +108,7 @@ const openProposal = ({
 
 export interface VersionCheckSettings {
   readonly versions: KnowledgeVersions;
-  readonly subject: (routeId: string, number: number) => CheckSubject | undefined;
+  readonly subject: (routeId: string, number: number) => Promise<CheckSubject | undefined>;
   readonly guide: (country: string) => CountryGuideEntry | undefined;
   /** What today's reports are stored under. */
   readonly checker: Pick<RuleCheckerChoice, 'model' | 'promptVersion'>;
@@ -175,7 +175,7 @@ export function createVersionChecks({
     startQueued: () => startDue('/v1/knowledge/checks/start-queued', 'admin'),
 
     async startOne(routeId, number) {
-      if (subject(routeId, number) === undefined) return { ok: false, reason: 'not_found' };
+      if ((await subject(routeId, number)) === undefined) return { ok: false, reason: 'not_found' };
       const requested = await starts.request({ routeId, number });
       if (!requested.began) return { ok: true, started: false };
       return (await runAll([requested.start], '/v1/knowledge/versions/check/start'))
@@ -184,7 +184,7 @@ export function createVersionChecks({
     },
 
     async progress(routeId, number) {
-      const found = subject(routeId, number);
+      const found = await subject(routeId, number);
       if (found === undefined) return { ok: false, reason: 'not_found' };
       const own = ofVersion(routeId, number);
       const [recent, stored] = await Promise.all([starts.recent(), reports.list()]);
@@ -256,7 +256,7 @@ export function createVersionChecks({
           const own = ofVersion(routeId, number);
           const key = keyOf(hash, country);
           const current = currentReport(own(stored), key, time);
-          const entry = subject(routeId, number)?.entry;
+          const entry = (await subject(routeId, number))?.entry;
           if (
             current === undefined ||
             entry === undefined ||
@@ -290,7 +290,7 @@ export function createVersionChecks({
     },
 
     async report(routeId, number) {
-      const found = subject(routeId, number);
+      const found = await subject(routeId, number);
       if (found === undefined) return { ok: false, reason: 'not_found' };
       const { identity, version } = found.entry;
       const key = keyOf(identity.hash, version.country);

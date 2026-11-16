@@ -12,15 +12,15 @@ import {
 import type { CaseEvaluationsView } from './evaluations.js';
 import type { CaseRows } from './view.js';
 
-/** What a request's evaluations were computed as of: the decision states and today. */
+/** What a request's evaluations were computed as of: the decision states, today and the routes. */
 export interface EvaluatedAsOf {
   readonly states: DecisionStates;
   readonly today: CalendarDate;
+  readonly routeIds: readonly string[];
 }
 
 export interface ComparisonSettings extends EvaluatedAsOf {
   readonly catalog: ComparisonCatalog;
-  readonly routeIds: readonly string[];
 }
 
 /**

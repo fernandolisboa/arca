@@ -5,7 +5,8 @@ import { caseSnapshotSchema, maxKnowledgeJsonDepth } from '@arca/domain';
 import { parseJsonSubset } from '@arca/scripts/json';
 import { describe, expect, it } from 'vitest';
 import { readKnowledgeFile } from '../../scripts/load.ts';
-import { createReproductionLookup, reproductionEntry } from '../../src/reproduction.ts';
+import { bundledRuleData } from '../../src/bundled.ts';
+import { createReproductionLookup } from '../../src/reproduction.ts';
 import { fixtureEntries, fixturesDir } from '../data.ts';
 import { runCases } from './runner.ts';
 
@@ -15,7 +16,11 @@ const familiesDir = join(packageDir, '..', '..', 'eval', 'families');
 describe('table-driven cases', () => {
   // Every route version adds cases, and a full `pnpm check` shares the machine with other tasks.
   it('pass for every version in the knowledge base, with coverage', async () => {
-    const run = await runCases(join(packageDir, 'data'), familiesDir, reproductionEntry);
+    const run = await runCases(
+      join(packageDir, 'data'),
+      familiesDir,
+      createReproductionLookup(bundledRuleData.entries),
+    );
     expect(run.problems).toEqual([]);
   }, 60_000);
 

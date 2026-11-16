@@ -6,6 +6,7 @@
  * the check can be judged on the real rules. It reads live official sites, so two runs may differ.
  */
 import { appendFileSync } from 'node:fs';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import { parseCalendarDate } from '@arca/domain';
 import { countryGuide } from '@arca/knowledge';
 import { expect, it } from 'vitest';
@@ -74,6 +75,7 @@ async function newestVersions(): Promise<Version[]> {
     states: () => Promise.resolve(new Map()),
     // The listing wants a date for the state it shows; which version is newest does not use it.
     today: () => parseCalendarDate(new Date().toISOString().slice(0, 10)),
+    rules: () => Promise.resolve(bundledRuleData),
   });
   const newest = newestOfEachRoute(await versions.list());
   const requested = requestedRoutes(newest.map(({ routeId }) => routeId));
@@ -166,7 +168,7 @@ it('checks the newest version of every bundled route against its live official p
   const usage = noUsage();
   const store = memoryCheckReportStore();
   const check = createVersionCheck({
-    subject: createCheckSubjects(),
+    subject: createCheckSubjects(() => Promise.resolve(bundledRuleData)),
     guide: countryGuide,
     fetcher: httpsSourceFetcher(),
     copies: noPageCopies,

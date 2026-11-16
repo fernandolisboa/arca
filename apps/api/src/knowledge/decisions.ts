@@ -40,7 +40,7 @@ export type DecisionTarget =
 export interface KnowledgeDecisions {
   /**
    * Activates or rejects one version (spec 0007, R7; ADR-0026) for a signed-in admin, with no
-   * step-up (ADR-0027), on the version's hash in the bundled catalog.
+   * step-up (ADR-0027), on the version's hash in the stored rules (ADR-0031).
    */
   readonly decide: (
     signedIn: SignedIn,
@@ -60,7 +60,8 @@ export interface KnowledgeDecisionSettings {
    */
   readonly authDb: () => Database;
   readonly audit: AuditLog;
-  readonly catalog: Pick<RouteCatalog, 'identities'>;
+  /** The route catalog over the stored rules (ADR-0031), read when a decision needs it. */
+  readonly catalog: () => Promise<Pick<RouteCatalog, 'identities'>>;
   /** The only place a comparison hash is taken from: an indicator's hash alone is never decided. */
   readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
   /** Who is an admin: the owner list and the role's history (ADR-0027). */
@@ -100,8 +101,8 @@ function sessionCounts(row: DecisionRow, history: AdminHistory): boolean {
   }
 }
 
-/** A version from the bundled catalog with its subject kind; a route's carries what it corrects. */
-type BundledVersion =
+/** A version from the stored rules with its subject kind; a route's carries what it corrects. */
+type KnownVersion =
   | { readonly subject: 'route'; readonly identity: VersionIdentity }
   | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
 
@@ -266,10 +267,10 @@ export function createKnowledgeDecisions({
     return decisionStates(decisions.filter((each) => each !== undefined));
   };
 
-  /** The target's identity in the bundled catalog: the only source of a hash to decide on. */
-  const bundled = (target: DecisionTarget): BundledVersion | undefined => {
+  /** The target's identity in the stored rules: the only source of a hash to decide on. */
+  const versionOf = async (target: DecisionTarget): Promise<KnownVersion | undefined> => {
     if (target.subject === 'route') {
-      const identity = catalog
+      const identity = (await catalog())
         .identities(target.routeId)
         .find(({ number }) => number === target.number);
       return identity === undefined ? undefined : { subject: 'route', identity };
@@ -316,7 +317,7 @@ export function createKnowledgeDecisions({
     decide: async ({ accountId }, kind, target) => {
       // Anyone else learns nothing about the catalog; the storing transaction checks again.
       if (!(await role.isAdmin(accountId))) return { refused: 'not_admin' };
-      const decided = bundled(target);
+      const decided = await versionOf(target);
       if (decided === undefined) return { refused: 'not_found' };
       if ((await states()).get(decidedKey(decided)) === 'rejected') {
         return { refused: 'already_rejected' };

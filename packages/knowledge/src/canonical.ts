@@ -1,10 +1,13 @@
-import type { Json } from '@arca/scripts/json';
+/** A JSON value as the knowledge data holds it. */
+export type Json =
+  null | boolean | number | string | readonly Json[] | { readonly [key: string]: Json };
 
 /**
- * RFC 8785 (JCS) serialization, with no Node dependency so the web client can use it later (spec
- * 0002, Versions). ECMAScript's own string and number serialization is the one the RFC specifies
- * (section 3.2.2), so `JSON.stringify` serializes primitives; what JCS adds is sorting keys by
- * UTF-16 code units and refusing lone surrogates and non-finite numbers.
+ * RFC 8785 (JCS) serialization (spec 0002, Versions), with no Node dependency so the runtime stays
+ * pure. ECMAScript's own string and number
+ * serialization is the one the RFC specifies (section 3.2.2), so `JSON.stringify` serializes
+ * primitives; what JCS adds is sorting keys by UTF-16 code units and refusing lone surrogates and
+ * non-finite numbers.
  */
 export function canonicalize(value: Json): string {
   if (value === null || typeof value === 'boolean') return JSON.stringify(value);

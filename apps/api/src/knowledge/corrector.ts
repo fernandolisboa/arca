@@ -25,7 +25,7 @@ import type { StepUpSpender } from '../auth/step-up.js';
 import type { AuditLog } from '../audit/log.js';
 import type { ObjectStorage } from '../storage/object-storage.js';
 import { type AdminRole, readAdminHistory } from './admins.js';
-import type { KnowledgeVersions } from './versions.js';
+import { type KnowledgeVersions, identitiesOf } from './versions.js';
 
 /** How long a key works after it is made (ADR-0029); the database enforces the same year. */
 const keyLifetimeYears = 1;
@@ -172,11 +172,15 @@ export function createCorrector({
         SELECT * FROM knowledge.corrector_request_queue(${key.id}::uuid, ${key.digest})`),
       states(),
     ]);
+    const identities = await identitiesOf(
+      versions,
+      rows.flatMap(({ route_id }) => route_id ?? []),
+    );
     return rows.flatMap((row) => {
       const state = correctionState({
         versionNumber: row.version_number,
         events: row.events,
-        identities: row.route_id === null ? [] : versions.identities(row.route_id),
+        identities: row.route_id === null ? [] : (identities.get(row.route_id) ?? []),
         states: decided,
       });
       if (state !== 'open' && state !== 'taken') return [];
@@ -392,7 +396,7 @@ export function createCorrector({
       versionNumber: request.versionNumber,
       state: request.state,
       answer,
-      identities: proposedRoute === null ? [] : versions.identities(proposedRoute),
+      identities: proposedRoute === null ? [] : await versions.identities(proposedRoute),
       states: decided,
     });
     if (refusal !== undefined) return refusal === 'wrong_state' ? refusal : 'invalid_version';

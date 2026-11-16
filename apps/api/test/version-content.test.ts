@@ -1,5 +1,6 @@
 import { parseCalendarDate } from '@arca/domain';
 import { countryGuide } from '@arca/knowledge';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import { describe, expect, it } from 'vitest';
 import { checkContent, guideContent, summaryContent } from '../src/knowledge/version-content.js';
 import { createKnowledgeVersions } from '../src/knowledge/versions.js';
@@ -8,6 +9,7 @@ import { createKnowledgeVersions } from '../src/knowledge/versions.js';
 const versions = createKnowledgeVersions({
   states: () => Promise.resolve(new Map()),
   today: () => parseCalendarDate('2026-11-06'),
+  rules: () => Promise.resolve(bundledRuleData),
 });
 const [listed] = await versions.list();
 if (listed === undefined) throw new Error('the catalog is empty');

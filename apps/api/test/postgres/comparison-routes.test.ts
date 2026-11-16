@@ -8,7 +8,8 @@ import {
   identityKey,
   parseCalendarDate,
 } from '@arca/domain';
-import { comparisonCatalog, routeCatalog, routeIds } from '@arca/knowledge';
+import { comparisonCatalog } from '@arca/knowledge';
+import { routeCatalog, routeIds } from '@arca/knowledge/bundled';
 import type { Logger } from '@arca/telemetry';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
@@ -58,8 +59,7 @@ function setup({ states = [...routesActive, comparisonActive], comparisons }: Se
     today: () => new Date('2026-11-07T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: [] },
     evaluation: {
-      catalog: routeCatalog,
-      routeIds,
+      rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisons ?? comparisonCatalog,
       states: () => Promise.resolve(new Map(states)),
       today: () => parseCalendarDate('2026-11-07'),

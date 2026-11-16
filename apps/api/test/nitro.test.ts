@@ -1,7 +1,8 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { bundledRuleData } from '@arca/knowledge/bundled';
 import { securityHeaders } from '@arca/security-policy';
 import { build, copyPublicAssets, createNitro, prepare } from 'nitro/builder';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -49,6 +50,21 @@ function expectSecurityHeaders(response: Response) {
     expect(response.headers.get(name), name).toBe(value);
   }
 }
+
+describe('the server bundle (ADR-0031)', () => {
+  it('ships no route version: the API reads the rules from the database', async () => {
+    const serverDir = join(workDir, 'standard', 'server');
+    const files = (await readdir(serverDir, { recursive: true })).filter((file) =>
+      /\.m?js$/.test(file),
+    );
+    const titles = [...bundledRuleData.entries.values()].map(({ version }) => version.title);
+    expect(titles.length).toBeGreaterThan(0);
+    for (const file of files) {
+      const code = await readFile(join(serverDir, file), 'utf8');
+      for (const title of titles) expect(code.includes(title), file).toBe(false);
+    }
+  });
+});
 
 describe('one origin (spec 0001, R4)', () => {
   it('serves the SPA with every security header', async () => {

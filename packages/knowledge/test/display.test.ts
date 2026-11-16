@@ -1,6 +1,9 @@
 import { hostMatches, parseCalendarDate, versionView } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
-import { displayCatalog } from '../src/display.ts';
+import { bundledRuleData } from '../src/bundled.ts';
+import { createDisplayCatalog } from '../src/display.ts';
+
+const displayCatalog = createDisplayCatalog(bundledRuleData);
 
 const routes = [...new Set(displayCatalog.entries().map(({ identity }) => identity.routeId))];
 

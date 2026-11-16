@@ -1,11 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import {
-  comparisonCatalog,
-  countryGuide,
-  pinnedCountries,
-  routeCatalog,
-  routeIds,
-} from '@arca/knowledge';
+import { comparisonCatalog, countryGuide, pinnedCountries } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -34,6 +28,7 @@ import { authService, type AuthService } from './auth/service.js';
 import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
+import { postgresRuleStore } from './knowledge/rule-store.js';
 import { createCorrections } from './knowledge/corrections.js';
 import { createCorrector } from './knowledge/corrector.js';
 import { routineCorrectorRun } from './knowledge/corrector-run.js';
@@ -128,6 +123,9 @@ const lazyAudit: Pick<AuditLog, 'record'> = {
   record: async (entry) => (await authParts()).audit.record(entry),
 };
 
+/** The rules in the database (ADR-0031), read on the app_api pool. */
+const rules = postgresRuleStore(() => connected().db, logger);
+
 /** Who is an admin (ADR-0027): the owner list, then the role's history on the app_api pool. */
 const role = adminRole(() => connected().db, ownerList[environment]);
 
@@ -142,7 +140,7 @@ function knowledgeDecisions(): KnowledgeDecisions {
     db: connected().db,
     authDb: authConnection,
     audit: lazyAudit,
-    catalog: routeCatalog,
+    catalog: async () => (await rules.engine()).catalog,
     comparisons: comparisonCatalog,
     role,
     origin: readAuthOrigin(),
@@ -323,6 +321,7 @@ const intake =
 const knowledgeVersions = createKnowledgeVersions({
   states: () => knowledgeDecisions().states(),
   today: () => todayInSaoPaulo(),
+  rules: rules.data,
 });
 const ruleChecker = ruleCheckerFor(environment, readAnthropicApiKey());
 const versionChecks =
@@ -330,7 +329,7 @@ const versionChecks =
     ? undefined
     : createVersionChecks({
         versions: knowledgeVersions,
-        subject: createCheckSubjects(),
+        subject: createCheckSubjects(rules.data),
         guide: countryGuide,
         checker: ruleChecker,
         reports: postgresCheckReportStore(() => connected().db),
@@ -527,8 +526,7 @@ const app = createApp({
     today: () => new Date(),
     countries: pinnedCountries,
     evaluation: {
-      catalog: routeCatalog,
-      routeIds,
+      rules: rules.engine,
       comparisons: comparisonCatalog,
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { canonicalize } from '../scripts/canonical.ts';
+import { canonicalize } from '../src/canonical.ts';
 import { contentHash } from '../scripts/content-hash.ts';
 import { hashesFileSchema } from '../scripts/files.ts';
 import type { Json } from '@arca/scripts/json';

@@ -1,6 +1,7 @@
 import {
   type MissingFact,
   type Relationship,
+  type RuleCaseSummary,
   calendarDateSchema,
   caseSnapshotSchema,
   fxTableSchema,
@@ -10,7 +11,9 @@ import {
   slugSchema,
 } from '@arca/domain';
 import { z } from 'zod';
-import { sha256Schema } from '../src/entries.ts';
+
+/** A SHA-256 digest in lowercase hex; here too, so this module stays a leaf the build scripts load. */
+const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/);
 
 /**
  * One table-driven case for a route version (spec 0002, R8): a snapshot, inline or a synthetic
@@ -76,4 +79,17 @@ function describeEdge(edge: Relationship): string {
   if (edge.kind === 'parent') return `parent:${edge.parent}>${edge.child}`;
   const [a, b] = [...edge.people].sort();
   return [edge.kind, a, b, edge.start ?? '', edge.end ?? ''].join(':');
+}
+
+/**
+ * A cases file's current cases, summarized. The cases runner checks the files and fails on one it
+ * cannot read; here such a file gives no cases, so the screen shows none rather than half of them.
+ */
+export function caseSummaries(file: unknown): RuleCaseSummary[] {
+  const parsed = casesFileSchema.safeParse(file);
+  if (!parsed.success) return [];
+  const superseded = new Set(parsed.data.cases.flatMap((entry) => entry.supersedes ?? []));
+  return parsed.data.cases
+    .filter((entry) => !superseded.has(entry.id))
+    .map(({ id, principal, rulesAsOf, expected }) => ({ id, principal, rulesAsOf, expected }));
 }
