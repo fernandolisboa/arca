@@ -2227,12 +2227,6 @@ export function createApp({
       await sweepRateLimits();
       return c.body(null, 204);
     });
-    // The activation screen's automatic start, within its daily share (ADR-0027).
-    app.get('/internal/cron/rule-checks', fromCron, async (c) => {
-      if (versionChecks === undefined) return c.body(null, 204);
-      await versionChecks.start('/internal/cron/rule-checks');
-      return c.body(null, 202);
-    });
   }
   return app;
 }

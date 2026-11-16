@@ -1354,8 +1354,6 @@ export const ptBR = {
         '{status, select, checked {Conferida pelo Arca} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
       status:
         '{status, select, running {O Arca está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou o modelo de IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
-      startsOnOpen:
-        'As versões propostas são verificadas sozinhas quando você abre a lista de versões, até {max} por dia.',
       loadFailure: 'Não conseguimos carregar a verificação.',
       clean:
         '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',

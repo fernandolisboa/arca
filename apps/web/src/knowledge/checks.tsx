@@ -1,15 +1,12 @@
 import {
   type KnowledgeVersion,
-  maxAutomaticStartsPerDay,
   maxQuotes,
-  routes,
   type VersionCheckReport,
   type VersionView,
 } from '@arca/api-contract/client';
 import { Button, Disclosure, Icon, StatusChip, type StatusTone } from '@arca/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
-import { api, versionCheckQuery } from '../api.js';
+import { useQuery } from '@tanstack/react-query';
+import { versionCheckQuery } from '../api.js';
 import { checkFold } from './check-fold.js';
 import type { HandCheck } from './hand-checks.js';
 import { card, surface } from './review-parts.js';
@@ -19,27 +16,6 @@ import type { KnowledgeWords } from './words.js';
 
 type ListedCheck = KnowledgeVersion['check'];
 type ReportItem = VersionCheckReport['items'][number];
-
-/**
- * Starts the checks that are due once per visit to the screen, after the list loaded (ADR-0027):
- * the server picks the versions and keeps the automatic share, so the screen sends no identities. A
- * failed start changes nothing on screen; the next visit asks again.
- */
-export function useStartChecks(ready: boolean): void {
-  const queryClient = useQueryClient();
-  const sentRef = useRef(false);
-  const { mutate } = useMutation({
-    mutationFn: () => api.call(routes.startVersionChecks),
-    networkMode: 'always',
-    onSuccess: ({ started }) =>
-      started > 0 ? queryClient.invalidateQueries({ queryKey: ['knowledge'] }) : undefined,
-  });
-  useEffect(() => {
-    if (!ready || sentRef.current) return;
-    sentRef.current = true;
-    mutate();
-  }, [ready, mutate]);
-}
 
 /** Only a clean current report reads as fine; anything short of it never looks passed. */
 function listedTone(status: ListedCheck): StatusTone {
@@ -113,11 +89,6 @@ export function CheckReport({
         // Polite, not a status: the decision below keeps the screen's one status message.
         <div aria-live="polite" className="flex flex-col gap-1">
           <p>{t('knowledge.check.status', { status: check.data.status })}</p>
-          {view.state === 'proposed' && check.data.status !== 'running' && (
-            <p className="text-small text-muted">
-              {t('knowledge.check.startsOnOpen', { max: maxAutomaticStartsPerDay })}
-            </p>
-          )}
         </div>
       ) : (
         <ReportBody

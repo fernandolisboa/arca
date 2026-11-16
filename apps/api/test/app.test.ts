@@ -328,19 +328,10 @@ describe('GET /internal/cron/heartbeat (spec 0001, R6)', () => {
     expect(started).toEqual(['sweep']);
   });
 
-  it('starts the due rule checks daily, behind the same token (ADR-0027)', async () => {
+  it('starts no rule check from a cron: a check runs only when an admin asks for one', async () => {
     const { call, started } = cronSetup();
-    expect((await call(undefined, '/internal/cron/rule-checks')).status).toBe(401);
-    expect(started).toEqual([]);
     const response = await call(`Bearer ${secret}`, '/internal/cron/rule-checks');
-    expect(response.status).toBe(202);
-    expect(started).toEqual(['rule-checks']);
-  });
-
-  it('answers 204 to the rule-check cron where no check runs', async () => {
-    const { call, started } = cronSetup(() => secret, false);
-    const response = await call(`Bearer ${secret}`, '/internal/cron/rule-checks');
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(404);
     expect(started).toEqual([]);
   });
 
