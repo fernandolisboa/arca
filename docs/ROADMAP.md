@@ -48,8 +48,9 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Rules engine and knowledge base, specified in [specs/0002-rules-engine-and-knowledge-base.md](specs/0002-rules-engine-and-knowledge-base.md), with the knowledge base as reviewed data activated by an admin ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).
 - Knowledge seed for the first countries, from official sources.
 - Case model with guided questions first, then AI intake from free text ([spec 0007](specs/0007-case-model-and-guided-intake.md), [spec 0008](specs/0008-free-text-intake.md)), with playback and correction; who sees what, per person; audit log.
-- Admin role, decisions without a passkey prompt, and the AI independent check with country guides and one-tap activation of checked versions ([#325](https://github.com/fernandolisboa/arca/issues/325), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).
-- Correction requests: the owner points at a wrong item with sources, and a daily corrector run answers with a correcting version to activate ([#413](https://github.com/fernandolisboa/arca/issues/413), [ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)).
+- ~~Admin role, decisions without a passkey prompt, and the AI independent check with country guides and one-tap activation of checked versions ([#325](https://github.com/fernandolisboa/arca/issues/325), [ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md)).~~ The admin role stands; the check, country guides and one-tap activation are superseded by rule updates on request, and decisions take a passkey again ([ADR-0031](adr/0031-rule-updates-on-request.md)).
+- ~~Correction requests answered by a daily corrector run ([#413](https://github.com/fernandolisboa/arca/issues/413), [ADR-0029](adr/0029-correction-requests-and-the-corrector-session.md)).~~ Superseded by rule updates on request.
+- Rule updates on request ([#455](https://github.com/fernandolisboa/arca/issues/455), [ADR-0031](adr/0031-rule-updates-on-request.md)): rules and versions in the database; an admin, or a member an admin releases, asks for an update of one route or a new route; research, validation, at most one correction and a final validation, then the admin approves, rejects or edits an item; AI settings (API key, model and effort per stage) in the app; an optional source-change notice with no model; the old check and corrector loop removed. Tickets [#456](https://github.com/fernandolisboa/arca/issues/456) to [#465](https://github.com/fernandolisboa/arca/issues/465), one at a time; the first real request waits for the API credit reset on 2026-12-01.
 - Destination comparison weighted by each person ([#310](https://github.com/fernandolisboa/arca/issues/310), [ADR-0026](adr/0026-destination-comparison-data.md)).
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist.
@@ -69,7 +70,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 
 ## Phase 2 — Execution (web)
 
-Document review; form drafts; writing (letters, business plan, source of funds); interview practice by voice; tracking and the rule watcher; arrival and settling checklists; partner network.
+Document review; form drafts; writing (letters, business plan, source of funds); interview practice by voice; tracking; arrival and settling checklists; partner network.
 
 ## Phase 3 — Product (web)
 

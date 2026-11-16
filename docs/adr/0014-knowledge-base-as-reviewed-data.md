@@ -1,6 +1,6 @@
 # ADR-0014: The knowledge base as reviewed data in the repository, activated by a person's passkey
 
-- Status: Accepted; revised 2026-11-03: the owner is the only approver (since ADR-0027, admins given the role in the app join him), with an independent check before activation and a way to report a wrong rule; the section "Decisions: required properties" is replaced by [ADR-0022](0022-single-approver-activation.md) (2026-11-05), itself superseded by [ADR-0027](0027-admins-and-the-checked-batch-activation.md) (2026-11-07: a signed-in admin decides, with no step-up); ADR-0027 also replaces how the independent check is built (a workflow step with no tools and checks in code, not an agent with a report sink), lets a clean report enable one-tap activation of checked versions, and leaves a difference without an automatic research task for now; noted 2026-11-09: no research agent is built for now, and rule audits in authoring sessions do its work (below); amended 2026-11-12 by [ADR-0029](0029-correction-requests-and-the-corrector-session.md): an owner-list admin's correction request starts a daily unwatched authoring run, under the monthly run's limits, that writes the fix
+- Status: Accepted; revised 2026-11-03: the owner is the only approver (since ADR-0027, admins given the role in the app join him), with an independent check before activation and a way to report a wrong rule; the section "Decisions: required properties" is replaced by [ADR-0022](0022-single-approver-activation.md) (2026-11-05), itself superseded by [ADR-0027](0027-admins-and-the-checked-batch-activation.md) (2026-11-07: a signed-in admin decides, with no step-up); ADR-0027 also replaces how the independent check is built (a workflow step with no tools and checks in code, not an agent with a report sink), lets a clean report enable one-tap activation of checked versions, and leaves a difference without an automatic research task for now; noted 2026-11-09: no research agent is built for now, and rule audits in authoring sessions do its work (below); amended 2026-11-12 by [ADR-0029](0029-correction-requests-and-the-corrector-session.md): an owner-list admin's correction request starts a daily unwatched authoring run, under the monthly run's limits, that writes the fix; partly superseded 2026-11-16 by [ADR-0031](0031-rule-updates-on-request.md): route versions, country sets and official-domain lists move to insert-only database rows, and a version is proposed by an update request's pipeline in the app, not by a pull request (sections marked below)
 - Date: 2026-11-02
 - Amends: [ADR-0002](0002-rules-as-versioned-data.md) (where route versions live, the shape of their sources, the country dataset, how approval is recorded); [ADR-0006](0006-auth.md) (knowledge-base decisions join the step-up actions, as [ADR-0022](0022-single-approver-activation.md) specifies); [ADR-0010](0010-stack-revised.md) (fast-check for property tests); [ARCHITECTURE.md](../ARCHITECTURE.md) (code layout, rules flow, entities); CLAUDE.md domain rule 5 (what "sees the change" means)
 
@@ -19,6 +19,8 @@
 
 ### Where the base lives
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): route versions, country sets and official-domain lists are insert-only rows in the `knowledge` schema, imported once from these files with their hashes; the country dataset stays in the repository and selection stays pure. The text below records the original decision.
+
 - Route versions, country sets (for example, the E-2 treaty countries), the official-domain lists and the country lists are JSON files in `packages/knowledge/data`, one file per version, validated by the rule schema in `packages/domain` ([spec 0002](../specs/0002-rules-engine-and-knowledge-base.md)).
 - Each route version ships with its table-driven cases in a sibling cases file. CI rejects a version whose cases do not exercise every requirement every way.
 - Sources are a list per version, each with an ID, URL, title, kind (`official` or `secondary`) and `verifiedAt`; an `official` source's host must be on an official-domain list the version pins (spec 0002, R4 and R6). This replaces ADR-0002's single source URL.
@@ -28,11 +30,15 @@
 
 ### Immutability
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): immutability holds, enforced by insert-only tables with no update or delete grant instead of a required check on files; the content hash and what evaluations record are unchanged.
+
 - A file under `packages/knowledge/data` or `packages/knowledge/vendor` never changes once it is on `main`. A required check fails a pull request that modifies, renames or deletes one. The check runs from `main` and reads the pull request's files as data, so a pull request cannot weaken the check that judges it (spec 0002, R6). Cases files and `hashes.json` are append-only instead: they may gain entries, never change or lose them.
 - A rule change is a new version with an effective date later than every earlier version's. A correction of a data error is a new version with a `corrects` field naming an earlier version; once the correction is in effect, the version it fixes is no longer selected (spec 0002, R5). Re-verifying a source is a new version too, so every date a user sees has been through the same approval.
 - Each version is identified by its route ID and number, and by a content hash over the version and every file it pins, transitively (spec 0002, R6). Evaluations record both, plus the engine's commit, so an old evaluation can be reproduced exactly.
 
 ### Approval in two steps
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): step 1 becomes an update request's proposal stored as database rows, not a pull request; step 2 keeps the passkey step-up bound to the content hash.
 
 1. **Proposal.** A change reaches `main` through a pull request like any other, reviewed by the reviewer subagents ([ADR-0019](0019-reviewers-in-the-authoring-session.md)). Merged versions are *proposed*: they exist in the catalog, but the engine does not evaluate them for any case.
 2. **Decision.** An approver either *activates* or *rejects* a version in the app, with a passkey step-up bound to its content hash.
@@ -69,6 +75,8 @@ With a single approver, the veto window protects against the owner's own mistake
 
 ### Research agents: required properties
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): research runs inside the app as the first stage of an update request, with Anthropic's web search and fetch tools restricted to official domains, proposing database rows, not pull requests.
+
 **Note (2026-11-09).** No research agent is built for now ([spec #351](https://github.com/fernandolisboa/arca/issues/351)). Its work is done by the [rule audit](../runbooks/rule-audit.md): an authoring session, the kind that writes route versions, re-reads a route's official sources, looks for amendments and leads, and proposes a correction or a new version as a pull request, monthly from a scheduled task and whenever the owner asks. It proposes like any author: the reviewers read the pull request, the version stays proposed once merged, the independent check reads it, and an admin decides. The rule watcher is not built either, and the monthly audit covers its ground until it is specified. The properties below stay the design for the day an agent is built; if an audit ever moves into the app, it is started by hand, not on a schedule.
 
 The audit session is not held to those properties: it has the authoring session's tools and the owner's token. The runbook narrows it instead (what an audit may touch, public search terms only, leads never changing a rule, trust roots in their own pull requests and written from official texts only, a scheduled run leaving them to an on-demand session), and the residual risk below covers what remains: an agent holding the owner's token can merge a bad proposal or change code, and a steered session could do so too. Every route version it writes still needs an admin's activation.
@@ -86,6 +94,8 @@ The research agent and its tools are specified with slice 2. That design must gi
 
 ### Independent check before activation
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): an update request's validation stages and code checks replace the independent check.
+
 The owner chose to be the only approver, helped by a specialized agent, over a destination lawyer. Slice 2 builds that agent next to the research agent. Its design must give these properties:
 
 - **Separate from the proposer.** It runs as its own task and reads only the proposed version, its pinned files, its cases and the official sources the version cites. It never sees the proposer's reasoning or the proposal's pull request text. Slice 2 compares models for it on the evaluation suite, preferring one different from the proposer's.
@@ -97,12 +107,16 @@ The owner chose to be the only approver, helped by a specialized agent, over a d
 
 ### Reporting a wrong rule
 
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): a member's report becomes an update request an admin releases; its note, links and file still never reach a model, and only links on an approved official-domain list feed research, as addresses.
+
 - A person in a case can mark a rule shown to them as possibly wrong, with a reason from a fixed list and optionally a note.
 - The server takes the route ID, version number and requirement key from an evaluation in the reporter's own case, never from client input. Reports are rate-limited per person and merged per route, version and requirement into one open research task, which carries only those identifiers and the reason code.
 - The note is case data under row-level security. No note or user-supplied link ever reaches an agent or a model. The owner sees identifiers, reason codes and counts, and a note only if its author explicitly shares it. A public link enters a task only if the owner adds it, and is then fetched under the fetch tool's rules.
 - The research agent investigates and, when it finds an error, proposes a correction version, which the owner activates like any other. Meanwhile the owner may reject the active version, which takes it out of use at once (`pending_activation`).
 
 ### Trust roots in their own pull requests
+
+> Superseded by [ADR-0031](0031-rule-updates-on-request.md) (2026-11-16): official-domain lists become database rows; a new country's first list is part of a new-route proposal, each host citing a registry page code checks, and is decided on its own before the route; a request never widens an approved list.
 
 Official-domain lists decide what counts as official. The `knowledge-immutable` check fails a pull request that changes them together with any other knowledge data, except an append to `hashes.json` (spec 0002, R6). A host added to a list cites proof on a host already in a merged list version; the first list for an issuer, which has no such host, cites a registry such as the country's domain authority and gets its own reviewed pull request. Until registries are listed as data, `knowledge-immutable` enforces the first rule and the reviewer checks the registry citation. Country guides get the same rule when slice 2 adds them, and the approver list when slice 3 adds it.
 
