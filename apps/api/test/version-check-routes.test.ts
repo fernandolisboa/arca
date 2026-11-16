@@ -671,7 +671,7 @@ describe('POST /v1/knowledge/versions/check/start (ADR-0027, on demand)', () => 
     expect(runs).toHaveLength(3);
   });
 
-  it('answers the live start an automatic start began', async () => {
+  it('answers the live start a queue start began', async () => {
     const { startQueued, startOne, runs } = setup({ count: 1 });
     await startQueued();
     expect(await (await startOne(1)).json()).toEqual({ started: false });
