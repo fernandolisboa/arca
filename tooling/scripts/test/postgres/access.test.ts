@@ -500,6 +500,113 @@ describe('the correction request access matrix (ADR-0029)', () => {
   });
 });
 
+const aiTables = {
+  'knowledge.ai_key': [
+    'id',
+    'provider',
+    'kind',
+    'ciphertext',
+    'nonce',
+    'tag',
+    'kek_version',
+    'format_version',
+    'last_four',
+    'removes_key_id',
+    'actor_account_id',
+    'step_up_id',
+    'at',
+  ],
+  'knowledge.ai_stage_setting': ['id', 'stage', 'model', 'effort', 'at'],
+} as const;
+type AiTable = keyof typeof aiTables;
+const setAiStageSignature = 'knowledge.set_ai_stage(text, text, text, text, uuid)';
+
+/** Each AI settings table's column and table privileges, and whether the role runs set_ai_stage. */
+async function aiAccess(role: string) {
+  const tables: Record<string, unknown> = {};
+  for (const [table, columns] of Object.entries(aiTables)) {
+    const { columns: held, table: tableHeld } = await columnPrivileges(role, table, columns);
+    tables[table] = { columns: held, table: tableHeld };
+  }
+  const runsSetStage = await withClient(adminTarget(database), async (client) => {
+    const row = await client.query<{ granted: boolean }>(
+      `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS granted`,
+      [role, setAiStageSignature],
+    );
+    return row.rows[0]?.granted === true;
+  });
+  return { tables, runsSetStage };
+}
+
+/** The given column privileges per table, every other column none, and no table privilege. */
+function aiMatrix(granted: Partial<Record<AiTable, Record<string, string[]>>>) {
+  return Object.fromEntries(
+    (Object.entries(aiTables) as [AiTable, readonly string[]][]).map(([name, columns]) => [
+      name,
+      {
+        columns: Object.fromEntries(
+          columns.map((column) => [column, granted[name]?.[column] ?? []]),
+        ),
+        table: [],
+      },
+    ]),
+  );
+}
+
+const onAll = (table: AiTable, privileges: string[], except: readonly string[] = []) =>
+  Object.fromEntries(
+    aiTables[table].filter((column) => !except.includes(column)).map((c) => [c, privileges]),
+  );
+
+describe('the AI settings access matrix (ADR-0031)', () => {
+  it('lets app_api read both tables and run set_ai_stage, and nothing else', async () => {
+    expect(await aiAccess('app_api')).toEqual({
+      tables: aiMatrix({
+        'knowledge.ai_key': onAll('knowledge.ai_key', ['SELECT']),
+        'knowledge.ai_stage_setting': onAll('knowledge.ai_stage_setting', ['SELECT']),
+      }),
+      runsSetStage: true,
+    });
+  });
+
+  it('lets app_jobs read both tables, without who set a key', async () => {
+    expect(await aiAccess('app_jobs')).toEqual({
+      tables: aiMatrix({
+        'knowledge.ai_key': onAll(
+          'knowledge.ai_key',
+          ['SELECT'],
+          ['actor_account_id', 'step_up_id'],
+        ),
+        'knowledge.ai_stage_setting': onAll('knowledge.ai_stage_setting', ['SELECT']),
+      }),
+      runsSetStage: false,
+    });
+  });
+
+  it('lets app_auth only insert a key row, never its time, and read nothing', async () => {
+    expect(await aiAccess('app_auth')).toEqual({
+      tables: aiMatrix({ 'knowledge.ai_key': onAll('knowledge.ai_key', ['INSERT'], ['at']) }),
+      runsSetStage: false,
+    });
+  });
+
+  it('lets knowledge_definer only insert a stage row, and touch no key row', async () => {
+    expect(await aiAccess('knowledge_definer')).toEqual({
+      tables: aiMatrix({
+        'knowledge.ai_stage_setting': onAll('knowledge.ai_stage_setting', ['INSERT'], ['at']),
+      }),
+      runsSetStage: true,
+    });
+  });
+
+  it.each([
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs', 'app_auth'].includes(role)),
+    ...retiredRoles,
+  ])('gives %s no access', async (role) => {
+    expect(await aiAccess(role)).toEqual({ tables: aiMatrix({}), runsSetStage: false });
+  });
+});
+
 const onEvery = (columns: readonly string[], privileges: string[]) =>
   Object.fromEntries(columns.map((column) => [column, privileges]));
 const onEveryColumn = (privileges: string[]) => onEvery(auditColumns, privileges);
@@ -625,10 +732,12 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, decision, rule summary, check, correction request, corrector key and rule tables, with forced row-level security', async () => {
+  it('has only the admin grant, AI settings, decision, rule summary, check, correction request, corrector key and rule tables, with forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
+        { name: 'ai_key', forced: true },
+        { name: 'ai_stage_setting', forced: true },
         { name: 'check_progress', forced: true },
         { name: 'check_start', forced: true },
         { name: 'correction_event', forced: true },
@@ -644,8 +753,9 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'rule_summary', forced: true },
       ],
       // A correction request's sources and events, which go with it, a file source's upload, the
-      // corrector key an event names and the key a revocation ends (ADR-0029).
-      foreignKeys: 5,
+      // corrector key an event names and the key a revocation ends (ADR-0029), and the AI key a
+      // removal ends (ADR-0031).
+      foreignKeys: 6,
     });
   });
 

@@ -21,6 +21,7 @@ export const noticeKinds = [
   'admin_role_changed',
   'correction_requested',
   'corrector_key_changed',
+  'ai_key_changed',
 ] as const;
 export type NoticeKind = (typeof noticeKinds)[number];
 

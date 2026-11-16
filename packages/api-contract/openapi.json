@@ -543,7 +543,8 @@
                           "financial_action",
                           "vault_write",
                           "admin_grant",
-                          "corrector_key"
+                          "corrector_key",
+                          "ai_key"
                         ]
                       },
                       "target": {
@@ -3196,6 +3197,9 @@
                               "correction_closed",
                               "correction_file_downloaded",
                               "correction_upload_mismatch",
+                              "ai_key_set",
+                              "ai_key_removed",
+                              "ai_stage_set",
                               "corrector_key_created",
                               "corrector_key_revoked",
                               "corrector_key_refused",
@@ -37408,6 +37412,481 @@
                 "schema": {
                   "type": "object",
                   "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings/ai": {
+      "get": {
+        "operationId": "getAiSettings",
+        "summary": "Each provider key's state and last four characters, never the key, and each stage's model and effort, for an admin. 403 not_admin",
+        "responses": {
+          "200": {
+            "description": "The settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "canManageKeys": {
+                      "type": "boolean"
+                    },
+                    "keysOff": {
+                      "type": "boolean"
+                    },
+                    "keys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "typesafe"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "set",
+                              "environment",
+                              "none",
+                              "unreadable"
+                            ]
+                          },
+                          "keyId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "lastFour": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "minLength": 4,
+                            "maxLength": 4
+                          },
+                          "setAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "state",
+                          "keyId",
+                          "lastFour",
+                          "setAt"
+                        ]
+                      }
+                    },
+                    "stages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stage": {
+                            "type": "string",
+                            "enum": [
+                              "research",
+                              "validation",
+                              "correction"
+                            ]
+                          },
+                          "model": {
+                            "type": "string"
+                          },
+                          "effort": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "low",
+                              "medium",
+                              "high",
+                              "xhigh",
+                              "max",
+                              null
+                            ]
+                          },
+                          "isDefault": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "stage",
+                          "model",
+                          "effort",
+                          "isDefault"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "canManageKeys",
+                    "keysOff",
+                    "keys",
+                    "stages"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings/ai/key": {
+      "post": {
+        "operationId": "setAiKey",
+        "summary": "Stores a provider's API key, encrypted, replacing the stored one, for an owner-list admin; needs a consumed ai_key step-up of setAiKey bound to the provider and the key's SHA-256; answered with Cache-Control no-store. 403 not_admin, owner_list_only or step_up_required",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "anthropic",
+                      "typesafe"
+                    ]
+                  },
+                  "key": {
+                    "type": "string",
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "provider",
+                  "key"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings/ai/key/remove": {
+      "post": {
+        "operationId": "removeAiKey",
+        "summary": "Removes a provider's stored key it names, for an owner-list admin; needs a consumed ai_key step-up of removeAiKey bound to the key's row. 403 not_admin, owner_list_only or step_up_required; 404 not_found unless the key is the stored one",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "anthropic",
+                      "typesafe"
+                    ]
+                  },
+                  "keyId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "provider",
+                  "keyId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings/ai/stage": {
+      "post": {
+        "operationId": "setAiStage",
+        "summary": "Chooses a stage's model and effort from the reviewed list, for an admin. 400 not_offered; 403 not_admin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "research",
+                      "validation",
+                      "correction"
+                    ]
+                  },
+                  "model": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "effort": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high",
+                      "xhigh",
+                      "max",
+                      null
+                    ]
+                  }
+                },
+                "required": [
+                  "stage",
+                  "model",
+                  "effort"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chosen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settings/ai/test": {
+      "post": {
+        "operationId": "testAiKey",
+        "summary": "Tries the provider's key with one call that spends no tokens (listing models), for an admin; rate limited per account. 403 not_admin; 429",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "anthropic",
+                      "typesafe"
+                    ]
+                  }
+                },
+                "required": [
+                  "provider"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "no_key",
+                        "unreadable",
+                        "rejected",
+                        "unavailable"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ]
                 }
               }
             }

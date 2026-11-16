@@ -1,3 +1,4 @@
+import { anthropicKeyPattern } from '@arca/api-contract/routes';
 import type { DatabaseTarget } from '@arca/db';
 import { enrollmentCodeHash } from './auth/enrollment-code-hash.js';
 import { productionSite, type ProductionSite } from './production-site.js';
@@ -139,8 +140,6 @@ export function readResendKey(): string | undefined {
   return key !== undefined && resendKeyPattern.test(key) ? key : undefined;
 }
 
-const anthropicKeyPattern = /^sk-ant-[A-Za-z0-9_-]+$/;
-
 /**
  * Anthropic's API key for the intake extractor (spec 0008, R1) and the rule summary (ADR-0025), one
  * Sensitive value shared by Production and Preview. Absent, both routes answer 503 and the guided
@@ -149,6 +148,18 @@ const anthropicKeyPattern = /^sk-ant-[A-Za-z0-9_-]+$/;
 export function readAnthropicApiKey(): string | undefined {
   const key = process.env['ANTHROPIC_API_KEY']?.trim();
   return key !== undefined && anthropicKeyPattern.test(key) ? key : undefined;
+}
+
+/**
+ * The key-encryption key of the AI provider keys stored in settings (ADR-0031): 32 bytes from a
+ * CSPRNG, base64url, distinct per environment, a Sensitive variable. Absent or malformed, no key
+ * can be stored or read from settings, and the providers fall back to their variables.
+ */
+export function readAiKeyEncryptionKey(): Buffer | undefined {
+  const value = process.env['ARCA_AI_KEY_ENCRYPTION_KEY']?.trim();
+  if (value === undefined || !/^[A-Za-z0-9_-]{43}$/.test(value)) return undefined;
+  const key = Buffer.from(value, 'base64url');
+  return key.length === 32 ? key : undefined;
 }
 
 const routineTokenPattern = /^[A-Za-z0-9_.-]{20,512}$/;

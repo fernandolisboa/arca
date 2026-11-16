@@ -14,8 +14,17 @@ import {
 /** Pinned in code: the provider would otherwise take `ANTHROPIC_BASE_URL` from the environment. */
 export const anthropicBaseUrl = 'https://api.anthropic.com/v1';
 
+/** One request that spends no tokens and proves the key works: listing one model. */
+export const anthropicKeyProbe = (key: string): [string, RequestInit] => [
+  `${anthropicBaseUrl}/models?limit=1`,
+  { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' } },
+];
+
+/** The key itself, or where each call reads it: settings, then the variable (ADR-0031). */
+export type ClaudeKey = string | (() => Promise<string | undefined>);
+
 export interface ClaudeSettings {
-  readonly apiKey: string;
+  readonly apiKey: ClaudeKey;
   /** For tests: the HTTP client the provider calls. */
   readonly fetch?: typeof globalThis.fetch;
 }
@@ -63,6 +72,7 @@ const parsedByTheApi = new Set(['AI_JSONParseError', 'AI_TypeValidationError']);
  * file: each becomes a fixed kind, with no message and no cause.
  */
 function failureOf(error: unknown): ClaudeFailure {
+  if (error instanceof ClaudeCallError) return error.kind;
   if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
     return 'timeout';
   }
@@ -111,13 +121,22 @@ function replyOf(output: unknown, usage: LanguageModelUsage): StructuredReply {
  * kind. A streamed call sends the same request as a plain one, so both share one cached prefix.
  */
 export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
-  const anthropic = createAnthropic({
-    apiKey,
-    baseURL: anthropicBaseUrl,
-    ...(fetch === undefined ? {} : { fetch }),
-  });
-  const request = (call: StructuredCall) => ({
-    model: anthropic(call.model),
+  const provider = (key: string) =>
+    createAnthropic({
+      apiKey: key,
+      baseURL: anthropicBaseUrl,
+      ...(fetch === undefined ? {} : { fetch }),
+    });
+  const fixed = typeof apiKey === 'string' ? provider(apiKey) : undefined;
+  /** No key to call with is a provider that cannot be reached. */
+  const anthropic = async () => {
+    if (fixed !== undefined) return fixed;
+    const key = typeof apiKey === 'string' ? apiKey : await apiKey();
+    if (key === undefined) throw new ClaudeCallError('unavailable');
+    return provider(key);
+  };
+  const request = async (call: StructuredCall) => ({
+    model: (await anthropic())(call.model),
     instructions: cachedInstructions(call.instructions),
     prompt: call.prompt,
     output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
@@ -130,7 +149,7 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
   return {
     async object(call: StructuredCall): Promise<StructuredReply> {
       try {
-        const result = await generateText(request(call));
+        const result = await generateText(await request(call));
         return replyOf(result.output, result.usage);
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
@@ -150,7 +169,7 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
       let streamFailure: unknown;
       try {
         const result = streamText({
-          ...request(call),
+          ...(await request(call)),
           onError: ({ error }) => {
             streamFailure ??= error;
           },

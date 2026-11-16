@@ -77,6 +77,16 @@ describe('logger', () => {
     expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'error', errorName: 'TypeError' });
   });
 
+  it('drops an Anthropic key even where its shape fits the field', () => {
+    const lines: string[] = [];
+    createLogger((line) => lines.push(line)).info({
+      model: `sk-ant-api03-${'synthetic'.repeat(3)}`,
+      route: `/v1/sk-ant-api03-${'synthetic'.repeat(2)}`,
+      errorCode: 'not_admin',
+    });
+    expect(JSON.parse(lines[0] ?? '')).toEqual({ level: 'info', errorCode: 'not_admin' });
+  });
+
   it('keeps a trace ID and a labelled error name, and drops a trace ID of another shape', () => {
     const lines: string[] = [];
     createLogger((line) => lines.push(line)).error({

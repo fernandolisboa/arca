@@ -533,8 +533,24 @@ export const registry: Registry = {
       label: 'dataExport.tables.correctorKeys',
       exportedThrough: 'knowledge.own_corrector_key_rows',
     },
+    {
+      table: 'knowledge.ai_key',
+      strategy: 'retain',
+      owner: ownedByAccount('actor_account_id'),
+      reason:
+        "The record of who set or removed an AI provider's API key and when (ADR-0031), with the key encrypted under a key-encryption key that lives outside the database; it is the settings' history, not personal data beyond the actor's account ID.",
+      period: 'forever',
+      export: ['provider', 'kind', 'at'],
+      label: 'dataExport.tables.aiKeys',
+    },
   ],
   unowned: [
+    {
+      table: 'knowledge.ai_stage_setting',
+      personalData: 'none',
+      reason:
+        'The model and effort chosen for a stage of an update request (ADR-0031); who chose is in the audit log, so it names no account.',
+    },
     {
       table: 'knowledge.check_start',
       personalData: 'none',

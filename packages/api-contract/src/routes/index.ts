@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
 import { adminRoutes } from './admins.js';
+import { AiProvider, AiStage, aiSettingsRoutes } from './ai-settings.js';
 import { knowledgeRoutes } from './knowledge.js';
 import {
   ObjectUpload,
@@ -208,6 +209,7 @@ export const stepUpPurposes = [
   'knowledge_decision',
   'admin_grant',
   'corrector_key',
+  'ai_key',
 ] as const;
 
 export const StepUpPurpose = z.enum(stepUpPurposes);
@@ -877,6 +879,12 @@ export const auditEventDetails = {
   }),
   /** A filed file was not what its upload declared, and was deleted (ADR-0029). */
   correction_upload_mismatch: z.strictObject({ uploadId: z.uuid() }),
+  /** An owner-list admin stored a provider's API key, replacing any stored one (ADR-0031). */
+  ai_key_set: z.strictObject({ provider: AiProvider, keyId: z.uuid() }),
+  /** An owner-list admin removed a provider's stored API key (ADR-0031). */
+  ai_key_removed: z.strictObject({ provider: AiProvider, keyId: z.uuid() }),
+  /** An admin chose a stage's model and effort (ADR-0031). */
+  ai_stage_set: z.strictObject({ stage: AiStage, settingId: z.uuid() }),
   /** An owner-list admin made a corrector key, which replaced any live one (ADR-0029). */
   corrector_key_created: z.strictObject({ keyId: z.uuid() }),
   /** An owner-list admin revoked the corrector key (ADR-0029). */
@@ -1667,6 +1675,7 @@ export * from './comparison.js';
 export * from './knowledge.js';
 export * from './admins.js';
 export * from './uploads.js';
+export * from './ai-settings.js';
 
 export const routes = {
   health,
@@ -1727,6 +1736,7 @@ export const routes = {
   ...comparisonRoutes,
   ...knowledgeRoutes,
   ...adminRoutes,
+  ...aiSettingsRoutes,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */
