@@ -339,6 +339,8 @@ describe("members' update requests (ADR-0031, #462)", () => {
     unconfirmed.add(member.signedIn.accountId);
     try {
       expect((await setup(member).file({ routeId: route(3), versionNumber: 1 })).status).toBe(403);
+      const upload = { mediaType: 'application/pdf', size: pdf.length, sha256: sha256(pdf) };
+      expect((await setup(member).startUpload(upload)).status).toBe(403);
     } finally {
       unconfirmed.delete(member.signedIn.accountId);
     }
