@@ -30,7 +30,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "staleness-report": "node scripts/staleness-report.ts",
-    "import:sql": "node scripts/rule-import.ts"
+    "import:sql": "node scripts/rule-import.ts",
+    "inline-cases:sql": "node scripts/inline-cases.ts"
   },
   "dependencies": {
     "@arca/domain": "workspace:*",
