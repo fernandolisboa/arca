@@ -1013,6 +1013,34 @@ export const ptBR = {
       tooMany: 'Você já mandou muitos avisos hoje. Tente de novo amanhã.',
       failure: 'Não deu para enviar o aviso agora. Tente de novo.',
     },
+    /** A member's request to update one route (ADR-0031, #462), which an admin releases or declines. */
+    update: {
+      open: 'Pedir atualização desta regra',
+      title: 'Pedir atualização desta regra',
+      lead: 'Achou que esta regra mudou ou está desatualizada? Conte para quem administra. Se quem administra liberar, o Arca pesquisa de novo nos sites oficiais. A regra só muda com base em fonte oficial e depois que um administrador aprovar.',
+      note: 'O que você notou? (opcional)',
+      links: 'Links de páginas oficiais, um por linha (opcional)',
+      badLinks: 'Use até {max} links, cada um começando com https://.',
+      file: 'Cópia de uma página oficial (opcional)',
+      fileHint:
+        'Só cópias de páginas oficiais, em PDF, HTML ou texto. Nunca mande documentos pessoais, como passaporte ou certidão.',
+      badFile: 'Este arquivo não serve: use PDF, HTML ou texto, com até 16 MB.',
+      privacy:
+        'Só quem administra lê o que você mandar. Nada disso vai para a IA: se houver um link oficial, quem administra decide se usa.',
+      send: 'Enviar pedido',
+      sending: 'Enviando…',
+      cancel: 'Cancelar',
+      failure:
+        '{reason, select, limited {Você já mandou muitos pedidos nas últimas 24 horas. Tente de novo mais tarde.} update_live {Já existe um pedido desta regra esperando ou uma atualização em andamento.} not_found {O Arca não encontrou esta regra ou o arquivo enviado.} not_uploaded {O arquivo ainda não terminou de subir. Tente de novo.} upload_mismatch {O arquivo chegou diferente do que foi escolhido. Escolha de novo e reenvie.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para enviar o pedido agora. Tente de novo.}}',
+      yours: 'Seu pedido de atualização:',
+      state:
+        '{state, select, received {Recebido} released {Liberado} finished {Concluído} other {Recusado}}',
+      stateHint:
+        '{state, select, received {Espera alguém que administra ler e decidir.} released {O Arca está pesquisando de novo nos sites oficiais.} finished {A pesquisa terminou. A proposta espera a revisão de quem administra.} other {Quem administra decidiu não seguir com este pedido. Você pode mandar outro.}}',
+      stoppedHint:
+        'A pesquisa parou antes de chegar a uma proposta. Quem administra vai decidir o que fazer, e você pode mandar outro pedido.',
+      reason: 'Motivo: {reason}',
+    },
   },
   /** Comparar destinos (ADR-0026): one adult's own ranking of the countries that have a route. */
   compare: {
@@ -1520,6 +1548,28 @@ export const ptBR = {
         'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou o modelo não informou quantos tokens gastou.',
       costScripted: 'Foi uma atualização de teste, sem IA de verdade. Não custou nada.',
       loadFailure: 'Não conseguimos carregar o andamento da atualização.',
+    },
+    /** Members' update requests waiting for an admin (ADR-0031, #462). */
+    memberRequests: {
+      title: 'Pedidos dos participantes',
+      lead: 'Quando alguém da família pede a atualização de uma regra, o pedido aparece aqui. Liberar começa a atualização da rota, como “Pedir atualização”. Nada do que a pessoa escreveu ou anexou vai para a IA: se houver um link oficial útil, use na sua própria revisão.',
+      none: 'Nenhum pedido por enquanto.',
+      requestTitle: '{title}, versão {number}',
+      filedAt: 'Pedido em {date}',
+      noNote: 'A pessoa não escreveu nada.',
+      ownerFiles: 'Há um arquivo anexado. Só quem está na lista de donos pode baixar.',
+      run: '{run, select, running {A atualização está em andamento.} finished {A atualização terminou. Abra a regra para revisar a proposta.} failed {A atualização parou sem proposta. Você pode recusar o pedido explicando o motivo.} other {A atualização parou no meio. Você pode recusar o pedido explicando o motivo.}}',
+      release: 'Liberar',
+      releasing: 'Liberando e começando a atualização…',
+      released: 'Pedido liberado. A atualização começou.',
+      decline: 'Recusar',
+      reason: 'Motivo (opcional)',
+      reasonHint: 'A pessoa que pediu vai ler. Até 500 caracteres.',
+      confirmDecline: 'Recusar pedido',
+      openVersion: 'Abrir a regra',
+      failure:
+        '{reason, select, limited {Muitas ações seguidas. Espere um pouco e tente de novo.} decided {Este pedido já foi liberado ou recusado. Recarregue a lista.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} list_pending {Esta rota depende de uma lista de sites oficiais que ainda não foi ativada.} not_found {O Arca não encontrou este pedido.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo agora. Tente de novo.}}',
+      loadFailure: 'Não conseguimos carregar os pedidos dos participantes.',
     },
     /** An admin's request for a route the catalog lacks, researched by the same pipeline (ADR-0031). */
     newRoute: {
@@ -2106,6 +2156,10 @@ export const ptBR = {
         subject: 'A chave da sessão de correção mudou',
         body: 'Em {when} (horário de Brasília), alguém da lista de donos criou ou revogou a chave da sessão de correção do Arca. Se não foi você nem alguém que você conhece, entre no Arca, revogue a chave em Configurações e confira os dispositivos.',
       },
+      update_requested: {
+        subject: 'Novo pedido de atualização de regra',
+        body: 'Em {when} (horário de Brasília), alguém da família pediu no Arca a atualização de uma regra. O pedido espera você: entre no Arca, leia o que a pessoa mandou e libere ou recuse.',
+      },
       correction_requested: {
         subject: 'Novo pedido de correção de regra',
         body: 'Em {when} (horário de Brasília), alguém da lista de donos mandou um pedido de correção de regra no Arca. Se ninguém da lista mandou, entre no Arca, feche o pedido e confira os dispositivos.',
@@ -2165,6 +2219,10 @@ export const ptBR = {
     corrector_key_changed: {
       title: 'A chave da sessão de correção mudou',
       body: 'Se não foi você, revogue a chave em Configurações e confira os dispositivos.',
+    },
+    update_requested: {
+      title: 'Novo pedido de atualização de regra',
+      body: 'Alguém da família pediu a atualização de uma regra. Libere ou recuse no Arca.',
     },
     correction_requested: {
       title: 'Novo pedido de correção de regra',

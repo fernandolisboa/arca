@@ -159,6 +159,11 @@ export const openApiRoutes = {
   rejectOfficialDomains: toOpenApiRoute(routes.rejectOfficialDomains),
   getVersionReview: toOpenApiRoute(routes.getVersionReview),
   editVersionItem: toOpenApiRoute(routes.editVersionItem),
+  fileMemberUpdateRequest: toOpenApiRoute(routes.fileMemberUpdateRequest),
+  getOwnUpdateRequests: toOpenApiRoute(routes.getOwnUpdateRequests),
+  getMemberUpdateRequests: toOpenApiRoute(routes.getMemberUpdateRequests),
+  releaseMemberUpdateRequest: toOpenApiRoute(routes.releaseMemberUpdateRequest),
+  declineMemberUpdateRequest: toOpenApiRoute(routes.declineMemberUpdateRequest),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

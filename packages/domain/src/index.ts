@@ -547,3 +547,14 @@ export {
   namedHosts,
   registryNamesHost,
 } from './rule-update/first-list.js';
+export {
+  type MemberRequestFacts,
+  type MemberRequestState,
+  type ReleasedRun,
+  declinable,
+  memberRequestPending,
+  memberRequestState,
+  memberRequestStates,
+  releasable,
+  releasedRuns,
+} from './rule-update/member-request.js';

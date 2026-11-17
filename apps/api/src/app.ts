@@ -58,6 +58,9 @@ import {
   SetAiStage,
   StartNewRouteRequest,
   StartUpdateRequest,
+  DeclineMemberUpdateRequest,
+  FileMemberUpdateRequest,
+  MemberUpdateRequestReference,
   EditItemRequest,
   VersionReviewQuery,
   TestAiKey,
@@ -140,13 +143,13 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import { type DecisionKind, type DecisionSubject } from '@arca/domain';
+import { type DecisionKind, type DecisionSubject, releasable } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { AiSettingsService } from './ai/settings.js';
-import type { UpdateRequests } from './knowledge/update/requests.js';
+import type { StartRefusal, UpdateRequests } from './knowledge/update/requests.js';
 import type { VersionReviews } from './knowledge/update/review.js';
 import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
@@ -330,6 +333,7 @@ export type ErrorCode =
   | 'update_not_started'
   | 'links_needed'
   | 'list_pending'
+  | 'decided'
   | 'list_active'
   | 'step_up_refused'
   | 'step_up_required'
@@ -1742,6 +1746,15 @@ export function createApp({
       ? { refused: unauthorized(c) }
       : { corrections, current };
   };
+  // A member's upload or update request needs a confirmed account (spec 0003, R2).
+  const confirmedCorrectionsOf = async (c: Context<AppEnv>) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads;
+    if (accountConfirmed === undefined || !(await accountConfirmed(reads.current.accountId))) {
+      return { refused: fail(c, 'account_unconfirmed', 403) };
+    }
+    return reads;
+  };
   v1.openapi(openApiRoutes.fileCorrectionRequest, async (c) => {
     const reads = await correctionsOf(c);
     if ('refused' in reads) return reads.refused;
@@ -1795,18 +1808,17 @@ export function createApp({
     return c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.startCorrectionUpload, async (c) => {
-    const reads = await correctionsOf(c);
+    const reads = await confirmedCorrectionsOf(c);
     if ('refused' in reads) return reads.refused;
     if (authLimits === undefined) return unauthorized(c);
     const request = StartCorrectionUpload.parse(await c.req.json());
     const { accountId } = reads.current;
     const limited = await overLimit(c, authLimits, correctionRequestLimits.upload, accountId);
     if (limited !== undefined) return limited;
-    const outcome = await reads.corrections.startUpload(accountId, request);
-    return typeof outcome === 'string' ? fail(c, outcome, 403) : c.json(outcome, 200);
+    return c.json(await reads.corrections.startUpload(accountId, request), 200);
   });
   v1.openapi(openApiRoutes.correctionUploadUrl, async (c) => {
-    const reads = await correctionsOf(c);
+    const reads = await confirmedCorrectionsOf(c);
     if ('refused' in reads) return reads.refused;
     if (authLimits === undefined) return unauthorized(c);
     const { payload } = correctionUploadUrl.body.parse(await c.req.json());
@@ -1821,8 +1833,7 @@ export function createApp({
       reads.current.accountId,
       payload.pathname,
     );
-    if (outcome === 'not_found') return fail(c, outcome, 404);
-    return typeof outcome === 'string' ? fail(c, outcome, 403) : c.json(outcome, 200);
+    return outcome === 'not_found' ? fail(c, outcome, 404) : c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.correctionFileUrl, async (c) => {
     const reads = await correctionsOf(c);
@@ -1837,7 +1848,7 @@ export function createApp({
     );
     if (downloadLimited !== undefined) return downloadLimited;
     const outcome = await reads.corrections.fileUrl(reads.current.accountId, requestId, position);
-    if (outcome === 'not_admin') return fail(c, outcome, 403);
+    if (outcome === 'not_admin' || outcome === 'owner_list_only') return fail(c, outcome, 403);
     if (outcome === 'not_found') return fail(c, outcome, 404);
     return c.json(outcome, 200);
   });
@@ -1896,6 +1907,24 @@ export function createApp({
     if (limited !== undefined) return limited;
     return (await correctorRun.start()) ? c.json({}, 200) : fail(c, 'corrector_not_started', 502);
   });
+  /** An update request that did not start, as its route answers it. */
+  const startRefused = (c: Context<AppEnv>, refusal: StartRefusal) => {
+    switch (refusal) {
+      case 'not_admin':
+        return fail(c, refusal, 403);
+      case 'not_found':
+        return fail(c, refusal, 404);
+      case 'live':
+        return fail(c, 'update_live', 409);
+      case 'not_configured':
+        return fail(c, 'update_off', 503);
+      case 'not_started':
+        return fail(c, 'update_not_started', 502);
+      case 'list_pending':
+      case 'decided':
+        return fail(c, refusal, 409);
+    }
+  };
   const updateScreen = async (c: Context<AppEnv>) => {
     const current = await signedIn(c);
     return current === null || updateRequests === undefined || authLimits === undefined
@@ -1910,21 +1939,73 @@ export function createApp({
     const limited = await overLimit(c, screen.limits, updateRequestLimits.hour, accountId);
     if (limited !== undefined) return limited;
     const outcome = await screen.requests.start(accountId, routeId);
+    return typeof outcome === 'string' ? startRefused(c, outcome) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.fileMemberUpdateRequest, async (c) => {
+    const reads = await confirmedCorrectionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const request = FileMemberUpdateRequest.parse(await c.req.json());
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.file, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.fileUpdate(accountId, request);
+    switch (outcome) {
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'live':
+        return fail(c, 'update_live', 409);
+      case 'not_uploaded':
+      case 'upload_mismatch':
+        return fail(c, outcome, 409);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
+  v1.openapi(openApiRoutes.getOwnUpdateRequests, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    return c.json(await reads.corrections.ownUpdates(reads.current.accountId), 200);
+  });
+  v1.openapi(openApiRoutes.getMemberUpdateRequests, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    const outcome = await reads.corrections.memberUpdates(reads.current.accountId);
+    return outcome === 'not_admin' ? fail(c, outcome, 403) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.releaseMemberUpdateRequest, async (c) => {
+    const screen = await updateScreen(c);
+    if ('refused' in screen) return screen.refused;
+    if (corrections === undefined) return unauthorized(c);
+    const { id } = MemberUpdateRequestReference.parse(await c.req.json());
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, updateRequestLimits.hour, accountId);
+    if (limited !== undefined) return limited;
+    const found = await corrections.memberUpdate(accountId, id);
+    if (found === 'not_admin') return fail(c, found, 403);
+    if (found === 'not_found') return fail(c, found, 404);
+    if (!releasable(found.facts)) return fail(c, 'decided', 409);
+    const outcome = await screen.requests.start(accountId, found.routeId, id);
+    return typeof outcome === 'string' ? startRefused(c, outcome) : c.json(outcome, 200);
+  });
+  v1.openapi(openApiRoutes.declineMemberUpdateRequest, async (c) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
+    const { id, reason } = DeclineMemberUpdateRequest.parse(await c.req.json());
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.file, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.decline(accountId, id, reason ?? null);
     switch (outcome) {
       case 'not_admin':
         return fail(c, outcome, 403);
       case 'not_found':
         return fail(c, outcome, 404);
-      case 'live':
-        return fail(c, 'update_live', 409);
-      case 'not_configured':
-        return fail(c, 'update_off', 503);
-      case 'not_started':
-        return fail(c, 'update_not_started', 502);
-      case 'list_pending':
+      case 'decided':
         return fail(c, outcome, 409);
       default:
-        return c.json(outcome, 200);
+        return c.json({}, 200);
     }
   });
   v1.openapi(openApiRoutes.getNewestUpdateRequest, async (c) => {

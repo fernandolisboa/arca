@@ -2,7 +2,10 @@ import { type Database, withIdentity } from '@arca/db';
 import { sql } from 'drizzle-orm';
 import type { ObjectStorage } from '../storage/object-storage.js';
 
-/** A request's contents go this long after an admin closed it (ADR-0029, RETENTION.md). */
+/**
+ * A request's contents go this long after it ended: an admin closed it (ADR-0029, RETENTION.md),
+ * or, for a member's update request, released or declined it (ADR-0031).
+ */
 export const closedCorrectionDays = 30;
 
 /** And this long after it was filed, whatever its state. */
@@ -50,7 +53,8 @@ export function createCorrectionContents({
          WHERE r.author_account_id = ${accountId} AND r.content_erased_at IS NULL
            AND (r.created_at <= ${filedBefore}
              OR EXISTS (SELECT FROM knowledge.correction_event e
-                         WHERE e.request_id = r.id AND e.kind = 'closed' AND e.at <= ${closedBefore}))`;
+                         WHERE e.request_id = r.id AND e.kind IN ('closed', 'released', 'declined')
+                           AND e.at <= ${closedBefore}))`;
       // A due request's uploads started before it was filed, so more than a day ago: once its
       // sources go, every upload to delete is one no source names and older than a day.
       const pathnames = await withIdentity(db, { accountId }, async (tx) =>

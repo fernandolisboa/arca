@@ -5,11 +5,14 @@ import {
   proposalLists,
   routeIdSchema,
   slugSchema,
+  memberRequestStates,
+  releasedRuns,
   updateFailures,
   updateStages,
 } from '@arca/domain';
 import { z } from 'zod';
 import type { RouteDefinition } from './index.js';
+import { ListedCorrectionSource, correctionLimits, requestUrl } from './knowledge.js';
 
 /*
  * Update requests (ADR-0031): an admin asks for one route to be researched again; a workflow runs
@@ -336,6 +339,131 @@ export function decideOfficialDomainsAction(
   return { action: decision, targets: [listId, String(number)], fields: { contentHash } };
 }
 
+/*
+ * Members' update requests (ADR-0031, #462): any member asks for the route version they are
+ * looking at to be updated, with an optional note, links and files for the admin to read. It waits
+ * until an admin releases it, which starts an update request of the route, or declines it. Nothing
+ * a member writes or attaches reaches a model.
+ */
+
+export const FileMemberUpdateRequest = z
+  .strictObject({
+    routeId: routeIdSchema,
+    versionNumber: z.int().min(1).max(1_000_000),
+    note: z.string().trim().min(1).max(correctionLimits.note).optional(),
+    links: z.array(requestUrl).max(correctionLimits.sources).default([]),
+    /** Uploads of the member started within 2 hours and named by no request. */
+    files: z.array(z.uuid()).max(correctionLimits.sources).default([]),
+  })
+  .refine(({ links, files }) => links.length + files.length <= correctionLimits.sources, {
+    message: 'At most five links and files together',
+  })
+  .refine(({ files }) => new Set(files).size === files.length, {
+    message: 'A request names each upload once',
+  });
+export type FileMemberUpdateRequest = z.input<typeof FileMemberUpdateRequest>;
+
+export const FiledMemberUpdateRequest = z.strictObject({ id: z.uuid() });
+
+export const fileMemberUpdateRequest = {
+  method: 'post',
+  path: '/knowledge/member-update-requests',
+  operationId: 'fileMemberUpdateRequest',
+  summary:
+    "Files, for any confirmed account, a request to update one route version it sees, with an optional note, links and files; it waits for an admin, and the owner-list admins are emailed. 30 per 24 hours per account (429 rate_limited). 403 account_unconfirmed; 404 not_found for a version or upload it does not hold; 409 update_live while a member's request of the route waits or an update request of the route runs; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
+  body: FileMemberUpdateRequest,
+  response: { description: 'Filed', schema: FiledMemberUpdateRequest },
+} as const satisfies RouteDefinition<typeof FiledMemberUpdateRequest>;
+
+/** A member's request as its author sees it: never another member's. */
+export const OwnUpdateRequest = z.strictObject({
+  id: z.uuid(),
+  routeId: routeIdSchema,
+  versionNumber: z.int().min(1),
+  createdAt: z.iso.datetime(),
+  state: z.enum(memberRequestStates),
+  /** Whether it still waits on an admin or on its run; while it does, no new request is taken. */
+  pending: z.boolean(),
+  /** The admin's reason, on a declined request that gave one. */
+  reason: z.string().max(500).nullable(),
+});
+export type OwnUpdateRequest = z.infer<typeof OwnUpdateRequest>;
+
+export const OwnUpdateRequests = z.strictObject({ requests: z.array(OwnUpdateRequest).max(50) });
+export type OwnUpdateRequests = z.infer<typeof OwnUpdateRequests>;
+
+export const getOwnUpdateRequests = {
+  method: 'get',
+  path: '/knowledge/member-update-requests/own',
+  operationId: 'getOwnUpdateRequests',
+  summary: "The signed-in account's own newest update requests with their state",
+  response: { description: 'Their own requests', schema: OwnUpdateRequests },
+} as const satisfies RouteDefinition<typeof OwnUpdateRequests>;
+
+export const MemberUpdateRequest = z.strictObject({
+  id: z.uuid(),
+  routeId: routeIdSchema,
+  versionNumber: z.int().min(1),
+  createdAt: z.iso.datetime(),
+  /** Null when the member wrote none, or once the retention step erased it. */
+  note: z.string().max(correctionLimits.note).nullable(),
+  erased: z.boolean(),
+  /** Links and files in order; a file opens through `correctionFileUrl`, for an owner-list admin. */
+  sources: z.array(ListedCorrectionSource).max(correctionLimits.sources),
+  state: z.enum(memberRequestStates),
+  /** How the update request its release started stands, once released. */
+  run: z.enum(releasedRuns).nullable(),
+  reason: z.string().max(500).nullable(),
+  canRelease: z.boolean(),
+  canDecline: z.boolean(),
+});
+export type MemberUpdateRequest = z.infer<typeof MemberUpdateRequest>;
+
+export const MemberUpdateRequests = z.strictObject({
+  /** Whether the admin may download members' files: owner-list admins only. */
+  canDownload: z.boolean(),
+  requests: z.array(MemberUpdateRequest).max(50),
+});
+export type MemberUpdateRequests = z.infer<typeof MemberUpdateRequests>;
+
+export const getMemberUpdateRequests = {
+  method: 'get',
+  path: '/knowledge/member-update-requests',
+  operationId: 'getMemberUpdateRequests',
+  summary: "The newest members' update requests, for an admin. 403 not_admin",
+  response: { description: "Members' requests", schema: MemberUpdateRequests },
+} as const satisfies RouteDefinition<typeof MemberUpdateRequests>;
+
+export const MemberUpdateRequestReference = z.strictObject({ id: z.uuid() });
+
+export const releaseMemberUpdateRequest = {
+  method: 'post',
+  path: '/knowledge/member-update-requests/release',
+  operationId: 'releaseMemberUpdateRequest',
+  summary:
+    "Releases, for an admin, a member's waiting request: starts an update request of the route's newest version, as startUpdateRequest does, and records the release in the same transaction. 10 per account per hour (429 rate_limited), shared with startUpdateRequest. 403 not_admin; 404 not_found; 409 decided for a request already released or declined; then startUpdateRequest's refusals",
+  body: MemberUpdateRequestReference,
+  response: { description: 'Released', schema: StartedUpdateRequest },
+} as const satisfies RouteDefinition<typeof StartedUpdateRequest>;
+
+export const DeclineMemberUpdateRequest = z.strictObject({
+  id: z.uuid(),
+  reason: z.string().trim().min(1).max(500).optional(),
+});
+export type DeclineMemberUpdateRequest = z.input<typeof DeclineMemberUpdateRequest>;
+
+export const DeclinedMemberUpdateRequest = z.strictObject({});
+
+export const declineMemberUpdateRequest = {
+  method: 'post',
+  path: '/knowledge/member-update-requests/decline',
+  operationId: 'declineMemberUpdateRequest',
+  summary:
+    "Declines, for an admin, a member's request that waits, or whose release ended with no proposal, with an optional reason the member reads. 403 not_admin; 404 not_found; 409 decided otherwise",
+  body: DeclineMemberUpdateRequest,
+  response: { description: 'Declined', schema: DeclinedMemberUpdateRequest },
+} as const satisfies RouteDefinition<typeof DeclinedMemberUpdateRequest>;
+
 export const updateRequestRoutes = {
   startUpdateRequest,
   getNewestUpdateRequest,
@@ -345,4 +473,9 @@ export const updateRequestRoutes = {
   rejectOfficialDomains,
   getVersionReview,
   editVersionItem,
+  fileMemberUpdateRequest,
+  getOwnUpdateRequests,
+  getMemberUpdateRequests,
+  releaseMemberUpdateRequest,
+  declineMemberUpdateRequest,
 } as const;

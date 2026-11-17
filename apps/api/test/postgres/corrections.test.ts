@@ -79,6 +79,7 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
         });
       },
     },
+    now: () => Date.now(),
   });
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
@@ -93,6 +94,7 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
     authLimits: { ...noLimits, limiter },
+    accountConfirmed: () => Promise.resolve(true),
     corrections,
     memoryObjects: objects,
   });
@@ -389,7 +391,7 @@ describe('reading and closing requests (ADR-0029)', () => {
 });
 
 describe('files on a correction request (ADR-0029)', () => {
-  it('files an uploaded PDF and lets any admin download it, never anyone else', async () => {
+  it('files an uploaded PDF and lets an owner-list admin download it, never anyone else', async () => {
     const uploadId = await uploaded(pdf);
     const response = await setup(owner).file(withFile(uploadId));
     expect(response.status).toBe(200);
@@ -399,19 +401,20 @@ describe('files on a correction request (ADR-0029)', () => {
       ...filed.sources,
       { kind: 'file', mediaType: 'application/pdf', size: pdf.length, pageUrl: null },
     ]);
-    for (const admin of [owner, granted]) {
-      const link = await setup(admin).fileUrl(id, 2);
-      expect(link.status).toBe(200);
-      const { url } = (await link.json()) as { url: string };
-      const download = await setup(admin).get(url);
-      expect(download.headers.get('content-disposition')).toBe('attachment');
-      expect(download.headers.get('x-content-type-options')).toBe('nosniff');
-      expect(new Uint8Array(await download.arrayBuffer())).toEqual(pdf);
-    }
+    const link = await setup(owner).fileUrl(id, 2);
+    expect(link.status).toBe(200);
+    const { url } = (await link.json()) as { url: string };
+    const download = await setup(owner).get(url);
+    expect(download.headers.get('content-disposition')).toBe('attachment');
+    expect(download.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(new Uint8Array(await download.arrayBuffer())).toEqual(pdf);
+    // A member may attach a personal document by mistake, so an admin by grant opens none (ADR-0031).
+    const byGrant = await setup(granted).fileUrl(id, 2);
+    expect(byGrant.status).toBe(403);
+    expect(await byGrant.json()).toEqual({ error: { code: 'owner_list_only' } });
     expect((await setup(member).fileUrl(id, 2)).status).toBe(403);
     expect((await setup(owner).fileUrl(id, 0)).status).toBe(404);
     expect(await audited('correction_file_downloaded')).toEqual([
-      { details: { requestId: id, position: 2 } },
       { details: { requestId: id, position: 2 } },
     ]);
   });
@@ -426,12 +429,11 @@ describe('files on a correction request (ADR-0029)', () => {
     expect((await setup(owner).startUpload(body)).status).toBe(400);
   });
 
-  it('answers 403 to anyone but an owner-list admin starting an upload', async () => {
+  it('lets any signed-in account start an upload, since members file update requests (ADR-0031)', async () => {
     const body = { mediaType: 'application/pdf', size: pdf.length, sha256: sha256(pdf) };
-    const byGrant = await setup(granted).startUpload(body);
-    expect(byGrant.status).toBe(403);
-    expect(await byGrant.json()).toEqual({ error: { code: 'owner_list_only' } });
-    expect((await setup(member).startUpload(body)).status).toBe(403);
+    expect((await setup(granted).startUpload(body)).status).toBe(200);
+    expect((await setup(member).startUpload(body)).status).toBe(200);
+    expect((await setup(null).startUpload(body)).status).toBe(401);
   });
 
   it('refuses a file whose content is not its declared type, and deletes it', async () => {
@@ -476,8 +478,8 @@ describe('files on a correction request (ADR-0029)', () => {
     const pathname = new URL(upload.url, origin).pathname.replace('/internal/objects/', '');
     expect((await routes.presign(pathname)).status).toBe(200);
     expect(presigns).toEqual([{ pathname, maxBytes: 40, contentType: 'text/html' }]);
-    expect((await setup(granted).presign(pathname)).status).toBe(403);
-    expect((await setup(member).presign(pathname)).status).toBe(403);
+    expect((await setup(granted).presign(pathname)).status).toBe(404);
+    expect((await setup(member).presign(pathname)).status).toBe(404);
     expect((await routes.presign(`corrections/${randomUUID()}`)).status).toBe(404);
     await testDatabase.asAdmin((client) =>
       client.query(
@@ -634,7 +636,7 @@ describe('requests for a new route (ADR-0029)', () => {
       ],
     });
     expect((await routeListed(owner)).canFile).toBe(true);
-    expect((await setup(granted).fileUrl(id, 2)).status).toBe(200);
+    expect((await setup(granted).fileUrl(id, 2)).status).toBe(403);
     expect(notices).toEqual([`${owner}:correction_requested`]);
     expect((await audited('correction_requested')).at(-1)).toEqual({
       details: { requestId: id, countryCode: 'lt' },

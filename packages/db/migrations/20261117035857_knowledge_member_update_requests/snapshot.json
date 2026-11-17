@@ -1,0 +1,334 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "79a30386-e6b2-4812-9d0c-ab7e5c9d51eb",
+  "prevIds": [
+    "d3092b24-bb5e-4989-b1d1-eefce807d085"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_event",
+        "update_request_id"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_event.update_request_id",
+        "n|col|knowledge.correction_event.update_request_id",
+        "e|col|knowledge.correction_event.update_request_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "correction_request",
+        "request_kind"
+      ],
+      "writes": [
+        "s|col|knowledge.correction_request.request_kind",
+        "n|col|knowledge.correction_request.request_kind",
+        "e|col|knowledge.correction_request.request_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|uq|knowledge.correction_event.correction_event_update_request_key",
+        "n|uq|knowledge.correction_event.correction_event_update_request_key",
+        "e|uq|knowledge.correction_event.correction_event_update_request_key",
+        "n|con|knowledge.correction_event.correction_event_update_request_key",
+        "n|rel|knowledge.correction_event_update_request_key"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.update_request_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|fk|knowledge.correction_event.correction_event_update_request_id_update_request_id_fkey",
+        "n|fk|knowledge.correction_event.correction_event_update_request_id_update_request_id_fkey",
+        "e|fk|knowledge.correction_event.correction_event_update_request_id_update_request_id_fkey",
+        "n|con|knowledge.correction_event.correction_event_update_request_id_update_request_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.update_request_id",
+        "n|col|knowledge.update_request.id",
+        "e|uniqueness|knowledge.update_request.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_update_request",
+        "n|ck|knowledge.correction_event.correction_event_update_request",
+        "e|ck|knowledge.correction_event.correction_event_update_request",
+        "n|con|knowledge.correction_event.correction_event_update_request"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.update_request_id",
+        "n|col|knowledge.correction_event.kind"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_request_kind",
+        "n|ck|knowledge.correction_request.correction_request_request_kind",
+        "e|ck|knowledge.correction_request.correction_request_request_kind",
+        "n|con|knowledge.correction_request.correction_request_request_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.request_kind"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_update_names_version",
+        "n|ck|knowledge.correction_request.correction_request_update_names_version",
+        "e|ck|knowledge.correction_request.correction_request_update_names_version",
+        "n|con|knowledge.correction_request.correction_request_update_names_version"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.request_kind",
+        "n|col|knowledge.correction_request.item_kind",
+        "n|col|knowledge.correction_request.item_key"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_kind"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.kind",
+        "e|col|knowledge.correction_event.kind"
+      ],
+      "sqlHash": "825e01cef1721e7d"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_request.correction_request_note_erased"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_request.content_erased_at",
+        "n|col|knowledge.correction_request.note",
+        "n|col|knowledge.correction_request.request_kind",
+        "e|col|knowledge.correction_request.note",
+        "e|col|knowledge.correction_request.content_erased_at"
+      ],
+      "sqlHash": "423a581a4af19851"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "correction_event"
+      ],
+      "writes": [
+        "s|ck|knowledge.correction_event.correction_event_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.correction_event",
+        "n|sch|knowledge",
+        "n|col|knowledge.correction_event.kind",
+        "n|col|knowledge.correction_event.corrector_key_id",
+        "n|col|knowledge.correction_event.proposed_version",
+        "n|col|knowledge.correction_event.explanation",
+        "n|col|knowledge.correction_event.proposed_route_id",
+        "e|col|knowledge.correction_event.kind",
+        "e|col|knowledge.correction_event.corrector_key_id",
+        "e|col|knowledge.correction_event.proposed_version",
+        "e|col|knowledge.correction_event.explanation",
+        "e|col|knowledge.correction_event.proposed_route_id"
+      ],
+      "sqlHash": "23c197de767f85a7"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "update_request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "request_kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'correction'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_update_request_id_update_request_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "update_request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "update_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_update_request_key",
+        "nameExplicit": true,
+        "columns": [
+          "update_request_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_event",
+        "name": "correction_event_update_request",
+        "value": "(\"update_request_id\" IS NOT NULL) = (\"kind\" = 'released')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_request_kind",
+        "value": "\"request_kind\" IN ('correction', 'update')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "correction_request",
+        "name": "correction_request_update_names_version",
+        "value": "\"request_kind\" <> 'update' OR (\"item_kind\" = 'version' AND \"item_key\" IS NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_event\",\"correction_event_kind\"]",
+      "set": {
+        "value": "\"kind\" IN ('taken', 'answered', 'closed', 'released', 'declined')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_request\",\"correction_request_note_erased\"]",
+      "set": {
+        "value": "CASE WHEN \"content_erased_at\" IS NOT NULL THEN \"note\" IS NULL\n        ELSE \"note\" IS NOT NULL OR \"request_kind\" = 'update' END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"correction_event\",\"correction_event_shape\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'released' THEN \"corrector_key_id\" IS NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL AND \"proposed_route_id\" IS NULL\n        WHEN 'declined' THEN \"corrector_key_id\" IS NULL AND \"proposed_version\" IS NULL\n          AND \"proposed_route_id\" IS NULL\n          AND coalesce(char_length(\"explanation\") BETWEEN 1 AND 500, true)\n        WHEN 'closed' THEN \"corrector_key_id\" IS NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL AND \"proposed_route_id\" IS NULL\n        WHEN 'taken' THEN \"corrector_key_id\" IS NOT NULL AND \"proposed_version\" IS NULL\n          AND \"explanation\" IS NULL AND \"proposed_route_id\" IS NULL\n        WHEN 'answered' THEN \"corrector_key_id\" IS NOT NULL\n          AND (\"proposed_version\" IS NULL) <> (\"explanation\" IS NULL)\n          AND (\"proposed_route_id\" IS NULL OR (\"proposed_version\" IS NOT NULL\n            AND \"proposed_route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'))\n          AND coalesce(\"proposed_version\" > 0, true)\n          AND coalesce(char_length(\"explanation\") BETWEEN 1 AND 2000, true)\n        ELSE false END"
+      }
+    }
+  ]
+}

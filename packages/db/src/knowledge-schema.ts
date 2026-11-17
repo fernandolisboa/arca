@@ -428,6 +428,9 @@ export const correctionItemKinds = [
   'countrySet',
 ] as const;
 
+/** A correction request of ADR-0029, or a member's update request of ADR-0031 stored with them. */
+export const correctionRequestKinds = ['correction', 'update'] as const;
+
 const inList = (column: unknown, values: readonly string[]) =>
   sql`${column} IN (${sql.raw(values.map((value) => `'${value}'`).join(', '))})`;
 
@@ -459,7 +462,14 @@ export const correctionRequest = knowledge.table(
     countryCode: text('country_code'),
     itemKind: text('item_kind').notNull(),
     itemKey: text('item_key'),
-    /** Null once the retention step erased the request's contents. */
+    /**
+     * `update` for a member's update request (ADR-0031), which names a whole version, may carry
+     * no note, and waits for an admin to release or decline it; `correction` for ADR-0029's.
+     */
+    requestKind: text('request_kind', { enum: correctionRequestKinds })
+      .notNull()
+      .default('correction'),
+    /** Null once the retention step erased the request's contents, or on an update request with none. */
     note: text('note'),
     authorAccountId: uuid('author_account_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -487,7 +497,13 @@ export const correctionRequest = knowledge.table(
     check('correction_request_note_length', sql`char_length(${table.note}) BETWEEN 1 AND 4000`),
     check(
       'correction_request_note_erased',
-      sql`(${table.note} IS NULL) = (${table.contentErasedAt} IS NOT NULL)`,
+      sql`CASE WHEN ${table.contentErasedAt} IS NOT NULL THEN ${table.note} IS NULL
+        ELSE ${table.note} IS NOT NULL OR ${table.requestKind} = 'update' END`,
+    ),
+    check('correction_request_request_kind', inList(table.requestKind, correctionRequestKinds)),
+    check(
+      'correction_request_update_names_version',
+      sql`${table.requestKind} <> 'update' OR (${table.itemKind} = 'version' AND ${table.itemKey} IS NULL)`,
     ),
     index('correction_request_version_idx').on(table.routeId, table.versionNumber),
     index('correction_request_author_account_id_idx').on(table.authorAccountId),
@@ -711,8 +727,18 @@ export const correctorKey = knowledge.table(
   ],
 );
 
-/** What happened to a request after it was filed (ADR-0029). */
-export const correctionEventKinds = ['taken', 'answered', 'closed'] as const;
+/**
+ * What happened to a request after it was filed: ADR-0029's taken, answered and closed; and, on a
+ * member's update request (ADR-0031), released by an admin, which started an update request, or
+ * declined, with the admin's reason if any.
+ */
+export const correctionEventKinds = [
+  'taken',
+  'answered',
+  'closed',
+  'released',
+  'declined',
+] as const;
 
 /**
  * What happened to a request after it was filed (ADR-0029): the corrector run took it or answered
@@ -732,11 +758,14 @@ export const correctionEvent = knowledge.table(
     /** The route of the proposed version, only on an answer to a request for a new route. */
     proposedRouteId: text('proposed_route_id'),
     explanation: text('explanation'),
+    /** The update request a release started. */
+    updateRequestId: uuid('update_request_id').references(() => updateRequest.id),
     at: timestamp('at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
   },
   (table) => [
+    unique('correction_event_update_request_key').on(table.updateRequestId),
     foreignKey({
       name: 'correction_event_request_fkey',
       columns: [table.requestId],
@@ -749,8 +778,17 @@ export const correctionEvent = knowledge.table(
     }),
     check('correction_event_kind', inList(table.kind, correctionEventKinds)),
     check(
+      'correction_event_update_request',
+      sql`(${table.updateRequestId} IS NOT NULL) = (${table.kind} = 'released')`,
+    ),
+    check(
       'correction_event_shape',
       sql`CASE ${table.kind}
+        WHEN 'released' THEN ${table.correctorKeyId} IS NULL AND ${table.proposedVersion} IS NULL
+          AND ${table.explanation} IS NULL AND ${table.proposedRouteId} IS NULL
+        WHEN 'declined' THEN ${table.correctorKeyId} IS NULL AND ${table.proposedVersion} IS NULL
+          AND ${table.proposedRouteId} IS NULL
+          AND coalesce(char_length(${table.explanation}) BETWEEN 1 AND 500, true)
         WHEN 'closed' THEN ${table.correctorKeyId} IS NULL AND ${table.proposedVersion} IS NULL
           AND ${table.explanation} IS NULL AND ${table.proposedRouteId} IS NULL
         WHEN 'taken' THEN ${table.correctorKeyId} IS NOT NULL AND ${table.proposedVersion} IS NULL

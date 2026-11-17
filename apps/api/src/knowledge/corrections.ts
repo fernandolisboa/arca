@@ -4,6 +4,9 @@ import type {
   CorrectionRequests,
   ObjectUploadUrlResponse,
   FileCorrectionRequest,
+  FileMemberUpdateRequest,
+  MemberUpdateRequests,
+  OwnUpdateRequests,
   FileRouteRequest,
   RouteRequests,
   ListedCorrectionSource,
@@ -14,9 +17,15 @@ import { type Database, withIdentity } from '@arca/db';
 import {
   type CorrectionEvent,
   type DecisionStates,
+  type MemberRequestFacts,
+  type ReleasedRun,
   type VersionView,
   correctionState,
   correctionTargets,
+  declinable,
+  memberRequestPending,
+  memberRequestState,
+  releasable,
 } from '@arca/domain';
 import { type SQL, sql } from 'drizzle-orm';
 import type { AccountNotice } from '../auth/account-notices.js';
@@ -24,6 +33,7 @@ import type { AuditLog } from '../audit/log.js';
 import { type AdminBasis, type AdminRole, readAdminHistory } from './admins.js';
 import type { ObjectStorage } from '../storage/object-storage.js';
 import { fitsFileType } from './correction-files.js';
+import { updateLiveMs } from './update/requests.js';
 import { type KnowledgeVersions, identitiesOf } from './versions.js';
 
 type FilingRefusal = 'not_admin' | 'owner_list_only';
@@ -35,6 +45,16 @@ export type FileOutcome =
   | 'already_corrected'
   | 'not_uploaded'
   | 'upload_mismatch';
+
+/** Why a member's update request was not filed (ADR-0031, #462). */
+export type MemberFileOutcome =
+  { readonly id: string } | 'not_found' | 'live' | 'not_uploaded' | 'upload_mismatch';
+
+/** A member's request an admin may act on: its route and what was stored of it. */
+export interface MemberRequestFound {
+  readonly routeId: string;
+  readonly facts: MemberRequestFacts;
+}
 
 /** An upload is presigned only this long after it started, so every grant ends before the cleanup. */
 export const correctionUploadWindowMinutes = 60;
@@ -57,22 +77,41 @@ export interface Corrections {
     number: number,
   ) => Promise<CorrectionRequests | 'not_admin' | 'not_found'>;
   readonly close: (accountId: string, id: string) => Promise<'closed' | 'not_admin' | 'not_found'>;
-  /** Starts the upload of one file, for an owner-list admin. */
+  /** Starts the upload of one file, for any signed-in account (ADR-0031). */
   readonly startUpload: (
     accountId: string,
     upload: StartCorrectionUpload,
-  ) => Promise<StartCorrectionUploadResponse | FilingRefusal>;
-  /** The presigned upload for the admin's own unused upload at this pathname, within the hour. */
+  ) => Promise<StartCorrectionUploadResponse>;
+  /** The presigned upload for the account's own unused upload at this pathname, within the hour. */
   readonly presignUpload: (
     accountId: string,
     pathname: string,
-  ) => Promise<ObjectUploadUrlResponse | FilingRefusal | 'not_found'>;
-  /** A 5-minute download URL for one file source, for an admin. */
+  ) => Promise<ObjectUploadUrlResponse | 'not_found'>;
+  /** A 5-minute download URL for one file source, for an owner-list admin. */
   readonly fileUrl: (
     accountId: string,
     requestId: string,
     position: number,
-  ) => Promise<{ readonly url: string } | 'not_admin' | 'not_found'>;
+  ) => Promise<{ readonly url: string } | FilingRefusal | 'not_found'>;
+  /** Files a member's update request on a route version (ADR-0031, #462), for any account. */
+  readonly fileUpdate: (
+    accountId: string,
+    request: FileMemberUpdateRequest,
+  ) => Promise<MemberFileOutcome>;
+  /** The account's own update requests with their state; never another's. */
+  readonly ownUpdates: (accountId: string) => Promise<OwnUpdateRequests>;
+  /** The newest members' update requests, for an admin. */
+  readonly memberUpdates: (accountId: string) => Promise<MemberUpdateRequests | 'not_admin'>;
+  /** One member's request, for an admin about to release or decline it. */
+  readonly memberUpdate: (
+    accountId: string,
+    id: string,
+  ) => Promise<MemberRequestFound | 'not_admin' | 'not_found'>;
+  readonly decline: (
+    accountId: string,
+    id: string,
+    reason: string | null,
+  ) => Promise<'declined' | 'decided' | 'not_admin' | 'not_found'>;
 }
 
 export interface CorrectionSettings {
@@ -84,9 +123,11 @@ export interface CorrectionSettings {
   /** The country codes of the countries dataset, which a request for a new route may name. */
   readonly countries: readonly string[];
   readonly audit: Pick<AuditLog, 'record'>;
-  readonly notify: AccountNotice<'correction_requested'>;
+  readonly notify: AccountNotice<'correction_requested' | 'update_requested'>;
   /** The environment's object store, where request files live under `corrections/`. */
   readonly storage: ObjectStorage;
+  /** Milliseconds since the epoch. */
+  readonly now: () => number;
 }
 
 function holdsItem(view: VersionView, { kind, key }: CorrectionItem): boolean {
@@ -100,6 +141,30 @@ function citesCopiedPages(view: VersionView, sources: FileCorrectionRequest['sou
   return sources.every(
     (source) => source.kind !== 'file' || source.pageUrl === null || cited.has(source.pageUrl),
   );
+}
+
+const uploadIdsOf = (sources: FileCorrectionRequest['sources']) =>
+  sources.flatMap((source) => (source.kind === 'file' ? [source.uploadId] : []));
+
+/** A release or decline as `own_update_requests` and `member_update_requests` serve it. */
+type StoredMemberEvent =
+  | { kind: 'declined'; reason?: string }
+  | { kind: 'released'; requestedAt: string; ended: boolean; failed?: boolean };
+
+/** A member's request as `own_update_requests` serves it to its author. */
+interface StoredOwnRequest extends Record<string, unknown> {
+  id: string;
+  route_id: string;
+  version_number: number;
+  created_at: string | Date;
+  events: StoredMemberEvent[];
+}
+
+/** A member's request as `member_update_requests` serves it to an admin. */
+interface StoredMemberRequest extends StoredOwnRequest {
+  note: string | null;
+  erased: boolean;
+  sources: MemberUpdateRequests['requests'][number]['sources'];
 }
 
 /** The basis as the definer functions take it: the owner list, or the grant it names. */
@@ -168,6 +233,11 @@ const routeAnswer = (
       };
 };
 
+const declineReason = (events: readonly StoredMemberEvent[]) => {
+  const declined = events.find((event) => event.kind === 'declined');
+  return declined?.kind === 'declined' ? (declined.reason ?? null) : null;
+};
+
 interface StoredFile extends Record<string, unknown> {
   request_id: string;
   position: number;
@@ -185,6 +255,7 @@ export function createCorrections({
   audit,
   notify,
   storage,
+  now,
 }: CorrectionSettings): Corrections {
   const knownCountries = new Set(countries.map((code) => code.toLowerCase()));
   const basisOf = async (accountId: string) =>
@@ -228,15 +299,10 @@ export function createCorrections({
    */
   const checkFiles = async (
     accountId: string,
-    sources: FileCorrectionRequest['sources'],
+    uploadIds: readonly string[],
   ): Promise<'not_found' | 'not_uploaded' | 'upload_mismatch' | undefined> => {
-    for (const source of sources) {
-      if (source.kind !== 'file') continue;
-      const upload = await ownUpload(
-        accountId,
-        { id: source.uploadId },
-        correctionFilingWindowHours * 60,
-      );
+    for (const uploadId of uploadIds) {
+      const upload = await ownUpload(accountId, { id: uploadId }, correctionFilingWindowHours * 60);
       if (upload === undefined) return 'not_found';
       const stored = await storage.digest(upload.pathname);
       if (stored === undefined) return 'not_uploaded';
@@ -249,7 +315,7 @@ export function createCorrections({
           code: 'correction_upload_mismatch',
           subjectAccountId: accountId,
           actorAccountId: accountId,
-          details: { uploadId: source.uploadId },
+          details: { uploadId },
         });
         await storage.delete([upload.pathname]);
         return 'upload_mismatch';
@@ -300,6 +366,38 @@ export function createCorrections({
     return id;
   };
 
+  /** Whether a release's run ended, failed or stalled, from what the listing stored of it. */
+  const factsOf = (events: readonly StoredMemberEvent[]): MemberRequestFacts => {
+    const released = events.find(
+      (event): event is Extract<StoredMemberEvent, { kind: 'released' }> =>
+        event.kind === 'released',
+    );
+    const declined = events.some((event) => event.kind === 'declined');
+    if (released === undefined) return { declined, run: null };
+    const stalled = () => now() - Date.parse(released.requestedAt) > updateLiveMs;
+    const run: ReleasedRun = released.ended
+      ? released.failed === true
+        ? 'failed'
+        : 'finished'
+      : stalled()
+        ? 'stalled'
+        : 'running';
+    return { declined, run };
+  };
+
+  const memberRows = async (accountId: string, basis: AdminBasis, onlyId: string | null = null) => {
+    const { basis: kind, grantId } = basisArguments(basis);
+    return withIdentity(
+      db(),
+      { accountId },
+      async (tx) =>
+        (
+          await tx.execute<StoredMemberRequest>(sql`
+            SELECT * FROM knowledge.member_update_requests(${kind}, ${grantId}, ${onlyId})`)
+        ).rows,
+    );
+  };
+
   return {
     file: async (accountId, request) => {
       const basis = await filingBasis(accountId);
@@ -320,7 +418,7 @@ export function createCorrections({
         states: await states(),
       });
       if (corrected === 'closed') return 'already_corrected';
-      const refused = await checkFiles(accountId, request.sources);
+      const refused = await checkFiles(accountId, uploadIdsOf(request.sources));
       if (refused !== undefined) return refused;
       const id = await fileWith(accountId, request.sources, {
         filing: (written) => sql`knowledge.file_correction_request(${request.routeId},
@@ -335,7 +433,7 @@ export function createCorrections({
       const basis = await filingBasis(accountId);
       if (typeof basis === 'string') return basis;
       if (!knownCountries.has(request.countryCode)) return 'not_found';
-      const refused = await checkFiles(accountId, request.sources);
+      const refused = await checkFiles(accountId, uploadIdsOf(request.sources));
       if (refused !== undefined) return refused;
       const id = await fileWith(accountId, request.sources, {
         filing: (written) => sql`knowledge.file_route_request(${request.countryCode},
@@ -414,8 +512,13 @@ export function createCorrections({
         withIdentity(db(), { accountId }, async (tx) => ({
           rows: (
             await tx.execute<StoredRequest>(sql`
+              WITH listed AS (
+                SELECT * FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId}))
               SELECT id, item_kind, item_key, note, created_at, sources
-                FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId})`)
+                FROM listed
+               WHERE id NOT IN (SELECT member.id FROM knowledge.member_request_ids(
+                       ARRAY(SELECT id FROM listed), ${kind}, ${grantId}) AS member(id))
+               ORDER BY created_at DESC, id`)
           ).rows,
           files: (
             await tx.execute<StoredFile>(sql`
@@ -470,9 +573,11 @@ export function createCorrections({
       if (basis === undefined) return 'not_admin';
       const { basis: kind, grantId } = basisArguments(basis);
       const outcome = await withIdentity(db(), { accountId }, async (tx) => {
-        const { rows } = await tx.execute<{ outcome: 'closed' | 'unchanged' | 'missing' }>(
-          sql`SELECT knowledge.close_correction_request(${id}, ${kind}, ${grantId}) AS outcome`,
-        );
+        const { rows } = await tx.execute<{ outcome: 'closed' | 'unchanged' | 'missing' }>(sql`
+          SELECT CASE WHEN EXISTS (
+                   SELECT FROM knowledge.member_request_ids(ARRAY[${id}::uuid], ${kind}, ${grantId}))
+                 THEN 'missing'
+                 ELSE knowledge.close_correction_request(${id}, ${kind}, ${grantId}) END AS outcome`);
         const closed = rows[0]?.outcome ?? 'missing';
         if (closed === 'closed') {
           await audit.record({
@@ -488,12 +593,10 @@ export function createCorrections({
     },
 
     startUpload: async (accountId, { mediaType, size, sha256 }) => {
-      const basis = await filingBasis(accountId);
-      if (typeof basis === 'string') return basis;
       const started = await withIdentity(db(), { accountId }, async (tx) => {
         const { rows } = await tx.execute<{ id: string; pathname: string }>(sql`
-          SELECT id, pathname FROM knowledge.start_correction_upload(${mediaType}, ${size},
-            ${Buffer.from(sha256, 'base64url')}, ${basis.basis})`);
+          SELECT id, pathname FROM knowledge.start_update_upload(${mediaType}, ${size},
+            ${Buffer.from(sha256, 'base64url')})`);
         return rows[0];
       });
       if (started === undefined) throw new Error('The upload was not started');
@@ -501,21 +604,19 @@ export function createCorrections({
     },
 
     presignUpload: async (accountId, pathname) => {
-      const basis = await filingBasis(accountId);
-      if (typeof basis === 'string') return basis;
       const upload = await ownUpload(accountId, { pathname }, correctionUploadWindowMinutes);
       return upload === undefined
         ? 'not_found'
         : storage.presignUpload(pathname, upload.size, upload.media_type);
     },
 
+    // Only owner-list admins open a file, since a member may attach one by mistake (ADR-0031).
     fileUrl: async (accountId, requestId, position) => {
-      const basis = await basisOf(accountId);
-      if (basis === undefined) return 'not_admin';
-      const { basis: kind, grantId } = basisArguments(basis);
+      const basis = await filingBasis(accountId);
+      if (typeof basis === 'string') return basis;
       const pathname = await withIdentity(db(), { accountId }, async (tx) => {
         const { rows } = await tx.execute<{ pathname: string | null }>(sql`
-          SELECT knowledge.correction_file(${requestId}, ${position}, ${kind}, ${grantId}) AS pathname`);
+          SELECT knowledge.correction_file(${requestId}, ${position}, 'owner_list', NULL) AS pathname`);
         return rows[0]?.pathname ?? null;
       });
       if (pathname === null) return 'not_found';
@@ -526,6 +627,116 @@ export function createCorrections({
         details: { requestId, position },
       });
       return { url: await storage.downloadUrl(pathname) };
+    },
+
+    fileUpdate: async (accountId, { routeId, versionNumber, note, links = [], files = [] }) => {
+      const identities = await versions.identities(routeId);
+      if (!identities.some((identity) => identity.number === versionNumber)) return 'not_found';
+      const refused = await checkFiles(accountId, files);
+      if (refused !== undefined) return refused;
+      const id = await withIdentity(db(), { accountId }, async (tx) => {
+        const { rows } = await tx.execute<{ id: string | null }>(sql`
+          SELECT knowledge.file_update_request(${routeId}, ${versionNumber}, ${note ?? null},
+            ${JSON.stringify(links)}::jsonb) AS id`);
+        const filed = rows[0]?.id ?? null;
+        if (filed === null) return null;
+        for (const [index, uploadId] of files.entries()) {
+          await tx.execute(sql`
+            SELECT knowledge.attach_update_file(${filed}, ${links.length + index}, ${uploadId})`);
+        }
+        // Recorded before the filing commits, so a request no event records is never kept.
+        await audit.record({
+          code: 'update_filed',
+          subjectAccountId: accountId,
+          actorAccountId: accountId,
+          details: { requestId: filed, routeId, number: versionNumber },
+        });
+        return filed;
+      });
+      if (id === null) return 'live';
+      await Promise.all(role.ownerList.map((ownerId) => notify(ownerId, 'update_requested')));
+      return { id };
+    },
+
+    ownUpdates: async (accountId) => {
+      const rows = await withIdentity(
+        db(),
+        { accountId },
+        async (tx) =>
+          (
+            await tx.execute<StoredOwnRequest>(sql`
+              SELECT * FROM knowledge.own_update_requests()`)
+          ).rows,
+      );
+      return {
+        requests: rows.map((row) => {
+          const facts = factsOf(row.events);
+          return {
+            id: row.id,
+            routeId: row.route_id,
+            versionNumber: row.version_number,
+            createdAt: new Date(row.created_at).toISOString(),
+            state: memberRequestState(facts),
+            pending: memberRequestPending(facts),
+            reason: declineReason(row.events),
+          };
+        }),
+      };
+    },
+
+    memberUpdates: async (accountId) => {
+      const basis = await basisOf(accountId);
+      if (basis === undefined) return 'not_admin';
+      return {
+        canDownload: basis.basis === 'owner_list',
+        requests: (await memberRows(accountId, basis)).map((row) => {
+          const facts = factsOf(row.events);
+          return {
+            id: row.id,
+            routeId: row.route_id,
+            versionNumber: row.version_number,
+            createdAt: new Date(row.created_at).toISOString(),
+            note: row.note,
+            erased: row.erased,
+            sources: row.sources,
+            state: memberRequestState(facts),
+            run: facts.run,
+            reason: declineReason(row.events),
+            canRelease: releasable(facts),
+            canDecline: declinable(facts),
+          };
+        }),
+      };
+    },
+
+    memberUpdate: async (accountId, id) => {
+      const basis = await basisOf(accountId);
+      if (basis === undefined) return 'not_admin';
+      const [row] = await memberRows(accountId, basis, id);
+      return row === undefined
+        ? 'not_found'
+        : { routeId: row.route_id, facts: factsOf(row.events) };
+    },
+
+    decline: async (accountId, id, reason) => {
+      const basis = await basisOf(accountId);
+      if (basis === undefined) return 'not_admin';
+      const { basis: kind, grantId } = basisArguments(basis);
+      const outcome = await withIdentity(db(), { accountId }, async (tx) => {
+        const { rows } = await tx.execute<{ outcome: 'declined' | 'decided' | 'missing' }>(sql`
+          SELECT knowledge.decline_update_request(${id}, ${reason}, ${kind}, ${grantId}) AS outcome`);
+        const declined = rows[0]?.outcome ?? 'missing';
+        if (declined === 'declined') {
+          await audit.record({
+            code: 'update_declined',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { requestId: id },
+          });
+        }
+        return declined;
+      });
+      return outcome === 'missing' ? 'not_found' : outcome;
     },
   };
 }

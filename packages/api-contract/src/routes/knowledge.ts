@@ -499,21 +499,22 @@ export const CorrectionItem = z
   });
 export type CorrectionItem = z.infer<typeof CorrectionItem>;
 
-const httpsUrl = z
+/** An `https` address a request names, checked here and again by the database. */
+export const requestUrl = z
   .url({ protocol: /^https$/, hostname: z.regexes.domain })
   .max(correctionLimits.url)
   .regex(/^https:\/\/\S+$/);
-const LinkSource = z.strictObject({ kind: z.literal('link'), url: httpsUrl });
+const LinkSource = z.strictObject({ kind: z.literal('link'), url: requestUrl });
 /**
  * The official page a file is a copy of, one the version cites, or null: the independent check
  * reads the newest such copy when it cannot read the page itself.
  */
-const pageUrl = httpsUrl.nullable();
+const pageUrl = requestUrl.nullable();
 const TextSource = z.strictObject({
   kind: z.literal('text'),
   text: z.string().trim().min(1).max(correctionLimits.text),
   /** The page the text was copied from, if the admin named one. */
-  url: httpsUrl.optional(),
+  url: requestUrl.optional(),
 });
 
 /**
@@ -694,7 +695,7 @@ export const startCorrectionUpload = {
   path: '/knowledge/corrections/uploads',
   operationId: 'startCorrectionUpload',
   summary:
-    'Starts the upload of one file for a correction request, for an owner-list admin, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only',
+    'Starts the upload of one file for a correction or update request, for any confirmed account, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited); 403 account_unconfirmed',
   body: StartCorrectionUpload,
   response: { description: 'Upload started', schema: StartCorrectionUploadResponse },
 } as const satisfies RouteDefinition<typeof StartCorrectionUploadResponse>;
@@ -704,7 +705,7 @@ export const correctionUploadUrl = {
   path: '/knowledge/corrections/uploads/url',
   operationId: 'correctionUploadUrl',
   summary:
-    "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
+    "A presigned upload for one of the account's own unused request uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 account_unconfirmed; 404 not_found unless the pathname is such an upload started within the hour",
   body: ObjectUploadUrlRequest,
   response: { description: 'Presigned upload', schema: ObjectUploadUrlResponse },
 } as const satisfies RouteDefinition<typeof ObjectUploadUrlResponse>;
@@ -726,7 +727,7 @@ export const correctionFileUrl = {
   path: '/knowledge/corrections/files/url',
   operationId: 'correctionFileUrl',
   summary:
-    "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin; 120 per 24 hours per account (429 rate_limited). 403 not_admin; 404 not_found for a source that is not a stored file",
+    "A URL that downloads one request's file, as an attachment, for 5 minutes, for an owner-list admin only, since a member may attach a personal document by mistake; 120 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a source that is not a stored file",
   body: CorrectionFileReference,
   response: { description: 'Download URL', schema: CorrectionFileUrlResponse },
 } as const satisfies RouteDefinition<typeof CorrectionFileUrlResponse>;

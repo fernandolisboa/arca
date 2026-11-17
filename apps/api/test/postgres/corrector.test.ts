@@ -102,6 +102,7 @@ function setup({ signedIn = owner, limiter = noLimits.limiter, ownerList }: Opti
     audit: auditLog(testDatabase.auditDb),
     notify: () => Promise.resolve(),
     storage: objects,
+    now: () => Date.now(),
   });
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
