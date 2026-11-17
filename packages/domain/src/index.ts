@@ -552,6 +552,7 @@ export {
   type MemberRequestState,
   type ReleasedRun,
   declinable,
+  memberRequestPending,
   memberRequestState,
   memberRequestStates,
   releasable,

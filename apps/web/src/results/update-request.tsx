@@ -160,7 +160,8 @@ export function RouteUpdateRequest({
   const own = useQuery(ownUpdateRequestsQuery);
   const [open, setOpen] = useState(false);
   const newest = own.data?.requests.find((request) => request.routeId === routeId);
-  const waiting = newest?.state === 'received' || newest?.state === 'released';
+  const waiting = newest?.pending === true;
+  const stopped = newest?.state === 'released' && !newest.pending;
   return (
     <div className="flex flex-col gap-2">
       {newest !== undefined && (
@@ -173,7 +174,9 @@ export function RouteUpdateRequest({
             />
           </div>
           <p className="text-small text-muted">
-            {t('results.update.stateHint', { state: newest.state })}
+            {stopped
+              ? t('results.update.stoppedHint')
+              : t('results.update.stateHint', { state: newest.state })}
           </p>
           {newest.reason !== null && (
             <p className="text-small whitespace-pre-wrap">

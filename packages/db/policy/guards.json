@@ -134,6 +134,7 @@
     "knowledge.start_update_upload",
     "knowledge.attach_update_file",
     "knowledge.member_update_requests",
+    "knowledge.member_request_ids",
     "knowledge.own_update_requests",
     "knowledge.release_update_request",
     "knowledge.decline_update_request"

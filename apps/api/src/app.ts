@@ -1746,6 +1746,15 @@ export function createApp({
       ? { refused: unauthorized(c) }
       : { corrections, current };
   };
+  // A member's upload or update request needs a confirmed account (spec 0003, R2).
+  const confirmedCorrectionsOf = async (c: Context<AppEnv>) => {
+    const reads = await correctionsOf(c);
+    if ('refused' in reads) return reads;
+    if (accountConfirmed === undefined || !(await accountConfirmed(reads.current.accountId))) {
+      return { refused: fail(c, 'account_unconfirmed', 403) };
+    }
+    return reads;
+  };
   v1.openapi(openApiRoutes.fileCorrectionRequest, async (c) => {
     const reads = await correctionsOf(c);
     if ('refused' in reads) return reads.refused;
@@ -1799,7 +1808,7 @@ export function createApp({
     return c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.startCorrectionUpload, async (c) => {
-    const reads = await correctionsOf(c);
+    const reads = await confirmedCorrectionsOf(c);
     if ('refused' in reads) return reads.refused;
     if (authLimits === undefined) return unauthorized(c);
     const request = StartCorrectionUpload.parse(await c.req.json());
@@ -1809,7 +1818,7 @@ export function createApp({
     return c.json(await reads.corrections.startUpload(accountId, request), 200);
   });
   v1.openapi(openApiRoutes.correctionUploadUrl, async (c) => {
-    const reads = await correctionsOf(c);
+    const reads = await confirmedCorrectionsOf(c);
     if ('refused' in reads) return reads.refused;
     if (authLimits === undefined) return unauthorized(c);
     const { payload } = correctionUploadUrl.body.parse(await c.req.json());
@@ -1933,7 +1942,7 @@ export function createApp({
     return typeof outcome === 'string' ? startRefused(c, outcome) : c.json(outcome, 200);
   });
   v1.openapi(openApiRoutes.fileMemberUpdateRequest, async (c) => {
-    const reads = await correctionsOf(c);
+    const reads = await confirmedCorrectionsOf(c);
     if ('refused' in reads) return reads.refused;
     if (authLimits === undefined) return unauthorized(c);
     const request = FileMemberUpdateRequest.parse(await c.req.json());
@@ -1982,8 +1991,12 @@ export function createApp({
   v1.openapi(openApiRoutes.declineMemberUpdateRequest, async (c) => {
     const reads = await correctionsOf(c);
     if ('refused' in reads) return reads.refused;
+    if (authLimits === undefined) return unauthorized(c);
     const { id, reason } = DeclineMemberUpdateRequest.parse(await c.req.json());
-    const outcome = await reads.corrections.decline(reads.current.accountId, id, reason ?? null);
+    const { accountId } = reads.current;
+    const limited = await overLimit(c, authLimits, correctionRequestLimits.file, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await reads.corrections.decline(accountId, id, reason ?? null);
     switch (outcome) {
       case 'not_admin':
         return fail(c, outcome, 403);

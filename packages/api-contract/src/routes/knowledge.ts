@@ -695,7 +695,7 @@ export const startCorrectionUpload = {
   path: '/knowledge/corrections/uploads',
   operationId: 'startCorrectionUpload',
   summary:
-    'Starts the upload of one file for a correction or update request, for any signed-in account, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited)',
+    'Starts the upload of one file for a correction or update request, for any confirmed account, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited); 403 account_unconfirmed',
   body: StartCorrectionUpload,
   response: { description: 'Upload started', schema: StartCorrectionUploadResponse },
 } as const satisfies RouteDefinition<typeof StartCorrectionUploadResponse>;
@@ -705,7 +705,7 @@ export const correctionUploadUrl = {
   path: '/knowledge/corrections/uploads/url',
   operationId: 'correctionUploadUrl',
   summary:
-    "A presigned upload for one of the account's own unused request uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 404 not_found unless the pathname is such an upload started within the hour",
+    "A presigned upload for one of the account's own unused request uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 account_unconfirmed; 404 not_found unless the pathname is such an upload started within the hour",
   body: ObjectUploadUrlRequest,
   response: { description: 'Presigned upload', schema: ObjectUploadUrlResponse },
 } as const satisfies RouteDefinition<typeof ObjectUploadUrlResponse>;

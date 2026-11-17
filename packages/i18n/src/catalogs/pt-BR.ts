@@ -1017,7 +1017,7 @@ export const ptBR = {
     update: {
       open: 'Pedir atualização desta regra',
       title: 'Pedir atualização desta regra',
-      lead: 'Achou que esta regra mudou ou está desatualizada? Conte para quem administra. Se a pessoa liberar, o Arca pesquisa de novo nos sites oficiais. A regra só muda com base em fonte oficial e depois que um administrador aprovar.',
+      lead: 'Achou que esta regra mudou ou está desatualizada? Conte para quem administra. Se quem administra liberar, o Arca pesquisa de novo nos sites oficiais. A regra só muda com base em fonte oficial e depois que um administrador aprovar.',
       note: 'O que você notou? (opcional)',
       links: 'Links de páginas oficiais, um por linha (opcional)',
       badLinks: 'Use até {max} links, cada um começando com https://.',
@@ -1026,17 +1026,19 @@ export const ptBR = {
         'Só cópias de páginas oficiais, em PDF, HTML ou texto. Nunca mande documentos pessoais, como passaporte ou certidão.',
       badFile: 'Este arquivo não serve: use PDF, HTML ou texto, com até 16 MB.',
       privacy:
-        'Só quem administra lê o que você mandar. Nada disso vai para a IA: se houver um link oficial, a própria pessoa decide se usa.',
+        'Só quem administra lê o que você mandar. Nada disso vai para a IA: se houver um link oficial, quem administra decide se usa.',
       send: 'Enviar pedido',
       sending: 'Enviando…',
       cancel: 'Cancelar',
       failure:
-        '{reason, select, limited {Você já mandou muitos pedidos hoje. Tente de novo amanhã.} update_live {Já existe um pedido desta regra esperando ou uma atualização em andamento.} not_found {O Arca não encontrou esta regra ou o arquivo enviado.} not_uploaded {O arquivo ainda não terminou de subir. Tente de novo.} upload_mismatch {O arquivo chegou diferente do que foi escolhido. Escolha de novo e reenvie.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para enviar o pedido agora. Tente de novo.}}',
+        '{reason, select, limited {Você já mandou muitos pedidos nas últimas 24 horas. Tente de novo mais tarde.} update_live {Já existe um pedido desta regra esperando ou uma atualização em andamento.} not_found {O Arca não encontrou esta regra ou o arquivo enviado.} not_uploaded {O arquivo ainda não terminou de subir. Tente de novo.} upload_mismatch {O arquivo chegou diferente do que foi escolhido. Escolha de novo e reenvie.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para enviar o pedido agora. Tente de novo.}}',
       yours: 'Seu pedido de atualização:',
       state:
         '{state, select, received {Recebido} released {Liberado} finished {Concluído} other {Recusado}}',
       stateHint:
         '{state, select, received {Espera alguém que administra ler e decidir.} released {O Arca está pesquisando de novo nos sites oficiais.} finished {A pesquisa terminou. A proposta espera a revisão de quem administra.} other {Quem administra decidiu não seguir com este pedido. Você pode mandar outro.}}',
+      stoppedHint:
+        'A pesquisa parou antes de chegar a uma proposta. Quem administra vai decidir o que fazer, e você pode mandar outro pedido.',
       reason: 'Motivo: {reason}',
     },
   },
@@ -1550,7 +1552,7 @@ export const ptBR = {
     /** Members' update requests waiting for an admin (ADR-0031, #462). */
     memberRequests: {
       title: 'Pedidos dos participantes',
-      lead: 'Quando alguém da família pede a atualização de uma regra, o pedido aparece aqui. Liberar começa a atualização da rota, como "Pedir atualização". Nada do que a pessoa escreveu ou anexou vai para a IA: se houver um link oficial útil, use na sua própria revisão.',
+      lead: 'Quando alguém da família pede a atualização de uma regra, o pedido aparece aqui. Liberar começa a atualização da rota, como “Pedir atualização”. Nada do que a pessoa escreveu ou anexou vai para a IA: se houver um link oficial útil, use na sua própria revisão.',
       none: 'Nenhum pedido por enquanto.',
       requestTitle: '{title}, versão {number}',
       filedAt: 'Pedido em {date}',

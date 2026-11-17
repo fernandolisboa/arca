@@ -43,7 +43,6 @@ import { createCorrections } from './knowledge/corrections.js';
 import { createCorrector } from './knowledge/corrector.js';
 import { aiKeyCipher } from './ai/key-cipher.js';
 import { createAiSettings } from './ai/settings.js';
-import { routineCorrectorRun } from './knowledge/corrector-run.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
@@ -65,7 +64,6 @@ import {
   readAiKeyEncryptionKey,
   readAnthropicApiKey,
   readOfflineRuleCheck,
-  readCorrectorRunToken,
   readApiSecrets,
   readAuditDatabasePassword,
   readAuthOrigin,
@@ -429,8 +427,8 @@ const ruleSummaries =
         now: () => performance.now(),
       });
 
-// The corrector run's routes stay unserved (401): it would list members' notes and files for a
-// model, which ADR-0031 forbids. Its code goes with the old loop (#463).
+// The corrector run's routes stay unserved (401), and nothing starts a run (503): it would list
+// members' notes and files for a model, which ADR-0031 forbids. Its code goes with the old loop (#463).
 const { keys: correctorKeys } = createCorrector({
   db: () => connected().db,
   role,
@@ -448,12 +446,6 @@ const { keys: correctorKeys } = createCorrector({
     ? {}
     : { flagged: (limit: number) => versionChecks.flagged(limit) }),
 });
-
-const correctorRunToken = environment === 'production' ? readCorrectorRunToken() : undefined;
-const correctorRun =
-  correctorRunToken === undefined
-    ? undefined
-    : routineCorrectorRun({ token: correctorRunToken, logger });
 
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
@@ -645,7 +637,6 @@ const app = createApp({
   aiSettings,
   updateRequests,
   versionReviews,
-  ...(correctorRun === undefined ? {} : { correctorRun }),
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),

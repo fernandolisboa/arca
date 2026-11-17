@@ -94,6 +94,7 @@ function setup(signedIn: string | null, limiter = noLimits.limiter) {
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
     authLimits: { ...noLimits, limiter },
+    accountConfirmed: () => Promise.resolve(true),
     corrections,
     memoryObjects: objects,
   });
@@ -477,8 +478,8 @@ describe('files on a correction request (ADR-0029)', () => {
     const pathname = new URL(upload.url, origin).pathname.replace('/internal/objects/', '');
     expect((await routes.presign(pathname)).status).toBe(200);
     expect(presigns).toEqual([{ pathname, maxBytes: 40, contentType: 'text/html' }]);
-    expect((await setup(granted).presign(pathname)).status).toBe(403);
-    expect((await setup(member).presign(pathname)).status).toBe(403);
+    expect((await setup(granted).presign(pathname)).status).toBe(404);
+    expect((await setup(member).presign(pathname)).status).toBe(404);
     expect((await routes.presign(`corrections/${randomUUID()}`)).status).toBe(404);
     await testDatabase.asAdmin((client) =>
       client.query(

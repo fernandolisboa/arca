@@ -105,6 +105,7 @@ function decisions() {
 }
 
 const objects = memoryObjectStorage();
+const unconfirmed = new Set<string>();
 
 function setup(signedIn: Person | null, researcher: RuleResearcher = scriptedRuleResearcher) {
   const runs: string[] = [];
@@ -140,6 +141,7 @@ function setup(signedIn: Person | null, researcher: RuleResearcher = scriptedRul
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
     authLimits: noLimits,
+    accountConfirmed: (accountId) => Promise.resolve(!unconfirmed.has(accountId)),
     memoryObjects: objects,
     corrections: createCorrections({
       db: () => testDatabase.apiDb,
@@ -198,6 +200,9 @@ function setup(signedIn: Person | null, researcher: RuleResearcher = scriptedRul
     own: () => read<{ requests: Own[] }>('member-update-requests/own'),
     listed: () => read<{ canDownload: boolean; requests: Listed[] }>('member-update-requests'),
     listStatus: async () => (await app.request('/v1/knowledge/member-update-requests')).status,
+    corrections: (routeId: string) =>
+      read<{ requests: unknown[] }>(`corrections?routeId=${routeId}&number=1`),
+    closeCorrection: async (id: string) => (await post('corrections/close', { id })).status,
     release: (id: string) => post('member-update-requests/release', { id }),
     decline: (id: string, reason?: string) =>
       post('member-update-requests/decline', { id, ...(reason === undefined ? {} : { reason }) }),
@@ -297,6 +302,8 @@ describe("members' update requests (ADR-0031, #462)", () => {
     });
     expect((await admin.fileUrl(id, 1)).status).toBe(200);
     expect((await setup(member).fileUrl(id, 1)).status).toBe(403);
+    expect((await admin.corrections(routeId)).requests).toEqual([]);
+    expect(await admin.closeCorrection(id)).toBe(404);
   });
 
   it('keeps one request per route while it waits or its update runs', async () => {
@@ -329,6 +336,12 @@ describe("members' update requests (ADR-0031, #462)", () => {
     });
     expect(stolen.status).toBe(404);
     expect((await setup(null).file({ routeId: route(3), versionNumber: 1 })).status).toBe(401);
+    unconfirmed.add(member.signedIn.accountId);
+    try {
+      expect((await setup(member).file({ routeId: route(3), versionNumber: 1 })).status).toBe(403);
+    } finally {
+      unconfirmed.delete(member.signedIn.accountId);
+    }
   });
 });
 
@@ -336,7 +349,14 @@ describe('releasing and declining a member request (ADR-0031, #462)', () => {
   it('starts the update pipeline on release, never with the note, and shows released then finished', async () => {
     const routeId = route(3);
     const byMember = setup(member);
-    const filed = await byMember.file({ routeId, versionNumber: 1, note, links: [memberLink] });
+    const uploadId = await uploaded(member);
+    const filed = await byMember.file({
+      routeId,
+      versionNumber: 1,
+      note,
+      links: [memberLink],
+      files: [uploadId],
+    });
     const { id } = (await filed.json()) as { id: string };
 
     const refused = await setup(member).release(id);
@@ -363,6 +383,7 @@ describe('releasing and declining a member request (ADR-0031, #462)', () => {
     const sent = JSON.stringify(admin.asked);
     expect(sent).not.toContain('IGNORE PREVIOUS');
     expect(sent).not.toContain('member-lead.example');
+    expect(sent).not.toContain('corrections/');
     expect((await byMember.own()).requests[0]).toMatchObject({ id, state: 'finished' });
     expect((await admin.listed()).requests.find((request) => request.id === id)).toMatchObject({
       run: 'finished',

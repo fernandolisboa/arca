@@ -370,7 +370,7 @@ export const fileMemberUpdateRequest = {
   path: '/knowledge/member-update-requests',
   operationId: 'fileMemberUpdateRequest',
   summary:
-    "Files, for any signed-in account, a request to update one route version it sees, with an optional note, links and files; it waits for an admin, and the owner-list admins are emailed. 30 per 24 hours per account (429 rate_limited). 404 not_found for a version or upload it does not hold; 409 update_live while a member's request of the route waits or an update request of the route runs; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
+    "Files, for any confirmed account, a request to update one route version it sees, with an optional note, links and files; it waits for an admin, and the owner-list admins are emailed. 30 per 24 hours per account (429 rate_limited). 403 account_unconfirmed; 404 not_found for a version or upload it does not hold; 409 update_live while a member's request of the route waits or an update request of the route runs; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
   body: FileMemberUpdateRequest,
   response: { description: 'Filed', schema: FiledMemberUpdateRequest },
 } as const satisfies RouteDefinition<typeof FiledMemberUpdateRequest>;
@@ -382,6 +382,8 @@ export const OwnUpdateRequest = z.strictObject({
   versionNumber: z.int().min(1),
   createdAt: z.iso.datetime(),
   state: z.enum(memberRequestStates),
+  /** Whether it still waits on an admin or on its run; while it does, no new request is taken. */
+  pending: z.boolean(),
   /** The admin's reason, on a declined request that gave one. */
   reason: z.string().max(500).nullable(),
 });

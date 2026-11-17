@@ -127,9 +127,9 @@ CREATE FUNCTION "knowledge"."member_request_events"(request uuid)
      WHERE e.request_id = request AND e.kind IN ('released', 'declined')
   $$;
 --> statement-breakpoint
--- The newest 50 members' update requests, with their links, their files' type and size, and their
--- events, for an admin.
-CREATE FUNCTION "knowledge"."member_update_requests"(basis text, grant_id uuid)
+-- The newest 50 members' update requests, or only the one named, with their links, their files' type
+-- and size, and their events, for an admin.
+CREATE FUNCTION "knowledge"."member_update_requests"(basis text, grant_id uuid, only_id uuid)
   RETURNS TABLE (id uuid, route_id text, version_number integer, note text, created_at timestamptz,
                  erased boolean, sources jsonb, events jsonb)
   LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -154,9 +154,26 @@ CREATE FUNCTION "knowledge"."member_update_requests"(basis text, grant_id uuid)
                         WHERE s.request_id = r.id), '[]'::jsonb),
              "knowledge"."member_request_events"(r.id)
         FROM "knowledge"."correction_request" r
-       WHERE r.request_kind = 'update'
+       WHERE r.request_kind = 'update' AND (only_id IS NULL OR r.id = only_id)
        ORDER BY r.created_at DESC, r.id
        LIMIT 50;
+  END
+  $$;
+--> statement-breakpoint
+-- Which of the given requests are members' update requests, so an admin's correction list and its
+-- close action leave them out (the ADR-0029 readers predate the request kind).
+CREATE FUNCTION "knowledge"."member_request_ids"(ids uuid[], basis text, grant_id uuid)
+  RETURNS SETOF uuid
+  LANGUAGE plpgsql STABLE SECURITY DEFINER
+  SET search_path = pg_catalog, pg_temp
+  AS $$
+  BEGIN
+    IF NOT "knowledge"."admin_basis_holds"(basis, grant_id) THEN
+      RAISE EXCEPTION 'only an admin reads members'' update requests' USING ERRCODE = '42501';
+    END IF;
+    RETURN QUERY
+      SELECT r.id FROM "knowledge"."correction_request" r
+       WHERE r.id = ANY (ids) AND r.request_kind = 'update';
   END
   $$;
 --> statement-breakpoint
@@ -216,14 +233,20 @@ CREATE FUNCTION "knowledge"."decline_update_request"(request uuid, reason text, 
   LANGUAGE plpgsql SECURITY DEFINER
   SET search_path = pg_catalog, pg_temp
   AS $$
+  DECLARE
+    route text;
   BEGIN
     IF NOT "knowledge"."admin_basis_holds"(basis, grant_id) THEN
       RAISE EXCEPTION 'only an admin declines an update request' USING ERRCODE = '42501';
     END IF;
-    IF NOT EXISTS (SELECT FROM "knowledge"."correction_request" r
-                    WHERE r.id = request AND r.request_kind = 'update') THEN
+    SELECT r.route_id INTO route FROM "knowledge"."correction_request" r
+     WHERE r.id = request AND r.request_kind = 'update';
+    IF route IS NULL THEN
       RETURN 'missing';
     END IF;
+    -- The release path holds this lock, so a release and a decline never both land.
+    PERFORM pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended('knowledge.update_request:' || route, 0));
     IF EXISTS (SELECT FROM "knowledge"."correction_event" e
                 WHERE e.request_id = request AND e.kind = 'declined')
        OR EXISTS (SELECT FROM "knowledge"."correction_event" e
@@ -250,7 +273,9 @@ REVOKE ALL ON FUNCTION "knowledge"."start_update_upload"(text, integer, bytea) F
 --> statement-breakpoint
 REVOKE ALL ON FUNCTION "knowledge"."attach_update_file"(uuid, integer, uuid) FROM PUBLIC;
 --> statement-breakpoint
-REVOKE ALL ON FUNCTION "knowledge"."member_update_requests"(text, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "knowledge"."member_update_requests"(text, uuid, uuid) FROM PUBLIC;
+--> statement-breakpoint
+REVOKE ALL ON FUNCTION "knowledge"."member_request_ids"(uuid[], text, uuid) FROM PUBLIC;
 --> statement-breakpoint
 REVOKE ALL ON FUNCTION "knowledge"."own_update_requests"() FROM PUBLIC;
 --> statement-breakpoint
@@ -265,7 +290,9 @@ GRANT EXECUTE ON FUNCTION "knowledge"."start_update_upload"(text, integer, bytea
 --> statement-breakpoint
 GRANT EXECUTE ON FUNCTION "knowledge"."attach_update_file"(uuid, integer, uuid) TO app_api;
 --> statement-breakpoint
-GRANT EXECUTE ON FUNCTION "knowledge"."member_update_requests"(text, uuid) TO app_api;
+GRANT EXECUTE ON FUNCTION "knowledge"."member_update_requests"(text, uuid, uuid) TO app_api;
+--> statement-breakpoint
+GRANT EXECUTE ON FUNCTION "knowledge"."member_request_ids"(uuid[], text, uuid) TO app_api;
 --> statement-breakpoint
 GRANT EXECUTE ON FUNCTION "knowledge"."own_update_requests"() TO app_api;
 --> statement-breakpoint
@@ -286,7 +313,9 @@ ALTER FUNCTION "knowledge"."start_update_upload"(text, integer, bytea) OWNER TO 
 --> statement-breakpoint
 ALTER FUNCTION "knowledge"."attach_update_file"(uuid, integer, uuid) OWNER TO knowledge_definer;
 --> statement-breakpoint
-ALTER FUNCTION "knowledge"."member_update_requests"(text, uuid) OWNER TO knowledge_definer;
+ALTER FUNCTION "knowledge"."member_update_requests"(text, uuid, uuid) OWNER TO knowledge_definer;
+--> statement-breakpoint
+ALTER FUNCTION "knowledge"."member_request_ids"(uuid[], text, uuid) OWNER TO knowledge_definer;
 --> statement-breakpoint
 ALTER FUNCTION "knowledge"."own_update_requests"() OWNER TO knowledge_definer;
 --> statement-breakpoint

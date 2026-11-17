@@ -23,6 +23,13 @@ export function memberRequestState({ declined, run }: MemberRequestFacts): Membe
   return run === 'finished' ? 'finished' : 'released';
 }
 
+/**
+ * Whether it still waits on an admin or its run, so its author cannot ask again: neither declined
+ * nor released into a run that ended with no proposal.
+ */
+export const memberRequestPending = ({ declined, run }: MemberRequestFacts): boolean =>
+  !declined && (run === null || run === 'running');
+
 /** Whether an admin may still release it: nobody released or declined it. */
 export const releasable = ({ declined, run }: MemberRequestFacts): boolean =>
   !declined && run === null;

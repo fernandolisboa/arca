@@ -23,6 +23,7 @@ import {
   correctionState,
   correctionTargets,
   declinable,
+  memberRequestPending,
   memberRequestState,
   releasable,
 } from '@arca/domain';
@@ -384,7 +385,7 @@ export function createCorrections({
     return { declined, run };
   };
 
-  const memberRows = async (accountId: string, basis: AdminBasis) => {
+  const memberRows = async (accountId: string, basis: AdminBasis, onlyId: string | null = null) => {
     const { basis: kind, grantId } = basisArguments(basis);
     return withIdentity(
       db(),
@@ -392,7 +393,7 @@ export function createCorrections({
       async (tx) =>
         (
           await tx.execute<StoredMemberRequest>(sql`
-            SELECT * FROM knowledge.member_update_requests(${kind}, ${grantId})`)
+            SELECT * FROM knowledge.member_update_requests(${kind}, ${grantId}, ${onlyId})`)
         ).rows,
     );
   };
@@ -511,8 +512,13 @@ export function createCorrections({
         withIdentity(db(), { accountId }, async (tx) => ({
           rows: (
             await tx.execute<StoredRequest>(sql`
+              WITH listed AS (
+                SELECT * FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId}))
               SELECT id, item_kind, item_key, note, created_at, sources
-                FROM knowledge.correction_requests(${routeId}, ${number}, ${kind}, ${grantId})`)
+                FROM listed
+               WHERE id NOT IN (SELECT member.id FROM knowledge.member_request_ids(
+                       ARRAY(SELECT id FROM listed), ${kind}, ${grantId}) AS member(id))
+               ORDER BY created_at DESC, id`)
           ).rows,
           files: (
             await tx.execute<StoredFile>(sql`
@@ -567,9 +573,11 @@ export function createCorrections({
       if (basis === undefined) return 'not_admin';
       const { basis: kind, grantId } = basisArguments(basis);
       const outcome = await withIdentity(db(), { accountId }, async (tx) => {
-        const { rows } = await tx.execute<{ outcome: 'closed' | 'unchanged' | 'missing' }>(
-          sql`SELECT knowledge.close_correction_request(${id}, ${kind}, ${grantId}) AS outcome`,
-        );
+        const { rows } = await tx.execute<{ outcome: 'closed' | 'unchanged' | 'missing' }>(sql`
+          SELECT CASE WHEN EXISTS (
+                   SELECT FROM knowledge.member_request_ids(ARRAY[${id}::uuid], ${kind}, ${grantId}))
+                 THEN 'missing'
+                 ELSE knowledge.close_correction_request(${id}, ${kind}, ${grantId}) END AS outcome`);
         const closed = rows[0]?.outcome ?? 'missing';
         if (closed === 'closed') {
           await audit.record({
@@ -661,14 +669,18 @@ export function createCorrections({
           ).rows,
       );
       return {
-        requests: rows.map((row) => ({
-          id: row.id,
-          routeId: row.route_id,
-          versionNumber: row.version_number,
-          createdAt: new Date(row.created_at).toISOString(),
-          state: memberRequestState(factsOf(row.events)),
-          reason: declineReason(row.events),
-        })),
+        requests: rows.map((row) => {
+          const facts = factsOf(row.events);
+          return {
+            id: row.id,
+            routeId: row.route_id,
+            versionNumber: row.version_number,
+            createdAt: new Date(row.created_at).toISOString(),
+            state: memberRequestState(facts),
+            pending: memberRequestPending(facts),
+            reason: declineReason(row.events),
+          };
+        }),
       };
     },
 
@@ -700,7 +712,7 @@ export function createCorrections({
     memberUpdate: async (accountId, id) => {
       const basis = await basisOf(accountId);
       if (basis === undefined) return 'not_admin';
-      const row = (await memberRows(accountId, basis)).find((stored) => stored.id === id);
+      const [row] = await memberRows(accountId, basis, id);
       return row === undefined
         ? 'not_found'
         : { routeId: row.route_id, facts: factsOf(row.events) };
