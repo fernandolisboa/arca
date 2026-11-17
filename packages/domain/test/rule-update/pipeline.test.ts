@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
-import type { CheckedItem } from '../../src/independent-check/answers.js';
+import type { CheckedItem } from '../../src/quote-check/answers.js';
 import {
   type StageResult,
   type UpdateStage,

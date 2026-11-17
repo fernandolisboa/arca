@@ -6,20 +6,20 @@ import type { RequestOptions, request as httpsRequest } from 'node:https';
 import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { statesValue } from '@arca/domain';
-import { globallyReachable } from '../src/knowledge/check/addresses.js';
+import { globallyReachable } from '../src/knowledge/pages/addresses.js';
 import {
   type FetchLimits,
   fetchLimits,
   guardedLookup,
   httpsSourceFetcher,
-} from '../src/knowledge/check/fetcher.js';
+} from '../src/knowledge/pages/fetcher.js';
 import {
   htmlToText,
   markupReader,
   maxElementDepth,
   maxElements,
-} from '../src/knowledge/check/html-text.js';
-import { maxPdfPages } from '../src/knowledge/check/pdf-text.js';
+} from '../src/knowledge/pages/html-text.js';
+import { maxPdfPages } from '../src/knowledge/pages/pdf-text.js';
 import { syntheticPdf } from './synthetic-pdf.js';
 
 /** Synthetic hosts only; a local server stands in for both. */

@@ -26,8 +26,8 @@ export interface DisplayCatalog {
    */
   readonly hostOf: (url: string) => string | undefined;
   /**
-   * The hosts of the pinned official-domain lists, which the independent check may fetch on
-   * (ADR-0027), or undefined when the catalog lacks one of them.
+   * The hosts of the pinned official-domain lists, which an update request may fetch on
+   * (ADR-0031), or undefined when the catalog lacks one of them.
    */
   readonly officialHosts: (pins: readonly Pin[]) => readonly string[] | undefined;
   /** The hosts of the newest official-domain list with this ID, none when there is no such list. */

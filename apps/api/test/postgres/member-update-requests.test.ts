@@ -7,7 +7,7 @@ import { auditLog } from '../../src/audit/log.js';
 import { credentialStore } from '../../src/auth/auth.js';
 import { createStepUp } from '../../src/auth/step-up.js';
 import { adminRole } from '../../src/knowledge/admins.js';
-import { offlineFetcher } from '../../src/knowledge/check/environment.js';
+import { offlineFetcher } from '../../src/knowledge/pages/environment.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { officialDomainsView } from '../../src/knowledge/official-domains.js';

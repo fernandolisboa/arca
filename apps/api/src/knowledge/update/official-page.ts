@@ -1,7 +1,7 @@
 import { type ReadPage, addressPages, asDataText } from '@arca/domain';
-import { addressesAsRead } from '../check/answer-text.js';
-import { type FetchOutcome, type SourceFetcher } from '../check/fetcher.js';
-import { fetchPages } from '../check/read-pages.js';
+import { addressesAsRead } from '../pages/answer-text.js';
+import { type FetchOutcome, type SourceFetcher } from '../pages/fetcher.js';
+import { fetchPages } from '../pages/read-pages.js';
 
 /**
  * Reads one cited official page with the guarded fetcher, on the hosts allowed for it: through its

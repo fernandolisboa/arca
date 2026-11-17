@@ -1,0 +1,181 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "97191b0c-69f8-433b-a169-f64628916dc1",
+  "prevIds": [
+    "89e95536-b5a2-4c96-a78c-3ccd13ba818e"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_start"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_start.check_start_read",
+        "n|pol|knowledge.check_start.check_start_read",
+        "e|pol|knowledge.check_start.check_start_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_start",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_start"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_start.check_start_insert",
+        "n|pol|knowledge.check_start.check_start_insert",
+        "e|pol|knowledge.check_start.check_start_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_start",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "independent_check"
+      ],
+      "writes": [
+        "s|pol|knowledge.independent_check.independent_check_read",
+        "n|pol|knowledge.independent_check.independent_check_read",
+        "e|pol|knowledge.independent_check.independent_check_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.independent_check",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "independent_check"
+      ],
+      "writes": [
+        "s|pol|knowledge.independent_check.independent_check_insert",
+        "n|pol|knowledge.independent_check.independent_check_insert",
+        "e|pol|knowledge.independent_check.independent_check_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.independent_check",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_progress"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_progress.check_progress_read",
+        "n|pol|knowledge.check_progress.check_progress_read",
+        "e|pol|knowledge.check_progress.check_progress_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_progress",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "check_progress"
+      ],
+      "writes": [
+        "s|pol|knowledge.check_progress.check_progress_insert",
+        "n|pol|knowledge.check_progress.check_progress_insert",
+        "e|pol|knowledge.check_progress.check_progress_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.check_progress",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.corrector_key.corrector_key_insert_by_owner",
+        "n|pol|knowledge.corrector_key.corrector_key_insert_by_owner",
+        "e|pol|knowledge.corrector_key.corrector_key_insert_by_owner"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "drop_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "corrector_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.corrector_key.corrector_key_revoke_by_definer",
+        "n|pol|knowledge.corrector_key.corrector_key_revoke_by_definer",
+        "e|pol|knowledge.corrector_key.corrector_key_revoke_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.corrector_key",
+        "n|sch|knowledge"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"check_start\",\"check_start_read\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"check_start\",\"check_start_insert\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"independent_check\",\"independent_check_read\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"independent_check\",\"independent_check_insert\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"check_progress\",\"check_progress_read\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"check_progress\",\"check_progress_insert\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"corrector_key\",\"corrector_key_insert_by_owner\"]"
+    },
+    {
+      "op": "drop",
+      "key": "policies\u0000[\"knowledge\",\"corrector_key\",\"corrector_key_revoke_by_definer\"]"
+    }
+  ]
+}

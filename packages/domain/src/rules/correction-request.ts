@@ -124,7 +124,7 @@ export function correctionState({
   return events.some(({ kind }) => kind === 'taken') ? 'taken' : 'open';
 }
 
-/** What the corrector run answers on a request (ADR-0029). */
+/** What the retired corrector run answered on a request (ADR-0029); kept for stored answers. */
 export type CorrectionAnswer =
   | { readonly kind: 'taken' }
   | { readonly kind: 'version_proposed'; readonly number: number }

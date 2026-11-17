@@ -31,7 +31,7 @@ import {
 } from '@arca/knowledge';
 import { sql } from 'drizzle-orm';
 import type { AuditLog } from '../../audit/log.js';
-import type { SourceFetcher } from '../check/fetcher.js';
+import type { SourceFetcher } from '../pages/fetcher.js';
 import type { AdminRole } from '../admins.js';
 import { readOfficialPage } from './official-page.js';
 import type { UpdateItem, UpdateStore } from './store.js';

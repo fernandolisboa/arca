@@ -1,29 +1,19 @@
 name: intake-eval
 
-# The AI evaluations: the intake's synthetic cases (spec 0008, R5), the rule summary of each
-# route's newest version (ADR-0025) and the independent check's synthetic cases (ADR-0027), on the
-# real model, each writing its report to the job summary. `catalog-check` is a measurement, not an
-# evaluation: the independent check of every route's newest version against its live official
-# pages, which costs dollars, so `all` leaves it out; `routes` narrows it to some routes, as a
-# rule audit's check loop does (an estimated ten cents a route). Agents always name `routes`; the
-# whole catalog runs only when the owner asks (ADR-0027, what a check costs). Started by hand only, by a person or by
-# a rule audit session's check loop (docs/runbooks/rule-audit.md)
-# (`gh workflow run intake-eval --ref <branch>`, `-f only=<evaluation>` to spend on one), never a
-# required check (ADR-0019). It evaluates the commit it was dispatched on, a branch or tag of this
-# repository, with that commit's own copy of this file; there is no ref input, so no fork's code can
-# run here with the key.
+# The AI evaluations: the intake's synthetic cases (spec 0008, R5) and the rule summary of each
+# route's newest version (ADR-0025), on the real model, each writing its report to the job summary.
+# Started by hand only (`gh workflow run intake-eval --ref <branch>`, `-f only=<evaluation>` to
+# spend on one), never a required check (ADR-0019). It evaluates the commit it was dispatched on, a
+# branch or tag of this repository, with that commit's own copy of this file; there is no ref
+# input, so no fork's code can run here with the key.
 on:
   workflow_dispatch:
     inputs:
       only:
         description: Which evaluation to run
         type: choice
-        options: [all, intake, rule-summary, independent-check, catalog-check]
+        options: [all, intake, rule-summary]
         default: all
-      routes:
-        description: 'catalog-check only: route IDs to check, comma-separated; agents always set it (empty: the whole catalog, owner only)'
-        type: string
-        default: ''
 
 permissions: {}
 
@@ -70,7 +60,7 @@ jobs:
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
-      # Each later evaluation runs even when an earlier one failed, so one run reports them all, but
+      # The rule summary evaluation runs even when the intake's failed, so one run reports both, but
       # not after a failed install or build.
       - name: Run the rule summary evaluation
         if: ${{ !cancelled() && steps.named.outcome == 'success' && (inputs.only == 'all' || inputs.only == 'rule-summary') }}
@@ -82,35 +72,6 @@ jobs:
           pnpm --fail-if-no-match --filter @arca/api eval:rule-summary || status=$?
           if [ ! -f "$ARCA_EVAL_REPORT" ]; then
             echo "The rule summary evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
-          exit "$status"
-      - name: Run the independent check evaluation
-        if: ${{ !cancelled() && steps.named.outcome == 'success' && (inputs.only == 'all' || inputs.only == 'independent-check') }}
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ARCA_EVAL_REPORT: ${{ runner.temp }}/independent-check-eval.md
-        run: |
-          status=0
-          pnpm --fail-if-no-match --filter @arca/api eval:independent-check || status=$?
-          if [ ! -f "$ARCA_EVAL_REPORT" ]; then
-            echo "The independent check evaluation wrote no report." >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"
-          exit "$status"
-      - name: Run the catalog check
-        if: ${{ !cancelled() && steps.named.outcome == 'success' && inputs.only == 'catalog-check' }}
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ARCA_EVAL_REPORT: ${{ runner.temp }}/catalog-check.md
-          ARCA_CATALOG_ROUTES: ${{ inputs.routes }}
-        run: |
-          status=0
-          pnpm --fail-if-no-match --filter @arca/api eval:catalog-check || status=$?
-          if [ ! -f "$ARCA_EVAL_REPORT" ]; then
-            echo "The catalog check wrote no report." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           cat "$ARCA_EVAL_REPORT" >> "$GITHUB_STEP_SUMMARY"

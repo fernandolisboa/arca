@@ -17,7 +17,7 @@ keywords = ["sk-ant-"]
 
 [[rules]]
 id = "arca-corrector-key"
-description = "Arca's corrector key, which the scheduled corrector run sends to the app (ADR-0029)."
+description = "Arca's retired corrector key (ADR-0029); kept until every key made before ADR-0031 has expired."
 regex = '''(?:^|[^A-Za-z0-9])(arca_ck_[A-Za-z0-9_\-]{43})'''
 entropy = 3.5
 keywords = ["arca_ck_"]

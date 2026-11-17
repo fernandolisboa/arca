@@ -4,7 +4,6 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, person, signedIn } from './case-accounts.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
-  clearCheckStarts,
   clearCorrectionRequests,
   clearKnowledgeDecisions,
   linkAccounts,
@@ -73,8 +72,6 @@ test('the seed admin activates a version, reads and closes its reports, then rej
     .click();
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
   const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  // The scripted checker's reports are never clean, so no version reads as checked.
-  await expect(proposed.getByRole('button', { name: 'Tudo bate 0' })).toBeVisible();
   // Every country starts folded; picking one in the filter shows it alone, open.
   const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
   await expect(usa).toHaveAttribute('aria-expanded', 'false');
@@ -106,16 +103,6 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   expect(await horizontalOverflow(page)).toBe(0);
   await page.setViewportSize({ width: 1280, height: 800 });
   await reviewStep(page, 'Decisão');
-  // Opening the screen started the check; running or done, the panel says a model wrote it.
-  await expect(page.getByRole('region', { name: 'Verificação independente' })).toContainText(
-    'Feita pelo Arca com IA, que pode errar.',
-  );
-  // A report short of clean stays open, so nothing flagged hides behind its title.
-  await expect(
-    page
-      .getByRole('region', { name: 'Verificação independente' })
-      .getByRole('button', { name: 'Verificação independente' }),
-  ).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('button', { name: 'Resumir regra' }).click();
   const summary = page.getByRole('region', { name: 'Resumo feito pelo Arca' });
   await expect(summary.getByText('Resumo de teste de EB-5')).toBeVisible();
@@ -356,91 +343,6 @@ test('the seed admin gives a member of the case the admin role and takes it away
   expect(problems).toEqual([]);
 });
 
-test('the seed admin analyses a version with AI on demand and watches it to the report (ADR-0027, on demand)', async ({
-  page,
-}, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
-  test.setTimeout(90_000);
-  const [account] = await runSeed();
-  if (account === undefined) throw new Error('the seed lists no account');
-  await Promise.all([
-    restartSeededCounter(account.id),
-    clearKnowledgeDecisions(),
-    clearCheckStarts(),
-    resetRateLimits(),
-  ]);
-  const problems = watchProblems(page);
-  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
-    userId: account.id,
-  });
-  await withoutAutofill(page);
-  await page.goto(`${databaseServer.origin}/sign-in`);
-  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
-  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
-  const { version } = await eb5InEffect(page);
-
-  await page.goto(`${databaseServer.origin}/knowledge`);
-  const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
-  await proposed
-    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
-    .click();
-  // Opening the screen may have started this version's check by itself; the button waits for it.
-  const analyse = page.getByRole('button', { name: 'Analisar com o Arca' });
-  await expect(analyse).toBeVisible({ timeout: 30_000 });
-  await analyse.click();
-  const confirmation = page.getByRole('region', { name: 'Analisar esta versão com o Arca?' });
-  await expect(confirmation).toContainText('US$ 0,40 a US$ 0,80');
-  const started = page.waitForRequest((request) =>
-    request.url().endsWith('/v1/knowledge/versions/check/start'),
-  );
-  await confirmation.getByRole('button', { name: 'Analisar agora' }).click();
-  expect((await started).postDataJSON()).toEqual({ routeId: 'us-eb5', number: Number(version) });
-
-  await expect(page).toHaveURL(new RegExp(`/knowledge/check\\?routeId=us-eb5&number=${version}$`));
-  await expect(page.getByRole('heading', { level: 2, name: 'Análise do Arca' })).toBeVisible();
-  // On the page body, so a run that ends any other way prints what the screen said instead.
-  await expect(page.locator('body')).toContainText('Análise concluída.', { timeout: 30_000 });
-  const steps = page.getByRole('list', { name: 'Etapas da análise' });
-  await expect(steps).toContainText('Ler as páginas oficiais');
-  await expect(steps).toContainText('Montar o relatório');
-  // The scripted checker's report, read offline in e2e, opens below the steps.
-  await expect(page.getByText('Verificação de teste', { exact: false })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Analisar de novo' })).toBeVisible();
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(await horizontalOverflow(page)).toBe(0);
-  await page.setViewportSize({ width: 1280, height: 800 });
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-    .analyze();
-  expect(
-    violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
-  ).toEqual([]);
-
-  await page.getByRole('link', { name: 'Voltar para as versões' }).click();
-  await expect(page).toHaveURL(/\/knowledge$/);
-
-  // A scripted match is never a confirmation, so each point reads as one to check yourself: the
-  // official page to open, what it must state, and a mark kept on this device.
-  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
-  await proposed
-    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
-    .click();
-  await reviewStep(page, 'Requisitos');
-  const requirements = page.getByRole('region', { name: 'Requisitos' });
-  await expect(requirements.getByText('Confira você.').first()).toBeVisible();
-  const official = requirements.getByRole('link').first();
-  await expect(official).toHaveAttribute('href', /^https:\/\//);
-  await expect(official).toHaveAttribute('target', '_blank');
-  await expect(official).toHaveAttribute('rel', 'noopener noreferrer');
-  await expect(requirements).toContainText('O que deve estar escrito lá:');
-  const mark = requirements.getByRole('button', { name: 'Conferi' }).first();
-  await mark.click();
-  await expect(mark).toHaveAttribute('aria-pressed', 'true');
-  expect(problems).toEqual([]);
-});
-
 test('the seed admin points out an error on a version and closes the request (ADR-0029)', async ({
   page,
 }, testInfo) => {
@@ -515,40 +417,12 @@ test('the seed admin points out an error on a version and closes the request (AD
   await requests.getByRole('button', { name: 'Baixar arquivo' }).click();
   expect((await saved).suggestedFilename()).toBe('pedido-de-correcao-arquivo-2.txt');
 
-  // The corrector run's routes stay unserved until #463, so even a live key reads no request,
-  // and no member's note or file can reach its session (ADR-0031).
-  const key = await correctorKeyFromSettings(page);
-  const corrector = { authorization: `Bearer ${key}`, origin: databaseServer.origin };
-  const listed = await page.request.get(`${databaseServer.origin}/v1/corrector/requests`, {
-    headers: corrector,
-  });
-  expect(listed.status()).toBe(401);
-  await page.goto(`${databaseServer.origin}/knowledge`);
-  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
-  await proposed
-    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
-    .click();
   await expect(requests).toContainText('Aberto');
   await requests.getByRole('button', { name: 'Fechar pedido' }).click();
   await expect(requests).toContainText('Fechado');
   await expect(requests.getByRole('button', { name: 'Fechar pedido' })).toHaveCount(0);
   expect(problems).toEqual([]);
 });
-
-/** Makes a corrector key in settings, approving the step-up, and reads it off the screen once. */
-async function correctorKeyFromSettings(page: Page): Promise<string> {
-  await page.goto(`${databaseServer.origin}/settings?section=knowledge`);
-  const section = page.getByRole('region', { name: 'Chave da sessão de correção' });
-  await expect(section).toContainText('Nenhuma chave ativa.');
-  await section.getByRole('button', { name: 'Criar chave' }).click();
-  const shown = section.locator('code');
-  await expect(shown).toHaveText(/^arca_ck_/);
-  const key = (await shown.textContent()) ?? '';
-  await section.getByRole('button', { name: 'Já copiei' }).click();
-  await expect(shown).toHaveCount(0);
-  await expect(section).toContainText('Chave criada em');
-  return key;
-}
 
 /**
  * Reloads the home page and answers whether the session says admin and the navigation shows

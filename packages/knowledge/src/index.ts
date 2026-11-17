@@ -1,10 +1,9 @@
 import { createComparisonCatalog } from './comparisons.js';
 import { parseComparisons } from './entries.js';
-import { createGuideLookup } from './guides.js';
 import { countryCodeSchema } from '@arca/domain';
 import { z } from 'zod';
 import type { Json } from './canonical.js';
-import { comparisonData, countryData, countryFileData, guideData } from './generated/runtime.js';
+import { comparisonData, countryData, countryFileData } from './generated/runtime.js';
 
 export { createRouteCatalog } from './catalog.js';
 export {
@@ -41,11 +40,6 @@ export {
 
 /** The destination comparison's versions (ADR-0026); content only for an active one. */
 export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));
-
-/** A country's current guide, the specialist knowledge the independent check loads (ADR-0027). */
-export const countryGuide = createGuideLookup(guideData);
-
-export type { CountryGuideEntry, CountryGuideLookup } from './guides.js';
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z

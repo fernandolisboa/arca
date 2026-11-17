@@ -194,13 +194,6 @@ export {
   hostMatches,
 } from './rules/validate.js';
 export {
-  type CountryGuide,
-  checkCountryGuide,
-  countryGuideSchema,
-  guideCountry,
-  maxGuideTextLength,
-} from './rules/country-guide.js';
-export {
   type CatalogEntry,
   type DecisionState,
   type DecisionStates,
@@ -209,6 +202,7 @@ export {
   type VersionIdentity,
   identityKey,
   newerProposedVersion,
+  versionKey,
   sameIdentity,
   selectVersion,
   stateOf,
@@ -261,7 +255,7 @@ export {
   digitsApart,
   numbersIn,
   statesValue,
-} from './independent-check/values.js';
+} from './quote-check/values.js';
 export {
   type CheckItem,
   type CheckItemKind,
@@ -271,7 +265,7 @@ export {
   machineReadableUrls,
   maxCheckItemKeyLength,
   officialSources,
-} from './independent-check/items.js';
+} from './quote-check/items.js';
 export {
   type CheckAnswer,
   type CheckQuote,
@@ -282,89 +276,18 @@ export {
   addressTexts,
   checkReasons,
   checkStatuses,
-  disagreeing,
   maxNoteLength,
   maxQuoteLength,
   maxQuotes,
   minQuoteLength,
   normalizeWhitespace,
   plainNote,
-  type CheckPoints,
-  type StatusCounts,
-  reportClean,
-  countStatuses,
-  reportPoints,
   scriptedCheckerModel,
   verifyAnswers,
-} from './independent-check/answers.js';
+} from './quote-check/answers.js';
 export { asDataText } from './data-text.js';
-export { pageLanguages } from './independent-check/number-words.js';
-export {
-  checkCalls,
-  excerptBudgets,
-  type CitedText,
-  maxCheckPagesText,
-  openingExcerpt,
-  withinTextBudget,
-} from './independent-check/sent-pages.js';
-export {
-  type Passage,
-  excerptGap,
-  excerptPassages,
-  secondLookRunOnPassages,
-  excerptText,
-  maxPassagesPerItem,
-  maxWholePageText,
-  pageOutline,
-  provisionPassages,
-  sentWhole,
-  splitPassages,
-} from './independent-check/passages.js';
-export {
-  type CheckFailure,
-  type FetchFailure,
-  checkFailures,
-  fetchFailures,
-  fetchOutcomes,
-  versionKey,
-  type CheckStart,
-  type ListedCheckStatus,
-  type ReportKey,
-  type ReportMeta,
-  type RequestedStart,
-  type StartCandidate,
-  type StartShare,
-  currentReport,
-  failedReportLifetime,
-  listedCheckStatus,
-  listedCheckStatuses,
-  liveStart,
-  maxAutomaticStartsPerDay,
-  newestReport,
-  newestStart,
-  noGuide,
-  reportLifetime,
-  requestedStart,
-  startLifetime,
-  startWindow,
-  versionsToStart,
-} from './independent-check/reports.js';
-export {
-  type CheckProgress,
-  type CheckProgressEvent,
-  type CheckProgressStage,
-  type CheckProgressState,
-  type ItemProgress,
-  type PageProgress,
-  type PageProgressOutcome,
-  type ProgressFailure,
-  checkProgress,
-  checkProgressStages,
-  checkProgressStates,
-  pageProgressOutcomes,
-  progressFailures,
-  usagesOf,
-} from './independent-check/progress.js';
+export { type FetchFailure, fetchFailures } from './quote-check/fetch-failures.js';
+export { pageLanguages } from './quote-check/number-words.js';
 export {
   type CheckCost,
   type ModelPricing,
@@ -373,7 +296,7 @@ export {
   type TokenPrices,
   checkCost,
   maxCheckCostMicroUsd,
-} from './independent-check/cost.js';
+} from './quote-check/cost.js';
 export { type VersionDates, checkVersionOrder } from './rules/version-order.js';
 export { type EvaluationContext, type VersionContext } from './rules/context.js';
 export {

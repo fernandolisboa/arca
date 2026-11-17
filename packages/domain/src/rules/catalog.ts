@@ -18,6 +18,10 @@ export interface VersionIdentity {
   readonly hash: string;
 }
 
+/** A route version's key, `<route ID>/<number>`. */
+export const versionKey = ({ routeId, number }: { routeId: string; number: number }): string =>
+  `${routeId}/${String(number)}`;
+
 /** Decision states by `identityKey`. A version missing from it is proposed. */
 export type DecisionStates = ReadonlyMap<string, DecisionState>;
 

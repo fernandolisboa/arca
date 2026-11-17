@@ -1,18 +1,8 @@
-import { type ReactNode, useId } from 'react';
-import type { TallyTone } from './step-checks.js';
 import type { KnowledgeWords } from './words.js';
 
-const surfaceShape = 'rounded-control border bg-surface p-4';
-
 /** The surface of one item under review, and the card that lays one out. */
-export const surface = `${surfaceShape} border-line`;
-const cardLayout = 'flex min-w-0 flex-col gap-2';
-export const card = `${cardLayout} ${surface}`;
-
-/** An item's surface, its border tinted when the check found its point differs. */
-export const surfaceOf = (tone: TallyTone | undefined): string =>
-  tone === 'differs' ? `${surfaceShape} border-danger-ink/40` : surface;
-export const cardOf = (tone: TallyTone | undefined): string => `${cardLayout} ${surfaceOf(tone)}`;
+export const surface = 'rounded-control border border-line bg-surface p-4';
+export const card = `flex min-w-0 flex-col gap-2 ${surface}`;
 
 /** IDs added, removed or changed in one section since the version before. */
 export interface SectionChange {
@@ -69,35 +59,18 @@ export function ChangeList({
   );
 }
 
-/**
- * The independent check and the content hash, read before deciding: a route version's report, or,
- * for a comparison, which the check never reads, a note saying so.
- */
-export function CheckAndHash({
+/** The content hash, read before deciding. */
+export function ContentHash({
   hash,
-  check,
   words,
 }: {
   readonly hash: string;
-  readonly check?: ReactNode;
   readonly words: KnowledgeWords;
 }) {
-  const { t } = words;
-  const checkId = useId();
   return (
-    <>
-      {check ?? (
-        <section aria-labelledby={checkId} className={card}>
-          <h5 id={checkId} className="font-medium">
-            {t('knowledge.check.title')}
-          </h5>
-          <p>{t('knowledge.check.comparisonNote')}</p>
-        </section>
-      )}
-      <div className="flex flex-col gap-1">
-        <p className="text-small text-muted">{t('knowledge.hash')}</p>
-        <p className="font-mono text-small break-all">{hash}</p>
-      </div>
-    </>
+    <div className="flex flex-col gap-1">
+      <p className="text-small text-muted">{words.t('knowledge.hash')}</p>
+      <p className="font-mono text-small break-all">{hash}</p>
+    </div>
   );
 }

@@ -15,7 +15,6 @@ import type { RateLimiter } from '../../src/auth/rate-limit.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { createCorrectionContents } from '../../src/knowledge/correction-contents.js';
 import { createCorrections } from '../../src/knowledge/corrections.js';
-import { storedPageCopies } from '../../src/knowledge/check/page-copies.js';
 import { memoryObjectStorage, type MemoryObjectStorage } from '../../src/storage/object-storage.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
@@ -503,7 +502,7 @@ describe('files on a correction request (ADR-0029)', () => {
     expect((await setup(owner).presign(pathname)).status).toBe(404);
   });
 
-  it('files a copy of a page the version cites, lists it, and gives the check its newest copy', async () => {
+  it('files a copy of a page the version cites and lists it', async () => {
     const older = new TextEncoder().encode('Article 3. Means of EUR 800 a month.');
     const newer = new TextEncoder().encode('Article 3. Means of EUR 920 a month.');
     for (const bytes of [older, newer]) {
@@ -517,23 +516,6 @@ describe('files on a correction request (ADR-0029)', () => {
       size: newer.length,
       pageUrl: citedPage,
     });
-    const copies = storedPageCopies({ db: () => testDatabase.jobsDb, storage: objects });
-    expect(await copies.read(citedPage)).toEqual({
-      text: 'Article 3. Means of EUR 920 a month.',
-      cut: false,
-    });
-    expect(await copies.read('https://gov.example/other')).toBeUndefined();
-  });
-
-  it('reads no copy whose stored bytes differ from its upload', async () => {
-    const bytes = new TextEncoder().encode('Article 3. Means of EUR 920 a month.');
-    const uploadId = await uploaded(bytes, { mediaType: 'text/plain' });
-    expect((await setup(owner).file(withFile(uploadId, citedPage))).status).toBe(200);
-    const copies = storedPageCopies({
-      db: () => testDatabase.jobsDb,
-      storage: { read: () => Promise.resolve(new TextEncoder().encode('Article 3. EUR 1.')) },
-    });
-    expect(await copies.read(citedPage)).toBeUndefined();
   });
 
   it('answers 404 for a copy of a page the version does not cite, storing nothing', async () => {

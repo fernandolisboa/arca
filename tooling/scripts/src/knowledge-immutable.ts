@@ -45,8 +45,8 @@ const trustRoots = [{ pattern: officialPattern, kind: 'an official-domain list' 
  * Country guides, retired with the independent check (ADR-0031): their files and their
  * `hashes.json` entries may go, and none may be added.
  */
-const retiredGuideHashes = 'guides/';
-const retiredGuides = `${dataRoot}${retiredGuideHashes}`;
+const retiredGuidePath = 'guides/';
+const retiredGuides = `${dataRoot}${retiredGuidePath}`;
 const regularFile = { mode: '100644', type: 'blob' };
 /** At least the build's nesting limit; the build applies its own, stricter one. */
 const maxJsonDepth = 64;
@@ -162,7 +162,7 @@ class Check {
     }
     this.#sameExcept(hashesPath, before, after, ['vectors', 'files']);
     this.#keepsEntries(hashesPath, before['vectors'], after['vectors'], 'name');
-    this.#keepsEntries(hashesPath, before['files'], after['files'], 'path', retiredGuideHashes);
+    this.#keepsEntries(hashesPath, before['files'], after['files'], 'path', retiredGuidePath);
   }
 
   /**

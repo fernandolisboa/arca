@@ -157,28 +157,12 @@ export const aiSettingsQuery = queryOptions({
   retry: false,
 });
 
-/** The live corrector key's dates, for an admin (ADR-0029). */
-export const correctorKeyQuery = queryOptions({
-  queryKey: ['knowledge', 'corrector-key'],
-  queryFn: () => api.call(routes.getCorrectorKey),
-  networkMode: 'always',
-  retry: false,
-});
-
-/** How often a screen reads again while a version's independent check runs (ADR-0027). */
-const checkPollMs = 15_000;
-
-/**
- * Every route version with its decision state and check status, for an admin only (spec 0007,
- * R7), read again while a check runs.
- */
+/** Every route version with its decision state, for an admin only (spec 0007, R7). */
 export const knowledgeVersionsQuery = queryOptions({
   queryKey: ['knowledge', 'versions'],
   queryFn: () => api.call(routes.listKnowledgeVersions),
   networkMode: 'always',
   retry: false,
-  refetchInterval: ({ state }) =>
-    state.data?.versions.some(({ check }) => check === 'running') === true ? checkPollMs : false,
 });
 
 /** One comparison version laid out for an admin (ADR-0026). */
@@ -206,30 +190,6 @@ export const caseAdminsQuery = queryOptions({
   networkMode: 'always',
   retry: false,
 });
-/** One route version's independent check and its current report, read again while it runs. */
-export const versionCheckQuery = (routeId: string, number: number) =>
-  queryOptions({
-    queryKey: ['knowledge', 'check', routeId, number],
-    queryFn: () => api.call(routes.getVersionCheck, { routeId, number }),
-    networkMode: 'always',
-    retry: false,
-    refetchInterval: ({ state }) => (state.data?.status === 'running' ? checkPollMs : false),
-  });
-
-/** How often the progress of a running check is read again (ADR-0027, "On demand, with progress"). */
-const checkProgressPollMs = 1_500;
-
-/** How far one route version's newest check got, read again while it runs. */
-export const checkProgressQuery = (routeId: string, number: number) =>
-  queryOptions({
-    queryKey: ['knowledge', 'check-progress', routeId, number],
-    queryFn: () => api.call(routes.getVersionCheckProgress, { routeId, number }),
-    networkMode: 'always',
-    retry: false,
-    refetchInterval: ({ state }) =>
-      state.data?.progress?.state === 'running' ? checkProgressPollMs : false,
-  });
-
 /** How often a running update request's progress is read again (ADR-0031). */
 const updatePollMs = 3_000;
 

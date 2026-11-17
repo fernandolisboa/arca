@@ -39,7 +39,7 @@ import {
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { type ModelReply, loggedModelCall } from '../../ai/model-call.js';
-import { type SourceFetcher, textDigest } from '../check/fetcher.js';
+import { type SourceFetcher, textDigest } from '../pages/fetcher.js';
 import { readOfficialPage } from './official-page.js';
 import {
   type NewRouteSubject,

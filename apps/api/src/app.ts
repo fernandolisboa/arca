@@ -49,10 +49,7 @@ import {
   adminRoutes,
   caseRoutes,
   comparisonRoutes,
-  AnswerCorrectionRequest,
-  CorrectorFlaggedVersions,
   CloseCorrectionRequest,
-  RevokeCorrectorKey,
   RemoveAiKey,
   SetAiKey,
   SetAiStage,
@@ -78,8 +75,6 @@ import {
   DecideComparisonRequest,
   DecideOfficialDomainsRequest,
   DecideVersionRequest,
-  VersionCheck,
-  VersionCheckProgress,
   VersionView,
   VersionViewQuery,
   StepUpAction,
@@ -109,14 +104,10 @@ import {
   deviceLimits,
   intakeLimits,
   correctionRequestLimits,
-  correctorKeyLimits,
   aiSettingsLimits,
-  correctorRunLimits,
   updateRequestLimits,
   versionEditLimits,
-  correctorLimits,
   ruleSummaryLimits,
-  ruleCheckLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,
@@ -147,13 +138,10 @@ import { type DecisionKind, type DecisionSubject, releasable } from '@arca/domai
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
-import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { AiSettingsService } from './ai/settings.js';
 import type { StartRefusal, UpdateRequests } from './knowledge/update/requests.js';
 import type { VersionReviews } from './knowledge/update/review.js';
-import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
-import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
@@ -254,21 +242,10 @@ export interface AppDependencies {
    * the route answers 503 `summary_unavailable` and the version reads as before.
    */
   readonly ruleSummaries?: RuleSummaries;
-  /**
-   * The independent check (ADR-0027); absent, nothing starts, every version lists `none` and a
-   * version's check reads as never run.
-   */
-  readonly versionChecks?: VersionChecks;
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
   readonly corrections?: Corrections;
-  /** The corrector key screen (ADR-0029); absent, its routes answer 401. */
-  readonly correctorKeys?: CorrectorKeys;
-  /** The corrector run's routes (ADR-0029); absent, they answer 401. */
-  readonly corrector?: Corrector;
-  /** Starts the owner's corrector run from the app (ADR-0029); absent, its route answers 503. */
-  readonly correctorRun?: CorrectorRun;
   /** Update requests (ADR-0031); absent where no database is connected. */
   readonly updateRequests?: UpdateRequests;
   /** Reviews and hand edits of route versions (ADR-0031); absent where no database is connected. */
@@ -323,10 +300,6 @@ export type ErrorCode =
   | 'cross_origin'
   | 'not_found'
   | 'rate_limited'
-  | 'check_off'
-  | 'check_not_started'
-  | 'corrector_off'
-  | 'corrector_not_started'
   | 'update_live'
   | 'version_taken'
   | 'update_off'
@@ -507,12 +480,8 @@ export function createApp({
   admins,
   knowledgeVersions,
   ruleSummaries,
-  versionChecks,
   ruleReports,
   corrections,
-  correctorKeys,
-  correctorRun,
-  corrector,
   aiSettings,
   updateRequests,
   versionReviews,
@@ -1573,101 +1542,10 @@ export function createApp({
     const reads = await adminReads(c);
     if ('refused' in reads) return reads.refused;
     const [versions, comparisons] = await Promise.all([
-      versionsWithChecks(reads.versions, versionChecks),
+      reads.versions.list(),
       reads.versions.comparisons(),
     ]);
-    return c.json({ versions, comparisons: [...comparisons] }, 200);
-  });
-  v1.openapi(openApiRoutes.startQueuedChecks, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    if (versionChecks === undefined || authLimits === undefined) return fail(c, 'check_off', 503);
-    const limited = await overLimit(c, authLimits, ruleCheckLimits.minute, reads.current.accountId);
-    if (limited !== undefined) return limited;
-    const { started, began } = await versionChecks.startQueued();
-    return began ? c.json({ started }, 200) : fail(c, 'check_not_started', 502);
-  });
-  v1.openapi(openApiRoutes.getVersionCheck, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    const { routeId, number } = VersionViewQuery.parse(c.req.query());
-    if (versionChecks === undefined) {
-      const view = await reads.versions.view(routeId, number);
-      return view === undefined
-        ? fail(c, 'not_found', 404)
-        : c.json({ enabled: false, status: 'none' as const, report: null }, 200);
-    }
-    const outcome = await versionChecks.report(routeId, number);
-    if (!outcome.ok) return fail(c, outcome.reason, 404);
-    const { report } = outcome;
-    return c.json(
-      VersionCheck.parse({
-        enabled: true,
-        status: outcome.status,
-        report:
-          report === null
-            ? null
-            : {
-                ...report,
-                checkedAt: new Date(report.checkedAt).toISOString(),
-                fetchLog: report.fetchLog.map(
-                  ({ url, machineReadableUrl, fromCopy, outcome: read, status, cut }) => ({
-                    url,
-                    machineReadableUrl,
-                    fromCopy,
-                    outcome: read,
-                    status,
-                    cut,
-                  }),
-                ),
-              },
-      }),
-      200,
-    );
-  });
-  v1.openapi(openApiRoutes.startVersionCheck, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    const { routeId, number } = DecideVersionRequest.parse(await c.req.json());
-    if (versionChecks === undefined) {
-      const view = await reads.versions.view(routeId, number);
-      return view === undefined ? fail(c, 'not_found', 404) : fail(c, 'check_off', 503);
-    }
-    if (authLimits === undefined) return fail(c, 'check_off', 503);
-    const limited = await overLimit(c, authLimits, ruleCheckLimits.minute, reads.current.accountId);
-    if (limited !== undefined) return limited;
-    const outcome = await versionChecks.startOne(routeId, number);
-    if (outcome.ok) return c.json({ started: outcome.started }, 200);
-    switch (outcome.reason) {
-      case 'check_not_started':
-        return fail(c, 'check_not_started', 502);
-      case 'not_found':
-        return fail(c, 'not_found', 404);
-    }
-  });
-  v1.openapi(openApiRoutes.getVersionCheckProgress, async (c) => {
-    const reads = await adminReads(c);
-    if ('refused' in reads) return reads.refused;
-    const { routeId, number } = VersionViewQuery.parse(c.req.query());
-    if (versionChecks === undefined) {
-      const view = await reads.versions.view(routeId, number);
-      return view === undefined
-        ? fail(c, 'not_found', 404)
-        : c.json({ progress: null, lastCostMicroUsd: null }, 200);
-    }
-    const outcome = await versionChecks.progress(routeId, number);
-    if (!outcome.ok) return fail(c, outcome.reason, 404);
-    const { progress, lastCostMicroUsd } = outcome;
-    return c.json(
-      VersionCheckProgress.parse({
-        lastCostMicroUsd,
-        progress:
-          progress === null
-            ? null
-            : { ...progress, startedAt: new Date(progress.startedAt).toISOString() },
-      }),
-      200,
-    );
+    return c.json({ versions: [...versions], comparisons: [...comparisons] }, 200);
   });
   v1.openapi(openApiRoutes.getVersionView, async (c) => {
     const reads = await adminReads(c);
@@ -1869,43 +1747,6 @@ export function createApp({
     if (outcome === 'not_admin') return fail(c, outcome, 403);
     if (outcome === 'not_found') return fail(c, outcome, 404);
     return c.json({}, 200);
-  });
-  const keyScreen = async (c: Context<AppEnv>) => {
-    const current = await signedIn(c);
-    return current === null || correctorKeys === undefined || authLimits === undefined
-      ? { refused: unauthorized(c) }
-      : { keys: correctorKeys, current, limits: authLimits };
-  };
-  v1.openapi(openApiRoutes.getCorrectorKey, async (c) => {
-    const screen = await keyScreen(c);
-    if ('refused' in screen) return screen.refused;
-    const status = await screen.keys.status(screen.current.accountId);
-    return status === 'not_admin' ? fail(c, status, 403) : c.json(status, 200);
-  });
-  v1.openapi(openApiRoutes.createCorrectorKey, async (c) => {
-    const screen = await keyScreen(c);
-    if ('refused' in screen) return screen.refused;
-    const nonce = actionNonce(c);
-    if (nonce === undefined) return fail(c, 'step_up_required', 403);
-    const { accountId } = screen.current;
-    const limited = await overLimit(c, screen.limits, correctorKeyLimits.change, accountId);
-    if (limited !== undefined) return limited;
-    const created = await screen.keys.create(screen.current, nonce);
-    if (typeof created === 'string') return fail(c, created, 403);
-    // Shown once: no cache along the way may keep it.
-    c.header('Cache-Control', 'no-store');
-    return c.json(created, 200);
-  });
-  v1.openapi(openApiRoutes.startCorrectorRun, async (c) => {
-    const screen = await keyScreen(c);
-    if ('refused' in screen) return screen.refused;
-    const { accountId } = screen.current;
-    const status = await screen.keys.status(accountId);
-    if (status === 'not_admin' || !status.canManage) return fail(c, 'not_admin', 403);
-    if (correctorRun === undefined) return fail(c, 'corrector_off', 503);
-    const limited = await overLimit(c, screen.limits, correctorRunLimits.hour, accountId);
-    if (limited !== undefined) return limited;
-    return (await correctorRun.start()) ? c.json({}, 200) : fail(c, 'corrector_not_started', 502);
   });
   /** An update request that did not start, as its route answers it. */
   const startRefused = (c: Context<AppEnv>, refusal: StartRefusal) => {
@@ -2157,74 +1998,6 @@ export function createApp({
     if (limited !== undefined) return limited;
     const result = await screen.settings.test(accountId, provider);
     return result === 'not_admin' ? fail(c, result, 403) : c.json({ result }, 200);
-  });
-  v1.openapi(openApiRoutes.revokeCorrectorKey, async (c) => {
-    const screen = await keyScreen(c);
-    if ('refused' in screen) return screen.refused;
-    const { id } = RevokeCorrectorKey.parse(await c.req.json());
-    const { accountId } = screen.current;
-    const limited = await overLimit(c, screen.limits, correctorKeyLimits.change, accountId);
-    if (limited !== undefined) return limited;
-    const outcome = await screen.keys.revoke(accountId, id);
-    if (outcome === 'not_found') return fail(c, outcome, 404);
-    return outcome === 'revoked' ? c.json({}, 200) : fail(c, outcome, 403);
-  });
-  /**
-   * The corrector run (ADR-0029): counted per address before the key is read, then the key is
-   * compared by digest; a refused key is audited at most a few times an hour per address, then
-   * counted per key and route.
-   */
-  const correctorOf = async (c: Context<AppEnv>, rule: RateLimitRule) => {
-    if (corrector === undefined || authLimits === undefined) return { refused: unauthorized(c) };
-    // The run sends no Sec-Fetch-Site; a browser on another site loading the GET listing would
-    // otherwise spend the address budget and the refusal audits.
-    const site = c.req.header('sec-fetch-site');
-    if (site !== undefined && site !== 'same-origin')
-      return { refused: fail(c, 'cross_origin', 403) };
-    const address = authLimits.clientAddress(c.req.raw.headers);
-    const addressLimited = await overLimit(c, authLimits, correctorLimits.address, address);
-    if (addressLimited !== undefined) return { refused: addressLimited };
-    const key = await corrector.authenticate(c.req.header('authorization'));
-    if (key === undefined) {
-      const logged = await authLimits.limiter.hit(correctorLimits.refusedLog, address);
-      if (logged.allowed) await corrector.refused();
-      return { refused: unauthorized(c) };
-    }
-    const keyLimited = await overLimit(c, authLimits, rule, key.id);
-    return keyLimited === undefined ? { corrector, key } : { refused: keyLimited };
-  };
-  v1.openapi(openApiRoutes.listCorrectorRequests, async (c) => {
-    const run = await correctorOf(c, correctorLimits.list);
-    if ('refused' in run) return run.refused;
-    return c.json(await run.corrector.list(run.key), 200);
-  });
-  v1.openapi(openApiRoutes.listCorrectorFlaggedVersions, async (c) => {
-    const run = await correctorOf(c, correctorLimits.list);
-    if ('refused' in run) return run.refused;
-    const outcome = await run.corrector.flagged(run.key);
-    if (outcome === 'check_off') return fail(c, outcome, 503);
-    return c.json(CorrectorFlaggedVersions.parse(outcome), 200);
-  });
-  v1.openapi(openApiRoutes.correctorFileUrl, async (c) => {
-    const run = await correctorOf(c, correctorLimits.file);
-    if ('refused' in run) return run.refused;
-    const { requestId, position } = CorrectionFileReference.parse(await c.req.json());
-    const outcome = await run.corrector.fileUrl(run.key, requestId, position);
-    return outcome === 'not_found' ? fail(c, outcome, 404) : c.json(outcome, 200);
-  });
-  v1.openapi(openApiRoutes.answerCorrectionRequest, async (c) => {
-    const run = await correctorOf(c, correctorLimits.answer);
-    if ('refused' in run) return run.refused;
-    const { requestId, answer } = AnswerCorrectionRequest.parse(await c.req.json());
-    const outcome = await run.corrector.answer(run.key, requestId, answer);
-    switch (outcome) {
-      case 'stored':
-        return c.json({}, 200);
-      case 'not_found':
-        return fail(c, outcome, 404);
-      default:
-        return fail(c, outcome, 409);
-    }
   });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate', 'route'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));
@@ -2478,7 +2251,7 @@ export function createApp({
   }
 
   // Vercel cron sends GET with `Authorization: Bearer <CRON_SECRET>` (spec 0001, R6). Not part of
-  // the OpenAPI document; with the admin and corrector routes, the only routes that start workflows.
+  // the OpenAPI document; with the update-request routes, the only routes that start workflows.
   if (cron !== undefined) {
     const {
       readSecret,

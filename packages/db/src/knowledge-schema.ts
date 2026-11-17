@@ -284,13 +284,11 @@ const slugFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9.-]{0,6
 const slugCode = (column: unknown) => sql`${column} ~ '^[a-z][a-z_]{0,63}$'`;
 
 /**
- * Starts of the independent check (ADR-0027): one row each time the activation screen starts a
- * check of a route version, so concurrent screens neither pass the automatic share of any 24 hours
- * nor start one version twice. Public rule identities only, with no account. `app_api`
- * reads and inserts them under an environment-wide advisory lock; the database sets the time;
- * nobody updates or deletes. Kept, as the record of what the checks cost.
+ * Starts of the retired independent check (ADR-0027): one row each time a check of a route version
+ * started. Public rule identities only, with no account. Kept as history since ADR-0031 removed the
+ * check; no runtime role reads or writes it.
  */
-export const checkStart = knowledge.table(
+export const checkStart = knowledge.table.withRLS(
   'check_start',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -304,21 +302,16 @@ export const checkStart = knowledge.table(
     check('check_start_route_id_format', routeIdFormat(table.routeId)),
     check('check_start_version_number_positive', sql`${table.versionNumber} > 0`),
     index('check_start_started_at_idx').on(table.startedAt),
-    pgPolicy('check_start_read', { for: 'select', to: 'app_api', using: sql`true` }),
-    pgPolicy('check_start_insert', { for: 'insert', to: 'app_api', withCheck: sql`true` }),
   ],
 );
 
 /**
- * Reports of the independent check (ADR-0027), one per start: what code concluded about each item
- * of a route version from a model's answer and the official pages it cites, with the fetch log.
- * Public rule data with no account, so every admin reads the same one. `app_jobs` inserts them from
- * the check's workflow step; `app_api` and `app_auth` read them; nobody updates or deletes, so a
- * later check writes a new row. `clean` is computed in code and the database refuses a row where it
- * disagrees with the items: a scripted report, an empty one or one with an item that does not match
- * is never clean.
+ * Reports of the retired independent check (ADR-0027), one per start: what code concluded about
+ * each item of a route version from a model's answer and the official pages it cites, with the
+ * fetch log. Public rule data with no account. Kept as history since ADR-0031 removed the check; no
+ * runtime role reads or writes it.
  */
-export const independentCheck = knowledge.table(
+export const independentCheck = knowledge.table.withRLS(
   'independent_check',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -371,24 +364,15 @@ export const independentCheck = knowledge.table(
         AND jsonb_array_length(${table.items}) > 0
         AND NOT jsonb_path_exists(${table.items}, '$[*] ? (!exists(@.status ? (@ == "matches")))'))`,
     ),
-    pgPolicy('independent_check_read', {
-      for: 'select',
-      to: ['app_api', 'app_auth', 'app_jobs'],
-      using: sql`true`,
-    }),
-    pgPolicy('independent_check_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
   ],
 );
 
 /**
- * Progress of the independent check (ADR-0027, "On demand, with progress"): what one start's run
- * recorded as it went, in order, so an admin can watch it. A closed kind and a small detail of
- * counts, one cited URL and fixed codes; never page text or anything a model wrote. Public rule
- * data with no account. `app_jobs` inserts from the check's workflow step; `app_api` reads; the
- * database sets the time; nobody updates or deletes. The kinds and details are closed in code,
- * which parses each row on the way out; the table only bounds their shape.
+ * Progress of the retired independent check (ADR-0027): what one start's run recorded as it went.
+ * Counts, cited URLs and fixed codes, with no account. Kept as history since ADR-0031 removed the
+ * check; no runtime role reads or writes it.
  */
-export const checkProgress = knowledge.table(
+export const checkProgress = knowledge.table.withRLS(
   'check_progress',
   {
     startId: uuid('start_id').notNull(),
@@ -407,8 +391,6 @@ export const checkProgress = knowledge.table(
       'check_progress_detail_object',
       sql`jsonb_typeof(${table.detail}) = 'object' AND length(${table.detail}::text) <= 2500`,
     ),
-    pgPolicy('check_progress_read', { for: 'select', to: 'app_api', using: sql`true` }),
-    pgPolicy('check_progress_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
   ],
 );
 
@@ -596,7 +578,7 @@ export const correctionUpload = knowledge.table(
  * A request's sources, up to five on a version and twenty for a new route: an `https` link,
  * pasted text, with the page it was copied from if any, or an uploaded file, all leads only
  * (ADR-0029). A file source names its upload, which no other source names, and may name the
- * official page it is a copy of, which the independent check reads when it cannot read the page.
+ * official page it is a copy of, which the retired independent check read when it could not read the page.
  */
 export const correctionSource = knowledge.table(
   'correction_source',
@@ -663,13 +645,10 @@ export const correctionSource = knowledge.table(
 );
 
 /**
- * The corrector key (ADR-0029): the secret the scheduled corrector run presents, stored as its
- * SHA-256 only. A `created` row is inserted by `app_auth`, by an owner-list admin of the
- * transaction's own account, spending a `corrector_key` step-up in the same transaction; a
- * `revoked` row ends one key, written through a definer function. The live key is the newest
- * `created` row, unless a `revoked` row ends it or it is a year old; the API also checks that its
- * creator is still on the owner list and still has an account. Insert-only, kept with account IDs
- * and digests only, as the record of who could answer requests and when.
+ * The retired corrector key (ADR-0029): the secret the corrector run presented, stored as its
+ * SHA-256 only. Since ADR-0031 removed the run, no role inserts a `created` row and the API calls
+ * none of the definer functions that read it; the rows stay, with account IDs and digests only, as
+ * the record of who could answer requests and when, read for the data export.
  */
 export const correctorKey = knowledge.table(
   'corrector_key',
@@ -704,21 +683,6 @@ export const correctorKey = knowledge.table(
           AND ${table.revokesKeyId} IS NOT NULL
         ELSE false END`,
     ),
-    pgPolicy('corrector_key_insert_by_owner', {
-      for: 'insert',
-      to: 'app_auth',
-      withCheck: sql`${table.kind} = 'created' AND ${isIdentity(table.actorAccountId)}
-        AND EXISTS (SELECT FROM "auth"."step_up"
-          WHERE "auth"."step_up"."id" = ${table.stepUpId}
-            AND "auth"."step_up"."account_id" = ${table.actorAccountId}
-            AND "auth"."step_up"."purpose" = 'corrector_key'
-            AND "auth"."step_up"."consumed_at" IS NOT NULL)`,
-    }),
-    pgPolicy('corrector_key_revoke_by_definer', {
-      for: 'insert',
-      to: 'knowledge_definer',
-      withCheck: sql`${table.kind} = 'revoked'`,
-    }),
     pgPolicy('corrector_key_select_by_definer', {
       for: 'select',
       to: 'knowledge_definer',

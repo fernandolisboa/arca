@@ -2,7 +2,7 @@ import type { ComparisonVersionView } from '@arca/api-contract/client';
 import { StatusChip } from '@arca/ui';
 import { useId, type ReactNode } from 'react';
 import { Decision, decideComparison } from './decision.js';
-import { ChangeList, CheckAndHash, card, changeLines } from './review-parts.js';
+import { ChangeList, ContentHash, card, changeLines } from './review-parts.js';
 import { stateTone } from './state-tone.js';
 import { type KnowledgeWords, useKnowledgeWords } from './words.js';
 
@@ -233,7 +233,7 @@ export function ComparisonPanel({ view }: { readonly view: ComparisonVersionView
         </ul>
       </Section>
       <Section title={t('knowledge.wizard.decision')}>
-        <CheckAndHash hash={view.hash} words={words} />
+        <ContentHash hash={view.hash} words={words} />
         <Decision
           state={view.state}
           decide={(kind) => decideComparison(kind, view)}

@@ -41,7 +41,6 @@ describe('reviewer selection', () => {
     ['the secrets guide', ['docs/SETUP.md'], [...docs, 'security']],
     ['a runbook', ['docs/runbooks/incident-response.md'], [...docs, 'security']],
     ['the rule audit runbook', ['docs/runbooks/rule-audit.md'], [...core, 'supply-chain']],
-    ['the corrector script', ['tooling/scripts/src/corrector.ts'], [...core, 'supply-chain']],
     [
       'the reading recipes',
       ['docs/runbooks/reading-recipes.md'],
@@ -254,7 +253,6 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['docs/runbooks/rule-audit.md', 'supply-chain'],
   ['docs/runbooks/rule-audit.md', 'architecture'],
   ['docs/runbooks/reading-recipes.md', 'supply-chain'],
-  ['tooling/scripts/src/corrector.ts', 'supply-chain'],
 ];
 
 describe('sensitive files in this repository', () => {
