@@ -45,8 +45,8 @@ const trustRoots = [{ pattern: officialPattern, kind: 'an official-domain list' 
  * Country guides, retired with the independent check (ADR-0031): their files and their
  * `hashes.json` entries may go, and none may be added.
  */
-const retiredGuides = `${dataRoot}guides/`;
 const retiredGuideHashes = 'guides/';
+const retiredGuides = `${dataRoot}${retiredGuideHashes}`;
 const regularFile = { mode: '100644', type: 'blob' };
 /** At least the build's nesting limit; the build applies its own, stricter one. */
 const maxJsonDepth = 64;
@@ -152,8 +152,8 @@ class Check {
   }
 
   /**
-   * hashes.json keeps every `vectors` entry by name and every `files` entry by path, but for a
-   * retired guide's.
+   * hashes.json keeps every `vectors` entry by name and every `files` entry by path, except entries
+   * of retired guides.
    */
   #checkHashes(before: unknown, after: unknown): void {
     if (!isRecord(before) || !isRecord(after)) {
@@ -211,7 +211,7 @@ class Check {
 
   /**
    * Every entry of `before` (an array of objects keyed by `key`) is in `after`, unchanged and once,
-   * but for one whose key starts with `mayGo`, which may be left out. Returns the old entries by key
+   * but for one whose key starts with `removablePrefix`, which may be left out. Returns the old entries by key
    * and the entries `after` adds.
    */
   #keepsEntries(
@@ -219,7 +219,7 @@ class Check {
     before: unknown,
     after: unknown,
     key: string,
-    mayGo?: string,
+    removablePrefix?: string,
   ): { old: Map<string, Record<string, unknown>>; added: Record<string, unknown>[] } | undefined {
     const oldEntries = keyed(before, key);
     const newEntries = keyed(after, key);
@@ -240,7 +240,7 @@ class Check {
     for (const [name, entry] of old) {
       const now = current.get(name);
       if (now === undefined) {
-        if (mayGo === undefined || !name.startsWith(mayGo))
+        if (removablePrefix === undefined || !name.startsWith(removablePrefix))
           this.#add(path, `lost the entry with ${key} ${name}`);
       } else if (canonical(now) !== canonical(entry)) {
         this.#add(path, `changed the entry with ${key} ${name}; entries are append-only`);

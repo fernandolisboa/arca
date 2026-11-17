@@ -442,6 +442,17 @@ describe('knowledge-immutable', () => {
       ).toEqual([]);
     });
 
+    it('keeps a merged guide immutable', async () => {
+      expect(
+        await problems(
+          (tree) => {
+            tree[guide] = { number: 1, title: 'changed' };
+          },
+          { base: withGuide() },
+        ),
+      ).toContain(`${guide}: was modified; it is immutable, so add a new numbered file instead`);
+    });
+
     it('refuses a new guide', async () => {
       expect(
         await problems((tree) => {
