@@ -4,7 +4,9 @@ import {
   type JSONSchema7,
   type LanguageModelUsage,
   Output,
+  type ProviderMetadata,
   StreamProviderError,
+  type ModelMessage,
   type SystemModelMessage,
   generateText,
   jsonSchema,
@@ -29,6 +31,8 @@ export interface ClaudeSettings {
   readonly fetch?: typeof globalThis.fetch;
 }
 
+type CacheLifetime = '5m' | '1h';
+
 /** One structured-output call: no tools, one schema, a token cap and a timeout. */
 export interface StructuredCall {
   readonly model: string;
@@ -39,6 +43,28 @@ export interface StructuredCall {
   readonly maxOutputTokens: number;
   readonly timeoutMs: number;
   readonly anthropic?: Pick<AnthropicLanguageModelOptions, 'effort' | 'thinking'>;
+  /**
+   * Data every call of one subject shares, such as a route's current version: sent as the user
+   * turn's first block, never as instructions, and closed by a five-minute cache breakpoint so a
+   * request's later stage reads it from the cache (ADR-0031).
+   */
+  readonly context?: string;
+  /**
+   * The instructions' cache lifetime: an hour by default, so calls across requests share it;
+   * five minutes where the cache serves one request only, as an update request's (ADR-0031).
+   */
+  readonly cacheLifetime?: CacheLifetime;
+  /**
+   * Anthropic's web search and fetch server tools, limited to these hosts and their subdomains:
+   * the versions without dynamic filtering, so no code runs in Anthropic's sandbox (ADR-0031).
+   */
+  readonly web?: {
+    readonly allowedDomains: readonly string[];
+    readonly maxSearches: number;
+    readonly maxFetches: number;
+    /** The most content one fetched page adds to the context, in tokens. */
+    readonly maxFetchTokens: number;
+  };
 }
 
 export interface StructuredReply {
@@ -51,6 +77,8 @@ export interface StructuredReply {
   readonly cacheReadTokens?: number;
   /** Input tokens written to the prompt cache, at a premium over the input price. */
   readonly cacheWriteTokens?: number;
+  /** Web searches the server tool ran, which are billed apart from tokens. */
+  readonly webSearches?: number;
 }
 
 export type ClaudeFailure = 'timeout' | 'unavailable' | 'unparsable' | 'failed';
@@ -94,24 +122,66 @@ function failureOf(error: unknown): ClaudeFailure {
  * a fraction of a cent. Instructions under the model's minimum cacheable length are sent uncached,
  * with no error.
  */
-function cachedInstructions(instructions: string): SystemModelMessage {
+function cachedInstructions(instructions: string, ttl: CacheLifetime = '1h'): SystemModelMessage {
   return {
     role: 'system',
     content: instructions,
-    providerOptions: { anthropic: { cacheControl: { type: 'ephemeral', ttl: '1h' } } },
+    providerOptions: {
+      anthropic: {
+        cacheControl: ttl === '1h' ? { type: 'ephemeral', ttl } : { type: 'ephemeral' },
+      },
+    },
   };
 }
 
+/**
+ * The call's data and its question as one user turn, the data first and closed by a five-minute
+ * cache breakpoint (ADR-0031): data, never system instructions, so nothing in it speaks with the
+ * instructions' authority.
+ */
+function dataTurn(context: string, prompt: string): ModelMessage[] {
+  return [
+    {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: context,
+          providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+        },
+        { type: 'text', text: prompt },
+      ],
+    },
+  ];
+}
+
+/** The web searches the provider reports in its raw usage, if it reports them. */
+function webSearchesOf(metadata: ProviderMetadata | undefined): number | undefined {
+  const usage = metadata?.['anthropic']?.['usage'];
+  const tools = isRecord(usage) ? usage['server_tool_use'] : undefined;
+  const count = isRecord(tools) ? tools['web_search_requests'] : undefined;
+  return typeof count === 'number' && Number.isInteger(count) && count >= 0 ? count : undefined;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 /** The reply with its usage; a count the provider left out stays out. */
-function replyOf(output: unknown, usage: LanguageModelUsage): StructuredReply {
+function replyOf(
+  output: unknown,
+  usage: LanguageModelUsage,
+  metadata?: ProviderMetadata,
+): StructuredReply {
   const { inputTokens, outputTokens, inputTokenDetails } = usage;
   const { cacheReadTokens, cacheWriteTokens } = inputTokenDetails;
+  const webSearches = webSearchesOf(metadata);
   return {
     output,
     ...(inputTokens === undefined ? {} : { inputTokens }),
     ...(outputTokens === undefined ? {} : { outputTokens }),
     ...(cacheReadTokens === undefined ? {} : { cacheReadTokens }),
     ...(cacheWriteTokens === undefined ? {} : { cacheWriteTokens }),
+    ...(webSearches === undefined ? {} : { webSearches }),
   };
 }
 
@@ -135,22 +205,44 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
     if (key === undefined) throw new ClaudeCallError('unavailable');
     return provider(key);
   };
-  const request = async (call: StructuredCall) => ({
-    model: (await anthropic())(call.model),
-    instructions: cachedInstructions(call.instructions),
-    prompt: call.prompt,
-    output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
-    maxOutputTokens: call.maxOutputTokens,
-    ...(call.anthropic === undefined ? {} : { providerOptions: { anthropic: call.anthropic } }),
-    maxRetries: 0,
-    abortSignal: AbortSignal.timeout(call.timeoutMs),
-    telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
-  });
+  const request = async (call: StructuredCall) => {
+    // An empty list would leave the web tools with no domain limit at all.
+    if (call.web?.allowedDomains.length === 0) throw new ClaudeCallError('failed');
+    const provider = await anthropic();
+    return {
+      model: provider(call.model),
+      instructions: cachedInstructions(call.instructions, call.cacheLifetime),
+      ...(call.web === undefined
+        ? {}
+        : {
+            tools: {
+              web_search: provider.tools.webSearch_20250305({
+                maxUses: call.web.maxSearches,
+                allowedDomains: [...call.web.allowedDomains],
+              }),
+              web_fetch: provider.tools.webFetch_20250910({
+                maxUses: call.web.maxFetches,
+                maxContentTokens: call.web.maxFetchTokens,
+                allowedDomains: [...call.web.allowedDomains],
+              }),
+            },
+          }),
+      ...(call.context === undefined
+        ? { prompt: call.prompt }
+        : { messages: dataTurn(call.context, call.prompt) }),
+      output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
+      maxOutputTokens: call.maxOutputTokens,
+      ...(call.anthropic === undefined ? {} : { providerOptions: { anthropic: call.anthropic } }),
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(call.timeoutMs),
+      telemetry: { isEnabled: false, recordInputs: false, recordOutputs: false },
+    };
+  };
   return {
     async object(call: StructuredCall): Promise<StructuredReply> {
       try {
         const result = await generateText(await request(call));
-        return replyOf(result.output, result.usage);
+        return replyOf(result.output, result.usage, result.finalStep.providerMetadata);
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
       }

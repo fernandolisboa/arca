@@ -152,6 +152,8 @@ export const openApiRoutes = {
   removeAiKey: toOpenApiRoute(routes.removeAiKey),
   setAiStage: toOpenApiRoute(routes.setAiStage),
   testAiKey: toOpenApiRoute(routes.testAiKey),
+  startUpdateRequest: toOpenApiRoute(routes.startUpdateRequest),
+  getNewestUpdateRequest: toOpenApiRoute(routes.getNewestUpdateRequest),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

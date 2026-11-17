@@ -214,6 +214,20 @@ export const checkProgressQuery = (routeId: string, number: number) =>
       state.data?.progress?.state === 'running' ? checkProgressPollMs : false,
   });
 
+/** How often a running update request's progress is read again (ADR-0031). */
+const updatePollMs = 3_000;
+
+/** A route's newest update request with its progress by stage, read again while it runs. */
+export const updateRequestQuery = (routeId: string) =>
+  queryOptions({
+    queryKey: ['knowledge', 'update-request', routeId],
+    queryFn: () => api.call(routes.getNewestUpdateRequest, { routeId }),
+    networkMode: 'always',
+    retry: false,
+    refetchInterval: ({ state }) =>
+      state.data?.request?.state === 'running' ? updatePollMs : false,
+  });
+
 /**
  * Everything cached for one account, the session first; a new query that is the account's own
  * joins this list.

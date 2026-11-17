@@ -607,6 +607,128 @@ describe('the AI settings access matrix (ADR-0031)', () => {
   });
 });
 
+const updateTables = {
+  'knowledge.update_request': ['id', 'route_id', 'base_number', 'requested_at'],
+  'knowledge.update_stage': [
+    'id',
+    'request_id',
+    'position',
+    'stage',
+    'failure',
+    'needs_correction',
+    'proposal_valid',
+    'output',
+    'model',
+    'input_tokens',
+    'output_tokens',
+    'cache_read_tokens',
+    'cache_write_tokens',
+    'web_searches',
+    'at',
+  ],
+  'knowledge.update_end': ['request_id', 'failure', 'content_hash', 'proposal', 'at'],
+  'knowledge.rule_verdict': ['cache_key', 'verdict', 'at'],
+} as const;
+type UpdateTable = keyof typeof updateTables;
+const startUpdateSignature = 'knowledge.start_update_request(text, integer, text, uuid)';
+
+/** Each update request table's privileges, and whether the role runs start_update_request. */
+async function updateAccess(role: string) {
+  const tables: Record<string, unknown> = {};
+  for (const [table, columns] of Object.entries(updateTables)) {
+    const { columns: held, table: tableHeld } = await columnPrivileges(role, table, columns);
+    tables[table] = { columns: held, table: tableHeld };
+  }
+  const runsStart = await withClient(adminTarget(database), async (client) => {
+    const row = await client.query<{ granted: boolean }>(
+      `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS granted`,
+      [role, startUpdateSignature],
+    );
+    return row.rows[0]?.granted === true;
+  });
+  return { tables, runsStart };
+}
+
+function updateMatrix(granted: Partial<Record<UpdateTable, Record<string, string[]>>>) {
+  return Object.fromEntries(
+    (Object.entries(updateTables) as [UpdateTable, readonly string[]][]).map(([name, columns]) => [
+      name,
+      {
+        columns: Object.fromEntries(
+          columns.map((column) => [column, granted[name]?.[column] ?? []]),
+        ),
+        table: [],
+      },
+    ]),
+  );
+}
+
+const onEach = (table: UpdateTable, privileges: string[], only?: readonly string[]) =>
+  Object.fromEntries(
+    updateTables[table]
+      .filter((column) => only?.includes(column) ?? true)
+      .map((c) => [c, privileges]),
+  );
+const withInsert = (table: UpdateTable, insert: readonly string[]) =>
+  Object.fromEntries(
+    updateTables[table].map((c) => [c, insert.includes(c) ? ['SELECT', 'INSERT'] : ['SELECT']]),
+  );
+
+describe('the update request access matrix (ADR-0031)', () => {
+  it('lets app_api read requests, stages and ends and start a request, and nothing else', async () => {
+    expect(await updateAccess('app_api')).toEqual({
+      tables: updateMatrix({
+        'knowledge.update_request': onEach('knowledge.update_request', ['SELECT']),
+        'knowledge.update_stage': onEach('knowledge.update_stage', ['SELECT']),
+        'knowledge.update_end': onEach('knowledge.update_end', ['SELECT']),
+      }),
+      runsStart: true,
+    });
+  });
+
+  it('lets app_jobs read every table and insert stages, ends and verdicts, never their time', async () => {
+    expect(await updateAccess('app_jobs')).toEqual({
+      tables: updateMatrix({
+        'knowledge.update_request': onEach('knowledge.update_request', ['SELECT']),
+        'knowledge.update_stage': withInsert(
+          'knowledge.update_stage',
+          updateTables['knowledge.update_stage'].filter((c) => !['id', 'at'].includes(c)),
+        ),
+        'knowledge.update_end': withInsert('knowledge.update_end', [
+          'request_id',
+          'failure',
+          'content_hash',
+          'proposal',
+        ]),
+        'knowledge.rule_verdict': withInsert('knowledge.rule_verdict', ['cache_key', 'verdict']),
+      }),
+      runsStart: false,
+    });
+  });
+
+  it('lets knowledge_definer only insert a request and read what the live check needs', async () => {
+    expect(await updateAccess('knowledge_definer')).toEqual({
+      tables: updateMatrix({
+        'knowledge.update_request': {
+          id: ['SELECT'],
+          route_id: ['SELECT', 'INSERT'],
+          base_number: ['INSERT'],
+          requested_at: ['SELECT'],
+        },
+        'knowledge.update_end': onEach('knowledge.update_end', ['SELECT'], ['request_id']),
+      }),
+      runsStart: true,
+    });
+  });
+
+  it.each([
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
+    ...retiredRoles,
+  ])('gives %s no access', async (role) => {
+    expect(await updateAccess(role)).toEqual({ tables: updateMatrix({}), runsStart: false });
+  });
+});
+
 const onEvery = (columns: readonly string[], privileges: string[]) =>
   Object.fromEntries(columns.map((column) => [column, privileges]));
 const onEveryColumn = (privileges: string[]) => onEvery(auditColumns, privileges);
@@ -732,7 +854,7 @@ describe('the audit schema access matrix (spec 0003, R7)', () => {
 });
 
 describe('the knowledge schema access matrix (spec 0007, R7)', () => {
-  it('has only the admin grant, AI settings, decision, rule summary, check, correction request, corrector key and rule tables, with forced row-level security', async () => {
+  it('has only the admin grant, AI settings, decision, rule summary, check, correction request, corrector key, rule and update request tables, with forced row-level security', async () => {
     expect(await schemaShape('knowledge')).toEqual({
       tables: [
         { name: 'admin_grant', forced: true },
@@ -751,11 +873,15 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'official_domain_list', forced: true },
         { name: 'route_version', forced: true },
         { name: 'rule_summary', forced: true },
+        { name: 'rule_verdict', forced: true },
+        { name: 'update_end', forced: true },
+        { name: 'update_request', forced: true },
+        { name: 'update_stage', forced: true },
       ],
       // A correction request's sources and events, which go with it, a file source's upload, the
-      // corrector key an event names and the key a revocation ends (ADR-0029), and the AI key a
-      // removal ends (ADR-0031).
-      foreignKeys: 6,
+      // corrector key an event names and the key a revocation ends (ADR-0029), the AI key a
+      // removal ends, and an update request's stages and end (ADR-0031).
+      foreignKeys: 8,
     });
   });
 

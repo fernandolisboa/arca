@@ -41,7 +41,7 @@ export interface StageChoice {
 
 type KeyRefusal = 'not_admin' | 'owner_list_only' | 'step_up_required' | 'keys_off';
 
-export interface AiSettingsService {
+export interface AiSettingsService extends AiSettingsReader {
   readonly status: (accountId: string) => Promise<AiSettings | 'not_admin'>;
   /** Stores the key in the transaction that spends the session's `ai_key` step-up. */
   readonly setKey: (
@@ -66,9 +66,6 @@ export interface AiSettingsService {
     accountId: string,
     provider: AiProvider,
   ) => Promise<AiKeyTestResult['result'] | 'not_admin'>;
-  /** The key a model call uses, read on every call so a change takes effect at once. */
-  readonly key: (provider: AiProvider) => Promise<ResolvedAiKey>;
-  readonly stage: (stage: AiStage) => Promise<StageChoice>;
 }
 
 export interface AiSettingsDependencies {
@@ -115,18 +112,19 @@ const keyProbes: Record<AiProvider, (key: string) => [string, RequestInit]> = {
   typesafe: typesafeKeyProbe,
 };
 
-/** Settings › IA (ADR-0031): provider keys, encrypted, and each stage's model and effort. */
-export function createAiSettings({
-  db,
-  role,
-  stepUp,
-  audit,
-  notify,
-  environment,
-  cipher,
-  environmentKeys,
-  fetch = globalThis.fetch,
-}: AiSettingsDependencies): AiSettingsService {
+/** What a model call reads from Settings › IA: its provider's key and its stage's choice. */
+export interface AiSettingsReader {
+  /** The key a model call uses, read on every call so a change takes effect at once. */
+  readonly key: (provider: AiProvider) => Promise<ResolvedAiKey>;
+  readonly stage: (stage: AiStage) => Promise<StageChoice>;
+}
+
+export type AiSettingsReaderDependencies = Pick<
+  AiSettingsDependencies,
+  'db' | 'environment' | 'cipher' | 'environmentKeys'
+>;
+
+function settingsReads({ db, environment, cipher, environmentKeys }: AiSettingsReaderDependencies) {
   /**
    * The provider's stored key: its newest `set` row no removal names, so removing an older key
    * never ends a newer one stored meanwhile.
@@ -193,6 +191,36 @@ export function createAiSettings({
         : { stage, ...aiStageDefault(stage) };
     });
   };
+
+  return { storedKey, resolve, keyState, stageChoices };
+}
+
+/** The reads alone, for a pool that reads the settings but changes none (app_jobs). */
+export function aiSettingsReader(dependencies: AiSettingsReaderDependencies): AiSettingsReader {
+  const { storedKey, resolve, stageChoices } = settingsReads(dependencies);
+  return {
+    key: async (provider) => resolve(provider, await storedKey(provider)),
+    stage: async (stage) => {
+      const choice = (await stageChoices()).find((entry) => entry.stage === stage);
+      return choice ?? aiStageDefault(stage);
+    },
+  };
+}
+
+/** Settings › IA (ADR-0031): provider keys, encrypted, and each stage's model and effort. */
+export function createAiSettings(dependencies: AiSettingsDependencies): AiSettingsService {
+  const {
+    db,
+    role,
+    stepUp,
+    audit,
+    notify,
+    environment,
+    cipher,
+    fetch = globalThis.fetch,
+  } = dependencies;
+  const { storedKey, resolve, keyState, stageChoices } = settingsReads(dependencies);
+  const reader = aiSettingsReader(dependencies);
 
   const isAdmin = async (accountId: string) =>
     role.basisOf(await readAdminHistory(db()), accountId) !== undefined;
@@ -326,12 +354,7 @@ export function createAiSettings({
       }
     },
 
-    key: async (provider) => resolve(provider, await storedKey(provider)),
-
-    stage: async (stage) => {
-      const choice = (await stageChoices()).find((entry) => entry.stage === stage);
-      return choice ?? aiStageDefault(stage);
-    },
+    ...reader,
   };
 }
 

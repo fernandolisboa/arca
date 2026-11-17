@@ -5,6 +5,7 @@ import { comparisonRoutes } from './comparison.js';
 import { adminRoutes } from './admins.js';
 import { AiProvider, AiStage, aiSettingsRoutes } from './ai-settings.js';
 import { knowledgeRoutes } from './knowledge.js';
+import { updateRequestRoutes } from './update-requests.js';
 import {
   ObjectUpload,
   ObjectUploadUrlRequest,
@@ -885,6 +886,12 @@ export const auditEventDetails = {
   ai_key_removed: z.strictObject({ provider: AiProvider, keyId: z.uuid() }),
   /** An admin chose a stage's model and effort (ADR-0031). */
   ai_stage_set: z.strictObject({ stage: AiStage, settingId: z.uuid() }),
+  /** An admin asked for one route to be researched again (ADR-0031). */
+  update_requested: z.strictObject({
+    requestId: z.uuid(),
+    routeId: routeIdSchema,
+    baseNumber: z.int().min(1),
+  }),
   /** An owner-list admin made a corrector key, which replaced any live one (ADR-0029). */
   corrector_key_created: z.strictObject({ keyId: z.uuid() }),
   /** An owner-list admin revoked the corrector key (ADR-0029). */
@@ -1676,6 +1683,7 @@ export * from './knowledge.js';
 export * from './admins.js';
 export * from './uploads.js';
 export * from './ai-settings.js';
+export * from './update-requests.js';
 
 export const routes = {
   health,
@@ -1737,6 +1745,7 @@ export const routes = {
   ...knowledgeRoutes,
   ...adminRoutes,
   ...aiSettingsRoutes,
+  ...updateRequestRoutes,
 } as const;
 
 /** The Better Auth endpoints the API lets through; every other path under /v1/auth is a 404. */

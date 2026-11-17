@@ -1486,6 +1486,40 @@ export const ptBR = {
       failure:
         '{reason, select, limited {O corretor já rodou várias vezes nesta hora. Espere um pouco e tente de novo.} corrector_off {O corretor ainda não está ligado aqui: falta o token da rotina na Vercel.} corrector_not_started {O Claude não aceitou o pedido. Confira se o token da rotina ainda vale e tente de novo.} not_admin {Só quem está na lista de donos pode rodar o corretor.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para rodar o corretor. Tente de novo.}}',
     },
+    /** An admin's update request for one route, followed stage by stage (ADR-0031). */
+    update: {
+      button: 'Pedir atualização',
+      running: 'Atualização em andamento',
+      confirmTitle: 'Pedir ao Arca para atualizar esta rota?',
+      confirmLead:
+        'O Arca pesquisa de novo nos sites oficiais, confere cada item com a fonte, corrige uma vez o que não bater e confere de novo. No fim sai uma proposta com três listas. A regra só muda se você aprovar.',
+      cost: 'Costuma gastar alguns dólares do seu crédito da API. O custo exato aparece aqui no fim.',
+      confirm: 'Pedir agora',
+      starting: 'Começando a atualização…',
+      startFailure:
+        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} not_found {O Arca não encontrou esta rota.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para pedir a atualização. Tente de novo.}}',
+      title: 'Atualização da rota',
+      requestedAt: 'Pedida em {date}, a partir da versão {number}',
+      chip: '{state, select, running {Em andamento} finished {Pronta} failed {Parou} other {Parou no meio}}',
+      state:
+        '{state, select, running {Em andamento. Pode sair desta tela: o Arca continua sozinho.} finished {Pronta. A proposta espera a sua revisão.} failed {Parou sem proposta.} other {Parou no meio e não terminou em 1 hora. Você pode pedir de novo.}}',
+      failure:
+        '{failure, select, research_timeout {A pesquisa demorou demais.} correction_timeout {A correção demorou demais.} research_unparsable {A resposta da pesquisa veio num formato que o Arca não entende.} correction_unparsable {A resposta da correção veio num formato que o Arca não entende.} research_failed {A pesquisa falhou.} correction_failed {A correção falhou.} validation_failed {A validação falhou.} final_validation_failed {A validação final falhou.} proposal_invalid {Mesmo depois da correção, a proposta não passou nas checagens do Arca.} unknown_route {O Arca não encontrou a versão de onde a atualização partiu.} not_configured {Faltam as chaves da IA em Configurações › IA.} other {Algo saiu da ordem esperada.}}',
+      stages: 'Etapas da atualização',
+      stage:
+        '{stage, select, research {Pesquisa} validation {Validação} correction {Correção} other {Validação final}}',
+      stageState:
+        '{state, select, done {Feita} failed {Falhou} running {Agora} skipped {Não precisou} not_run {Não rodou} other {Na fila}}',
+      lists: 'O que a proposta traz',
+      list: '{list, select, confirmed {Confirmados} divergent {Divergentes} other {Não confirmados}}',
+      review: 'Em breve você vai poder revisar e aprovar a proposta aqui.',
+      spent:
+        '{state, select, running {Gasto até agora: {cost}.} other {Esta atualização custou {cost}.}}',
+      costUnknown:
+        'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou o modelo não informou quantos tokens gastou.',
+      costScripted: 'Foi uma atualização de teste, sem IA de verdade. Não custou nada.',
+      loadFailure: 'Não conseguimos carregar o andamento da atualização.',
+    },
     /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
     checkRun: {
       button: 'Analisar com o Arca',

@@ -526,3 +526,22 @@ export {
   type IndicatorView,
   comparisonVersionView,
 } from './comparison/view.js';
+export {
+  type ItemOutcome,
+  type ItemOutcomeReason,
+  type NextStep,
+  type ProposalList,
+  type StageResult,
+  type UpdateFailure,
+  type UpdateStage,
+  type ValidatorVerdict,
+  itemOutcome,
+  maxUpdateStages,
+  minValidatorConfidence,
+  nextUpdateStep,
+  proposalLists,
+  updateFailures,
+  updateStages,
+  validatorVerdict,
+  validatorVerdicts,
+} from './rule-update/pipeline.js';

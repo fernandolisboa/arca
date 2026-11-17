@@ -5,6 +5,8 @@ import {
   type Json,
   type RuleData,
   type RuleEngineData,
+  type RuleRowReading,
+  type RuleRows,
   countryFiles,
   refusedRows,
   ruleDataFromRows,
@@ -23,6 +25,10 @@ export interface RuleStore {
    * and every route it has a version of, in a stable order.
    */
   readonly engine: () => Promise<RuleEngineData>;
+  /** The rows as stored, which a proposal is hashed and checked against (ADR-0031). */
+  readonly rows: () => Promise<RuleRows>;
+  /** How the rows are read: the countries files, the hashing and the host parser. */
+  readonly reading: RuleRowReading;
 }
 
 export type { RuleEngineData };
@@ -37,9 +43,11 @@ const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8
  * whole and logged, never evaluated.
  */
 export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore {
-  let cached: { counts: string; data: Promise<RuleData> } | undefined;
+  let cached: { counts: string; rows: Promise<RuleRows> } | undefined;
+  const reading: RuleRowReading = { countryFiles, sha256, hostOf };
+  const parsed = new WeakMap<RuleRows, RuleData>();
 
-  const read = async (): Promise<RuleData> => {
+  const readRows = async (): Promise<RuleRows> => {
     const rows = await db().transaction(
       async (tx) => ({
         routeVersions: await tx
@@ -70,26 +78,22 @@ export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore
       }),
       { isolationLevel: 'repeatable read', accessMode: 'read only' },
     );
-    const data = ruleDataFromRows(
-      {
-        routeVersions: rows.routeVersions.map((row) => ({
-          ...row,
-          content: row.content as Json,
-          cases: row.cases as Json | null,
-        })),
-        countrySets: rows.countrySets.map((row) => ({ ...row, content: row.content as Json })),
-        officialDomainLists: rows.officialDomainLists.map((row) => ({
-          ...row,
-          content: row.content as Json,
-        })),
-      },
-      { countryFiles, sha256, hostOf },
-    );
-    if (refusedRows(data).length > 0) logger.error({ errorName: 'KnowledgeRowRefused' });
-    return data;
+    return {
+      routeVersions: rows.routeVersions.map((row) => ({
+        ...row,
+        content: row.content as Json,
+        cases: row.cases as Json | null,
+      })),
+      countrySets: rows.countrySets.map((row) => ({ ...row, content: row.content as Json })),
+      officialDomainLists: rows.officialDomainLists.map((row) => ({
+        ...row,
+        content: row.content as Json,
+      })),
+    };
   };
 
-  const data = async (): Promise<RuleData> => {
+  /** The rows read once for each change in the counts. */
+  const currentRows = async (): Promise<RuleRows> => {
     const result = await db().execute<{ counts: string }>(sql`
       SELECT concat_ws('/',
         (SELECT count(*) FROM knowledge.route_version),
@@ -97,17 +101,28 @@ export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore
         (SELECT count(*) FROM knowledge.official_domain_list)) AS counts`);
     const counts = result.rows[0]?.counts ?? '';
     if (cached?.counts !== counts) {
-      const reading = read();
-      cached = { counts, data: reading };
+      const pending = readRows();
+      cached = { counts, rows: pending };
       // A failed read is not kept, so the next request reads again.
-      reading.catch(() => {
-        if (cached?.data === reading) cached = undefined;
+      pending.catch(() => {
+        if (cached?.rows === pending) cached = undefined;
       });
     }
-    return cached.data;
+    return cached.rows;
+  };
+
+  const data = async (): Promise<RuleData> => {
+    const rows = await currentRows();
+    let read = parsed.get(rows);
+    if (read === undefined) {
+      read = ruleDataFromRows(rows, reading);
+      if (refusedRows(read).length > 0) logger.error({ errorName: 'KnowledgeRowRefused' });
+      parsed.set(rows, read);
+    }
+    return read;
   };
 
   const engine = async (): Promise<RuleEngineData> => ruleEngineData(await data());
 
-  return { data, engine };
+  return { data, engine, rows: currentRows, reading };
 }

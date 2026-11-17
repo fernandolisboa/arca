@@ -241,6 +241,8 @@ export const ruleSummary = knowledge.table(
 
 const routeIdFormat = (column: unknown) => sql`${column} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`;
 const slugFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9.-]{0,63}$'`;
+/** A fixed code, such as a failure's. */
+const slugCode = (column: unknown) => sql`${column} ~ '^[a-z][a-z_]{0,63}$'`;
 
 /**
  * Starts of the independent check (ADR-0027): one row each time the activation screen starts a
@@ -962,5 +964,172 @@ export const aiStageSetting = knowledge.table(
       to: 'knowledge_definer',
       withCheck: sql`true`,
     }),
+  ],
+);
+
+/** The stages of an update request (ADR-0031), as `@arca/domain` names them. */
+export const updateStages = ['research', 'validation', 'correction', 'final_validation'] as const;
+
+/**
+ * Update requests (ADR-0031): one row each time an admin asks for a route to be researched again,
+ * naming the route and the version it updates, with no account (the audit log names who asked).
+ * Inserted only through `knowledge.start_update_request`, which re-checks the admin basis and,
+ * under a lock per route, refuses a second live request; `app_api` and `app_jobs` read them; the
+ * database sets the time; nobody updates or deletes.
+ */
+export const updateRequest = knowledge.table(
+  'update_request',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    routeId: text('route_id').notNull(),
+    baseNumber: integer('base_number').notNull(),
+    requestedAt: timestamp('requested_at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    check('update_request_route_id_format', routeIdFormat(table.routeId)),
+    check('update_request_base_number_positive', sql`${table.baseNumber} > 0`),
+    index('update_request_route_requested_idx').on(table.routeId, table.requestedAt),
+    pgPolicy('update_request_read', {
+      for: 'select',
+      to: ['app_api', 'app_jobs', 'knowledge_definer'],
+      using: sql`true`,
+    }),
+    pgPolicy('update_request_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+  ],
+);
+
+/**
+ * What each stage of an update request found (ADR-0031), in order: its stage, a fixed failure code
+ * or what the controller decides on, its output as public rule data (the proposal, the code checks'
+ * reasons, the validator's answers; never case data and never a provider's words), and the tokens
+ * its model call used. At most four per request, one per position, so no row buys a third round.
+ * `app_jobs` inserts them; `app_api` and `app_jobs` read them; nobody updates or deletes.
+ */
+export const updateStage = knowledge.table(
+  'update_stage',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    requestId: uuid('request_id')
+      .notNull()
+      .references(() => updateRequest.id),
+    position: integer('position').notNull(),
+    stage: text('stage', { enum: updateStages }).notNull(),
+    failure: text('failure'),
+    needsCorrection: boolean('needs_correction'),
+    proposalValid: boolean('proposal_valid'),
+    output: jsonb('output'),
+    model: text('model'),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    cacheReadTokens: integer('cache_read_tokens'),
+    cacheWriteTokens: integer('cache_write_tokens'),
+    /** Web searches the research model ran, which Anthropic bills apart from tokens. */
+    webSearches: integer('web_searches'),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    unique('update_stage_request_position_key').on(table.requestId, table.position),
+    check('update_stage_position', sql`${table.position} BETWEEN 0 AND 3`),
+    check('update_stage_stage', inList(table.stage, updateStages)),
+    check(
+      'update_stage_in_order',
+      sql`${table.stage} = (ARRAY['research', 'validation', 'correction', 'final_validation'])[${table.position} + 1]`,
+    ),
+    check(
+      'update_stage_failure_format',
+      sql`${table.failure} IS NULL OR ${slugCode(table.failure)}`,
+    ),
+    check(
+      'update_stage_outcome',
+      sql`(${table.failure} IS NULL) = (${table.needsCorrection} IS NOT NULL AND ${table.proposalValid} IS NOT NULL)`,
+    ),
+    check(
+      'update_stage_output_size',
+      sql`${table.output} IS NULL OR octet_length(${table.output}::text) <= 2000000`,
+    ),
+    check('update_stage_model_format', sql`${table.model} IS NULL OR ${slugFormat(table.model)}`),
+    check(
+      'update_stage_tokens',
+      sql`coalesce(${table.inputTokens}, 0) >= 0 AND coalesce(${table.outputTokens}, 0) >= 0
+        AND coalesce(${table.cacheReadTokens}, 0) >= 0 AND coalesce(${table.cacheWriteTokens}, 0) >= 0
+        AND coalesce(${table.webSearches}, 0) >= 0`,
+    ),
+    pgPolicy('update_stage_read', { for: 'select', to: ['app_api', 'app_jobs'], using: sql`true` }),
+    pgPolicy('update_stage_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
+  ],
+);
+
+/**
+ * How an update request ended (ADR-0031): finished with its proposal, or failed with a fixed code
+ * and none. The proposal is the checked version's content, its content hash, its cases and the
+ * three lists; it is not a route version row until a reviewed decision path writes one (#460).
+ * One per request; `app_jobs` inserts it; `app_api` and `app_jobs` read it; nobody updates or
+ * deletes.
+ */
+export const updateEnd = knowledge.table(
+  'update_end',
+  {
+    requestId: uuid('request_id')
+      .primaryKey()
+      .references(() => updateRequest.id),
+    failure: text('failure'),
+    contentHash: text('content_hash'),
+    proposal: jsonb('proposal'),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    check(
+      'update_end_shape',
+      sql`CASE WHEN ${table.failure} IS NULL
+        THEN ${table.proposal} IS NOT NULL AND ${table.contentHash} ~ '^[0-9a-f]{64}$'
+        ELSE ${slugCode(table.failure)} AND ${table.proposal} IS NULL AND ${table.contentHash} IS NULL END`,
+    ),
+    check(
+      'update_end_proposal_size',
+      sql`${table.proposal} IS NULL OR octet_length(${table.proposal}::text) <= 2000000`,
+    ),
+    pgPolicy('update_end_read', {
+      for: 'select',
+      to: ['app_api', 'app_jobs', 'knowledge_definer'],
+      using: sql`true`,
+    }),
+    pgPolicy('update_end_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
+  ],
+);
+
+/**
+ * The validator's answers, kept until what they answered changes (spec #455 amendment): keyed by
+ * the SHA-256 of the item's values, its verified quote, the text hash of the page the quote is on
+ * and the validator model, so a new request reuses an answer and pays only for what changed; a
+ * changed page or item makes a new key, and a prompt change never does. Public rule data only.
+ * `app_jobs` inserts and reads them; nobody updates or deletes.
+ */
+export const ruleVerdict = knowledge.table(
+  'rule_verdict',
+  {
+    cacheKey: text('cache_key').primaryKey(),
+    verdict: text('verdict', { enum: ['supports', 'contradicts', 'cannot_tell'] }).notNull(),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    check('rule_verdict_cache_key_format', sql`${table.cacheKey} ~ '^[0-9a-f]{64}$'`),
+    check(
+      'rule_verdict_verdict',
+      inList(table.verdict, ['supports', 'contradicts', 'cannot_tell']),
+    ),
+    pgPolicy('rule_verdict_read', { for: 'select', to: 'app_jobs', using: sql`true` }),
+    pgPolicy('rule_verdict_insert', { for: 'insert', to: 'app_jobs', withCheck: sql`true` }),
   ],
 );

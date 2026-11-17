@@ -594,6 +594,30 @@ export const registry: Registry = {
         'An official-domain list (ADR-0031): the hosts of public bodies and its content hash; it names no account.',
     },
     {
+      table: 'knowledge.update_request',
+      personalData: 'none',
+      reason:
+        'An update request (ADR-0031): the route, the version it updates and when it was asked for; the audit log names who asked, so it names no account.',
+    },
+    {
+      table: 'knowledge.update_stage',
+      personalData: 'none',
+      reason:
+        "A stage of an update request (ADR-0031): the proposal as public rule data, code's reasons, the validator's answers, fixed codes and token counts; it names no account.",
+    },
+    {
+      table: 'knowledge.update_end',
+      personalData: 'none',
+      reason:
+        "How an update request ended (ADR-0031): a fixed code, or the proposed version's public content, hash, cases and the three lists; it names no account.",
+    },
+    {
+      table: 'knowledge.rule_verdict',
+      personalData: 'none',
+      reason:
+        "The validator's answer about a rule item's verified quote, keyed by a hash of the item, the quote, the page text and the model (ADR-0031); it names no account.",
+    },
+    {
       table: 'cases.case_file',
       personalData: 'none',
       reason: 'A case: its ID and creation time only; it ends with its last member.',
