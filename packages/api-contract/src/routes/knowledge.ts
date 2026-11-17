@@ -554,7 +554,7 @@ export const CorrectionRequests = z.object({
       createdAt: z.iso.datetime({ offset: true }),
       sources: z.array(ListedCorrectionSource),
       state: z.enum(correctionStates),
-      /** The corrector run's answer, once it gave one. */
+      /** The retired corrector run's answer, if it gave one before ADR-0031 removed it. */
       answer: z
         .discriminatedUnion('kind', [
           z.object({ kind: z.literal('version_proposed'), number: z.int().min(1) }),
@@ -623,7 +623,7 @@ export const RouteRequests = z.object({
       createdAt: z.iso.datetime({ offset: true }),
       sources: z.array(ListedCorrectionSource),
       state: z.enum(correctionStates),
-      /** The corrector run's answer, once it gave one. */
+      /** The retired corrector run's answer, if it gave one before ADR-0031 removed it. */
       answer: z
         .discriminatedUnion('kind', [
           z.object({

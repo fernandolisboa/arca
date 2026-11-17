@@ -54,7 +54,6 @@ export const checkReasons = [
   'quote_not_on_page',
   'echoes_address',
   'value_not_in_quote',
-  'answers_disagree',
 ] as const;
 export type CheckReason = (typeof checkReasons)[number];
 
@@ -300,10 +299,6 @@ const unchecked = (key: string, reason: CheckReason, note: string | null = null)
   reason,
 });
 
-/**
- * An item two comparisons answered differently, one finding it different and the other matching:
- * neither answer stands, so it is left for the admin to read (ADR-0027).
- */
 const noteOf = ({ note }: CheckAnswer): string | null =>
   note === undefined ? null : plainNote(note);
 

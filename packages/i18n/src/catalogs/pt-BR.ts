@@ -1972,7 +1972,7 @@ export const ptBR = {
       },
       corrector_key_changed: {
         subject: 'A chave da sessão de correção mudou',
-        body: 'Em {when} (horário de Brasília), alguém da lista de donos criou ou revogou a chave da sessão de correção do Arca. Se não foi você nem alguém que você conhece, entre no Arca, revogue a chave em Configurações e confira os dispositivos.',
+        body: 'Em {when} (horário de Brasília), alguém da lista de donos criou ou revogou a chave da sessão de correção do Arca. Se não foi você nem alguém que você conhece, entre no Arca e confira os dispositivos.',
       },
       update_requested: {
         subject: 'Novo pedido de atualização de regra',
@@ -2036,7 +2036,7 @@ export const ptBR = {
     },
     corrector_key_changed: {
       title: 'A chave da sessão de correção mudou',
-      body: 'Se não foi você, revogue a chave em Configurações e confira os dispositivos.',
+      body: 'Se não foi você, confira os dispositivos.',
     },
     update_requested: {
       title: 'Novo pedido de atualização de regra',

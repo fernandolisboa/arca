@@ -168,11 +168,11 @@ function Knowledge() {
               setPickedCountry(null);
             }}
             openCountries={openCountries}
-            onToggleCountry={(country, open) => {
+            onToggleCountry={(toggled, open) => {
               setOpenCountries((was) => {
                 const next = new Set(was);
-                if (open) next.add(country);
-                else next.delete(country);
+                if (open) next.add(toggled);
+                else next.delete(toggled);
                 return next;
               });
             }}

@@ -485,18 +485,39 @@ describe('the correction request access matrix (ADR-0029)', () => {
     });
   });
 
-  it('lets knowledge_definer read and insert, never change or delete, and run its own functions; the retired corrector keys it only reads', async () => {
+  it('lets knowledge_definer read and insert, never change or delete, and run its own functions; of the retired corrector keys it reads all but the digest', async () => {
     const access = await correctionAccess('knowledge_definer');
     expect(access.functions).toEqual(correctionFunctions.map((f) => f.slice(0, f.indexOf('('))));
-    expect(access.tables).toEqual(
-      correctionMatrix({
-        'knowledge.correction_request': ['SELECT', 'INSERT'],
-        'knowledge.correction_source': ['SELECT', 'INSERT'],
-        'knowledge.correction_event': ['SELECT', 'INSERT'],
-        'knowledge.correction_upload': ['SELECT', 'INSERT'],
-        'knowledge.corrector_key': ['SELECT'],
-      }),
-    );
+    const matrix = correctionMatrix({
+      'knowledge.correction_request': ['SELECT', 'INSERT'],
+      'knowledge.correction_source': ['SELECT', 'INSERT'],
+      'knowledge.correction_event': ['SELECT', 'INSERT'],
+      'knowledge.correction_upload': ['SELECT', 'INSERT'],
+    });
+    expect(access.tables).toEqual({
+      ...matrix,
+      'knowledge.corrector_key': {
+        columns: {
+          ...onEvery(correctionTables['knowledge.corrector_key'], ['SELECT']),
+          key_sha256: [],
+        },
+        table: [],
+      },
+    });
+  });
+
+  it('fails closed on every corrector key, so no key made before ADR-0031 opens a function (#463)', async () => {
+    await withClient(adminTarget(database), async (client) => {
+      await client.query('BEGIN');
+      try {
+        await client.query('SET LOCAL ROLE app_api');
+        await expect(client.query('SELECT * FROM knowledge.live_corrector_key()')).rejects.toThrow(
+          'permission denied',
+        );
+      } finally {
+        await client.query('ROLLBACK');
+      }
+    });
   });
 
   it.each([

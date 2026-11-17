@@ -63,7 +63,7 @@ Conventions:
 - Every rule version ships with table-driven tests. Every AI-backed feature ships with cases in the synthetic evaluation suite ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#quality)).
 - AI providers sit behind interfaces (ports) so a model can be swapped by configuration and compared on the evaluation suite.
 - Model routing: fast, cheap models for extraction and classification; strong models for strategy and writing.
-- Model spend: a model call on rules starts only when an admin asks for an update request in the app; no agent, workflow or schedule starts one ([ADR-0031](docs/adr/0031-rule-updates-on-request.md)).
+- Model spend: a model call that researches or validates a rule starts only from an update request an admin starts or releases in the app ([ADR-0031](docs/adr/0031-rule-updates-on-request.md)); the rule summary only when an admin asks; AI evaluations only from a person's manual `intake-eval` run; no cron, routine or agent starts one.
 
 ## Platforms
 

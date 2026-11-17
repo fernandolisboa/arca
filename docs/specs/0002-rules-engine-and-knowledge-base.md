@@ -59,7 +59,7 @@ packages/
     data/routes/<route-id>/<n>.cases.json       table-driven rule cases for that version
     data/indicators/<id>/<n>.json               country indicators for the destination comparison (ADR-0026)
     data/comparisons/<id>/<n>.json              comparison versions: criteria and the indicators they pin
-    data/guides/<country>/<n>.json              country guides for the independent check (ADR-0027)
+    data/guides/<country>/<n>.json              country guides for the independent check (ADR-0027); removed by #463
     test/fixtures/                              fixture routes on user-assigned codes (R8)
     src/                                        the runtime entry: the built catalog and its index
     scripts/                                    build (load, validate, hash), country generator,
