@@ -65,7 +65,7 @@ export const activateVersion = {
   path: '/knowledge/versions/activate',
   operationId: 'activateVersion',
   summary:
-    'Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected, 409 list_pending while it pins a first official-domain list that is not active',
   body: DecideVersionRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;

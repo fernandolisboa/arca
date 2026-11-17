@@ -87,9 +87,21 @@ describe('inline imported cases (ADR-0031)', () => {
           number: base.number + 1,
           effectiveFrom: later.toISOString().slice(0, 10),
         } as unknown as Json;
-        const withImported = await checkProposal(rows, base, next, row.imported, reading);
+        const withImported = await checkProposal(
+          rows,
+          { kind: 'update', base },
+          next,
+          row.imported,
+          reading,
+        );
         expect(withImported.ok, row.routeId).toBe(false);
-        const result = await checkProposal(rows, base, next, row.inlined, reading);
+        const result = await checkProposal(
+          rows,
+          { kind: 'update', base },
+          next,
+          row.inlined,
+          reading,
+        );
         expect(result.ok ? [] : result.problems, row.routeId).toEqual([]);
       }
     },

@@ -187,6 +187,7 @@ const decisionColumns = [
   'admin_grant_id',
   ...decisionStepUpColumns,
   'cases_hash',
+  'list_id',
   'decided_at',
 ];
 
@@ -609,7 +610,16 @@ describe('the AI settings access matrix (ADR-0031)', () => {
 });
 
 const updateTables = {
-  'knowledge.update_request': ['id', 'route_id', 'base_number', 'requested_at'],
+  'knowledge.update_request': [
+    'id',
+    'route_id',
+    'base_number',
+    'country',
+    'visa',
+    'links',
+    'list_pins',
+    'requested_at',
+  ],
   'knowledge.update_stage': [
     'id',
     'request_id',
@@ -627,13 +637,15 @@ const updateTables = {
     'web_searches',
     'at',
   ],
-  'knowledge.update_end': ['request_id', 'failure', 'content_hash', 'proposal', 'at'],
+  'knowledge.update_end': ['request_id', 'failure', 'content_hash', 'proposal', 'list_hash', 'at'],
   'knowledge.rule_verdict': ['cache_key', 'verdict', 'at'],
 } as const;
 type UpdateTable = keyof typeof updateTables;
 const startUpdateSignature = 'knowledge.start_update_request(text, integer, text, uuid)';
+const startNewRouteSignature =
+  'knowledge.start_new_route_request(text, text, text[], text[], text, uuid)';
 
-/** Each update request table's privileges, and whether the role runs start_update_request. */
+/** Each update request table's privileges, and whether the role runs both start functions. */
 async function updateAccess(role: string) {
   const tables: Record<string, unknown> = {};
   for (const [table, columns] of Object.entries(updateTables)) {
@@ -641,11 +653,14 @@ async function updateAccess(role: string) {
     tables[table] = { columns: held, table: tableHeld };
   }
   const runsStart = await withClient(adminTarget(database), async (client) => {
-    const row = await client.query<{ granted: boolean }>(
-      `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS granted`,
-      [role, startUpdateSignature],
+    const row = await client.query<{ update: boolean; route: boolean }>(
+      `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS update,
+              pg_catalog.has_function_privilege($1, $3, 'EXECUTE') AS route`,
+      [role, startUpdateSignature, startNewRouteSignature],
     );
-    return row.rows[0]?.granted === true;
+    const granted = row.rows[0];
+    if (granted?.update !== granted?.route) throw new Error('The two start functions differ');
+    return granted?.update === true;
   });
   return { tables, runsStart };
 }
@@ -700,6 +715,7 @@ describe('the update request access matrix (ADR-0031)', () => {
           'failure',
           'content_hash',
           'proposal',
+          'list_hash',
         ]),
         'knowledge.rule_verdict': withInsert('knowledge.rule_verdict', ['cache_key', 'verdict']),
       }),
@@ -714,6 +730,10 @@ describe('the update request access matrix (ADR-0031)', () => {
           id: ['SELECT'],
           route_id: ['SELECT', 'INSERT'],
           base_number: ['INSERT'],
+          country: ['SELECT', 'INSERT'],
+          visa: ['INSERT'],
+          links: ['INSERT'],
+          list_pins: ['INSERT'],
           requested_at: ['SELECT'],
         },
         'knowledge.update_end': onEach('knowledge.update_end', ['SELECT'], ['request_id']),
@@ -764,7 +784,14 @@ const ruleTables = {
     'inserted_at',
   ],
   'knowledge.country_set': ['set_id', 'number', 'content', 'content_hash', 'inserted_at'],
-  'knowledge.official_domain_list': ['list_id', 'number', 'content', 'content_hash', 'inserted_at'],
+  'knowledge.official_domain_list': [
+    'list_id',
+    'number',
+    'content',
+    'content_hash',
+    'request_id',
+    'inserted_at',
+  ],
 };
 
 const versionColumns = ruleTables['knowledge.route_version'];
@@ -798,9 +825,9 @@ describe('the rule tables access matrix (ADR-0031)', () => {
     expect(await runsEditVersion('app_api')).toBe(true);
   });
 
-  it('lets app_jobs read the rule rows and insert a proposed version, never its time', async () => {
+  it('lets app_jobs read the rule rows and insert a proposed version and first list, never their time', async () => {
     for (const [table, columns] of Object.entries(ruleTables)) {
-      const inserts = table === 'knowledge.route_version';
+      const inserts = table !== 'knowledge.country_set';
       expect(await columnPrivileges('app_jobs', table, columns), table).toEqual({
         usage: true,
         create: false,
@@ -943,9 +970,9 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       ],
       // A correction request's sources and events, which go with it, a file source's upload, the
       // corrector key an event names and the key a revocation ends (ADR-0029), the AI key a
-      // removal ends, an update request's stages and end, the request a proposed version names
-      // and the version a hand edit stored (ADR-0031).
-      foreignKeys: 10,
+      // removal ends, an update request's stages and end, the request a proposed version or first
+      // official-domain list names and the version a hand edit stored (ADR-0031).
+      foreignKeys: 11,
     });
   });
 

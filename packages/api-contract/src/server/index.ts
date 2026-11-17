@@ -153,6 +153,10 @@ export const openApiRoutes = {
   testAiKey: toOpenApiRoute(routes.testAiKey),
   startUpdateRequest: toOpenApiRoute(routes.startUpdateRequest),
   getNewestUpdateRequest: toOpenApiRoute(routes.getNewestUpdateRequest),
+  startNewRouteRequest: toOpenApiRoute(routes.startNewRouteRequest),
+  getNewRouteRequests: toOpenApiRoute(routes.getNewRouteRequests),
+  activateOfficialDomains: toOpenApiRoute(routes.activateOfficialDomains),
+  rejectOfficialDomains: toOpenApiRoute(routes.rejectOfficialDomains),
   getVersionReview: toOpenApiRoute(routes.getVersionReview),
   editVersionItem: toOpenApiRoute(routes.editVersionItem),
 } as const;

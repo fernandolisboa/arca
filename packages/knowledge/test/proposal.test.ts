@@ -9,7 +9,7 @@ import { importDate } from '../scripts/rule-import.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import type { Json } from '../src/canonical.ts';
 import { checkProposal } from '../src/proposal.ts';
-import { routeVersionContentHash } from '../src/rule-rows.ts';
+import { officialDomainListHash, routeVersionContentHash } from '../src/rule-rows.ts';
 
 const dataDir = join(fileURLToPath(new URL('..', import.meta.url)), 'data');
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
@@ -48,7 +48,7 @@ async function setUp() {
     }) as unknown as Json;
   const reading = { countryFiles, sha256, hostOf };
   const check = (content: Json, cases: unknown = row.cases) =>
-    checkProposal(rows, base, content, cases, reading);
+    checkProposal(rows, { kind: 'update', base }, content, cases, reading);
   return { rows, row, base, next, reading, check };
 }
 
@@ -102,5 +102,96 @@ describe('checkProposal (ADR-0031)', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems.some((line) => line.startsWith(`cases ${first.id}: status`))).toBe(true);
+  });
+});
+
+describe('checkProposal for a new route (ADR-0031, #461)', () => {
+  /** The base version as the first version of a new route of its country. */
+  async function setUpNew() {
+    const setup = await setUp();
+    const { base, rows, reading } = setup;
+    const routeId = `${base.country.toLowerCase()}-new-entry`;
+    const first = (change: Partial<RouteVersion> = {}): Json =>
+      ({
+        ...Object.fromEntries(Object.entries(base).filter(([key]) => key !== 'corrects')),
+        routeId,
+        number: 1,
+        ...change,
+      }) as unknown as Json;
+    /** A first list holding every host the base's lists hold, as a new country's would. */
+    const hosts = base.officialDomains.flatMap((pin) => {
+      const row = rows.officialDomainLists.find(
+        ({ id, number }) => id === pin.id && number === pin.number,
+      );
+      return (row?.content as { hosts?: Json[] } | undefined)?.hosts ?? [];
+    });
+    const listContent = {
+      schemaVersion: 1,
+      id: 'zz-first',
+      number: 1,
+      issuer: 'A synthetic issuer',
+      hosts,
+    } as unknown as Json;
+    const list = {
+      id: 'zz-first',
+      number: 1,
+      content: listContent,
+      contentHash: officialDomainListHash(listContent, reading),
+    };
+    const checkNew = (
+      content: Json,
+      target: { pins?: RouteVersion['officialDomains']; list?: typeof list } = {},
+    ) =>
+      checkProposal(
+        rows,
+        {
+          kind: 'new',
+          country: base.country,
+          pins: target.pins ?? base.officialDomains,
+          ...(target.list === undefined ? {} : { list: target.list }),
+        },
+        content,
+        setup.row.cases,
+        reading,
+      );
+    return { ...setup, routeId, first, list, checkNew };
+  }
+
+  it("takes the first version of a new route on its country's approved lists", async () => {
+    const { first, checkNew, routeId } = await setUpNew();
+    const result = await checkNew(first());
+    expect(result).toMatchObject({ ok: true });
+    if (result.ok) expect(result.entry.identity.routeId).toBe(routeId);
+  });
+
+  it('takes a new country whose version pins the first list the proposal holds', async () => {
+    const { first, checkNew, list } = await setUpNew();
+    const pinned = first({ officialDomains: [{ id: list.id, number: list.number }] });
+    expect(await checkNew(pinned, { pins: [], list })).toMatchObject({ ok: true });
+    // The proposed list must be pinned, so research cannot leave it out and cite nothing.
+    const result = await checkNew(first(), { pins: [], list });
+    expect(result.ok).toBe(false);
+  });
+
+  it.each<[string, (setup: Awaited<ReturnType<typeof setUpNew>>) => Json, RegExp]>([
+    [
+      'a route that already exists',
+      ({ base, first }) => first({ routeId: base.routeId }),
+      /^\/routeId/,
+    ],
+    ['an ID of another country', ({ first }) => first({ routeId: 'zz-new-entry' }), /^\/routeId/],
+    ['a number other than 1', ({ first }) => first({ number: 2 }), /^\/number/],
+    [
+      'a list the request does not allow',
+      ({ base, first }) =>
+        first({ officialDomains: [...base.officialDomains, { id: 'xx', number: 1 }] }),
+      /officialDomains/,
+    ],
+  ])('refuses %s', async (_, content, problem) => {
+    const setup = await setUpNew();
+    const result = await setup.checkNew(content(setup));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.problems.some((line) => problem.test(line))).toBe(true);
   });
 });

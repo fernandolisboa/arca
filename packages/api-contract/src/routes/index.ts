@@ -771,6 +771,12 @@ const comparisonDecisionEvent = z.strictObject({
   comparisonId: slugSchema,
   number: z.int().min(1),
 });
+/** A decision on a first official-domain list (ADR-0031): the decision and the list it covers. */
+const listDecisionEvent = z.strictObject({
+  decisionId: z.uuid(),
+  listId: slugSchema,
+  number: z.int().min(1),
+});
 const casePersonEvent = z.strictObject({ personId: z.uuid() });
 /** `accountId`: the member who now sees, or no longer sees, that scope of the person. */
 const caseShareEvent = casePersonEvent.extend({
@@ -853,6 +859,8 @@ export const auditEventDetails = {
   version_rejected: decisionEvent,
   comparison_activated: comparisonDecisionEvent,
   comparison_rejected: comparisonDecisionEvent,
+  official_domains_activated: listDecisionEvent,
+  official_domains_rejected: listDecisionEvent,
   /**
    * The admin role was given or taken away (ADR-0027): the history row and the account it names;
    * the actor is the admin who changed it. Recorded for both accounts.
@@ -882,12 +890,14 @@ export const auditEventDetails = {
   ai_key_removed: z.strictObject({ provider: AiProvider, keyId: z.uuid() }),
   /** An admin chose a stage's model and effort (ADR-0031). */
   ai_stage_set: z.strictObject({ stage: AiStage, settingId: z.uuid() }),
-  /** An admin asked for one route to be researched again (ADR-0031). */
-  update_requested: z.strictObject({
-    requestId: z.uuid(),
-    routeId: routeIdSchema,
-    baseNumber: z.int().min(1),
-  }),
+  /**
+   * An admin asked for one route to be researched again (ADR-0031), or for a new route of a country
+   * (#461); the visa an admin typed and the links stay out.
+   */
+  update_requested: z.union([
+    z.strictObject({ requestId: z.uuid(), routeId: routeIdSchema, baseNumber: z.int().min(1) }),
+    z.strictObject({ requestId: z.uuid(), country: z.string().regex(/^[A-Z]{2}$/) }),
+  ]),
   /** An admin stored a route version they edited by hand, correcting another (ADR-0031). */
   version_edited: z.strictObject({
     routeId: routeIdSchema,

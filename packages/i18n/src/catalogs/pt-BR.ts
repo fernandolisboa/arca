@@ -1497,7 +1497,7 @@ export const ptBR = {
       confirm: 'Pedir agora',
       starting: 'Começando a atualização…',
       startFailure:
-        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} not_found {O Arca não encontrou esta rota.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para pedir a atualização. Tente de novo.}}',
+        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} not_found {O Arca não encontrou esta rota.} list_pending {Esta rota depende de uma lista de sites oficiais que ainda não foi ativada. Ative ou recuse a lista na revisão da proposta antes de pedir outra atualização.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para pedir a atualização. Tente de novo.}}',
       title: 'Atualização da rota',
       requestedAt: 'Pedida em {date}, a partir da versão {number}',
       chip: '{state, select, running {Em andamento} finished {Pronta} failed {Parou} other {Parou no meio}}',
@@ -1520,6 +1520,37 @@ export const ptBR = {
         'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou o modelo não informou quantos tokens gastou.',
       costScripted: 'Foi uma atualização de teste, sem IA de verdade. Não custou nada.',
       loadFailure: 'Não conseguimos carregar o andamento da atualização.',
+    },
+    /** An admin's request for a route the catalog lacks, researched by the same pipeline (ADR-0031). */
+    newRoute: {
+      title: 'Rota nova pesquisada pelo Arca',
+      lead: 'Falta um visto ou tipo de entrada? Diga o país e o nome do visto. O Arca pesquisa nos sites oficiais, monta a primeira versão da rota com os casos de teste, confere cada item e manda para você revisar. Nada muda até você aprovar.',
+      country: 'País',
+      pickCountry: 'Escolha o país',
+      visa: 'Visto ou tipo de entrada',
+      visaHint: 'O nome que está no site oficial. Sem dados da família.',
+      links: 'Páginas oficiais para começar',
+      linksHint:
+        '{needed, select, none {Uma página por linha, até {max}. Se o Arca ainda não conhece os sites oficiais do país, pelo menos uma é obrigatória.} true {Obrigatório: o Arca ainda não conhece os sites oficiais de {country}. Uma página por linha, até {max}. A pesquisa começa pelos sites dessas páginas.} other {Opcional. Uma página por linha, até {max}. O Arca só lê páginas nos sites oficiais que já conhece de {country}.}}',
+      newCountry:
+        'Como o Arca ainda não tem sites oficiais de {country}, ele também propõe a primeira lista deles. Você decide a lista antes da rota.',
+      cost: 'Costuma gastar alguns dólares do seu crédito da API. O custo exato aparece aqui no fim.',
+      open: 'Pedir rota nova ao Arca',
+      submit: 'Pedir ao Arca',
+      starting: 'Começando a pesquisa…',
+      badLinks:
+        'Confira as páginas: cada linha precisa ser um endereço completo que começa com https://, e são no máximo {max}.',
+      startFailure:
+        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem um pedido de rota nova para este país em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A pesquisa não conseguiu começar. O país fica livre de novo em até 1 hora.} not_found {Este país não está na lista do Arca.} links_needed {Para este país, informe pelo menos uma página oficial.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para fazer o pedido. Confira os campos e tente de novo.}}',
+      started:
+        'Pedido feito. Pode sair desta tela: o Arca continua sozinho, e o andamento aparece abaixo.',
+      recent: 'Pedidos recentes',
+      requestTitle: '{visa}, {country}',
+      requestedAt: 'Pedido em {date}',
+      firstList: 'Inclui a primeira lista de sites oficiais do país.',
+      review: 'A proposta virou a versão 1 de {routeId}. Abra para revisar e decidir.',
+      openProposal: 'Revisar a proposta',
+      loadFailure: 'Não deu para carregar os pedidos de rota nova agora.',
     },
     /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
     checkRun: {
@@ -1575,21 +1606,24 @@ export const ptBR = {
       filterStatus: '{status, select, all {Todos} matches {Bate} differs {Difere} other {Confira}}',
       backToList: 'Voltar para a lista',
     },
-    activate: 'Ativar esta versão',
-    reject: 'Recusar esta versão',
+    activate: '{subject, select, list {Ativar esta lista} other {Ativar esta versão}}',
+    reject: '{subject, select, list {Recusar esta lista} other {Recusar esta versão}}',
     activateLead:
       'Ao ativar, as avaliações passam a usar esta versão sempre que a rota a escolher, a partir de {date}.',
-    rejectLead: 'A recusa vale para sempre: esta versão nunca mais será usada.',
+    rejectLead:
+      '{subject, select, list {A recusa vale para sempre: esta lista nunca mais será usada, e a rota que depende dela não pode ser ativada.} other {A recusa vale para sempre: esta versão nunca mais será usada.}}',
     rejectFallback:
       '{current, select, proposed {Hoje a rota escolhe esta versão, que ainda aguarda ativação.} other {Hoje a rota usa esta versão.}} {fallback, select, none {Se recusar, a rota fica sem versão e as avaliações mostram Indisponível.} active {Se recusar, ela volta para a versão {number}, que está ativa.} other {Se recusar, ela passa para a versão {number}, e as avaliações mostram Versão aguardando ativação até você ativá-la.}}',
     confirm: 'Confirmar com a chave de acesso',
     cancel: 'Agora não',
     passkeyLead: 'Para valer, a decisão pede a sua chave de acesso.',
     waiting: 'Confirme no seu dispositivo para continuar.',
-    decided: '{kind, select, activate {Versão ativada.} other {Versão recusada.}}',
-    rejectedNote: 'Esta versão foi recusada e não volta a ser usada.',
+    decided:
+      '{subject, select, list {{kind, select, activate {Lista ativada.} other {Lista recusada.}}} other {{kind, select, activate {Versão ativada.} other {Versão recusada.}}}}',
+    rejectedNote:
+      '{subject, select, list {Esta lista foi recusada e não volta a ser usada.} other {Esta versão foi recusada e não volta a ser usada.}}',
     failure:
-      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Nada mudou. Tente de novo quando quiser.} changed {A confirmação não valeu: a versão pode ter mudado depois que você abriu a tela, ou a confirmação expirou. Nada foi decidido. Atualize a página e confira de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Nada mudou. Tente de novo quando quiser.} changed {A confirmação não valeu: a versão pode ter mudado depois que você abriu a tela, ou a confirmação expirou. Nada foi decidido. Atualize a página e confira de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Já foi recusada, e a recusa não pode ser desfeita.} list_pending {Antes, ative a lista de sites oficiais do país. Ela está na revisão da proposta, no alto desta tela, e a rota depende dela.} other {Não deu certo desta vez. Tente de novo.}}',
     /** A proposal's three lists, hand edits and the route's history (ADR-0031). */
     proposal: {
       title: 'Revisão da proposta',
@@ -1603,7 +1637,7 @@ export const ptBR = {
       quote: 'Trecho da página oficial',
       opensSite: '(abre o site oficial)',
       reason:
-        '{reason, select, validator_contradicts {O validador leu o trecho e achou que ele não confirma o valor.} validator_cannot_tell {O validador não conseguiu dizer se o trecho confirma o valor.} no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {Nenhuma página deste item abriu.} not_answered {A pesquisa não citou nenhum trecho para este item.} quote_count {A pesquisa não citou nenhum trecho, ou citou trechos demais.} url_not_cited {O trecho veio de uma página que este item não cita.} page_not_read {A página não abriu.} page_cut {A página não foi lida inteira, então o trecho não basta.} quote_length {O trecho é curto ou longo demais.} quote_not_on_page {O trecho não está na página.} echoes_address {O trecho só repete o endereço da página.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',
+        '{reason, select, validator_contradicts {O validador leu o trecho e achou que ele não confirma o valor.} validator_cannot_tell {O validador não conseguiu dizer se o trecho confirma o valor.} no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {Nenhuma página deste item abriu.} not_answered {A pesquisa não citou nenhum trecho para este item.} quote_count {A pesquisa não citou nenhum trecho, ou citou trechos demais.} url_not_cited {O trecho veio de uma página que este item não cita.} page_not_read {A página não abriu.} page_cut {A página não foi lida inteira, então o trecho não basta.} quote_length {O trecho é curto ou longo demais.} quote_not_on_page {O trecho não está na página.} echoes_address {O trecho só repete o endereço da página.} value_not_in_quote {O trecho não traz os valores deste item.} list_pending {A lista de sites oficiais do país ainda não foi ativada, então nada desta versão conta como confirmado.} other {Não deu para conferir.}}',
       loadFailure: 'Não conseguimos carregar a revisão desta versão.',
       edit: 'Editar item',
       editTitle: 'Editar um item à mão',
@@ -1626,6 +1660,16 @@ export const ptBR = {
       historyVersion: 'Versão {number}, a partir de {date}',
       thisVersion: 'esta versão',
       superseded: 'substituída',
+      domainList: {
+        title: 'Lista de sites oficiais de {country}',
+        lead: 'O Arca ainda não tinha sites oficiais para este país. Esta é a primeira lista: cada site vem com a página de um registro oficial onde o código achou o nome dele. Ative a lista antes da rota. Enquanto ela não estiver ativa, nenhum item da rota conta como confirmado.',
+        issuer: 'Quem publica: {issuer}',
+        proof: 'Achado em',
+        proofTitle: 'Nome da página, segundo o Arca: {title}',
+        state: '{state, select, active {Ativa} rejected {Recusada} other {Espera a sua decisão}}',
+        activateLead:
+          'Ao ativar, o Arca passa a ler estes sites como oficiais para {country}, nesta rota e nas próximas.',
+      },
     },
     /** A comparison version: criteria and country data for comparing destinations (ADR-0026). */
     comparison: {

@@ -9,12 +9,14 @@ import { comparisonData, countryData, countryFileData, guideData } from './gener
 export { createRouteCatalog } from './catalog.js';
 export {
   type PinnedFileRow,
+  type VerifiedOfficialDomainList,
   type RouteVersionRow,
   type RuleData,
   type RuleEngineData,
   type RuleRowReading,
   type RuleRows,
   casesHashOf,
+  officialDomainListHash,
   refusedRows,
   routeVersionContentHash,
   verifiedRouteVersion,
@@ -22,12 +24,16 @@ export {
   ruleDataFromRows,
   ruleEngineData,
   versionCasesHash,
+  approvedOfficialDomainLists,
+  pinKey,
+  verifiedOfficialDomainLists,
 } from './rule-rows.js';
 export { type Json, canonicalize } from './canonical.js';
 export { type CasesFile, type RuleCase, casesFileSchema } from './cases.js';
 export { runVersionCases } from './case-run.js';
 export {
   type CheckedProposal,
+  type ProposalTarget,
   type RefusedProposal,
   checkProposal,
   maxProposalProblems,

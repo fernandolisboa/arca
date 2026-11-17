@@ -63,6 +63,7 @@ const decisions = () =>
         identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
       }),
     comparisons: { identities: () => [] },
+    officialDomains: () => Promise.resolve({ lists: [], pinsOf: () => [] }),
     role: role(),
     origin,
     logger: silentLogger,

@@ -12,20 +12,29 @@ import {
   type ValidatorVerdict,
   asDataText,
   checkItems,
+  firstListProblems,
+  hostMatches,
   itemOutcome,
   machineReadableUrls,
+  namedHosts,
   nextUpdateStep,
+  officialDomainListSchema,
   pageLanguages,
+  registryNamesHost,
   validatorVerdict,
   verifyAnswers,
 } from '@arca/domain';
 import {
   type Json,
+  type PinnedFileRow,
+  type ProposalTarget,
   type RuleRowReading,
   type RuleRows,
   canonicalize,
   checkProposal,
   maxProposalProblems,
+  officialDomainListHash,
+  verifiedOfficialDomainLists,
   verifiedRouteVersion,
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
@@ -33,6 +42,7 @@ import { type ModelReply, loggedModelCall } from '../../ai/model-call.js';
 import { type SourceFetcher, textDigest } from '../check/fetcher.js';
 import { readOfficialPage } from './official-page.js';
 import {
+  type NewRouteSubject,
   type ResearchReply,
   type ResearchRequest,
   type RuleResearcher,
@@ -44,6 +54,8 @@ import {
 import {
   type EndedProposal,
   type NewStage,
+  type ProposedList,
+  type StoredRequest,
   type StoredStage,
   type UpdateItem,
   type UpdateStore,
@@ -126,6 +138,115 @@ const parseJson = (text: string): unknown => {
 
 /** A value as the validator reads it. */
 const valueText = ({ kind, value }: CheckItem['values'][number]) => `${kind} ${value}`;
+
+/** A pin as a new-route request stores it, `<id>/<number>`. */
+const parsePin = (pin: string) => {
+  const match = /^([a-z0-9][a-z0-9-]{0,63})\/([1-9][0-9]{0,6})$/.exec(pin);
+  return match?.[1] === undefined || match[2] === undefined
+    ? undefined
+    : { id: match[1], number: Number(match[2]) };
+};
+
+/**
+ * What a request researches and how its proposal is checked (ADR-0031): the stored route's newest
+ * verified version, or a new route of a country on its approved lists, or, for a country with
+ * none, on the hosts of the admin's links, proposing its first list.
+ */
+type RequestContext =
+  | {
+      readonly kind: 'update';
+      readonly base: RouteVersion;
+      readonly research: Omit<ResearchRequest, 'today' | 'correction'>;
+    }
+  | {
+      readonly kind: 'new_route';
+      readonly country: string;
+      readonly pins: readonly { readonly id: string; readonly number: number }[];
+      readonly research: Omit<ResearchRequest, 'today' | 'correction'> & {
+        readonly newRoute: NewRouteSubject;
+      };
+      /** The hosts the admin named, for a new country; empty otherwise. */
+      readonly namedHosts: readonly string[];
+      /** The hosts of every imported list, where a first list's registry proof may also sit. */
+      readonly importedHosts: readonly string[];
+    };
+
+function requestContext(
+  request: StoredRequest,
+  rows: RuleRows,
+  reading: RuleRowReading,
+): RequestContext | undefined {
+  if (request.kind === 'update') {
+    const verified = verifiedRouteVersion(rows, request.routeId, request.baseNumber, reading);
+    if (verified === undefined) return undefined;
+    return {
+      kind: 'update',
+      base: verified.version,
+      research: {
+        routeId: request.routeId,
+        current: verified.row.content,
+        currentCases: verified.row.cases,
+        officialHosts: verified.officialHosts,
+      },
+    };
+  }
+  const lists = verifiedOfficialDomainLists(rows, reading);
+  const pins = request.listPins.map(parsePin);
+  const pinned = pins.map((pin) =>
+    pin === undefined
+      ? undefined
+      : lists.find(({ id, number }) => id === pin.id && number === pin.number),
+  );
+  // A pinned list that no longer reads leaves research with nothing it may trust.
+  const known = pinned.flatMap((list) => (list === undefined ? [] : [list]));
+  if (known.length !== request.listPins.length) return undefined;
+  const linkHosts = request.links.flatMap((link) => {
+    const host = reading.hostOf(link);
+    return host === undefined ? [] : [{ link, host }];
+  });
+  const pinnedHosts = [...new Set(known.flatMap(({ hosts }) => hosts))];
+  const newCountry = known.length === 0;
+  const named = newCountry ? namedHosts(request.links, reading.hostOf) : [];
+  const listId = request.country.toLowerCase();
+  const firstList = newCountry
+    ? {
+        id: listId,
+        number:
+          Math.max(
+            0,
+            ...rows.officialDomainLists
+              .filter(({ id }) => id === listId)
+              .map(({ number }) => number),
+          ) + 1,
+      }
+    : undefined;
+  const officialHosts = newCountry ? named : pinnedHosts;
+  return {
+    kind: 'new_route',
+    country: request.country,
+    pins: known.map(({ id, number }) => ({ id, number })),
+    namedHosts: named,
+    importedHosts: [
+      ...new Set(lists.filter(({ fromRequest }) => !fromRequest).flatMap(({ hosts }) => hosts)),
+    ],
+    research: {
+      routeId: null,
+      current: null,
+      currentCases: null,
+      officialHosts,
+      newRoute: {
+        country: request.country,
+        visa: request.visa,
+        // Only addresses on the hosts research may read reach it (ADR-0031).
+        links: linkHosts
+          .filter(({ host }) => hostMatches(host, officialHosts))
+          .map(({ link }) => link),
+        listPins: known.map(({ id, number }) => ({ id, number })),
+        ...(firstList === undefined ? {} : { firstList }),
+      },
+    },
+  };
+}
 
 /**
  * The update request's pipeline (ADR-0031), one stage per workflow step: the pure controller picks
@@ -234,10 +355,10 @@ export function createRuleUpdate({
    */
   const verifiedOn = (
     version: RouteVersion,
-    base: RouteVersion,
+    base: RouteVersion | undefined,
     read: ReadonlySet<string>,
   ): { readonly content: Json; readonly unread: readonly string[] } => {
-    const baseDates = new Map(base.sources.map(({ url, verifiedAt }) => [url, verifiedAt]));
+    const baseDates = new Map(base?.sources.map(({ url, verifiedAt }) => [url, verifiedAt]));
     const unread = version.sources
       .map(({ url }) => url)
       .filter((url) => !read.has(url) && !baseDates.has(url));
@@ -253,15 +374,82 @@ export function createRuleUpdate({
     };
   };
 
+  /**
+   * A new country's first official-domain list, checked in code (ADR-0031): its schema, the ID and
+   * number the request gave, no registry suffix, each host's registry proof on a host the admin
+   * named or on an imported list and never on the list itself, and each proof page, read with the
+   * guarded fetcher on those hosts only, naming its host. Its sources are dated by code.
+   */
+  const checkFirstList = async (
+    proposal: ResearchReply,
+    context: Extract<RequestContext, { kind: 'new_route' }>,
+    wanted: { readonly id: string; readonly number: number },
+  ): Promise<{ readonly list: PinnedFileRow } | { readonly problems: readonly string[] }> => {
+    const parsed = officialDomainListSchema.safeParse(parseJson(proposal.domainListJson));
+    if (!parsed.success) {
+      return {
+        problems: parsed.error.issues.map(
+          ({ path, message }) => `domainList/${path.join('/')}: ${message}`,
+        ),
+      };
+    }
+    const list = parsed.data;
+    const problems: string[] = [];
+    if (list.id !== wanted.id) problems.push(`domainList/id: ${wanted.id}`);
+    if (list.number !== wanted.number) problems.push(`domainList/number: ${String(wanted.number)}`);
+    problems.push(
+      ...firstListProblems(list, {
+        namedHosts: context.namedHosts,
+        importedHosts: context.importedHosts,
+        hostOf: reading.hostOf,
+      }),
+    );
+    if (problems.length > 0) return { problems };
+    const trusted = [...context.namedHosts, ...context.importedHosts];
+    const proofOf = async ({ host, source }: (typeof list.hosts)[number]) => {
+      const { outcome } = await readOfficialPage(fetcher, source.url, undefined, trusted);
+      if (!outcome.ok) logger.info({ route, errorCode: `update_fetch_${outcome.failure}` });
+      return outcome.ok && registryNamesHost(outcome.text, host);
+    };
+    const proofs: boolean[] = [];
+    for (let start = 0; start < list.hosts.length; start += parallelReads) {
+      proofs.push(
+        ...(await Promise.all(list.hosts.slice(start, start + parallelReads).map(proofOf))),
+      );
+    }
+    proofs.forEach((found, index) => {
+      if (!found) {
+        problems.push(
+          `domainList/hosts/${String(index)}/source/url: A registry page code could read that names ${list.hosts[index]?.host ?? 'the host'}`,
+        );
+      }
+    });
+    if (problems.length > 0) return { problems };
+    const content = {
+      ...list,
+      hosts: list.hosts.map((entry) => ({
+        ...entry,
+        source: { ...entry.source, verifiedAt: today() },
+      })),
+    } as unknown as Json;
+    return {
+      list: {
+        id: list.id,
+        number: list.number,
+        content,
+        contentHash: officialDomainListHash(content, reading),
+      },
+    };
+  };
+
   const validate = async (
     stage: 'validation' | 'final_validation',
     proposal: ResearchReply,
-    base: RouteVersion,
+    context: RequestContext,
   ): Promise<NewStage> => {
     const rows = await rowsOf();
     const content = parseJson(proposal.versionJson);
     const cases = parseJson(proposal.casesJson);
-    const first = await checkProposal(rows, base, content, cases, reading);
     const invalid = (problems: readonly string[]): NewStage => ({
       stage,
       failure: null,
@@ -276,6 +464,31 @@ export function createRuleUpdate({
       usage: null,
       webSearches: null,
     });
+    let target: ProposalTarget;
+    let domainList: ProposedList | undefined;
+    if (context.kind === 'update') {
+      target = { kind: 'update', base: context.base };
+    } else {
+      const { firstList } = context.research.newRoute;
+      let list: PinnedFileRow | undefined;
+      if (firstList !== undefined) {
+        const checkedList = await checkFirstList(proposal, context, firstList);
+        if ('problems' in checkedList) return invalid(checkedList.problems);
+        list = checkedList.list;
+        domainList = {
+          content: list.content as ProposedList['content'],
+          contentHash: list.contentHash,
+        };
+      }
+      target = {
+        kind: 'new',
+        country: context.country,
+        pins: context.pins,
+        ...(list === undefined ? {} : { list }),
+      };
+    }
+    const base = context.kind === 'update' ? context.base : undefined;
+    const first = await checkProposal(rows, target, content, cases, reading);
     if (!first.ok) return invalid(first.problems);
     const items = checkItems(first.entry);
     const { pages, log } = await readPages(first.entry, items, first.officialHosts);
@@ -287,7 +500,7 @@ export function createRuleUpdate({
           .map((url) => `/sources: ${url} could not be read, so it has no verification date`),
       );
     }
-    const checked = await checkProposal(rows, base, dated.content, cases, reading);
+    const checked = await checkProposal(rows, target, dated.content, cases, reading);
     if (!checked.ok) return invalid(checked.problems);
 
     const answers: CheckAnswer[] = items.map(({ key }) => ({
@@ -373,7 +586,12 @@ export function createRuleUpdate({
     });
     const output = validationOutputSchema.parse({
       problems: [],
-      proposal: { content: dated.content, contentHash: checked.hash, cases: checked.cases },
+      proposal: {
+        content: dated.content,
+        contentHash: checked.hash,
+        cases: checked.cases,
+        ...(domainList === undefined ? {} : { domainList }),
+      },
       items: outcomes,
       pages: log,
     });
@@ -394,7 +612,7 @@ export function createRuleUpdate({
     const stages = await store.stages(requestId);
     const step = nextUpdateStep(stages.map(asResult));
     const rows = await rowsOf();
-    const verified = verifiedRouteVersion(rows, request.routeId, request.baseNumber, reading);
+    const context = requestContext(request, rows, reading);
     if (step.kind === 'failed') {
       await store.finish(requestId, { failure: step.failure });
       return false;
@@ -410,11 +628,10 @@ export function createRuleUpdate({
       await store.finish(requestId, { proposal: ended });
       return false;
     }
-    if (verified === undefined) {
+    if (context === undefined) {
       await store.finish(requestId, { failure: 'unknown_route' });
       return false;
     }
-    const { row: baseRow, version: base, officialHosts } = verified;
     const position = stages.length;
     const latestProposal = () => {
       const output = [...stages]
@@ -430,15 +647,12 @@ export function createRuleUpdate({
         const previous = latestProposal();
         const validation = validationOutputSchema.safeParse(stages.at(-1)?.output);
         // No official host means no domain limit on the web tools: research never runs then.
-        if (officialHosts.length === 0) {
+        if (context.research.officialHosts.length === 0) {
           result = failed(step.stage, `${step.stage}_failed`);
           break;
         }
         result = await research(step.stage, {
-          routeId: request.routeId,
-          current: baseRow.content,
-          currentCases: baseRow.cases,
-          officialHosts,
+          ...context.research,
           today: today(),
           ...(step.stage === 'correction' && previous !== undefined && validation.success
             ? {
@@ -460,7 +674,7 @@ export function createRuleUpdate({
         result =
           proposal === undefined
             ? failed(step.stage, 'out_of_order')
-            : await validate(step.stage, proposal, base);
+            : await validate(step.stage, proposal, context);
         break;
       }
     }

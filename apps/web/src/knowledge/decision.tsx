@@ -2,7 +2,9 @@ import {
   routes,
   decideComparisonAction,
   decideVersionAction,
+  decideOfficialDomainsAction,
   type ComparisonVersionView,
+  type ProposedDomainList,
   type VersionView,
 } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
@@ -14,7 +16,7 @@ import { stepUpFor } from '../step-up.js';
 import type { KnowledgeWords } from './words.js';
 
 type DecisionKind = 'activate' | 'reject';
-type Failure = CommonFailure | 'rejected' | 'changed';
+type Failure = CommonFailure | 'rejected' | 'changed' | 'list_pending';
 
 /**
  * A route version decision after its own `knowledge_decision` step-up, bound to the content hash
@@ -26,6 +28,21 @@ export async function decideVersion(kind: DecisionKind, view: VersionView): Prom
   const approved = await stepUpFor(
     passkeys,
     decideVersionAction(route.operationId, request, view.hash, view.casesHash),
+    'knowledge_decision',
+  );
+  await reach(approved.call(route, request));
+}
+
+/** A first official-domain list decision, bound to the list's content hash (ADR-0031). */
+export async function decideOfficialDomains(
+  kind: DecisionKind,
+  list: ProposedDomainList,
+): Promise<void> {
+  const route = kind === 'activate' ? routes.activateOfficialDomains : routes.rejectOfficialDomains;
+  const request = { listId: list.listId, number: list.number };
+  const approved = await stepUpFor(
+    passkeys,
+    decideOfficialDomainsAction(route.operationId, request, list.hash),
     'knowledge_decision',
   );
   await reach(approved.call(route, request));
@@ -47,16 +64,19 @@ export async function decideComparison(
 }
 
 /**
- * An admin's decision on a route or comparison version, confirmed with a passkey: activate,
- * reject, or neither once rejected. `rejectWarning` says what a rejection would change today, when it changes something.
+ * An admin's decision on a route or comparison version, or on a first official-domain list,
+ * confirmed with a passkey: activate, reject, or neither once rejected. `rejectWarning` says what a
+ * rejection would change today, when it changes something.
  */
 export function Decision({
+  subject = 'version',
   state: versionState,
   decide,
   activateLead,
   rejectWarning,
   words,
 }: {
+  readonly subject?: 'version' | 'list';
   readonly state: VersionView['state'];
   readonly decide: (kind: DecisionKind) => Promise<void>;
   readonly activateLead: string;
@@ -86,7 +106,9 @@ export function Decision({
               ? 'rejected'
               : apiError.code === 'step_up_required'
                 ? 'changed'
-                : undefined,
+                : apiError.code === 'list_pending'
+                  ? 'list_pending'
+                  : undefined,
           ),
         });
       })
@@ -99,7 +121,7 @@ export function Decision({
       ? words.t('knowledge.waiting')
       : typeof state === 'object'
         ? 'done' in state
-          ? words.t('knowledge.decided', { kind: state.done })
+          ? words.t('knowledge.decided', { subject, kind: state.done })
           : words.t('knowledge.failure', { reason: state.failure })
         : '';
   const status = (
@@ -111,7 +133,7 @@ export function Decision({
   if (versionState === 'rejected') {
     return (
       <div className="flex flex-col items-start gap-3">
-        <p>{words.t('knowledge.rejectedNote')}</p>
+        <p>{words.t('knowledge.rejectedNote', { subject })}</p>
         {status}
       </div>
     );
@@ -127,7 +149,7 @@ export function Decision({
                 setConfirming('activate');
               }}
             >
-              {words.t('knowledge.activate')}
+              {words.t('knowledge.activate', { subject })}
             </Button>
           )}
           <Button
@@ -137,7 +159,7 @@ export function Decision({
               setConfirming('reject');
             }}
           >
-            {words.t('knowledge.reject')}
+            {words.t('knowledge.reject', { subject })}
           </Button>
         </div>
       ) : (
@@ -147,7 +169,7 @@ export function Decision({
           ) : (
             <>
               {rejectWarning !== null && <p className="text-danger-ink">{rejectWarning}</p>}
-              <p>{words.t('knowledge.rejectLead')}</p>
+              <p>{words.t('knowledge.rejectLead', { subject })}</p>
             </>
           )}
           <p className="text-small text-muted">{words.t('knowledge.passkeyLead')}</p>

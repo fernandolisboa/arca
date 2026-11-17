@@ -597,7 +597,7 @@ export const registry: Registry = {
       table: 'knowledge.update_request',
       personalData: 'none',
       reason:
-        'An update request (ADR-0031): the route, the version it updates and when it was asked for; the audit log names who asked, so it names no account.',
+        "An update request (ADR-0031): the route and the version it updates, or for a new route the country, the visa or entry type an admin typed, the admin's official links and the country's approved lists, and when it was asked for; the audit log names who asked, so it names no account.",
     },
     {
       table: 'knowledge.update_stage',
