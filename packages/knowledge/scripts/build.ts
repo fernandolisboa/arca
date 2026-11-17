@@ -19,7 +19,6 @@ import { type FileKind, type Issue, type RawData, loadData, readKnowledgeFile } 
 import {
   type BuiltComparison,
   type BuiltEntry,
-  type BuiltGuide,
   type BuiltOfficialDomains,
   type PinnedCountries,
   type ValidationOptions,
@@ -30,7 +29,6 @@ import {
 export interface CatalogParts {
   readonly entries: readonly BuiltEntry[];
   readonly comparisons: readonly BuiltComparison[];
-  readonly guides: readonly BuiltGuide[];
   readonly officialDomains: readonly BuiltOfficialDomains[];
   readonly countries: PinnedCountries;
   readonly cases: readonly VersionCases[];
@@ -101,7 +99,6 @@ export async function buildKnowledge(
   return {
     entries: validated.entries,
     comparisons: validated.comparisons,
-    guides: validated.guides,
     officialDomains: validated.officialDomains,
     countries: validated.countries,
     cases: versionCases(casesByVersion, validated.hashes),
@@ -180,13 +177,12 @@ export function catalogModule({
 
 /**
  * The runtime module, which the API ships: the pinned countries, the countries files a route
- * version's hash covers, the comparison versions with the hosts of their sources, and the guides.
+ * version's hash covers, and the comparison versions with the hosts of their sources.
  */
 export function runtimeModule({
   countries = { countries: [], formerCountries: [] },
   countryFiles = {},
   comparisons = [],
-  guides = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
     indicators.flatMap((indicator) => indicator.sources.flatMap(sourceUrls)),
@@ -197,7 +193,6 @@ export function runtimeModule({
     exportedJson('countryFileData', countryFiles),
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
-    exportedJson('guideData', guides),
     '',
   ].join('\n');
 }
@@ -231,7 +226,7 @@ async function main(): Promise<void> {
   await writeFile(targets.catalog, catalogModule(parts));
   await writeFile(targets.runtime, runtimeModule(parts));
   process.stdout.write(
-    `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions, ${String(parts.guides.length)} country guides\n`,
+    `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );
 }
 

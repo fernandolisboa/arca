@@ -1,10 +1,5 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import {
-  comparisonCatalog,
-  countryGuide,
-  pinnedCountries,
-  versionCasesHash,
-} from '@arca/knowledge';
+import { comparisonCatalog, pinnedCountries, versionCasesHash } from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -40,7 +35,6 @@ import { createVersionReviews } from './knowledge/update/review.js';
 import { postgresUpdateStore } from './knowledge/update/store.js';
 import { startUpdate } from './workflows/start-update.js';
 import { createCorrections } from './knowledge/corrections.js';
-import { createCorrector } from './knowledge/corrector.js';
 import { aiKeyCipher } from './ai/key-cipher.js';
 import { createAiSettings } from './ai/settings.js';
 import { adminRole } from './knowledge/admins.js';
@@ -53,12 +47,8 @@ import { createRuleSummaries } from './knowledge/summaries.js';
 import { summarizerFor } from './knowledge/summary/environment.js';
 import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
 import { postgresSummaryStore } from './knowledge/summary/store.js';
-import { createCheckSubjects, createKnowledgeVersions } from './knowledge/versions.js';
-import { createVersionChecks } from './knowledge/checks.js';
-import { checkFetcherFor, ruleCheckerFor } from './knowledge/check/environment.js';
-import { postgresCheckProgressStore } from './knowledge/check/progress.js';
-import { postgresCheckStarts } from './knowledge/check/starts.js';
-import { postgresCheckReportStore } from './knowledge/check/store.js';
+import { createKnowledgeVersions } from './knowledge/versions.js';
+import { pageFetcherFor } from './knowledge/pages/environment.js';
 import {
   databaseTargetFrom,
   readAiKeyEncryptionKey,
@@ -93,7 +83,6 @@ import { monitorRequests, sendToSentry, startMonitoring, tunnelFor } from './mon
 import { enforceRetention } from './workflows/enforce-retention.js';
 import { eraseAccount } from './workflows/erase-account.js';
 import { heartbeat } from './workflows/heartbeat.js';
-import { startCheck } from './workflows/start-check.js';
 import { startDelivery } from './workflows/start-delivery.js';
 import { startWorkflow } from './workflows/start-workflow.js';
 import { entityId } from './workflows/workflow-arguments.js';
@@ -197,7 +186,6 @@ interface AuthParts {
   readonly accountDeletion: AccountDeletion;
   readonly adminNotice: AccountNotice<'admin_role_changed'>;
   readonly correctionNotice: AccountNotice<'correction_requested' | 'update_requested'>;
-  readonly correctorKeyNotice: AccountNotice<'corrector_key_changed'>;
   readonly aiKeyNotice: AccountNotice<'ai_key_changed'>;
 }
 
@@ -269,11 +257,6 @@ function authParts(): Promise<AuthParts> {
         notifier,
         logger,
         label: 'CorrectionRequestNotice',
-      }),
-      correctorKeyNotice: accountNotice<'corrector_key_changed'>({
-        notifier,
-        logger,
-        label: 'CorrectorKeyNotice',
       }),
       aiKeyNotice: accountNotice<'ai_key_changed'>({ notifier, logger, label: 'AiKeyNotice' }),
     };
@@ -389,7 +372,7 @@ const versionReviews = createVersionReviews({
   rows: rules.rows,
   reading: rules.reading,
   states: () => knowledgeDecisions().states(),
-  fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
+  fetcher: pageFetcherFor(environment, readOfflineRuleCheck()),
   today: () => todayInSaoPaulo(),
 });
 
@@ -398,22 +381,6 @@ const knowledgeVersions = createKnowledgeVersions({
   today: () => todayInSaoPaulo(),
   rules: rules.data,
 });
-const ruleChecker = ruleCheckerFor(environment, readAnthropicApiKey());
-const versionChecks =
-  ruleChecker === undefined
-    ? undefined
-    : createVersionChecks({
-        versions: knowledgeVersions,
-        subject: createCheckSubjects(rules.data),
-        guide: countryGuide,
-        checker: ruleChecker,
-        reports: postgresCheckReportStore(() => connected().db),
-        starts: postgresCheckStarts(() => connected().db),
-        progress: postgresCheckProgressStore(() => connected().db),
-        run: startCheck,
-        logger,
-        now: () => Date.now(),
-      });
 const summarizer = summarizerFor(environment, anthropicKey, readScriptedRuleSummary());
 const ruleSummaries =
   summarizer === undefined
@@ -426,26 +393,6 @@ const ruleSummaries =
         logger,
         now: () => performance.now(),
       });
-
-// The corrector run's routes stay unserved (401), and nothing starts a run (503): it would list
-// members' notes and files for a model, which ADR-0031 forbids. Its code goes with the old loop (#463).
-const { keys: correctorKeys } = createCorrector({
-  db: () => connected().db,
-  role,
-  accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
-  stepUp: {
-    spend: async (signedIn, purpose, action, record) =>
-      (await authParts()).stepUp.spend(signedIn, purpose, action, record),
-  },
-  versions: knowledgeVersions,
-  states: () => knowledgeDecisions().states(),
-  audit: lazyAudit,
-  notify: async (accountId, kind) => (await authParts()).correctorKeyNotice(accountId, kind),
-  storage: documentStorage?.storage ?? unconnectedObjectStorage,
-  ...(versionChecks === undefined
-    ? {}
-    : { flagged: (limit: number) => versionChecks.flagged(limit) }),
-});
 
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
@@ -633,12 +580,10 @@ const app = createApp({
     storage: documentStorage?.storage ?? unconnectedObjectStorage,
     now: () => Date.now(),
   }),
-  correctorKeys,
   aiSettings,
   updateRequests,
   versionReviews,
   knowledgeVersions,
-  ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {

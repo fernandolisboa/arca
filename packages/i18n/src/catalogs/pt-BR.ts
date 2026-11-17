@@ -318,8 +318,8 @@ export const ptBR = {
     },
     knowledge: {
       screen: {
-        title: 'Revise nesta ordem',
-        body: 'As regras propostas vêm separadas por país. Comece pelas que diferem das fontes. As que o Arca conferiu inteiras dá para ativar de uma vez.',
+        title: 'Revise antes de ativar',
+        body: 'As regras propostas vêm separadas por país. Abra cada uma, confira com as fontes e decida. Nada muda até você ativar.',
       },
     },
   },
@@ -1139,8 +1139,7 @@ export const ptBR = {
     corrections: {
       open: 'Apontar erro',
       formTitle: 'Apontar erro na regra',
-      privacy:
-        'Uma IA lê este pedido. Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
+      privacy: 'Não coloque dados pessoais: nada de nomes, documentos ou números da família.',
       note: 'O que está errado?',
       link: 'Link',
       linkHint: 'Endereço completo, começando com https://',
@@ -1155,8 +1154,7 @@ export const ptBR = {
         '{state, select, sending {Enviando…} ready {Anexado} other {O arquivo não subiu. Remova e anexe de novo.}}',
       removeFile: 'Remover',
       copyOf: 'Este arquivo é cópia de qual página da regra?',
-      copyOfHint:
-        'Se o site não abrir na verificação independente, a IA lê esta cópia no lugar da página. Saia da sua conta antes de salvar a página.',
+      copyOfHint: 'Saia da sua conta antes de salvar a página.',
       notACopy: 'Nenhuma, é só uma pista',
       copyOfPage: 'Cópia da página',
       fileMismatch: 'Um arquivo chegou diferente do que você escolheu. Remova e anexe de novo.',
@@ -1192,7 +1190,7 @@ export const ptBR = {
     /** "Pedido de regra nova" (ADR-0029, new routes), for owner-list admins. */
     routeRequests: {
       title: 'Regras novas',
-      lead: 'Falta uma regra porque o site oficial não deixa o Arca ler? Monte o pedido aqui com as páginas salvas em PDF. A sessão de correção escreve a regra a partir delas e manda para você ativar.',
+      lead: 'Falta uma regra porque o site oficial não deixa o Arca ler? Guarde aqui as páginas salvas em PDF para consultar depois. Para o Arca pesquisar e montar a regra, use “Pedir rota nova ao Arca”.',
       open: 'Pedir regra nova',
       formTitle: 'Pedido de regra nova',
       stepCount: 'Passo {n} de {total}',
@@ -1215,7 +1213,7 @@ export const ptBR = {
       copyHint:
         'PDF, HTML ou texto de até 16 MB, salvo do site oficial. Nunca um documento pessoal.',
       passagesLead:
-        'Cole os trechos de cada assunto abaixo. Assim a sessão acha o ponto certo no PDF. Pule o que não se aplica.',
+        'Cole os trechos de cada assunto abaixo, para achar depois o ponto certo no PDF. Pule o que não se aplica.',
       topic:
         '{topic, select, requirements {Requisitos} amounts {Valores} deadlines {Prazos} other {Dependentes}}',
       topicHint:
@@ -1229,37 +1227,15 @@ export const ptBR = {
       reviewCounts:
         '{pages, plural, one {# página} other {# páginas}} ({copies, plural, =0 {nenhuma em PDF} other {# em PDF}}) e {passages, plural, =0 {nenhum trecho} one {# trecho} other {# trechos}}.',
       reviewNext:
-        'A sessão de correção pega o pedido na próxima manhã. Nada muda para a família até você ativar a regra.',
+        'O pedido fica guardado aqui. Nada muda para a família até você ativar uma regra.',
       next: 'Continuar',
       back: 'Voltar',
-      sent: 'Pedido enviado. A sessão de correção pega o pedido amanhã de manhã.',
+      sent: 'Pedido guardado.',
       sendFailure: 'Não deu para enviar o pedido agora. Confira os endereços e tente de novo.',
       loadFailure: 'Não deu para carregar os pedidos de regra nova agora.',
       answerRoute: 'A sessão de correção escreveu a regra. Falta você ativar.',
       openRoute: 'Abrir a versão proposta',
       answerNoRoute: 'A sessão de correção não escreveu a regra:',
-    },
-    /** The corrector key in settings (ADR-0029), for owner-list admins. */
-    correctorKey: {
-      title: 'Chave da sessão de correção',
-      lead: 'Uma vez por dia, uma sessão do Claude lê os pedidos de correção abertos e propõe a versão que corrige a regra. Ela usa esta chave para ler e responder os pedidos. Quem tiver a chave não consegue fechar um pedido, mudar uma regra nem ver dados da família.',
-      none: 'Nenhuma chave ativa. Sem ela, os pedidos ficam parados.',
-      active: 'Chave criada em {created}. Vale até {expires}.',
-      create: 'Criar chave',
-      replace: 'Criar chave nova',
-      replaceHint: 'A chave nova substitui a atual na hora.',
-      working: 'Confirmando…',
-      shown:
-        'Copie a chave agora e cole no ambiente da sessão de correção como ARCA_CORRECTOR_KEY. Ela não aparece de novo.',
-      copy: 'Copiar chave',
-      copied: 'Copiada.',
-      done: 'Já copiei',
-      revoke: 'Revogar chave',
-      revoked: 'Chave revogada.',
-      failure: 'Não deu para mudar a chave agora. Tente de novo.',
-      tooMany: 'Muitas mudanças de chave nas últimas 24 horas. Tente mais tarde.',
-      loadFailure: 'Não deu para carregar a chave agora.',
-      ownerOnly: 'Só alguém da lista de donos cria ou revoga a chave.',
     },
     reports: {
       title: 'Avisos de regra errada',
@@ -1282,38 +1258,15 @@ export const ptBR = {
       open: 'Abrir a tela de ativação',
     },
     proposed: 'Versões propostas',
-    /** The proposed versions grouped by country, in the order to review them. */
+    /** The proposed versions grouped by country. */
     review: {
-      order:
-        'Ordem de revisão: primeiro o que difere das fontes, depois o que o Arca conferiu inteiro, por último o que ele não conseguiu conferir.',
-      start: 'Comece por aqui',
-      need: '{need, select, differs {Difere} ready {Tudo bate} unread {Confira} unchecked {Na fila} other {Na fila}}',
-      needCount: {
-        differs: '{n, plural, one {# com diferença} other {# com diferença}}',
-        ready: '{n, plural, one {# conferida} other {# conferidas}}',
-        unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
-        unchecked: '{n, plural, one {# na fila} other {# na fila}}',
-      },
       versions: '{n, plural, one {# versão} other {# versões}}',
       comparisons: 'Comparar destinos',
-      /** What the admin can do about each need. */
-      hints: {
-        title: 'O que fazer em cada caso',
-        differs:
-          'O Arca achou ao menos um ponto que não bate com a fonte. Abra a versão e leia o trecho marcado. Se a fonte estiver certa, recuse: a regra precisa de correção.',
-        ready:
-          'Todos os pontos batem com as fontes oficiais. Dá para ativar todas de uma vez em “Conferidas pelo Arca”, no topo.',
-        unread:
-          'Nada diverge, mas o Arca não conseguiu confirmar alguns pontos nas fontes. Isso não quer dizer que a regra está errada. Cada ponto “Confira você” traz o link oficial e o que procurar lá: confira antes de decidir.',
-        unchecked:
-          'Esta versão está na fila. O Arca só confere quando você pede: use “Analisar com o Arca” nesta versão ou “Analisar as versões da fila”, acima dos filtros.',
-      },
       filter: {
         country: 'País',
         allCountries: 'Todos os países',
-        needs: 'Situação',
-        empty: 'Nenhuma versão proposta com esses filtros.',
-        clear: 'Limpar filtros',
+        empty: 'Nenhuma versão proposta neste país.',
+        clear: 'Mostrar todos os países',
       },
     },
     noneProposed: 'Nenhuma versão proposta agora.',
@@ -1328,6 +1281,7 @@ export const ptBR = {
     state:
       '{state, select, active {Versão ativa} rejected {Versão recusada} other {Versão proposta}}',
     back: 'Voltar para a lista',
+    underCent: 'menos de US$ 0,01',
     closed: 'Rota encerrada',
     corrects: 'Corrige a versão {number}.',
     currency: 'Valores em {currency}.',
@@ -1432,88 +1386,6 @@ export const ptBR = {
         '{reason, select, summary_unavailable {O resumo não está disponível agora. A regra continua aqui para você ler.} summary_timeout {O Arca demorou demais. Tente de novo.} summary_unparsable {O Arca não conseguiu montar um resumo desta vez. Tente de novo.} limited {Você pediu muitos resumos. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
       retry: 'Tentar de novo',
     },
-    /** The independent check's points, shown beside the rule items they are about (ADR-0027). */
-    points: {
-      status:
-        '{status, select, matches {Bate com a fonte, segundo o Arca.} differs {Difere da fonte, segundo o Arca.} other {Confira você.}}',
-      matches: '{n, plural, one {# bate} other {# batem}}',
-      differs: '{n, plural, one {# difere} other {# diferem}}',
-      unread: '{n, plural, one {# para você conferir} other {# para você conferir}}',
-      checked:
-        'O Arca comparou {n, plural, one {# ponto} other {# pontos}} desta versão com as fontes oficiais',
-      needYou:
-        '{n, plural, one {1 ponto difere e precisa de você} other {# pontos diferem e precisam de você}}',
-      unconfirmed:
-        '{n, plural, one {Nenhum ponto difere. 1 fica para você conferir} other {Nenhum ponto difere. # ficam para você conferir}}',
-      allMatch: 'Todos os pontos batem com as fontes',
-      note: 'Feita pelo Arca com IA, que pode errar. “Confira você” quer dizer que o Arca não conseguiu confirmar o ponto na fonte, não que a regra está errada: o ponto traz o link oficial, quando cita um, e o que procurar lá. O relatório completo fica no passo Decisão.',
-      lookAt: 'Onde olhar',
-      opensSite: '(abre o site oficial)',
-      lookFor: 'O que deve estar escrito lá: {values}',
-      handCheck: 'Conferi',
-      handCheckNote: 'Fica salvo só neste aparelho e não ativa a versão.',
-      quotes: '{n, plural, one {Ver o trecho da fonte} other {Ver os # trechos da fonte}}',
-    },
-    /** The independent check of a route version against its official pages (ADR-0027). */
-    check: {
-      title: 'Verificação independente',
-      comparisonNote:
-        'A verificação independente não lê comparações. Abra as fontes e confira por conta própria antes de decidir.',
-      off: 'A verificação independente ainda não está ligada. Abra as fontes e confira por conta própria antes de decidir.',
-      listStatus:
-        '{status, select, checked {Conferida pelo Arca} flagged {Conferida em parte} running {Verificando} stale {Verificação vencida} other {Sem verificação}}',
-      status:
-        '{status, select, running {O Arca está lendo as fontes desta versão. Leva alguns minutos, e a tela se atualiza sozinha.} stale {A última verificação não vale mais: a versão, o guia do país ou o modelo de IA mudaram, ou ela passou da validade.} other {Esta versão ainda não foi verificada.}}',
-      loadFailure: 'Não conseguimos carregar a verificação.',
-      clean:
-        '{n, plural, one {O único item bate} other {Os # itens batem}} com as fontes oficiais.',
-      flagged:
-        'Itens que batem com as fontes oficiais: {matches} de {total}. Leia com atenção antes de decidir.',
-      noItems: 'Esta versão não tem nenhum item com fonte oficial para verificar.',
-      scripted:
-        'Verificação de teste: nenhuma IA leu as fontes, então ela não vale como verificação.',
-      failure:
-        '{failure, select, check_timeout {O Arca demorou demais para responder.} check_unavailable {A IA que o Arca usa estava fora do ar.} check_unparsable {A IA que o Arca usa respondeu num formato que ele não entende.} other {A verificação falhou.}} Nenhum item foi confirmado. Para tentar de novo, use “Analisar com o Arca”.',
-      checkedAt: 'Verificada em {date}',
-      guide: 'Guia usado: {country}, versão {number}',
-      noGuide: 'Sem guia para este país ({country}): o Arca leu as fontes sem orientações extras.',
-      kind: '{kind, select, requirement {Requisito} assessment {Critério subjetivo} dependent {Dependente} cost {Custo} duration {Prazo} leapDayBirthday {Aniversário em 29 de fevereiro} closure {Encerramento da rota} countrySet {Grupo de países} other {Item}}',
-      itemStatus:
-        '{status, select, matches {Bate com a fonte} differs {Diferente da fonte} other {Não deu para conferir}}',
-      quote: '{total, plural, one {Trecho da página} other {Trecho {n} de {total}}}',
-      page: 'Página',
-      readAt: 'O Arca leu o texto neste endereço',
-      readFromCopy: 'O site não abriu. O Arca leu a cópia anexada a um pedido de correção.',
-      note: 'Observação do Arca: {note}',
-      reason:
-        '{reason, select, no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {O Arca não conseguiu ler nenhuma página deste item. O motivo de cada uma está em “Páginas com problema”, no fim.} not_answered {O Arca não respondeu sobre este item.} model_could_not_check {O Arca leu o que recebeu e não confirmou este item.} quote_count {O Arca não citou nenhum trecho, ou citou mais de {max}.} url_not_cited {O Arca citou uma página que este item não usa.} page_not_read {A página não abriu.} page_cut {Esta página não foi lida inteira, então um trecho que bate não basta.} quote_length {O trecho citado é curto ou longo demais.} quote_not_on_page {O trecho citado não está na página.} echoes_address {O trecho repete o endereço da página, então não prova nada.} value_not_in_quote {O trecho não traz os valores deste item.} answers_disagree {O Arca leu este item duas vezes e as leituras discordaram: uma achou diferença, a outra achou que bate.} other {Não deu para conferir.}}',
-      pages: 'Páginas com problema',
-      outcome:
-        '{outcome, select, read {Lida só em parte: é grande demais, ou o Arca não conseguiu escolher os trechos} refused_url {Endereço fora dos sites oficiais} redirect_refused {Redirecionou para fora dos sites oficiais} too_many_redirects {Redirecionou vezes demais} address_refused {Endereço de rede recusado} lookup_failed {Site não encontrado} http_status {O site respondeu com erro {status}} unsupported_type {O site mandou um tipo de arquivo que o Arca não lê, como uma imagem} no_text {A página veio sem texto; é provável que só mostre o conteúdo com JavaScript, que o Arca não roda} pdf_no_text {O PDF não tem texto, só imagens das páginas (digitalizado), e o Arca não lê imagem} pdf_unreadable {O PDF está corrompido ou num formato que o Arca não consegue abrir} too_large {Página grande demais} timeout {O site demorou demais} network {Falha de rede} other {Não deu para ler}}',
-      footer:
-        'Feita pelo Arca com IA, que pode errar. Uma parte não usa IA: o código confere se cada trecho está mesmo na página citada. Quem decide é você. Um item pode se apoiar em até {max} trechos, e quem diz que eles tratam da mesma regra é a IA. Em páginas muito longas, o Arca lê só os trechos que um modelo de IA mais rápido escolheu, então uma mudança escrita em outro ponto da página pode passar batida. A verificação não cobre o que não tem fonte própria, como datas de vigência, moeda e datas de referência.',
-    },
-    /** An admin's check of every version in the queue at once. */
-    queuedChecks: {
-      button: 'Analisar as versões da fila',
-      confirmLead:
-        '{n, plural, one {O Arca começa agora a análise da versão que está na fila.} other {O Arca começa agora a análise das # versões que estão na fila.}} Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API e leva alguns minutos.',
-      confirm: 'Analisar agora',
-      starting: 'Começando as análises…',
-      started:
-        '{n, plural, =0 {Nenhuma versão precisava de análise agora.} one {# análise começou. Ela sai da fila em alguns minutos.} other {# análises começaram. Elas saem da fila em alguns minutos.}}',
-    },
-    /** The owner's corrector run, started from the app (ADR-0029). */
-    correctorRun: {
-      button: 'Rodar o corretor agora',
-      confirmLead:
-        'O corretor lê os pedidos de correção e as versões em que o Arca achou diferença, confere nas fontes oficiais e propõe versões corrigidas, até 3 por vez. Ele roda na sua assinatura do Claude, a mesma da rotina diária, e leva alguns minutos. As versões corrigidas aparecem aqui para você decidir.',
-      confirm: 'Rodar agora',
-      starting: 'Chamando o corretor…',
-      started: 'O corretor começou. Você recebe uma notificação do Claude quando ele terminar.',
-      failure:
-        '{reason, select, limited {O corretor já rodou várias vezes nesta hora. Espere um pouco e tente de novo.} corrector_off {O corretor ainda não está ligado aqui: falta o token da rotina na Vercel.} corrector_not_started {O Claude não aceitou o pedido. Confira se o token da rotina ainda vale e tente de novo.} not_admin {Só quem está na lista de donos pode rodar o corretor.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para rodar o corretor. Tente de novo.}}',
-    },
     /** An admin's update request for one route, followed stage by stage (ADR-0031). */
     update: {
       button: 'Pedir atualização',
@@ -1601,60 +1473,6 @@ export const ptBR = {
       review: 'A proposta virou a versão 1 de {routeId}. Abra para revisar e decidir.',
       openProposal: 'Revisar a proposta',
       loadFailure: 'Não deu para carregar os pedidos de rota nova agora.',
-    },
-    /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
-    checkRun: {
-      button: 'Analisar com o Arca',
-      running: 'Ver a análise em andamento',
-      confirmTitle: 'Analisar esta versão com o Arca?',
-      confirmLead:
-        'O Arca lê de novo as fontes oficiais desta versão e compara item por item, mesmo que já exista uma verificação recente. Leva alguns minutos.',
-      cost: 'Cada análise gasta de US$ 0,40 a US$ 0,80 do seu crédito da API.',
-      lastCost: 'A última análise desta versão custou {cost} do seu crédito da API.',
-      spent:
-        '{state, select, running {Gasto até agora: {cost}.} other {Esta análise custou {cost}.}}',
-      costUnknown:
-        'Não deu para calcular o custo: o Arca não tem o preço de um dos modelos usados, ou o modelo de IA não informou quantos tokens gastou.',
-      costScripted: 'Esta foi uma análise de teste, sem IA de verdade. Não custou nada.',
-      underCent: 'menos de US$ 0,01',
-      confirm: 'Analisar agora',
-      starting: 'Começando a análise…',
-      startFailure:
-        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} check_not_started {A análise não conseguiu começar. Ela sai da fila em até 30 minutos, e aí você pode tentar de novo.} check_off {A verificação independente não está ligada aqui, então não há o que analisar.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para começar a análise. Tente de novo.}}',
-      title: 'Análise do Arca',
-      back: 'Voltar para as versões',
-      loadFailure: 'Não conseguimos carregar o andamento da análise.',
-      none: 'Esta versão não teve nenhuma análise nas últimas 24 horas.',
-      startedAt: 'Começou em {date}',
-      leave:
-        'Pode sair desta tela. A análise continua, e o botão na versão traz você de volta para cá.',
-      now: '{stage, select, reading {Lendo as páginas oficiais: {done} de {total}.} locating {Escolhendo os trechos das páginas longas.} comparing {Comparando a regra com o que as páginas dizem.} other {Preparando a análise.}}',
-      state:
-        '{state, select, finished {Análise concluída.} failed {A análise parou por um erro e nada foi gravado. Você pode começar outra.} dead {A análise parou no meio e não terminou em 30 minutos. Nada foi gravado. Você pode começar outra.} other {Análise em andamento.}}',
-      unknownVersion: 'O Arca não encontrou esta versão para analisar.',
-      steps: 'Etapas da análise',
-      step: '{step, select, read {Ler as páginas oficiais} locate {Escolher os trechos das páginas longas} compare {Comparar com a regra} other {Montar o relatório}}',
-      stepStatus:
-        '{status, select, done {Feita} current {Agora} skipped {Não precisou} stopped {Parou aqui} other {Na fila}}',
-      readDetail: '{done} de {total, plural, one {# página} other {# páginas}}',
-      locateDetail:
-        '{n, plural, one {# página longa: o Arca lê só os trechos escolhidos.} other {# páginas longas: o Arca lê só os trechos escolhidos.}}',
-      compareDetail: '{n, plural, one {# item da regra} other {# itens da regra}}',
-      comparedItems: 'Itens já comparados',
-      awaiting: 'A seguir: {title}',
-      left: '{n, plural, one {Falta # item.} other {Faltam # itens.}}',
-      pageOutcome: '{outcome, select, reading {Lendo agora} read {Lida} other {Não abriu}}',
-      httpStatus: 'O site respondeu com erro.',
-      again: 'Analisar de novo',
-      result: 'Resultado da análise',
-      lists: 'O que a análise viu',
-      items: 'Itens',
-      pages: 'Páginas',
-      noItems: 'Cada item aparece aqui assim que o Arca termina de compará-lo.',
-      noPages: 'O Arca ainda não abriu nenhuma página.',
-      filter: 'Mostrar os itens',
-      filterStatus: '{status, select, all {Todos} matches {Bate} differs {Difere} other {Confira}}',
-      backToList: 'Voltar para a lista',
     },
     activate: '{subject, select, list {Ativar esta lista} other {Ativar esta versão}}',
     reject: '{subject, select, list {Recusar esta lista} other {Recusar esta versão}}',

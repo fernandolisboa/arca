@@ -527,7 +527,7 @@ export const registry: Registry = {
       strategy: 'retain',
       owner: ownedByAccount('actor_account_id'),
       reason:
-        "The record of who made or revoked the corrector key and when, which the corrector run's answers name, with account IDs and key digests only (ADR-0029).",
+        "The record of who made or revoked the retired corrector key and when, which the corrector run's answers name, with account IDs and key digests only (ADR-0029); kept read-only as history since ADR-0031.",
       period: 'forever',
       export: ['kind', 'at'],
       label: 'dataExport.tables.correctorKeys',
@@ -555,19 +555,19 @@ export const registry: Registry = {
       table: 'knowledge.check_start',
       personalData: 'none',
       reason:
-        'A start of the independent check of a route version (ADR-0027): its route, number and time only; it names no account.',
+        'A start of the retired independent check of a route version (ADR-0027), kept read-only as history since ADR-0031: its route, number and time only; it names no account.',
     },
     {
       table: 'knowledge.check_progress',
       personalData: 'none',
       reason:
-        'What a start of the independent check recorded as it ran (ADR-0027): counts, cited official URLs, item keys with their verified status, model token counts and fixed codes; it names no account.',
+        'What a start of the retired independent check recorded as it ran (ADR-0027), kept read-only as history since ADR-0031: counts, cited official URLs, item keys with their verified status, model token counts and fixed codes; it names no account.',
     },
     {
       table: 'knowledge.independent_check',
       personalData: 'none',
       reason:
-        "The independent check's report on a route version's public content against its official sources (ADR-0027), with model output and a fetch log of official URLs; it names no account.",
+        "The retired independent check's report on a route version's public content against its official sources (ADR-0027), kept read-only as history since ADR-0031, with model output and a fetch log of official URLs; it names no account.",
     },
     {
       table: 'knowledge.rule_summary',

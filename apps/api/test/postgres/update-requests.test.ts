@@ -12,7 +12,7 @@ import { credentialStore } from '../../src/auth/auth.js';
 import { createStepUp } from '../../src/auth/step-up.js';
 import type { AdminGrants } from '../../src/knowledge/admin-grants.js';
 import { adminRole } from '../../src/knowledge/admins.js';
-import { offlineFetcher } from '../../src/knowledge/check/environment.js';
+import { offlineFetcher } from '../../src/knowledge/pages/environment.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { officialDomainsView } from '../../src/knowledge/official-domains.js';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
@@ -21,7 +21,7 @@ import {
   type RuleResearcher,
   type RuleValidator,
 } from '../../src/knowledge/update/ports.js';
-import type { SourceFetcher } from '../../src/knowledge/check/fetcher.js';
+import type { SourceFetcher } from '../../src/knowledge/pages/fetcher.js';
 import { createUpdateRequests, updateLiveMs } from '../../src/knowledge/update/requests.js';
 import { createVersionReviews } from '../../src/knowledge/update/review.js';
 import { createRuleUpdate } from '../../src/knowledge/update/run.js';

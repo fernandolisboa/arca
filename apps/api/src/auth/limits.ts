@@ -84,24 +84,6 @@ export const correctionRequestLimits = {
   download: { name: 'correction_download_account', limit: 120, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 
-/**
- * The corrector routes (ADR-0029): every request is counted per address before its key is read,
- * so a guessing client is slowed and a refused key writes at most a few audit events an hour;
- * a key that holds is counted again per key, per route.
- */
-export const correctorLimits = {
-  address: { name: 'corrector_ip', limit: 120, windowSeconds: hour },
-  refusedLog: { name: 'corrector_refused_log_ip', limit: 5, windowSeconds: hour },
-  list: { name: 'corrector_list_key', limit: 100, windowSeconds: 24 * hour },
-  file: { name: 'corrector_file_key', limit: 200, windowSeconds: 24 * hour },
-  answer: { name: 'corrector_answer_key', limit: 100, windowSeconds: 24 * hour },
-} as const satisfies Record<string, RateLimitRule>;
-
-/** Starts of the owner's corrector run from the app (ADR-0029): each one spends the owner's subscription. */
-export const correctorRunLimits = {
-  hour: { name: 'corrector_run_account', limit: 4, windowSeconds: hour },
-} as const satisfies Record<string, RateLimitRule>;
-
 /** Update requests (ADR-0031): each one pays for research, so few per admin an hour. */
 export const updateRequestLimits = {
   hour: { name: 'update_request_account', limit: 10, windowSeconds: hour },
@@ -110,11 +92,6 @@ export const updateRequestLimits = {
 /** Hand edits of a route version (ADR-0031): each one reads an official page. */
 export const versionEditLimits = {
   hour: { name: 'version_edit_account', limit: 10, windowSeconds: hour },
-} as const satisfies Record<string, RateLimitRule>;
-
-/** The corrector key screen: making and revoking keys per owner-list admin. */
-export const correctorKeyLimits = {
-  change: { name: 'corrector_key_change_account', limit: 20, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Free-text drafts per account (spec 0008, R3): each one is a paid model call. */
@@ -130,14 +107,6 @@ export const intakeLimits = {
 export const ruleSummaryLimits = {
   day: { name: 'rule_summary_day', limit: 30, windowSeconds: 24 * hour },
   minute: { name: 'rule_summary_minute', limit: 5, windowSeconds: 60 },
-} as const satisfies Record<string, RateLimitRule>;
-
-/**
- * An admin's own rule checks (ADR-0027): no daily cap, only a burst limit no person tapping the
- * button reaches; it slows a looping client or a stolen session but does not bound daily spend.
- */
-export const ruleCheckLimits = {
-  minute: { name: 'rule_check_minute', limit: 10, windowSeconds: 60 },
 } as const satisfies Record<string, RateLimitRule>;
 
 /**

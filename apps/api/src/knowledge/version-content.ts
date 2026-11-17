@@ -1,9 +1,8 @@
-import type { CountryGuide, VersionView } from '@arca/domain';
+import type { VersionView } from '@arca/domain';
 
 /*
- * A version as the AI features read it, shared by the rule summary (ADR-0025) and the independent
- * check (ADR-0027). Reports and summaries are keyed by the version's hash, not by this text, so a
- * change to the layout bumps both features' prompt versions.
+ * A version as the rule summary reads it (ADR-0025). Summaries are keyed by the version's hash, not
+ * by this text, so a change to the layout bumps the summary's prompt version.
  */
 
 /**
@@ -38,8 +37,8 @@ const summaryFields = [
 ] as const satisfies readonly Exclude<keyof VersionView, 'hash' | 'state' | 'rejection'>[];
 
 /**
- * A source field by field. Its machine-readable address stays out: the check reads it in the
- * page's place and names the page, and the layout stays as both prompts' versions describe it.
+ * A source field by field. Its machine-readable address stays out, so the layout stays as the
+ * prompt's version describes it.
  */
 const sourcesRead = (view: VersionView) =>
   view.sources.map(({ id, url, title, kind, verifiedAt, host, newHost }) => ({
@@ -61,25 +60,4 @@ const contentOf = (view: VersionView, fields: readonly (keyof VersionView)[]) =>
 
 export function summaryContent(view: VersionView): string {
   return contentOf(view, summaryFields);
-}
-
-/**
- * What the independent check's model reads of a version (ADR-0027): the summary's fields without
- * the rule cases, which are tests of the rule rather than what the law says.
- */
-export function checkContent(view: VersionView): string {
-  return contentOf(
-    view,
-    summaryFields.filter((field) => field !== 'cases'),
-  );
-}
-
-/**
- * A country guide as the independent check's model reads it (ADR-0027): whole, but for a law's
- * machine-readable address, which no item of a version cites.
- */
-export function guideContent(guide: CountryGuide): string {
-  return JSON.stringify(guide, (key, value: unknown) =>
-    key === 'machineReadableUrl' ? undefined : value,
-  );
 }

@@ -6,7 +6,7 @@ import {
   answerText,
   jsonStrings,
   xmlText,
-} from '../src/knowledge/check/answer-text.js';
+} from '../src/knowledge/pages/answer-text.js';
 
 describe('answerFormat', () => {
   it.each([

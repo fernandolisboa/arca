@@ -453,21 +453,6 @@ describe('the correction request access matrix (ADR-0029)', () => {
     });
   });
 
-  it('lets app_auth only insert a created corrector key, never its time, and run nothing', async () => {
-    const matrix = correctionMatrix({ 'knowledge.corrector_key': ['INSERT'] });
-    const keys = matrix['knowledge.corrector_key'] as { columns: Record<string, string[]> };
-    expect(await correctionAccess('app_auth')).toEqual({
-      tables: {
-        ...matrix,
-        'knowledge.corrector_key': {
-          ...keys,
-          columns: { ...keys.columns, revokes_key_id: [], at: [] },
-        },
-      },
-      functions: [],
-    });
-  });
-
   it('lets app_jobs read every table, delete requests, sources and uploads, clear a note, and read page copies', async () => {
     const request = correctionTables['knowledge.correction_request'];
     expect(await correctionAccess('app_jobs')).toEqual({
@@ -500,7 +485,7 @@ describe('the correction request access matrix (ADR-0029)', () => {
     });
   });
 
-  it('lets knowledge_definer read and insert, never change or delete, and run its own functions', async () => {
+  it('lets knowledge_definer read and insert, never change or delete, and run its own functions; the retired corrector keys it only reads', async () => {
     const access = await correctionAccess('knowledge_definer');
     expect(access.functions).toEqual(correctionFunctions.map((f) => f.slice(0, f.indexOf('('))));
     expect(access.tables).toEqual(
@@ -509,13 +494,13 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.correction_source': ['SELECT', 'INSERT'],
         'knowledge.correction_event': ['SELECT', 'INSERT'],
         'knowledge.correction_upload': ['SELECT', 'INSERT'],
-        'knowledge.corrector_key': ['SELECT', 'INSERT'],
+        'knowledge.corrector_key': ['SELECT'],
       }),
     );
   });
 
   it.each([
-    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs', 'app_auth'].includes(role)),
+    ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
     ...retiredRoles,
   ])('gives %s no access', async (role) => {
     expect(await correctionAccess(role)).toEqual({ tables: correctionMatrix({}), functions: [] });
@@ -1051,74 +1036,17 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     expect((await summaryPrivileges('app_auth')).table).toEqual([]);
   });
 
-  it('lets app_api read check starts and insert their route and number only (ADR-0027)', async () => {
-    expect(await startPrivileges('app_api')).toEqual({
-      usage: true,
-      create: false,
-      columns: {
-        ...onEvery(startColumns, ['SELECT']),
-        route_id: ['SELECT', 'INSERT'],
-        version_number: ['SELECT', 'INSERT'],
-      },
-      table: [],
-    });
-  });
-
-  it('lets app_jobs insert check reports but their ID and time, and read them (ADR-0027)', async () => {
-    expect(await reportPrivileges('app_jobs')).toEqual({
-      usage: true,
-      create: false,
-      columns: {
-        ...onEvery(reportColumns, ['SELECT', 'INSERT']),
-        id: ['SELECT'],
-        checked_at: ['SELECT'],
-      },
-      table: [],
-    });
-  });
-
-  it.each(['app_api', 'app_auth'])('lets %s only read check reports (ADR-0027)', async (role) => {
-    expect(await reportPrivileges(role)).toEqual({
-      usage: true,
-      create: false,
-      columns: onEvery(reportColumns, ['SELECT']),
-      table: [],
-    });
-  });
-
-  it('lets app_jobs insert check progress but its time, and nothing else (ADR-0027)', async () => {
-    expect(await progressPrivileges('app_jobs')).toEqual({
-      usage: true,
-      create: false,
-      columns: { ...onEvery(progressColumns, ['INSERT']), recorded_at: [] },
-      table: [],
-    });
-  });
-
-  it('lets app_api only read check progress (ADR-0027)', async () => {
-    expect(await progressPrivileges('app_api')).toEqual({
-      usage: true,
-      create: false,
-      columns: onEvery(progressColumns, ['SELECT']),
-      table: [],
-    });
-  });
-
-  it.each(runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)))(
-    'gives %s no access to check progress',
+  it.each(runtimeRoles)(
+    "gives %s no access to the retired check's starts, reports or progress (ADR-0031)",
     async (role) => {
-      const privileges = await progressPrivileges(role);
-      expect(privileges.columns).toEqual(onEvery(progressColumns, []));
-      expect(privileges.table).toEqual([]);
-    },
-  );
-
-  it.each(runtimeRoles.filter((role) => role !== 'app_api'))(
-    'gives %s no access to check starts',
-    async (role) => {
-      const privileges = await startPrivileges(role);
-      expect(privileges.columns).toEqual(onEvery(startColumns, []));
-      expect(privileges.table).toEqual([]);
+      for (const [privileges, columns] of [
+        [await startPrivileges(role), startColumns],
+        [await reportPrivileges(role), reportColumns],
+        [await progressPrivileges(role), progressColumns],
+      ] as const) {
+        expect(privileges.columns).toEqual(onEvery(columns, []));
+        expect(privileges.table).toEqual([]);
+      }
     },
   );
 

@@ -2,7 +2,7 @@ import type { VersionView } from '@arca/api-contract/client';
 import { useTranslation } from 'react-i18next';
 import { useNames } from '../questions/editors.js';
 import { formatAmount, formatDateValue } from '../questions/format.js';
-import { shownCents } from './check-cost.js';
+import { shownCents } from './cost.js';
 import { durationParts } from './duration.js';
 
 /** A fact of a version view: the reference as written and the catalog key it resolves to. */
@@ -30,10 +30,10 @@ export function useKnowledgeWords() {
       new Intl.NumberFormat(language, { maximumFractionDigits: 20 }).format(
         value as Intl.StringNumericLiteral,
       ),
-    // A check's cost, in millionths of a dollar, shown to the cent.
+    // A model call's cost, in millionths of a dollar, shown to the cent.
     usd: (microUsd: number) => {
       const cents = shownCents(microUsd);
-      if (cents === 'under_cent') return t('knowledge.checkRun.underCent');
+      if (cents === 'under_cent') return t('knowledge.underCent');
       return new Intl.NumberFormat(language, { style: 'currency', currency: 'USD' }).format(
         cents / 100,
       );

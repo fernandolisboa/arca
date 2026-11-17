@@ -6,7 +6,7 @@ Research notes for the U.S. EB-5 immigrant investor route, route `us-eb5` in `pa
 
 ### 2026-11-11, check loop
 
-The check loop of the [rule audit runbook](../../runbooks/rule-audit.md#the-check-loop), run on version 7.
+The check loop of the [rule audit runbook](https://github.com/fernandolisboa/arca/blob/fc269c37e9f7dd1c179153c14eb72859dc685619/docs/runbooks/rule-audit.md#the-check-loop), run on version 7.
 
 - **Version audited:** 7
 - **Outcome:** correction, version 8 (pull request [#382](https://github.com/fernandolisboa/arca/pull/382)), from version 7's date, 2026-11-30. No amount, condition or dependent changes. The cases repeat version 7's and add one: a child born on 29 February 2004 is a possible dependent on 28 February 2025, the day the two conventions disagree on whether they are 21. What changes is what each item cites and says:

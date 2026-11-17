@@ -32,7 +32,7 @@ The check loop again, now that the check reads PDFs ([#363](https://github.com/f
 
 ### 2026-11-11, check loop
 
-The check loop of the [rule audit runbook](../../runbooks/rule-audit.md#the-check-loop), run on version 4 together with [`pt-d8`](pt-d8.md), which shares this entry.
+The check loop of the [rule audit runbook](https://github.com/fernandolisboa/arca/blob/fc269c37e9f7dd1c179153c14eb72859dc685619/docs/runbooks/rule-audit.md#the-check-loop), run on version 4 together with [`pt-d8`](pt-d8.md), which shares this entry.
 
 - **Version audited:** 4
 - **Outcome:** correction, version 5 (pull request [#382](https://github.com/fernandolisboa/arca/pull/382)), from version 4's date, 2026-01-01. Two changes: the leap-day convention is now `unsettled`, since article 279.º c) of the Código Civil speaks of periods, not ages, and no Portuguese text says when a person born on 29 February turns a year older, so on 28 February of a common year the age is a range; and the EU, EEA and Swiss set is pinned at version 2, whose EU source lists all 27 members on one page. The `codigo-civil` source goes with the convention. Nothing else changes. The cases repeat version 4's and add one in both routes: a child born on 29 February 2008 is a possible dependent on 28 February 2026, the day the two conventions disagree on whether they are 18.

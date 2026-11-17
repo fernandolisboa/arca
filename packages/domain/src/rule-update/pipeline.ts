@@ -1,4 +1,4 @@
-import type { CheckReason, CheckedItem } from '../independent-check/answers.js';
+import type { CheckReason, CheckedItem } from '../quote-check/answers.js';
 
 /**
  * The stages of an update request (ADR-0031), in the only order they run: research, validation,

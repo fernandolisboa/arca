@@ -136,42 +136,6 @@
       "sha256": "5fd25e1b0a606f22342ce9c4beb9bd139955275c4dd95313ddf7c0ebb5634635"
     },
     {
-      "path": "guides/us/1",
-      "sha256": "0c61051dc0b52eb0c39ba3fd9ed262b02d2c990b8d9f72ea968bcff63a6ec11c"
-    },
-    {
-      "path": "guides/ar/1",
-      "sha256": "f8f54a259d9ebaa8388ccd8c2e812a013afb3374dbef6910285beec64d1e069b"
-    },
-    {
-      "path": "guides/cl/1",
-      "sha256": "7a0d105506f141254c879b196fd703a4c87da07f61c7ad38e78783318dfcdbbd"
-    },
-    {
-      "path": "guides/dk/1",
-      "sha256": "16d4d67b0a754e316919b604eda026a4ad8fa86a9be6f293b2a1256966dab44d"
-    },
-    {
-      "path": "guides/es/1",
-      "sha256": "84e349cc82fd428ede989408121ca98b090dc05cafcd53b5909f63696b563c25"
-    },
-    {
-      "path": "guides/ge/1",
-      "sha256": "5773004c0925d8344e484a55d0e5691e2a934a92da9fe97742b530f3d6df4141"
-    },
-    {
-      "path": "guides/is/1",
-      "sha256": "f015a1b48cb3c2265dc1e60cc94276aec086bff025f39b974e2aa5c9e19d75b2"
-    },
-    {
-      "path": "guides/jp/1",
-      "sha256": "998921b8b0e8ae833c863f446349d0f54578904ffcf7bab033d17024b4481fb8"
-    },
-    {
-      "path": "guides/uy/1",
-      "sha256": "e4720c1aeb1a1f2415100ec9d464b5b788364d6dfe008ce4e5ceee87becf14be"
-    },
-    {
       "path": "routes/pt-d7/3",
       "sha256": "e4d834e4a2213cf84d20634a1c43d387b0f27c4137ee6763120e548f1285d9cb"
     },
@@ -200,42 +164,6 @@
       "sha256": "9188c8b460a3ea4c9bbb5e8361cc9641301a5c843a786acf195e71a8ab0d98d2"
     },
     {
-      "path": "guides/au/1",
-      "sha256": "e4de0370f898805d8a041bad09d4eb2bcc074ac408aab34b02fc45d73fc338a9"
-    },
-    {
-      "path": "guides/cz/1",
-      "sha256": "db2946b8822dbc08ea2676f229e6d6eda8c94f486385971417a44e2964844cb7"
-    },
-    {
-      "path": "guides/gb/1",
-      "sha256": "417dc1d17806a85c02c074391deb53cf8528c90bcb916f9e82548f50d879a70f"
-    },
-    {
-      "path": "guides/ie/1",
-      "sha256": "dd4e8151e9c80d6ca46c6569f5d02c21a786e4c7029034163854822e71275344"
-    },
-    {
-      "path": "guides/it/1",
-      "sha256": "e35008379135d6ab8dc94a416bec9eb98ed3a5031b5dfce5775689f47ae77e63"
-    },
-    {
-      "path": "guides/lv/1",
-      "sha256": "0d2ae7e5c473985a8515208f120f9021606669c99624e51a29263ecb32636a55"
-    },
-    {
-      "path": "guides/pl/1",
-      "sha256": "c030de18a4f0c1bf78ad2406b8a206bee766027304a440c7e874eee9dee336be"
-    },
-    {
-      "path": "guides/pt/1",
-      "sha256": "26a8e7dea258168093b01fca11a718243e9002bb8694ab61aaa40364d5724585"
-    },
-    {
-      "path": "guides/py/1",
-      "sha256": "5e135ffa1fc1c59342f2e1eddf3eadcd9a530eb32bdef0cb49aef483490a255f"
-    },
-    {
       "path": "routes/ie-critical-skills/2",
       "sha256": "456a1aea163a3c58cfce48140f2100ecc4f8fb10f88a0d4e6899af530e5b9d96"
     },
@@ -250,10 +178,6 @@
     {
       "path": "routes/us-eb5/5",
       "sha256": "f695c19cc6d4db33fb0e899cf12f8378dad3bda79929aab0031c54d96c266ec9"
-    },
-    {
-      "path": "guides/us/2",
-      "sha256": "2ed9db1cdcb8b5c4422e2077ee0d48050845dc1023fee4bda30e52870f9cfa7f"
     },
     {
       "path": "routes/us-eb5/6",
@@ -288,10 +212,6 @@
       "sha256": "290223a2be2c3aa33b7be592e5d07b7ccccb3d81307eb7146e067429e97aed94"
     },
     {
-      "path": "guides/pt/2",
-      "sha256": "02629d431a48adc3cc950bc0cb8ee2b27e7aa97f9786a430ac527b4c067022f8"
-    },
-    {
       "path": "routes/es-non-lucrative/3",
       "sha256": "d11588933274e908d688e333647596f1e1c4fab5ae2719441def60c3a86e7f32"
     },
@@ -306,18 +226,6 @@
     {
       "path": "routes/it-descent/3",
       "sha256": "c81f4278eb3aafd9b30a091baf6a0756e0e9f1ac8124e0dd563c187ca5d654ad"
-    },
-    {
-      "path": "guides/es/2",
-      "sha256": "627488205dabf0360e97df24e45e1c00c863aa3c9f5426eb048ab45d3935b42b"
-    },
-    {
-      "path": "guides/it/2",
-      "sha256": "88b766c7cf88b9c1decffccaff7d7673ab004b3f4e4a8f363c6868d6361570a7"
-    },
-    {
-      "path": "guides/pl/2",
-      "sha256": "b9c9a71c1d44a28cb0f568962bfda27adcd9267e73cd4aceb4841322f5d4d7bc"
     },
     {
       "path": "routes/ar-mercosur-temporary/3",
@@ -336,22 +244,6 @@
       "sha256": "0454ae5bd8c48a371ac897a5d31df288a5178360d0e33b8efb5aef7fa0c7204e"
     },
     {
-      "path": "guides/ar/2",
-      "sha256": "b9c7491e29b7d4d53dde3db637fbb48e356dcbbea29305366bd93681328e0b41"
-    },
-    {
-      "path": "guides/uy/2",
-      "sha256": "5b47a3a7d10d1fc288fbdc0674c5ebe2d6741ed2f6a93c7618e2f1fd11fdd6af"
-    },
-    {
-      "path": "guides/py/2",
-      "sha256": "95f971eb7995c5f2750ab1f9d46addf2b72a83d09a6fa5d4fb72ea7d39b07deb"
-    },
-    {
-      "path": "guides/cl/2",
-      "sha256": "dc96f8cb3537db0d7880c1319d43c8fbc7aded85c488418d7e4a901ab639b952"
-    },
-    {
       "path": "routes/au-skilled-independent/2",
       "sha256": "81dddb660f04f0f2b5d35cb96f1bc97839d3132d000a6f3a98b67c07eadd98d8"
     },
@@ -368,10 +260,6 @@
       "sha256": "c488179ade1fcec586499a6ee44f1259bfeb4159367bb40f8dc5c3449854dbae"
     },
     {
-      "path": "guides/ie/2",
-      "sha256": "e7ddc01be2c3e90aa0b147923a9ce45f8dc7230afa121da5af2ab4acafb372c5"
-    },
-    {
       "path": "routes/cz-eu-blue-card/3",
       "sha256": "e21d1a8302e06c61fd2924206ed45df821254abf2e9f7314cc5b01afea050618"
     },
@@ -386,14 +274,6 @@
     {
       "path": "routes/lv-capital-investment/4",
       "sha256": "db744c578ac18ab298d91b26430775dfbc6547afa4a8ebe9290fcee2e6f0da5f"
-    },
-    {
-      "path": "guides/cz/2",
-      "sha256": "8c2ba5a3e399598afb8695b7e9fb93c00fd7a539e4d5c7c6730beec80c2720cf"
-    },
-    {
-      "path": "guides/dk/2",
-      "sha256": "b971d3122df3e00d6e777c0ae0cf918e71e7949634703f1b50e425554bcb2461"
     },
     {
       "path": "routes/pt-d7/6",

@@ -209,7 +209,6 @@ export const stepUpPurposes = [
   'vault_write',
   'knowledge_decision',
   'admin_grant',
-  'corrector_key',
   'ai_key',
 ] as const;
 
@@ -1794,7 +1793,6 @@ export const apiPathSegments: readonly string[] = [
  */
 export const webPathSegments = [
   'assets',
-  'check',
   'compare',
   'devices',
   'enroll',

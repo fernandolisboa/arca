@@ -11,7 +11,6 @@ import { appearance, useAppearance } from '../appearance/store.js';
 import { DataExportSection } from '../data-export.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { NotificationsSection } from '../notifications-section.js';
-import { CorrectorKeySection } from '../knowledge/corrector-key.js';
 import { AiPanel } from '../settings/ai-panel.js';
 import {
   sectionAxes,
@@ -190,12 +189,9 @@ function AccountPanel() {
 function KnowledgePanel() {
   const { t } = useTranslation();
   return (
-    <>
-      <Link to="/knowledge" className={`${textLinkClass} self-start`}>
-        {t('knowledge.settings.open')}
-      </Link>
-      <CorrectorKeySection />
-    </>
+    <Link to="/knowledge" className={`${textLinkClass} self-start`}>
+      {t('knowledge.settings.open')}
+    </Link>
   );
 }
 

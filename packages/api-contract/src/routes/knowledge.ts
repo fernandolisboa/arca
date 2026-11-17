@@ -1,20 +1,5 @@
 import {
   calendarDateSchema,
-  checkItemKinds,
-  checkProgressStages,
-  checkProgressStates,
-  checkReasons,
-  checkStatuses,
-  checkFailures,
-  fetchOutcomes,
-  listedCheckStatuses,
-  maxCheckCostMicroUsd,
-  maxCheckItemKeyLength,
-  pageProgressOutcomes,
-  progressFailures,
-  maxNoteLength,
-  maxQuoteLength,
-  maxQuotes,
   comparisonCriterionSchema,
   correctionItemKinds,
   correctionStates,
@@ -156,22 +141,9 @@ export const KnowledgeVersion = z.object({
   /**
    * No date from today on selects this version: a correction or a later version replaced it, or it
    * was rejected. Recomputed on each read, so it clears if the replacing version is rejected. A
-   * proposed one needs no decision and is not checked while it holds.
+   * proposed one needs no decision while it holds.
    */
   superseded: z.boolean(),
-  /** The independent check's status (ADR-0027); `none` where no check runs. */
-  check: z.enum(listedCheckStatuses),
-  /**
-   * How the current report's points came out, or null with no current report; a scripted report's
-   * matches count as not confirmed.
-   */
-  points: z
-    .strictObject({
-      matches: z.int().min(0),
-      differs: z.int().min(0),
-      unread: z.int().min(0),
-    })
-    .nullable(),
 });
 export type KnowledgeVersion = z.infer<typeof KnowledgeVersion>;
 
@@ -506,8 +478,8 @@ export const requestUrl = z
   .regex(/^https:\/\/\S+$/);
 const LinkSource = z.strictObject({ kind: z.literal('link'), url: requestUrl });
 /**
- * The official page a file is a copy of, one the version cites, or null: the independent check
- * reads the newest such copy when it cannot read the page itself.
+ * The official page a file is a copy of, one the version cites, or null. The retired independent
+ * check read the newest such copy when it could not read the page itself (ADR-0031).
  */
 const pageUrl = requestUrl.nullable();
 const TextSource = z.strictObject({
@@ -745,399 +717,6 @@ export const closeCorrectionRequest = {
   response: { description: 'Closed', schema: z.object({}) },
 } as const satisfies RouteDefinition;
 
-/*
- * The corrector key and the corrector run's routes (ADR-0029). An owner-list admin makes the key
- * with a `corrector_key` step-up and sees it once; a new key replaces the old one, and a key ends
- * after a year, on revocation, or when its creator leaves the owner list or is erased. The run
- * sends it as `Authorization: Bearer <key>` to the four corrector routes, and on the two `POST`
- * routes the production origin as `Origin`, as every state-changing request does.
- */
-
-/** A corrector key: a fixed prefix the secret scan knows, then 32 random bytes in base64url. */
-export const correctorKeyPrefix = 'arca_ck_';
-export const correctorKeyPattern = /^arca_ck_[A-Za-z0-9_-]{43}$/;
-
-/** The longest explanation an answer that changes nothing may carry. */
-export const maxCorrectionExplanation = 2_000;
-
-export const CorrectorKeyStatus = z.object({
-  /** Whether the viewer may make or revoke the key: an owner-list admin. */
-  canManage: z.boolean(),
-  /** The live key's dates, or null when none is live. */
-  key: z
-    .object({
-      id: z.uuid(),
-      createdAt: z.iso.datetime({ offset: true }),
-      expiresAt: z.iso.datetime({ offset: true }),
-    })
-    .nullable(),
-});
-export type CorrectorKeyStatus = z.infer<typeof CorrectorKeyStatus>;
-
-export const getCorrectorKey = {
-  method: 'get',
-  path: '/knowledge/corrector-key',
-  operationId: 'getCorrectorKey',
-  summary:
-    "The live corrector key's dates, never the key, for an admin, and whether the viewer may make or revoke it. 403 not_admin",
-  response: { description: 'The key', schema: CorrectorKeyStatus },
-} as const satisfies RouteDefinition<typeof CorrectorKeyStatus>;
-
-export const CreatedCorrectorKey = z.object({
-  /** Shown once: the server keeps only its SHA-256. */
-  key: z.string().regex(correctorKeyPattern),
-  expiresAt: z.iso.datetime({ offset: true }),
-});
-export type CreatedCorrectorKey = z.infer<typeof CreatedCorrectorKey>;
-
-export const createCorrectorKey = {
-  method: 'post',
-  path: '/knowledge/corrector-key',
-  operationId: 'createCorrectorKey',
-  summary:
-    'Makes a new corrector key, which replaces the live one, for an owner-list admin; needs a consumed corrector_key step-up of createCorrectorKey; answered once with Cache-Control no-store. 403 not_admin, owner_list_only or step_up_required',
-  response: { description: 'The new key', schema: CreatedCorrectorKey },
-} as const satisfies RouteDefinition<typeof CreatedCorrectorKey>;
-
-/** The step-up action of making a key: bound to nothing but the route (ADR-0029). */
-export const createCorrectorKeyAction = () => ({
-  action: createCorrectorKey.operationId,
-  targets: [],
-});
-
-export const RevokeCorrectorKey = z.strictObject({ id: z.uuid() });
-export type RevokeCorrectorKey = z.infer<typeof RevokeCorrectorKey>;
-
-export const revokeCorrectorKey = {
-  method: 'post',
-  path: '/knowledge/corrector-key/revoke',
-  operationId: 'revokeCorrectorKey',
-  summary:
-    'Revokes the live corrector key it names, with no step-up, for an owner-list admin. 403 not_admin or owner_list_only; 404 not_found unless the key is the live one',
-  body: RevokeCorrectorKey,
-  response: { description: 'Revoked', schema: z.object({}) },
-} as const satisfies RouteDefinition;
-
-export const CorrectorRequests = z.object({
-  /** At most ten open or taken requests, oldest first. */
-  requests: z.array(
-    z.object({
-      id: z.uuid(),
-      /** The version's route and number, or null for a request for a new route. */
-      routeId: routeIdSchema.nullable(),
-      versionNumber: z.int().min(1).nullable(),
-      /** The item of the version, or null for a request for a new route. */
-      item: CorrectionItem.nullable(),
-      /** The country a request for a new route names, or null for one on a version. */
-      countryCode: requestCountryCode.nullable(),
-      /** Null once the request's contents were erased; its sources go too. */
-      note: z.string().nullable(),
-      createdAt: z.iso.datetime({ offset: true }),
-      /** In the request's order; a file opens through `correctorFileUrl` by its place here. */
-      sources: z.array(ListedCorrectionSource),
-      state: z.enum(['open', 'taken']),
-    }),
-  ),
-});
-export type CorrectorRequests = z.infer<typeof CorrectorRequests>;
-
-const correctorAuth =
-  'Bearer corrector key only; 403 cross_origin for a browser request from another site; 401 unauthorized for a missing, wrong, revoked, expired or replaced key, after a per-address limit (429 rate_limited)';
-
-export const listCorrectorRequests = {
-  method: 'get',
-  path: '/corrector/requests',
-  operationId: 'listCorrectorRequests',
-  summary: `The open and taken correction requests with their sources, at most ten, oldest first. ${correctorAuth}; 100 per 24 hours per key`,
-  response: { description: 'The requests', schema: CorrectorRequests },
-} as const satisfies RouteDefinition<typeof CorrectorRequests>;
-
-export const correctorFileUrl = {
-  method: 'post',
-  path: '/corrector/files/url',
-  operationId: 'correctorFileUrl',
-  summary: `A URL that downloads one file of an open or taken request, as an attachment, for 5 minutes. ${correctorAuth}; 200 per 24 hours per key; 404 not_found for a source that is not a stored file of such a request`,
-  body: CorrectionFileReference,
-  response: { description: 'Download URL', schema: CorrectionFileUrlResponse },
-} as const satisfies RouteDefinition<typeof CorrectionFileUrlResponse>;
-
-export const CorrectionAnswer = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('taken') }),
-  z.strictObject({
-    kind: z.literal('version_proposed'),
-    number: z.int().min(1).max(1_000_000),
-    /** The new route the version is on; required for a request for a new route, else omitted. */
-    routeId: routeIdSchema.optional(),
-  }),
-  z.strictObject({
-    kind: z.literal('no_change'),
-    explanation: z.string().trim().min(1).max(maxCorrectionExplanation),
-  }),
-]);
-export type CorrectionAnswer = z.infer<typeof CorrectionAnswer>;
-
-export const AnswerCorrectionRequest = z.strictObject({
-  requestId: z.uuid(),
-  answer: CorrectionAnswer,
-});
-export type AnswerCorrectionRequest = z.infer<typeof AnswerCorrectionRequest>;
-
-export const answerCorrectionRequest = {
-  method: 'post',
-  path: '/corrector/requests/answer',
-  operationId: 'answerCorrectionRequest',
-  summary: `Marks an open request taken, or answers a taken one with the version proposed or why nothing changed; a key never closes a request. ${correctorAuth}; 100 per 24 hours per key; 404 not_found; 409 wrong_state; 409 invalid_version for a version this deployment does not serve on the request's route, one already active or rejected, or one that neither corrects nor follows the request's version; for a request for a new route, a version_proposed names its route, which must be in the request's country`,
-  body: AnswerCorrectionRequest,
-  response: { description: 'Answered', schema: z.object({}) },
-} as const satisfies RouteDefinition;
-
-export const CorrectorFlaggedVersions = z.object({
-  /**
-   * At most ten proposed, not superseded route versions whose current check report is flagged,
-   * those with an item that differs first, each with the current report's items that did not
-   * match: identifiers and codes only, never the model's notes. A version whose current report
-   * has no such item is left out.
-   */
-  versions: z.array(
-    z.object({
-      routeId: routeIdSchema,
-      number: z.int().min(1),
-      /** When the current report was written. */
-      checkedAt: z.iso.datetime(),
-      items: z.array(
-        z.object({
-          key: z.string().max(maxCheckItemKeyLength),
-          kind: z.enum(checkItemKinds),
-          status: z.enum(checkStatuses).exclude(['matches']),
-          reason: z.enum(checkReasons).nullable(),
-        }),
-      ),
-    }),
-  ),
-});
-export type CorrectorFlaggedVersions = z.infer<typeof CorrectorFlaggedVersions>;
-
-export const listCorrectorFlaggedVersions = {
-  method: 'get',
-  path: '/corrector/flagged',
-  operationId: 'listCorrectorFlaggedVersions',
-  summary: `The proposed route versions the independent check flagged, with the items that differ or could not be checked, so the corrector run corrects them unasked. ${correctorAuth}; counted with the request listing, 100 per 24 hours per key; 503 check_off where no check runs`,
-  response: { description: 'The flagged versions', schema: CorrectorFlaggedVersions },
-} as const satisfies RouteDefinition<typeof CorrectorFlaggedVersions>;
-
-export const startCorrectorRun = {
-  method: 'post',
-  path: '/knowledge/corrector/run',
-  operationId: 'startCorrectorRun',
-  summary:
-    "Starts the owner's corrector run now, the same scheduled task that runs daily, for an owner-list admin. 4 per hour per account (429 rate_limited). 401 when not signed in; 403 not_admin; 502 corrector_not_started when claude.ai did not accept it; 503 corrector_off where its token is not configured",
-  response: { description: 'Started', schema: z.strictObject({}) },
-} as const satisfies RouteDefinition<z.ZodObject<Record<string, never>>>;
-
-/*
- * The independent check (ADR-0027). A check starts only when an admin asks, for one version or for
- * the queue; listing versions starts nothing. A report is model output that code
- * checked against the cited official pages: plain text, quotes and URLs included, never links.
- */
-
-export const StartQueuedChecksResponse = z.strictObject({
-  started: z.int().min(0),
-});
-export type StartQueuedChecksResponse = z.infer<typeof StartQueuedChecksResponse>;
-
-export const startQueuedChecks = {
-  method: 'post',
-  path: '/knowledge/checks/start-queued',
-  operationId: 'startQueuedChecks',
-  summary:
-    'Starts, for an admin, the independent check of every proposed route version with no current report and no check running, with no daily cap; answers how many started. 10 requests per minute per account (429 rate_limited). 403 not_admin; 502 check_not_started when a run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
-  response: { description: 'Started', schema: StartQueuedChecksResponse },
-} as const satisfies RouteDefinition<typeof StartQueuedChecksResponse>;
-
-export const VersionCheckReport = z.strictObject({
-  checkedAt: z.iso.datetime(),
-  /** Every item matches; never for a scripted report. */
-  clean: z.boolean(),
-  /** Written by the scripted checker used until a model is configured, never clean. */
-  scripted: z.boolean(),
-  failure: z.enum(checkFailures).nullable(),
-  /** The country guide the check read, or null when the country has none. */
-  guide: z
-    .strictObject({ country: z.string().regex(/^[A-Z]{2}$/), number: z.int().min(1) })
-    .nullable(),
-  items: z
-    .array(
-      z.strictObject({
-        key: z.string().max(maxCheckItemKeyLength),
-        kind: z.enum(checkItemKinds),
-        title: z.string().max(200),
-        status: z.enum(checkStatuses),
-        /** The verified passages it rests on, each with its page; empty when not checked. */
-        quotes: z
-          .array(
-            z.strictObject({
-              quote: z.string().max(maxQuoteLength),
-              url: z.string().max(2_000),
-            }),
-          )
-          .max(maxQuotes),
-        note: z.string().max(maxNoteLength).nullable(),
-        reason: z.enum(checkReasons).nullable(),
-        /**
-         * The official sources the item cites, from the bundled version, never from the model: where
-         * an admin looks when the check could not confirm it.
-         */
-        citations: z
-          .array(z.strictObject({ url: sourceSchema.shape.url, title: sourceSchema.shape.title }))
-          .max(100),
-        /** What those pages must state for the item to hold; empty when it states no value. */
-        values: z
-          .array(
-            z.discriminatedUnion('kind', [
-              z.strictObject({ kind: z.literal('number'), value: z.string().max(40) }),
-              z.strictObject({ kind: z.literal('date'), value: calendarDateSchema }),
-            ]),
-          )
-          .max(100),
-      }),
-    )
-    .max(200),
-  fetchLog: z
-    .array(
-      z.strictObject({
-        url: z.string().max(2_000),
-        /** The address read in the page's place, so the admin sees where a quote's text came from. */
-        machineReadableUrl: z.string().max(2_000).nullable(),
-        /**
-         * Whether the text came from a copy of the page attached to a correction request, read
-         * because the page itself could not be (ADR-0029).
-         */
-        fromCopy: z.boolean(),
-        outcome: z.enum(fetchOutcomes),
-        status: z.int().min(0).max(999).nullable(),
-        cut: z.boolean(),
-      }),
-    )
-    .max(200),
-});
-export type VersionCheckReport = z.infer<typeof VersionCheckReport>;
-
-export const VersionCheck = z.strictObject({
-  /** Whether this environment runs the check; off in production until a model is configured. */
-  enabled: z.boolean(),
-  status: z.enum(listedCheckStatuses),
-  /** The current report, or null when the version has none (stale, running or never checked). */
-  report: VersionCheckReport.nullable(),
-});
-export type VersionCheck = z.infer<typeof VersionCheck>;
-
-export const getVersionCheck = {
-  method: 'get',
-  path: '/knowledge/versions/check',
-  operationId: 'getVersionCheck',
-  summary:
-    "One route version's independent check status and its current report, model output checked in code against the cited official pages; never starts a check. 403 not_admin, 404 not_found",
-  query: VersionViewQuery,
-  response: { description: 'The check', schema: VersionCheck },
-} as const satisfies RouteDefinition<typeof VersionCheck>;
-
-/*
- * The check on demand (ADR-0027, "On demand, with progress"): an admin starts one route version's
- * check, whatever its state and reports, and watches how far it got. Progress holds counts, cited
- * official URLs, item statuses and fixed codes only; what the model wrote comes with the report.
- */
-
-export const StartVersionCheckResponse = z.strictObject({
-  /** False when a check of the version was already running, which is the one to watch. */
-  started: z.boolean(),
-});
-export type StartVersionCheckResponse = z.infer<typeof StartVersionCheckResponse>;
-
-export const startVersionCheck = {
-  method: 'post',
-  path: '/knowledge/versions/check/start',
-  operationId: 'startVersionCheck',
-  summary:
-    'Starts a new independent check of one route version for an admin, in any state and whatever its current report; while a check of the version is running it answers that one and starts nothing. No daily cap; 10 requests per minute per account (429 rate_limited). 403 not_admin; 404 not_found; 502 check_not_started when its run could not begin, which then counts as running for up to 30 minutes; 503 check_off where no checker is configured',
-  body: DecideVersionRequest,
-  response: { description: 'Started, or already running', schema: StartVersionCheckResponse },
-} as const satisfies RouteDefinition<typeof StartVersionCheckResponse>;
-
-/** Millionths of a U.S. dollar, computed in code from the reviewed price table. */
-const microUsd = z.int().min(0).max(maxCheckCostMicroUsd);
-
-/**
- * What a check's model calls cost: `unknown` when a model has no price or the provider left a
- * count out, `scripted` when the scripted checker ran, which is a test and costs nothing.
- */
-export const CheckCost = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('priced'), microUsd }),
-  z.strictObject({ kind: z.literal('unknown') }),
-  z.strictObject({ kind: z.literal('scripted') }),
-]);
-export type CheckCost = z.infer<typeof CheckCost>;
-
-export const CheckProgress = z.strictObject({
-  startedAt: z.iso.datetime(),
-  /** `dead` when the start is 30 minutes old with neither a report nor a recorded failure. */
-  state: z.enum(checkProgressStates),
-  /** The last stage the check entered. */
-  stage: z.enum(checkProgressStages),
-  itemCount: z.int().min(0).max(1_000).nullable(),
-  pageCount: z.int().min(0).max(1_000).nullable(),
-  /** Each cited page in the order first read, with its latest outcome; plain text, never a link. */
-  pages: z
-    .array(
-      z.strictObject({
-        url: z.string().max(2_000),
-        outcome: z.enum(pageProgressOutcomes),
-        /** The final HTTP status once read or refused, when there was one. */
-        status: z.int().min(0).max(999).nullable(),
-      }),
-    )
-    .max(200),
-  /** How many long pages had passages picked, once that stage began. */
-  locatedPages: z.int().min(0).max(1_000).nullable(),
-  /**
-   * Every item of the version in its order, with its status once the checker answered it and code
-   * verified it, or null while awaited; quotes, notes and reasons come only with the report.
-   */
-  items: z
-    .array(
-      z.strictObject({
-        key: z.string().max(maxCheckItemKeyLength),
-        kind: z.enum(checkItemKinds),
-        title: z.string().max(200),
-        status: z.enum(checkStatuses).nullable(),
-      }),
-    )
-    .max(200),
-  /** The scripted checker answers here, so a match is a test's and never a confirmation. */
-  scripted: z.boolean(),
-  failure: z.enum(progressFailures).nullable(),
-  /** What its model calls cost so far, or null before the first one (see `CheckCost`). */
-  cost: CheckCost.nullable(),
-});
-export type CheckProgress = z.infer<typeof CheckProgress>;
-
-export const VersionCheckProgress = z.strictObject({
-  /** The version's newest start of the last 24 hours, or null with none or where no check runs. */
-  progress: CheckProgress.nullable(),
-  /** What the version's newest check whose report did not fail cost, when it could be priced. */
-  lastCostMicroUsd: microUsd.nullable(),
-});
-export type VersionCheckProgress = z.infer<typeof VersionCheckProgress>;
-
-export const getVersionCheckProgress = {
-  method: 'get',
-  path: '/knowledge/versions/check/progress',
-  operationId: 'getVersionCheckProgress',
-  summary:
-    "How far one route version's newest independent check of the last 24 hours got, for an admin: its state, stage, the cited pages read so far and what its model calls cost; and what the version's newest check whose report did not fail cost. Never starts a check. 403 not_admin, 404 not_found",
-  query: VersionViewQuery,
-  response: { description: 'The progress', schema: VersionCheckProgress },
-} as const satisfies RouteDefinition<typeof VersionCheckProgress>;
-
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
@@ -1158,18 +737,6 @@ export const knowledgeRoutes = {
   startCorrectionUpload,
   correctionUploadUrl,
   correctionFileUrl,
-  getCorrectorKey,
-  createCorrectorKey,
-  revokeCorrectorKey,
-  listCorrectorRequests,
-  correctorFileUrl,
-  answerCorrectionRequest,
-  listCorrectorFlaggedVersions,
-  startCorrectorRun,
-  startQueuedChecks,
-  getVersionCheck,
-  startVersionCheck,
-  getVersionCheckProgress,
 } as const;
 
 export {
@@ -1177,14 +744,11 @@ export {
   correctionStates,
   correctionTargets,
   countrySetKey,
-  checkReasons,
   collectionNames,
   comparisonOperators,
   expressionOperators,
   factKeys,
   factTargets,
-  maxAutomaticStartsPerDay,
-  maxQuotes,
   relationshipSteps,
   staleAfterDays,
   versionKey,

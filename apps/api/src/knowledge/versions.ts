@@ -14,12 +14,10 @@ import {
 } from '@arca/domain';
 import type { RuleData } from '@arca/knowledge';
 import { type DisplayCatalog, createDisplayCatalog } from '@arca/knowledge/display';
-import type { CheckSubject } from './check/run.js';
-import { checkContent } from './version-content.js';
 
 export interface KnowledgeVersions {
   /** Every stored version with its state, the newest first (spec 0007, R7; ADR-0031). */
-  readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check' | 'points'>[]>;
+  readonly list: () => Promise<readonly KnowledgeVersion[]>;
   /** One version as the admin reads it, with the hash of its cases a decision binds (ADR-0031). */
   readonly view: (
     routeId: string,
@@ -149,33 +147,6 @@ export function createKnowledgeVersions({
         hostOf: catalog.hostOf,
       });
     },
-  };
-}
-
-/**
- * What the independent check reads about a stored route version (ADR-0027): its entry, its
- * content as the activation view lays it out, and the hosts of the lists it pins. Read here, where
- * the display catalog may be, since a proposed version's content is what the check is for. The
- * view needs no decision states: the content the check reads leaves the state out.
- */
-export function createCheckSubjects(
-  rules: () => Promise<RuleData>,
-): (routeId: string, number: number) => Promise<CheckSubject | undefined> {
-  return async (routeId, number) => {
-    const catalog = displayOf(await rules());
-    const versions = catalog.versions(routeId);
-    const entry = versions.find(({ identity }) => identity.number === number);
-    if (entry === undefined) return undefined;
-    const view = versionView({
-      versions,
-      number,
-      cases: [],
-      states: new Map(),
-      today: entry.version.effectiveFrom,
-      hostOf: catalog.hostOf,
-    });
-    if (view === undefined) return undefined;
-    return { entry, content: checkContent(view), officialHosts: catalog.officialHosts };
   };
 }
 

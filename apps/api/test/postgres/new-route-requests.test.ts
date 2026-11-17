@@ -17,7 +17,7 @@ import { credentialStore } from '../../src/auth/auth.js';
 import { createStepUp } from '../../src/auth/step-up.js';
 import type { AdminGrants } from '../../src/knowledge/admin-grants.js';
 import { adminRole } from '../../src/knowledge/admins.js';
-import type { SourceFetcher } from '../../src/knowledge/check/fetcher.js';
+import type { SourceFetcher } from '../../src/knowledge/pages/fetcher.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { officialDomainsView } from '../../src/knowledge/official-domains.js';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';

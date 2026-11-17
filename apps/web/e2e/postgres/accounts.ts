@@ -195,19 +195,12 @@ export async function clearKnowledgeDecisions(): Promise<void> {
   });
 }
 
-/** Empties the correction requests and corrector keys, which no runtime role deletes. */
+/** Empties the correction requests, and the retired corrector keys they may name, which no runtime role deletes. */
 export async function clearCorrectionRequests(): Promise<void> {
   await asAdmin(async (client) => {
     await client.query(
       'TRUNCATE knowledge.correction_request, knowledge.correction_upload, knowledge.corrector_key CASCADE',
     );
-  });
-}
-
-/** Empties the check starts, which no role may delete, so the automatic share starts over. */
-export async function clearCheckStarts(): Promise<void> {
-  await asAdmin(async (client) => {
-    await client.query('TRUNCATE knowledge.check_start');
   });
 }
 

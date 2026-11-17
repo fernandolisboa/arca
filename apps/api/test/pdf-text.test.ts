@@ -1,6 +1,6 @@
 import { createDeflate } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { joinVerticalLines, pdfText } from '../src/knowledge/check/pdf-text.js';
+import { joinVerticalLines, pdfText } from '../src/knowledge/pages/pdf-text.js';
 import { pdfStream, rawPdf, syntheticPdf } from './synthetic-pdf.js';
 
 const font = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';

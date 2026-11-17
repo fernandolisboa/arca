@@ -162,17 +162,6 @@ export function readAiKeyEncryptionKey(): Buffer | undefined {
   return key.length === 32 ? key : undefined;
 }
 
-const routineTokenPattern = /^[A-Za-z0-9_.-]{20,512}$/;
-
-/**
- * The API trigger token of the owner's corrector task on claude.ai (ADR-0029), a Sensitive value
- * in Production only. Absent, the app's "run the corrector" route answers 503.
- */
-export function readCorrectorRunToken(): string | undefined {
-  const token = process.env['ARCA_CORRECTOR_FIRE_TOKEN']?.trim();
-  return token !== undefined && routineTokenPattern.test(token) ? token : undefined;
-}
-
 /**
  * Whether a local server drafts intake with the scripted extractor (spec 0008, R4), which the
  * end-to-end build turns on with `ARCA_INTAKE_EXTRACTOR=scripted`; only development honours it.
@@ -190,8 +179,8 @@ export function readScriptedRuleSummary(): boolean {
 }
 
 /**
- * Whether a local server's independent check reads no page at all (ADR-0027), which the end-to-end
- * build turns on with `ARCA_RULE_CHECK_FETCH=offline`; only development honours it.
+ * Whether a local server reads no cited page at all (ADR-0031), which the end-to-end build turns
+ * on with `ARCA_RULE_CHECK_FETCH=offline`; only development honours it.
  */
 export function readOfflineRuleCheck(): boolean {
   return process.env['ARCA_RULE_CHECK_FETCH'] === 'offline';
