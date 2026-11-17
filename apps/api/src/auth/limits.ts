@@ -150,3 +150,10 @@ export const monitoringLimits = {
   envelope: { name: 'monitoring_envelope_ip', limit: 60, windowSeconds: hour },
   cspReports: { name: 'monitoring_csp_ip', limit: 60, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
+
+/** Configurações › IA (ADR-0031), per admin: key changes, stage choices and key tests. */
+export const aiSettingsLimits = {
+  keyChange: { name: 'ai_key_change_account', limit: 20, windowSeconds: 24 * hour },
+  stage: { name: 'ai_stage_account', limit: 60, windowSeconds: 24 * hour },
+  test: { name: 'ai_key_test_account', limit: 10, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;

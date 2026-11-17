@@ -43,13 +43,18 @@ export interface Logger {
   error(entry: LogEntry): void;
 }
 
+/** An Anthropic token of any kind; a value holding one is dropped even when its shape passes. */
+const anthropicToken = /sk-ant-/i;
+
 /** Writes one JSON line per entry through `write`, with only the allow-listed fields. */
 export function createLogger(write: (line: string) => void): Logger {
   const log = (level: 'info' | 'error', entry: Readonly<Record<string, unknown>>) => {
     const line: Record<string, unknown> = { level };
     for (const [field, accepts] of Object.entries(allowedFields)) {
       const value = entry[field];
-      if (accepts(value)) line[field] = value;
+      if (accepts(value) && !(typeof value === 'string' && anthropicToken.test(value))) {
+        line[field] = value;
+      }
     }
     write(JSON.stringify(line));
   };

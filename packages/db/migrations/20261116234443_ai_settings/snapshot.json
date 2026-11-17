@@ -1,0 +1,824 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "36779f09-bed9-4be7-8b09-23290e5adc4b",
+  "prevIds": [
+    "6da66d67-d6a1-4b75-a0d1-da0290be8917"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_key"
+      ],
+      "writes": [
+        "s|tbl|knowledge.ai_key",
+        "n|tbl|knowledge.ai_key",
+        "e|tbl|knowledge.ai_key",
+        "n|rel|knowledge.ai_key",
+        "n|type|knowledge.ai_key",
+        "n|rel|knowledge.ai_key_pkey",
+        "n|rel|knowledge.ai_key_id_provider_key",
+        "n|rel|knowledge.ai_key_step_up_id_key",
+        "n|rel|knowledge.ai_key_removes_once"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_stage_setting"
+      ],
+      "writes": [
+        "s|tbl|knowledge.ai_stage_setting",
+        "n|tbl|knowledge.ai_stage_setting",
+        "e|tbl|knowledge.ai_stage_setting",
+        "n|rel|knowledge.ai_stage_setting",
+        "n|type|knowledge.ai_stage_setting",
+        "n|rel|knowledge.ai_stage_setting_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "ai_key",
+        "ai_key_provider_at_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.ai_key_provider_at_idx",
+        "n|idx|knowledge.ai_key_provider_at_idx",
+        "e|idx|knowledge.ai_key_provider_at_idx",
+        "n|rel|knowledge.ai_key_provider_at_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_key",
+        "n|sch|knowledge",
+        "n|col|knowledge.ai_key.provider",
+        "n|col|knowledge.ai_key.at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "ai_stage_setting",
+        "ai_stage_setting_stage_at_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.ai_stage_setting_stage_at_idx",
+        "n|idx|knowledge.ai_stage_setting_stage_at_idx",
+        "e|idx|knowledge.ai_stage_setting_stage_at_idx",
+        "n|rel|knowledge.ai_stage_setting_stage_at_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_stage_setting",
+        "n|sch|knowledge",
+        "n|col|knowledge.ai_stage_setting.stage",
+        "n|col|knowledge.ai_stage_setting.at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_key"
+      ],
+      "writes": [
+        "s|fk|knowledge.ai_key.ai_key_removes_fkey",
+        "n|fk|knowledge.ai_key.ai_key_removes_fkey",
+        "e|fk|knowledge.ai_key.ai_key_removes_fkey",
+        "n|con|knowledge.ai_key.ai_key_removes_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_key",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.ai_key",
+        "n|sch|knowledge",
+        "n|col|knowledge.ai_key.removes_key_id",
+        "n|col|knowledge.ai_key.provider",
+        "n|col|knowledge.ai_key.id",
+        "n|col|knowledge.ai_key.provider",
+        "e|uniqueness|knowledge.ai_key.id.provider"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up"
+      ],
+      "writes": [
+        "s|ck|auth.step_up.step_up_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up",
+        "n|sch|auth",
+        "n|col|auth.step_up.purpose",
+        "e|col|auth.step_up.purpose"
+      ],
+      "sqlHash": "4a0b9def56d25d5a"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "auth",
+        "step_up_challenge"
+      ],
+      "writes": [
+        "s|ck|auth.step_up_challenge.step_up_challenge_purpose"
+      ],
+      "reads": [
+        "n|tbl|auth.step_up_challenge",
+        "n|sch|auth",
+        "n|col|auth.step_up_challenge.purpose",
+        "e|col|auth.step_up_challenge.purpose"
+      ],
+      "sqlHash": "437c97bb1422c5be"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.ai_key.ai_key_insert_with_step_up",
+        "n|pol|knowledge.ai_key.ai_key_insert_with_step_up",
+        "e|pol|knowledge.ai_key.ai_key_insert_with_step_up"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_key",
+        "n|sch|knowledge",
+        "n|role|app_auth",
+        "e|rls|knowledge.ai_key"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_key"
+      ],
+      "writes": [
+        "s|pol|knowledge.ai_key.ai_key_read",
+        "n|pol|knowledge.ai_key.ai_key_read",
+        "e|pol|knowledge.ai_key.ai_key_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_key",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "n|role|app_jobs",
+        "e|rls|knowledge.ai_key"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_stage_setting"
+      ],
+      "writes": [
+        "s|pol|knowledge.ai_stage_setting.ai_stage_setting_read",
+        "n|pol|knowledge.ai_stage_setting.ai_stage_setting_read",
+        "e|pol|knowledge.ai_stage_setting.ai_stage_setting_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_stage_setting",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "n|role|app_jobs",
+        "e|rls|knowledge.ai_stage_setting"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "ai_stage_setting"
+      ],
+      "writes": [
+        "s|pol|knowledge.ai_stage_setting.ai_stage_setting_insert_by_definer",
+        "n|pol|knowledge.ai_stage_setting.ai_stage_setting_insert_by_definer",
+        "e|pol|knowledge.ai_stage_setting.ai_stage_setting_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.ai_stage_setting",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.ai_stage_setting"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "ai_key",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "ai_stage_setting",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "provider",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ciphertext",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "nonce",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "tag",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "kek_version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "format_version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "last_four",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "removes_key_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "actor_account_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "step_up_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "stage",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "effort",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_provider_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "provider",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_stage_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "stage",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_removes_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "removes_key_id",
+          "provider"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "ai_key",
+        "columnsTo": [
+          "id",
+          "provider"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_id_provider_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "provider"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_step_up_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "step_up_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_removes_once",
+        "nameExplicit": true,
+        "columns": [
+          "removes_key_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_provider",
+        "value": "\"provider\" IN ('anthropic', 'typesafe')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_shape",
+        "value": "CASE \"kind\"\n        WHEN 'set' THEN octet_length(\"ciphertext\") BETWEEN 1 AND 1024\n          AND octet_length(\"nonce\") = 12 AND octet_length(\"tag\") = 16\n          AND \"kek_version\" > 0 AND \"format_version\" = 1\n          AND char_length(\"last_four\") = 4 AND \"removes_key_id\" IS NULL\n        WHEN 'removed' THEN \"ciphertext\" IS NULL AND \"nonce\" IS NULL\n          AND \"tag\" IS NULL AND \"kek_version\" IS NULL\n          AND \"format_version\" IS NULL AND \"last_four\" IS NULL\n          AND \"removes_key_id\" IS NOT NULL\n        ELSE false END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_stage",
+        "value": "\"stage\" IN ('research', 'validation', 'correction')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_model_format",
+        "value": "\"model\" ~ '^[a-z0-9][a-z0-9.-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_effort",
+        "value": "\"effort\" IS NULL OR \"effort\" IN ('low', 'medium', 'high', 'xhigh', 'max')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_insert_with_step_up",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_auth"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"ai_key\".\"actor_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid\n        AND EXISTS (SELECT FROM \"auth\".\"step_up\"\n          WHERE \"auth\".\"step_up\".\"id\" = \"knowledge\".\"ai_key\".\"step_up_id\"\n            AND \"auth\".\"step_up\".\"account_id\" = \"knowledge\".\"ai_key\".\"actor_account_id\"\n            AND \"auth\".\"step_up\".\"purpose\" = 'ai_key'\n            AND \"auth\".\"step_up\".\"consumed_at\" IS NOT NULL)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_key",
+        "name": "ai_key_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api",
+          "app_jobs"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api",
+          "app_jobs"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "ai_stage_setting",
+        "name": "ai_stage_setting_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up\",\"step_up_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant', 'corrector_key', 'ai_key')"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"auth\",\"step_up_challenge\",\"step_up_challenge_purpose\"]",
+      "set": {
+        "value": "\"purpose\" IN ('sensitive_settings', 'account_deletion', 'data_export', 'financial_action', 'vault_unlock', 'vault_write', 'knowledge_decision', 'admin_grant', 'corrector_key', 'ai_key')"
+      }
+    }
+  ]
+}

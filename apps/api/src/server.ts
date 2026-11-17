@@ -31,6 +31,8 @@ import { createAdminGrants } from './knowledge/admin-grants.js';
 import { postgresRuleStore } from './knowledge/rule-store.js';
 import { createCorrections } from './knowledge/corrections.js';
 import { createCorrector } from './knowledge/corrector.js';
+import { aiKeyCipher } from './ai/key-cipher.js';
+import { createAiSettings } from './ai/settings.js';
 import { routineCorrectorRun } from './knowledge/corrector-run.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
@@ -49,6 +51,7 @@ import { postgresCheckStarts } from './knowledge/check/starts.js';
 import { postgresCheckReportStore } from './knowledge/check/store.js';
 import {
   databaseTargetFrom,
+  readAiKeyEncryptionKey,
   readAnthropicApiKey,
   readCorrectorRunToken,
   readApiSecrets,
@@ -180,6 +183,7 @@ interface AuthParts {
   readonly adminNotice: AccountNotice<'admin_role_changed'>;
   readonly correctionNotice: AccountNotice<'correction_requested'>;
   readonly correctorKeyNotice: AccountNotice<'corrector_key_changed'>;
+  readonly aiKeyNotice: AccountNotice<'ai_key_changed'>;
 }
 
 let parts: Promise<AuthParts> | undefined;
@@ -256,6 +260,7 @@ function authParts(): Promise<AuthParts> {
         logger,
         label: 'CorrectorKeyNotice',
       }),
+      aiKeyNotice: accountNotice<'ai_key_changed'>({ notifier, logger, label: 'AiKeyNotice' }),
     };
   })();
   // A failed build is retried on the next request instead of being cached.
@@ -305,7 +310,34 @@ const withOrigin = (origin: string | undefined) => (origin === undefined ? {} : 
 
 const outbox = outboxReaderFor(environment, authConnection);
 
-const extractor = extractorFor(environment, readAnthropicApiKey(), readScriptedIntake());
+const aiKeyEncryptionKey = readAiKeyEncryptionKey();
+const environmentAnthropicKey = readAnthropicApiKey();
+const aiSettings = createAiSettings({
+  db: () => connected().db,
+  role,
+  stepUp: {
+    spend: async (signedIn, purpose, action, record) =>
+      (await authParts()).stepUp.spend(signedIn, purpose, action, record),
+  },
+  audit: lazyAudit,
+  notify: async (accountId, kind) => (await authParts()).aiKeyNotice(accountId, kind),
+  environment,
+  ...(aiKeyEncryptionKey === undefined ? {} : { cipher: aiKeyCipher(aiKeyEncryptionKey) }),
+  environmentKeys:
+    environmentAnthropicKey === undefined ? {} : { anthropic: environmentAnthropicKey },
+});
+
+/**
+ * Claude's key for the intake and the rule summary (ADR-0031): the one stored in settings, read
+ * on every call, or the variable while none is stored; a stored key that does not open fails
+ * closed.
+ */
+const anthropicKey = async () => {
+  const resolved = await aiSettings.key('anthropic');
+  return resolved.state === 'set' || resolved.state === 'environment' ? resolved.key : undefined;
+};
+
+const extractor = extractorFor(environment, anthropicKey, readScriptedIntake());
 const intake =
   extractor === undefined
     ? undefined
@@ -339,7 +371,7 @@ const versionChecks =
         logger,
         now: () => Date.now(),
       });
-const summarizer = summarizerFor(environment, readAnthropicApiKey(), readScriptedRuleSummary());
+const summarizer = summarizerFor(environment, anthropicKey, readScriptedRuleSummary());
 const ruleSummaries =
   summarizer === undefined
     ? undefined
@@ -561,6 +593,7 @@ const app = createApp({
     storage: documentStorage?.storage ?? unconnectedObjectStorage,
   }),
   correctorKeys,
+  aiSettings,
   ...(correctorRun === undefined ? {} : { correctorRun }),
   corrector,
   knowledgeVersions,

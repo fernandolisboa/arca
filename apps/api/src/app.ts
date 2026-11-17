@@ -53,6 +53,10 @@ import {
   CorrectorFlaggedVersions,
   CloseCorrectionRequest,
   RevokeCorrectorKey,
+  RemoveAiKey,
+  SetAiKey,
+  SetAiStage,
+  TestAiKey,
   CorrectionFileReference,
   StartCorrectionUpload,
   CloseRuleReportsRequest,
@@ -98,6 +102,7 @@ import {
   intakeLimits,
   correctionRequestLimits,
   correctorKeyLimits,
+  aiSettingsLimits,
   correctorRunLimits,
   correctorLimits,
   ruleSummaryLimits,
@@ -134,6 +139,7 @@ import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
+import type { AiSettingsService } from './ai/settings.js';
 import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
@@ -252,6 +258,8 @@ export interface AppDependencies {
   readonly corrector?: Corrector;
   /** Starts the owner's corrector run from the app (ADR-0029); absent, its route answers 503. */
   readonly correctorRun?: CorrectorRun;
+  /** Configurações › IA (ADR-0031); absent, its routes answer 401. */
+  readonly aiSettings?: AiSettingsService;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
   readonly accountConfirmed?: (accountId: string) => Promise<boolean>;
   /**
@@ -333,6 +341,8 @@ export type ErrorCode =
   | 'not_admin'
   | 'owner_list_admin'
   | 'owner_list_only'
+  | 'keys_off'
+  | 'not_offered'
   | 'already_rejected'
   | 'already_corrected'
   | 'wrong_state'
@@ -480,6 +490,7 @@ export function createApp({
   correctorKeys,
   correctorRun,
   corrector,
+  aiSettings,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1856,6 +1867,77 @@ export function createApp({
     const limited = await overLimit(c, screen.limits, correctorRunLimits.hour, accountId);
     if (limited !== undefined) return limited;
     return (await correctorRun.start()) ? c.json({}, 200) : fail(c, 'corrector_not_started', 502);
+  });
+  const aiScreen = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    return current === null || aiSettings === undefined || authLimits === undefined
+      ? { refused: unauthorized(c) }
+      : { settings: aiSettings, current, limits: authLimits };
+  };
+  /** A key travels in this body only, so no cache along the way may keep the exchange. */
+  const keyRefused = (c: Context<AppEnv>, refusal: 'not_found' | 'keys_off' | ErrorCode) => {
+    if (refusal === 'not_found') return fail(c, refusal, 404);
+    return refusal === 'keys_off' ? fail(c, refusal, 503) : fail(c, refusal, 403);
+  };
+  v1.openapi(openApiRoutes.getAiSettings, async (c) => {
+    const screen = await aiScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const status = await screen.settings.status(screen.current.accountId);
+    return status === 'not_admin' ? fail(c, status, 403) : c.json(status, 200);
+  });
+  v1.openapi(openApiRoutes.setAiKey, async (c) => {
+    c.header('Cache-Control', 'no-store');
+    const screen = await aiScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    const { provider, key } = SetAiKey.parse(await c.req.json());
+    const limited = await overLimit(
+      c,
+      screen.limits,
+      aiSettingsLimits.keyChange,
+      screen.current.accountId,
+    );
+    if (limited !== undefined) return limited;
+    const outcome = await screen.settings.setKey(screen.current, provider, key, nonce);
+    return outcome === 'stored' ? c.json({}, 200) : keyRefused(c, outcome);
+  });
+  v1.openapi(openApiRoutes.removeAiKey, async (c) => {
+    const screen = await aiScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    const { provider, keyId } = RemoveAiKey.parse(await c.req.json());
+    const limited = await overLimit(
+      c,
+      screen.limits,
+      aiSettingsLimits.keyChange,
+      screen.current.accountId,
+    );
+    if (limited !== undefined) return limited;
+    const outcome = await screen.settings.removeKey(screen.current, provider, keyId, nonce);
+    return outcome === 'removed' ? c.json({}, 200) : keyRefused(c, outcome);
+  });
+  v1.openapi(openApiRoutes.setAiStage, async (c) => {
+    const screen = await aiScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { stage, model, effort } = SetAiStage.parse(await c.req.json());
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, aiSettingsLimits.stage, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await screen.settings.setStage(accountId, stage, model, effort);
+    if (outcome === 'not_offered') return fail(c, outcome, 400);
+    return outcome === 'stored' ? c.json({}, 200) : fail(c, outcome, 403);
+  });
+  v1.openapi(openApiRoutes.testAiKey, async (c) => {
+    const screen = await aiScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { provider } = TestAiKey.parse(await c.req.json());
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, aiSettingsLimits.test, accountId);
+    if (limited !== undefined) return limited;
+    const result = await screen.settings.test(accountId, provider);
+    return result === 'not_admin' ? fail(c, result, 403) : c.json({ result }, 200);
   });
   v1.openapi(openApiRoutes.revokeCorrectorKey, async (c) => {
     const screen = await keyScreen(c);

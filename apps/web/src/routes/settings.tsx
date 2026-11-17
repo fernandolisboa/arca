@@ -12,6 +12,7 @@ import { DataExportSection } from '../data-export.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { NotificationsSection } from '../notifications-section.js';
 import { CorrectorKeySection } from '../knowledge/corrector-key.js';
+import { AiPanel } from '../settings/ai-panel.js';
 import {
   sectionAxes,
   sectionIcons,
@@ -231,7 +232,11 @@ function HelpPanel() {
   );
 }
 
-type IntroKey = 'settings.appearance.intro' | 'knowledge.settings.intro' | 'settings.help.intro';
+type IntroKey =
+  | 'settings.appearance.intro'
+  | 'knowledge.settings.intro'
+  | 'settings.ai.intro'
+  | 'settings.help.intro';
 
 /** What each category shows under its heading; the admins' category only to an admin. */
 interface PanelEntry {
@@ -251,6 +256,7 @@ const panels: Record<SettingsSection, PanelEntry> = {
   ...axisPanels,
   account: { Panel: AccountPanel },
   knowledge: { intro: 'knowledge.settings.intro', Panel: KnowledgePanel, adminOnly: true },
+  ai: { intro: 'settings.ai.intro', Panel: AiPanel, adminOnly: true },
   help: { intro: 'settings.help.intro', Panel: HelpPanel },
 };
 

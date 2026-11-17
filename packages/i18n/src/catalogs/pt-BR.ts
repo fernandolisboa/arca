@@ -33,6 +33,7 @@ export const ptBR = {
       accessibility: 'Acessibilidade',
       account: 'Conta',
       knowledge: 'Base de conhecimento',
+      ai: 'IA',
       help: 'Ajuda',
       signIn:
         'Entre na sua conta para ver os avisos de segurança, baixar seus dados ou excluir a conta.',
@@ -94,6 +95,87 @@ export const ptBR = {
       done: 'Pedido recebido. A conta será apagada a partir de {dueAt}. Até lá, é só entrar de novo para cancelar.',
       failure:
         '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} tooLate {O prazo para cancelar acabou, e a conta já está sendo apagada.} other {Não deu certo desta vez. Tente de novo.}}',
+    },
+    /** Configurações › IA (ADR-0031). */
+    ai: {
+      intro:
+        'As chaves de API e os modelos que o Arca usa quando alguém pede para atualizar uma regra. Só quem administra vê esta parte.',
+      loadFailure: 'Não deu para carregar as configurações de IA agora.',
+      keysTitle: 'Chaves de API',
+      ownerOnly: 'Só quem está na lista de donos salva ou remove uma chave.',
+      providers: {
+        anthropic: {
+          name: 'Anthropic (Claude)',
+          use: 'Pesquisa e correção das regras, leitura do texto livre da família e resumo das regras.',
+          hint: 'Crie a chave no console da Anthropic. Ela começa com sk-ant-.',
+        },
+        typesafe: {
+          name: 'TypeSafe (Jev)',
+          use: 'Conferência de cada item da regra contra o trecho da fonte oficial.',
+          hint: 'Crie a chave no console da TypeSafe.',
+        },
+      },
+      keyState: {
+        set: 'Salva',
+        environment: 'Da Vercel',
+        none: 'Sem chave',
+        unreadable: 'Não abre',
+      },
+      lastFour: 'Termina em {lastFour}, salva em {since}.',
+      unreadable:
+        'A chave salva não abre mais, provavelmente porque a chave de criptografia mudou. Salve a chave de novo.',
+      keyLabel: 'Chave de API',
+      replaceLabel: 'Trocar a chave',
+      save: 'Salvar',
+      remove: 'Remover a chave',
+      test: 'Testar',
+      tested: {
+        ok: 'A chave funciona.',
+        no_key: 'Não tem chave para testar.',
+        unreadable: 'A chave salva não abre. Salve de novo.',
+        rejected: 'O provedor recusou a chave. Confira se ela foi revogada.',
+        unavailable: 'Não deu para falar com o provedor agora. Tente daqui a pouco.',
+        failure: 'Não deu para testar agora.',
+        tooMany: 'Muitos testes seguidos. Espere um pouco.',
+      },
+      notices: {
+        saved: 'Chave salva. Se ela substituiu outra, revogue a antiga no console do provedor.',
+        removed: 'Chave removida. Revogue-a também no console do provedor.',
+        invalid: 'Isso não parece uma chave desse provedor. Nada foi salvo.',
+        failure: 'Não deu certo. Nada mudou.',
+        tooMany: 'Muitas mudanças hoje. Tente amanhã.',
+        keysOff: 'Este ambiente ainda não guarda chaves: falta a chave de criptografia na Vercel.',
+      },
+      stagesTitle: 'Modelo de cada etapa',
+      stages: {
+        research: {
+          name: 'Pesquisa',
+          lead: 'Lê as fontes oficiais e escreve a nova versão da regra.',
+        },
+        validation: {
+          name: 'Validação',
+          lead: 'Diz, item por item, se o trecho citado sustenta o valor da regra.',
+        },
+        correction: {
+          name: 'Correção',
+          lead: 'Refaz só os itens que a conferência ou o código recusaram.',
+        },
+      },
+      default: 'Padrão',
+      model: 'Modelo',
+      effort: 'Esforço',
+      efforts: {
+        low: 'Baixo',
+        medium: 'Médio',
+        high: 'Alto',
+        xhigh: 'Muito alto',
+        max: 'Máximo',
+      },
+      stageNotices: {
+        saved: 'Salvo.',
+        failure: 'Não deu certo. Nada mudou.',
+        tooMany: 'Muitas mudanças hoje. Tente amanhã.',
+      },
     },
     /** Replaying the guided tour (#123). */
     help: {
@@ -1916,6 +1998,10 @@ export const ptBR = {
         subject: 'Recuperação bloqueada por 24 horas',
         body: 'O código de recuperação da sua conta Arca foi digitado errado várias vezes em {when} (horário de Brasília). Por segurança, a recuperação fica bloqueada pelas próximas 24 horas.',
       },
+      ai_key_changed: {
+        subject: 'Uma chave de API de IA mudou',
+        body: 'Em {when} (horário de Brasília), alguém da lista de donos salvou ou removeu uma chave de API de IA no Arca. Se não foi você nem alguém que você conhece, revogue a chave no console do provedor, entre no Arca e confira os dispositivos.',
+      },
       corrector_key_changed: {
         subject: 'A chave da sessão de correção mudou',
         body: 'Em {when} (horário de Brasília), alguém da lista de donos criou ou revogou a chave da sessão de correção do Arca. Se não foi você nem alguém que você conhece, entre no Arca, revogue a chave em Configurações e confira os dispositivos.',
@@ -1971,6 +2057,10 @@ export const ptBR = {
     inactivity_warning: {
       title: 'Sua conta Arca vai ser apagada por falta de uso',
       body: 'Para manter a conta, entre no Arca com sua chave de acesso. A data está no email que mandamos.',
+    },
+    ai_key_changed: {
+      title: 'Uma chave de API de IA mudou',
+      body: 'Se não foi você, revogue a chave no console do provedor e confira os dispositivos.',
     },
     corrector_key_changed: {
       title: 'A chave da sessão de correção mudou',
@@ -2052,6 +2142,7 @@ export const ptBR = {
       correctionUploads: 'Arquivos que você anexou a pedidos de correção: tipo, tamanho e data',
       correctionEvents: 'O que aconteceu com seus pedidos de correção',
       correctorKeys: 'Quando você criou ou revogou a chave da sessão de correção',
+      aiKeys: 'Quando você salvou ou removeu uma chave de API de IA',
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },

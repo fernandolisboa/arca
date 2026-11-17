@@ -278,6 +278,12 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
        VALUES ('created', $1, $2, gen_random_uuid())`,
       [bytes(32), accountId],
     );
+    await insert(
+      `INSERT INTO knowledge.ai_key (id, provider, kind, ciphertext, nonce, tag, kek_version,
+         format_version, last_four, actor_account_id, step_up_id)
+       VALUES (gen_random_uuid(), 'anthropic', 'set', $1, $2, $3, 1, 1, 'abcd', $4, gen_random_uuid())`,
+      [bytes(40), bytes(12), bytes(16), accountId],
+    );
   });
   return { accountId, email, credentialId, codeHash, sharerId };
 }

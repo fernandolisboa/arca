@@ -133,6 +133,14 @@ export const routeRequestsQuery = queryOptions({
   retry: false,
 });
 
+/** Configurações › IA, for an admin (ADR-0031): key states, never a key, and stage models. */
+export const aiSettingsQuery = queryOptions({
+  queryKey: ['settings', 'ai'],
+  queryFn: () => api.call(routes.getAiSettings),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** The live corrector key's dates, for an admin (ADR-0029). */
 export const correctorKeyQuery = queryOptions({
   queryKey: ['knowledge', 'corrector-key'],

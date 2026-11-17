@@ -849,3 +849,118 @@ export const officialDomainList = knowledge.table(
     ...ruleRowPolicies('official_domain_list'),
   ],
 );
+
+/** The AI providers whose keys settings hold (ADR-0031): Claude for research and correction, Jev for validation. */
+export const aiProviders = ['anthropic', 'typesafe'] as const;
+
+/** The stages of an update request whose model and effort settings choose (ADR-0031). */
+export const aiStages = ['research', 'validation', 'correction'] as const;
+
+/**
+ * The AI providers' API keys (ADR-0031), insert-only: a `set` row holds one key encrypted with
+ * AES-256-GCM under the key-encryption key, its 96-bit nonce, its 128-bit tag, the version of the
+ * key-encryption key and of the format, and its last four characters; a `removed` row ends the key
+ * of the same provider it names. A provider's key is its newest `set` row no removal names. `app_auth` inserts both kinds, by the
+ * transaction's own account, in the transaction that spends that account's `ai_key` step-up, with
+ * the time the database sets; `app_api` and `app_jobs` read the rows, ciphertext only. With no
+ * update or delete policy under forced row-level security nobody changes a row.
+ */
+export const aiKey = knowledge.table(
+  'ai_key',
+  {
+    id: uuid('id').primaryKey(),
+    provider: text('provider', { enum: aiProviders }).notNull(),
+    kind: text('kind', { enum: ['set', 'removed'] }).notNull(),
+    ciphertext: bytea('ciphertext'),
+    nonce: bytea('nonce'),
+    tag: bytea('tag'),
+    /** The key-encryption key's version, so a rotated one is told apart. */
+    kekVersion: integer('kek_version'),
+    formatVersion: integer('format_version'),
+    lastFour: text('last_four'),
+    /** The key a `removed` row ends. */
+    removesKeyId: uuid('removes_key_id'),
+    actorAccountId: uuid('actor_account_id').notNull(),
+    /** The `ai_key` step-up the row spent. */
+    stepUpId: uuid('step_up_id').notNull(),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    // A removal ends a key of its own provider.
+    unique('ai_key_id_provider_key').on(table.id, table.provider),
+    foreignKey({
+      name: 'ai_key_removes_fkey',
+      columns: [table.removesKeyId, table.provider],
+      foreignColumns: [table.id, table.provider],
+    }),
+    unique('ai_key_step_up_id_key').on(table.stepUpId),
+    unique('ai_key_removes_once').on(table.removesKeyId),
+    index('ai_key_provider_at_idx').on(table.provider, table.at),
+    check('ai_key_provider', inList(table.provider, aiProviders)),
+    check(
+      'ai_key_shape',
+      sql`CASE ${table.kind}
+        WHEN 'set' THEN octet_length(${table.ciphertext}) BETWEEN 1 AND 1024
+          AND octet_length(${table.nonce}) = 12 AND octet_length(${table.tag}) = 16
+          AND ${table.kekVersion} > 0 AND ${table.formatVersion} = 1
+          AND char_length(${table.lastFour}) = 4 AND ${table.removesKeyId} IS NULL
+        WHEN 'removed' THEN ${table.ciphertext} IS NULL AND ${table.nonce} IS NULL
+          AND ${table.tag} IS NULL AND ${table.kekVersion} IS NULL
+          AND ${table.formatVersion} IS NULL AND ${table.lastFour} IS NULL
+          AND ${table.removesKeyId} IS NOT NULL
+        ELSE false END`,
+    ),
+    pgPolicy('ai_key_insert_with_step_up', {
+      for: 'insert',
+      to: 'app_auth',
+      withCheck: sql`${isIdentity(table.actorAccountId)}
+        AND EXISTS (SELECT FROM "auth"."step_up"
+          WHERE "auth"."step_up"."id" = ${table.stepUpId}
+            AND "auth"."step_up"."account_id" = ${table.actorAccountId}
+            AND "auth"."step_up"."purpose" = 'ai_key'
+            AND "auth"."step_up"."consumed_at" IS NOT NULL)`,
+    }),
+    pgPolicy('ai_key_read', { for: 'select', to: ['app_api', 'app_jobs'], using: sql`true` }),
+  ],
+);
+
+/**
+ * The model and effort an admin chose for a stage (ADR-0031), insert-only; the newest row of a
+ * stage decides and the defaults in reviewed code apply while there is none. Written only through
+ * `knowledge.set_ai_stage`, which re-checks the admin basis and has no access to the key rows;
+ * `app_api` and `app_jobs` read them. Who chose is in the audit log, so a row names no account.
+ */
+export const aiStageSetting = knowledge.table(
+  'ai_stage_setting',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    stage: text('stage', { enum: aiStages }).notNull(),
+    model: text('model').notNull(),
+    /** Null for a model that takes no effort. */
+    effort: text('effort'),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    index('ai_stage_setting_stage_at_idx').on(table.stage, table.at),
+    check('ai_stage_setting_stage', inList(table.stage, aiStages)),
+    check('ai_stage_setting_model_format', sql`${table.model} ~ '^[a-z0-9][a-z0-9.-]{0,63}$'`),
+    check(
+      'ai_stage_setting_effort',
+      sql`${table.effort} IS NULL OR ${table.effort} IN ('low', 'medium', 'high', 'xhigh', 'max')`,
+    ),
+    pgPolicy('ai_stage_setting_read', {
+      for: 'select',
+      to: ['app_api', 'app_jobs'],
+      using: sql`true`,
+    }),
+    pgPolicy('ai_stage_setting_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
+  ],
+);

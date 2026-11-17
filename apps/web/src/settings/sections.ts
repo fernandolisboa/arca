@@ -8,6 +8,7 @@ export const settingsSections = [
   'accessibility',
   'account',
   'knowledge',
+  'ai',
   'help',
 ] as const;
 
@@ -19,6 +20,7 @@ export const sectionIcons = {
   accessibility: 'accessibility',
   account: 'profile',
   knowledge: 'knowledge',
+  ai: 'ai',
   help: 'help',
 } as const satisfies Record<SettingsSection, IconName>;
 
