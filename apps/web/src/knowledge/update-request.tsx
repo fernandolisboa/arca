@@ -212,7 +212,13 @@ export function UpdateRequestCard({
                 <span>
                   <StatusChip
                     tone={stageTones[stageState]}
-                    label={t('knowledge.update.stageState', { state: stageState })}
+                    label={t('knowledge.update.stageState', {
+                      // After a failure or a stall, a stage that never ran was not "not needed".
+                      state:
+                        stageState === 'skipped' && progress.state !== 'finished'
+                          ? 'not_run'
+                          : stageState,
+                    })}
                   />
                 </span>
               </li>

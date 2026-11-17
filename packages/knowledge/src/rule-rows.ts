@@ -95,12 +95,6 @@ export interface RuleRowReading {
 const keyOf = (kind: string, id: string, number: number): string =>
   `${kind}/${id}/${String(number)}`;
 
-/**
- * Reads rule rows as the build read the files they came from (spec 0002, R6; ADR-0031): each row's
- * content is parsed by its schema, must name the ID and number it is stored under, and must hash,
- * over everything it pins, to the hash stored with it. A row that fails any of these, or pins one
- * that does, is refused, so a row changed outside the insert-only grants is never evaluated.
- */
 /** The country sets and official-domain lists that hash to their stored hash, and how to pin them. */
 interface PinnedFiles {
   readonly refused: string[];
@@ -201,6 +195,53 @@ function routePins(files: PinnedFiles, version: RouteVersion): Record<string, Js
   return pinned;
 }
 
+/** A stored route version as the read verifies it, with the hosts of its official-domain lists. */
+export interface VerifiedRouteVersion {
+  readonly row: RouteVersionRow;
+  readonly version: RouteVersion;
+  readonly officialHosts: readonly string[];
+}
+
+/**
+ * One stored route version, verified as the read verifies it: its content parses, names the ID
+ * and number it is stored under and hashes, over everything it pins, to its stored hash.
+ * Undefined when the row is missing or refused, so a row changed in place never steers research.
+ */
+export function verifiedRouteVersion(
+  rows: RuleRows,
+  routeId: string,
+  number: number,
+  reading: RuleRowReading,
+): VerifiedRouteVersion | undefined {
+  const row = rows.routeVersions.find(
+    (candidate) => candidate.routeId === routeId && candidate.number === number,
+  );
+  const parsed = routeVersionSchema.safeParse(row?.content);
+  if (
+    row === undefined ||
+    !parsed.success ||
+    parsed.data.routeId !== routeId ||
+    parsed.data.number !== number
+  ) {
+    return undefined;
+  }
+  const files = readPinnedFiles(rows, reading);
+  const pinned = routePins(files, parsed.data);
+  if (pinned === undefined || files.hashOf(row.content, pinned) !== row.contentHash) {
+    return undefined;
+  }
+  const lists = new Map(
+    files.officialDomains.map(({ id, number: listNumber, hosts }) => [
+      keyOf('official-domains', id, listNumber),
+      hosts,
+    ]),
+  );
+  const hosts = parsed.data.officialDomains.flatMap(
+    (pin) => lists.get(keyOf('official-domains', pin.id, pin.number)) ?? [],
+  );
+  return { row, version: parsed.data, officialHosts: [...new Set(hosts)] };
+}
+
 /**
  * The content hash a new route version would be stored under (spec 0002, R6), over everything it
  * pins among the rows read; undefined when its content does not parse or pins a file the rows
@@ -218,6 +259,12 @@ export function routeVersionContentHash(
   return pinned === undefined ? undefined : files.hashOf(content, pinned);
 }
 
+/**
+ * Reads rule rows as the build read the files they came from (spec 0002, R6; ADR-0031): each row's
+ * content is parsed by its schema, must name the ID and number it is stored under, and must hash,
+ * over everything it pins, to the hash stored with it. A row that fails any of these, or pins one
+ * that does, is refused, so a row changed outside the insert-only grants is never evaluated.
+ */
 export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleData {
   const files = readPinnedFiles(rows, reading);
   const { refused, officialDomains } = files;

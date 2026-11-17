@@ -361,6 +361,7 @@ const updateRequests = createUpdateRequests({
   audit: lazyAudit,
   store: postgresUpdateStore(() => connected().db),
   rows: rules.rows,
+  reading: rules.reading,
   configured: updateModelsFor(environment, aiSettings).configured,
   run: startUpdate,
   logger,

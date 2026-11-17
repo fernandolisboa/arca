@@ -9,7 +9,7 @@ import {
 } from '@arca/domain';
 import type { Database } from '@arca/db';
 import { ruleVerdict, updateEnd, updateRequest, updateStage } from '@arca/db/knowledge-schema';
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { researchReplySchema } from './ports.js';
 
@@ -111,10 +111,6 @@ export interface UpdateStore {
   readonly remember: (
     verdicts: readonly { readonly key: string; readonly verdict: ValidatorVerdict }[],
   ) => Promise<void>;
-  /** The confirmed items of the route's newest finished request, with their quotes. */
-  readonly confirmedQuotes: (
-    routeId: string,
-  ) => Promise<readonly { readonly key: string; readonly url: string; readonly quote: string }[]>;
 }
 
 const failureOf = (value: string | null): UpdateFailure | null =>
@@ -238,25 +234,14 @@ export function postgresUpdateStore(db: () => Database): UpdateStore {
       );
     },
     remember: async (verdicts) => {
-      for (const { key, verdict } of verdicts) {
-        await db().execute(sql`
-          INSERT INTO knowledge.rule_verdict (cache_key, verdict) VALUES (${key}, ${verdict})
-          ON CONFLICT (cache_key) DO NOTHING`);
-      }
-    },
-    confirmedQuotes: async (routeId) => {
-      const [row] = await db()
-        .select({ proposal: updateEnd.proposal })
-        .from(updateEnd)
-        .innerJoin(updateRequest, eq(updateRequest.id, updateEnd.requestId))
-        .where(and(eq(updateRequest.routeId, routeId), isNull(updateEnd.failure)))
-        .orderBy(desc(updateEnd.at))
-        .limit(1);
-      const proposal = endedProposalSchema.safeParse(row?.proposal);
-      if (!proposal.success) return [];
-      return proposal.data.items
-        .filter(({ list }) => list === 'confirmed')
-        .flatMap(({ key, quotes }) => quotes.map(({ url, quote }) => ({ key, url, quote })));
+      if (verdicts.length === 0) return;
+      const rows = sql.join(
+        verdicts.map(({ key, verdict }) => sql`(${key}, ${verdict})`),
+        sql`, `,
+      );
+      await db().execute(sql`
+        INSERT INTO knowledge.rule_verdict (cache_key, verdict) VALUES ${rows}
+        ON CONFLICT (cache_key) DO NOTHING`);
     },
   };
 }

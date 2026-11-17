@@ -1486,7 +1486,7 @@ export const ptBR = {
       failure:
         '{reason, select, limited {O corretor já rodou várias vezes nesta hora. Espere um pouco e tente de novo.} corrector_off {O corretor ainda não está ligado aqui: falta o token da rotina na Vercel.} corrector_not_started {O Claude não aceitou o pedido. Confira se o token da rotina ainda vale e tente de novo.} not_admin {Só quem está na lista de donos pode rodar o corretor.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para rodar o corretor. Tente de novo.}}',
     },
-    /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
+    /** An admin's update request for one route, followed stage by stage (ADR-0031). */
     update: {
       button: 'Pedir atualização',
       running: 'Atualização em andamento',
@@ -1504,14 +1504,14 @@ export const ptBR = {
       state:
         '{state, select, running {Em andamento. Pode sair desta tela: o Arca continua sozinho.} finished {Pronta. A proposta espera a sua revisão.} failed {Parou sem proposta.} other {Parou no meio e não terminou em 1 hora. Você pode pedir de novo.}}',
       failure:
-        '{failure, select, research_timeout {A pesquisa demorou demais.} correction_timeout {A correção demorou demais.} research_unparsable {A resposta da pesquisa veio num formato que o Arca não entende.} correction_unparsable {A resposta da correção veio num formato que o Arca não entende.} research_failed {A pesquisa falhou.} correction_failed {A correção falhou.} validation_failed {A conferência falhou.} final_validation_failed {A conferência final falhou.} proposal_invalid {Mesmo depois da correção, a proposta não passou nas checagens do Arca.} not_configured {Faltam as chaves da IA em Configurações › IA.} other {Algo saiu da ordem esperada.}}',
+        '{failure, select, research_timeout {A pesquisa demorou demais.} correction_timeout {A correção demorou demais.} research_unparsable {A resposta da pesquisa veio num formato que o Arca não entende.} correction_unparsable {A resposta da correção veio num formato que o Arca não entende.} research_failed {A pesquisa falhou.} correction_failed {A correção falhou.} validation_failed {A validação falhou.} final_validation_failed {A validação final falhou.} proposal_invalid {Mesmo depois da correção, a proposta não passou nas checagens do Arca.} unknown_route {O Arca não encontrou a versão de onde a atualização partiu.} not_configured {Faltam as chaves da IA em Configurações › IA.} other {Algo saiu da ordem esperada.}}',
       stages: 'Etapas da atualização',
       stage:
-        '{stage, select, research {Pesquisar nas fontes oficiais} validation {Conferir item por item} correction {Corrigir o que não bateu} other {Conferir de novo}}',
+        '{stage, select, research {Pesquisa} validation {Validação} correction {Correção} other {Validação final}}',
       stageState:
-        '{state, select, done {Feita} failed {Falhou} running {Agora} skipped {Não precisou} other {Na fila}}',
+        '{state, select, done {Feita} failed {Falhou} running {Agora} skipped {Não precisou} not_run {Não rodou} other {Na fila}}',
       lists: 'O que a proposta traz',
-      list: '{list, select, confirmed {Confirmados na fonte} divergent {Diferentes da fonte} other {Sem como confirmar}}',
+      list: '{list, select, confirmed {Confirmados} divergent {Divergentes} other {Não confirmados}}',
       review: 'Em breve você vai poder revisar e aprovar a proposta aqui.',
       spent:
         '{state, select, running {Gasto até agora: {cost}.} other {Esta atualização custou {cost}.}}',
@@ -1520,6 +1520,7 @@ export const ptBR = {
       costScripted: 'Foi uma atualização de teste, sem IA de verdade. Não custou nada.',
       loadFailure: 'Não conseguimos carregar o andamento da atualização.',
     },
+    /** The check an admin starts and watches (ADR-0027, "On demand, with progress"). */
     checkRun: {
       button: 'Analisar com o Arca',
       running: 'Ver a análise em andamento',

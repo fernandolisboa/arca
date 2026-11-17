@@ -1,5 +1,6 @@
-import { routeVersionSchema } from '@arca/domain';
+import { checkItems, routeVersionSchema } from '@arca/domain';
 import { casesFileSchema } from '@arca/knowledge';
+import { bundledRuleData, ruleContent } from '@arca/knowledge/bundled';
 import { createLogger } from '@arca/telemetry';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
@@ -7,7 +8,12 @@ import { auditLog } from '../../src/audit/log.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { offlineFetcher } from '../../src/knowledge/check/environment.js';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
-import { RuleResearcherError, type RuleResearcher } from '../../src/knowledge/update/ports.js';
+import {
+  RuleResearcherError,
+  type RuleResearcher,
+  type RuleValidator,
+} from '../../src/knowledge/update/ports.js';
+import type { SourceFetcher } from '../../src/knowledge/check/fetcher.js';
 import { createUpdateRequests, updateLiveMs } from '../../src/knowledge/update/requests.js';
 import { createRuleUpdate } from '../../src/knowledge/update/run.js';
 import {
@@ -27,7 +33,13 @@ let member: Person;
 let routeId: string;
 let otherRouteId: string;
 let freeRouteId: string;
+let quotedRouteId: string;
 let logLines: string[];
+
+const readRules = () => {
+  const store = postgresRuleStore(() => testDatabase.apiDb, silentLogger);
+  return { rows: store.rows, reading: store.reading };
+};
 
 beforeAll(async () => {
   testDatabase = await authTestDatabase();
@@ -52,10 +64,11 @@ beforeAll(async () => {
       )
     );
   });
-  const [first, second, third] = passing;
-  if (first === undefined || second === undefined || third === undefined) {
-    throw new Error('Three routes expected');
+  const [first, second, third, fourth] = passing;
+  if (first === undefined || second === undefined || third === undefined || fourth === undefined) {
+    throw new Error('Four routes expected');
   }
+  quotedRouteId = fourth.routeId;
   routeId = first.routeId;
   otherRouteId = second.routeId;
   freeRouteId = third.routeId;
@@ -74,6 +87,8 @@ interface Options {
   readonly configured?: boolean;
   readonly runFails?: boolean;
   readonly researcher?: RuleResearcher;
+  readonly validator?: RuleValidator;
+  readonly fetcher?: SourceFetcher;
   /** Milliseconds added to the clock the progress reads. */
   readonly later?: number;
 }
@@ -83,6 +98,8 @@ function setup({
   configured = true,
   runFails = false,
   researcher = scriptedRuleResearcher,
+  validator = scriptedRuleValidator,
+  fetcher = offlineFetcher,
   later = 0,
 }: Options = {}) {
   const runs: string[] = [];
@@ -91,9 +108,9 @@ function setup({
     store: postgresUpdateStore(() => testDatabase.jobsDb),
     rows: rules.rows,
     reading: rules.reading,
-    fetcher: offlineFetcher,
+    fetcher,
     researcher,
-    validator: scriptedRuleValidator,
+    validator,
     model: () => Promise.resolve({ model: 'fake', effort: null }),
     today: () => '2026-11-17',
     logger: silentLogger,
@@ -104,7 +121,7 @@ function setup({
     role: adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]),
     audit: auditLog(testDatabase.auditDb),
     store: postgresUpdateStore(() => testDatabase.apiDb),
-    rows: postgresRuleStore(() => testDatabase.apiDb, silentLogger).rows,
+    ...readRules(),
     configured: () => Promise.resolve(configured),
     run: (requestId) => {
       if (runFails) return Promise.reject(new Error('workflow down'));
@@ -283,7 +300,7 @@ function createAppRead(signedIn: Person) {
       role: adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]),
       audit: auditLog(testDatabase.auditDb),
       store: postgresUpdateStore(() => testDatabase.apiDb),
-      rows: postgresRuleStore(() => testDatabase.apiDb, silentLogger).rows,
+      ...readRules(),
       configured: () => Promise.resolve(true),
       run: () => Promise.resolve(),
       logger: silentLogger,
@@ -292,3 +309,109 @@ function createAppRead(signedIn: Person) {
   });
   return app.request(`/v1/knowledge/update-requests?routeId=${routeId}`);
 }
+
+describe('knowledge.start_update_request (ADR-0031)', () => {
+  /** Calls the definer as app_api with the account set, in a transaction rolled back after. */
+  const call = (accountId: string | null, basis: string, grantId: string | null) =>
+    testDatabase.asAdmin(async (client) => {
+      await client.query('BEGIN');
+      try {
+        await client.query('SET LOCAL ROLE app_api');
+        if (accountId !== null) {
+          await client.query(`SELECT set_config('app.account_id', $1, true)`, [accountId]);
+        }
+        const { rows } = await client.query<{ id: string | null }>(
+          'SELECT knowledge.start_update_request($1, 1, $2, $3::uuid) AS id',
+          [freeRouteId, basis, grantId],
+        );
+        return rows[0]?.id ?? null;
+      } catch (error) {
+        return (error as { code?: string }).code ?? 'error';
+      } finally {
+        await client.query('ROLLBACK');
+      }
+    });
+
+  it('refuses anyone the admin basis does not hold for', async () => {
+    expect(await call(null, 'owner_list', null)).toBe('42501');
+    expect(await call(member.signedIn.accountId, 'grant', member.signedIn.accountId)).toBe('42501');
+    expect(await call(owner.signedIn.accountId, 'nonsense', null)).toBe('42501');
+  });
+
+  it('answers null while a request of the route is live', async () => {
+    // The 502 test above left a live request on this route.
+    expect(await call(owner.signedIn.accountId, 'owner_list', null)).toBeNull();
+  });
+});
+
+describe('validation with quotes (ADR-0031)', () => {
+  /** The route's newest version's items that state no value, each with a quote on its page. */
+  const quotedItems = () => {
+    const entries = [...ruleContent(bundledRuleData).entries.values()].filter(
+      ({ version }) => version.routeId === quotedRouteId,
+    );
+    const newest = entries.reduce((left, right) =>
+      left.version.number >= right.version.number ? left : right,
+    );
+    return checkItems(newest)
+      .filter(({ values, urls }) => values.length === 0 && urls.length > 0)
+      .map(({ key, urls }) => ({
+        key,
+        url: urls[0] ?? '',
+        quote: `The official text that states ${key} on this page.`,
+      }));
+  };
+
+  it('asks the validator once per page text, and counts low confidence as cannot tell', async () => {
+    const quotes = quotedItems();
+    expect(quotes.length).toBeGreaterThan(0);
+    const researcher: RuleResearcher = {
+      research: async (request, model) => {
+        const reply = await scriptedRuleResearcher.research(request, model);
+        return { ...reply, reply: { ...(reply.reply as object), quotes } };
+      },
+    };
+    let pageText = quotes.map(({ quote }) => quote).join('\n');
+    const fetcher: SourceFetcher = {
+      fetch: (url) =>
+        Promise.resolve({ ok: true, status: 200, text: pageText, cut: false, chain: [url] }),
+    };
+    let asked = 0;
+    let confidence = 0.9;
+    const validator: RuleValidator = {
+      promptVersion: 'test',
+      validate: (items) => {
+        asked += 1;
+        return Promise.resolve({
+          reply: items.map(({ id }) => ({ id, choice: 'supports' as const, confidence })),
+          model: 'fake',
+          promptVersion: 'test',
+        });
+      },
+    };
+    const run = async () => {
+      const { start, progress, runAll } = setup({ researcher, validator, fetcher });
+      const started = await start(quotedRouteId);
+      expect(started.status).toBe(200);
+      const { requestId } = (await started.json()) as { requestId: string };
+      await runAll(requestId);
+      return progress(quotedRouteId);
+    };
+
+    const first = await run();
+    expect(asked).toBe(1);
+    expect(first?.lists?.['confirmed']).toBeGreaterThan(0);
+
+    // The same quotes on the same page text: every answer comes from the cache.
+    const second = await run();
+    expect(asked).toBe(1);
+    expect(second?.lists).toEqual(first?.lists);
+
+    // A changed page asks again; an answer below the confidence floor confirms nothing.
+    pageText = `${pageText}\nAmended.`;
+    confidence = 0.4;
+    const third = await run();
+    expect(asked).toBe(2);
+    expect(third?.lists?.['confirmed']).toBe(0);
+  });
+});

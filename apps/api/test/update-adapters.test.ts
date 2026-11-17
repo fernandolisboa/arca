@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   claudeRuleResearcher,
+  ruleResearchInstructions,
   ruleResearchPromptVersion,
 } from '../src/knowledge/update/claude-researcher.js';
 import {
@@ -49,9 +50,6 @@ describe('the Claude researcher (ADR-0031)', () => {
     current: { routeId: 'xx-sample', number: 2 },
     currentCases: { cases: [] },
     officialHosts: ['gov.example', 'immigration.gov.example'],
-    knownQuotes: [
-      { key: 'requirement:means', url: 'https://gov.example/law', quote: 'Article 3.' },
-    ],
   };
   const reply = { versionJson: '{"number":3}', casesJson: '{"cases":[]}', quotes: [] };
   const message = (text: string) =>
@@ -92,18 +90,45 @@ describe('the Claude researcher (ADR-0031)', () => {
       effort: 'high',
       format: { type: 'json_schema' },
     });
-    const tools = body['tools'] as { type: string; allowed_domains: string[] }[];
+    const tools = body['tools'] as {
+      type: string;
+      allowed_domains: string[];
+      max_content_tokens?: number;
+    }[];
+    // The versions without dynamic filtering: no code runs in Anthropic's sandbox.
     expect(tools.map(({ type }) => type).sort()).toEqual([
-      'web_fetch_20260209',
-      'web_search_20260209',
+      'web_fetch_20250910',
+      'web_search_20250305',
     ]);
     for (const tool of tools) expect(tool.allowed_domains).toEqual(request.officialHosts);
-    const system = body['system'] as { text: string; cache_control: unknown }[];
-    expect(system.map(({ cache_control: control }) => control)).toEqual([
-      { type: 'ephemeral' },
-      { type: 'ephemeral' },
+    expect(tools.find(({ type }) => type === 'web_fetch_20250910')?.max_content_tokens).toBe(
+      30_000,
+    );
+    // Only the instructions are system text; the route's data is the user turn's first block.
+    expect(body['system']).toEqual([
+      { type: 'text', text: ruleResearchInstructions, cache_control: { type: 'ephemeral' } },
     ]);
-    expect(system[1]?.text).toContain('"routeId":"xx-sample"');
+    const [turn] = body['messages'] as {
+      role: string;
+      content: { text: string; cache_control?: unknown }[];
+    }[];
+    expect(turn?.role).toBe('user');
+    expect(turn?.content[0]?.text).toContain('<route_data>');
+    expect(turn?.content[0]?.cache_control).toEqual({ type: 'ephemeral' });
+    expect(turn?.content[1]?.cache_control).toBeUndefined();
+  });
+
+  it('never calls the provider with no official host, which would leave the tools unlimited', async () => {
+    const { fetch, calls } = fakeFetch(() => Promise.resolve(message(JSON.stringify(reply))));
+    const error = await failure(
+      claudeRuleResearcher({ apiKey: 'test-key', fetch }).research(
+        { ...request, officialHosts: [] },
+        { model, effort: null },
+      ),
+      RuleResearcherError,
+    );
+    expect(error.code).toBe('failed');
+    expect(calls).toHaveLength(0);
   });
 
   it.each([

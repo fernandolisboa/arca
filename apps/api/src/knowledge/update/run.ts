@@ -16,9 +16,7 @@ import {
   itemOutcome,
   machineReadableUrls,
   nextUpdateStep,
-  officialDomainListSchema,
   pageLanguages,
-  routeVersionSchema,
   validatorVerdict,
   verifyAnswers,
 } from '@arca/domain';
@@ -28,6 +26,7 @@ import {
   type RuleRows,
   canonicalize,
   checkProposal,
+  verifiedRouteVersion,
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { type ModelReply, loggedModelCall } from '../../ai/model-call.js';
@@ -78,6 +77,12 @@ const route = 'workflow:update-route';
 
 /** The most official pages one validation reads. */
 const maxPages = 60;
+
+/** Pages read at once. */
+const parallelReads = 6;
+
+/** A problem line as stored: its path may echo keys the model chose, so it is cut. */
+const maxProblemLength = 500;
 
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
 
@@ -204,45 +209,63 @@ export function createRuleUpdate({
     const addresses = machineReadableUrls(entry);
     const pages = new Map<string, ReadPage>();
     const log: ValidationOutput['pages'] = [];
-    for (const [url, allowed] of [...hosts].slice(0, maxPages)) {
+    const read = async ([url, allowed]: [string, string[]]) => {
       const address = addresses.get(url);
-      const read: FetchOutcome =
+      const outcome: FetchOutcome =
         address === undefined
           ? await fetcher.fetch(url, allowed)
           : await fetchPages(fetcher, addressPages(address), allowed);
-      if (!read.ok) logger.info({ route, errorCode: `update_fetch_${read.failure}` });
-      log.push({
-        url,
-        outcome: read.ok ? 'read' : read.failure,
-        sha256: read.ok ? textDigest(read.text) : null,
-      });
-      if (read.ok) {
-        pages.set(url, {
+      return [url, outcome] as const;
+    };
+    const wanted = [...hosts].slice(0, maxPages);
+    // A few pages at a time, so the stage stays well inside the function's duration limit.
+    for (let start = 0; start < wanted.length; start += parallelReads) {
+      const batch = await Promise.all(wanted.slice(start, start + parallelReads).map(read));
+      for (const [url, outcome] of batch) {
+        if (!outcome.ok) logger.info({ route, errorCode: `update_fetch_${outcome.failure}` });
+        log.push({
           url,
-          text: asDataText(read.text),
-          cut: read.cut,
-          chain: read.chain,
-          echoes: addressesAsRead(read.chain).map(asDataText),
+          outcome: outcome.ok ? 'read' : outcome.failure,
+          sha256: outcome.ok ? textDigest(outcome.text) : null,
         });
+        if (outcome.ok) {
+          pages.set(url, {
+            url,
+            text: asDataText(outcome.text),
+            cut: outcome.cut,
+            chain: outcome.chain,
+            echoes: addressesAsRead(outcome.chain).map(asDataText),
+          });
+        }
       }
     }
     return { pages, log };
   };
 
-  /** The version with each source's `verifiedAt` set by code: today where its page was read. */
+  /**
+   * The version with each source's `verifiedAt` set by code: today where its page was read, the
+   * base's date where an unchanged source was not; a new source nobody read gets no date at all,
+   * so the proposal is refused instead (domain rule 1).
+   */
   const verifiedOn = (
     version: RouteVersion,
     base: RouteVersion,
     read: ReadonlySet<string>,
-  ): Json => {
+  ): { readonly content: Json; readonly unread: readonly string[] } => {
     const baseDates = new Map(base.sources.map(({ url, verifiedAt }) => [url, verifiedAt]));
+    const unread = version.sources
+      .map(({ url }) => url)
+      .filter((url) => !read.has(url) && !baseDates.has(url));
     return {
-      ...version,
-      sources: version.sources.map((source) => ({
-        ...source,
-        verifiedAt: read.has(source.url) ? today() : (baseDates.get(source.url) ?? today()),
-      })),
-    } as unknown as Json;
+      content: {
+        ...version,
+        sources: version.sources.map((source) => ({
+          ...source,
+          verifiedAt: read.has(source.url) ? today() : (baseDates.get(source.url) ?? today()),
+        })),
+      } as unknown as Json,
+      unread,
+    };
   };
 
   const validate = async (
@@ -259,7 +282,12 @@ export function createRuleUpdate({
       failure: null,
       needsCorrection: true,
       proposalValid: false,
-      output: { problems: [...problems], proposal: null, items: [], pages: [] },
+      output: {
+        problems: problems.map((line) => line.slice(0, maxProblemLength)),
+        proposal: null,
+        items: [],
+        pages: [],
+      },
       usage: null,
       webSearches: null,
     });
@@ -267,7 +295,14 @@ export function createRuleUpdate({
     const items = checkItems(first.entry);
     const { pages, log } = await readPages(first.entry, items, first.officialHosts);
     const dated = verifiedOn(first.entry.version, base, new Set(pages.keys()));
-    const checked = await checkProposal(rows, base, dated, cases, reading);
+    if (dated.unread.length > 0) {
+      return invalid(
+        dated.unread.map(
+          (url) => `/sources: ${url} could not be read, so it has no verification date`,
+        ),
+      );
+    }
+    const checked = await checkProposal(rows, base, dated.content, cases, reading);
     if (!checked.ok) return invalid(checked.problems);
 
     const answers: CheckAnswer[] = items.map(({ key }) => ({
@@ -295,6 +330,7 @@ export function createRuleUpdate({
             page: log.find((page) => page.url === url)?.sha256 ?? null,
           })),
           model: validatorModel,
+          prompt: validator.promptVersion,
         }),
       );
     const asked = verified.flatMap((result, index) => {
@@ -373,10 +409,7 @@ export function createRuleUpdate({
     const stages = await store.stages(requestId);
     const step = nextUpdateStep(stages.map(asResult));
     const rows = await rowsOf();
-    const baseRow = rows.routeVersions.find(
-      (row) => row.routeId === request.routeId && row.number === request.baseNumber,
-    );
-    const base = routeVersionSchema.safeParse(baseRow?.content);
+    const verified = verifiedRouteVersion(rows, request.routeId, request.baseNumber, reading);
     if (step.kind === 'failed') {
       await store.finish(requestId, { failure: step.failure });
       return false;
@@ -392,10 +425,11 @@ export function createRuleUpdate({
       await store.finish(requestId, { proposal: ended });
       return false;
     }
-    if (baseRow === undefined || !base.success) {
+    if (verified === undefined) {
       await store.finish(requestId, { failure: 'unknown_route' });
       return false;
     }
+    const { row: baseRow, version: base, officialHosts } = verified;
     const position = stages.length;
     const latestProposal = () => {
       const output = [...stages]
@@ -408,22 +442,18 @@ export function createRuleUpdate({
     switch (step.stage) {
       case 'research':
       case 'correction': {
-        const hosts = base.data.officialDomains.flatMap((pin) =>
-          rows.officialDomainLists
-            .filter((list) => list.id === pin.id && list.number === pin.number)
-            .flatMap((list) => {
-              const parsed = officialDomainListSchema.safeParse(list.content);
-              return parsed.success ? parsed.data.hosts.map(({ host }) => host) : [];
-            }),
-        );
         const previous = latestProposal();
         const validation = validationOutputSchema.safeParse(stages.at(-1)?.output);
+        // No official host means no domain limit on the web tools: research never runs then.
+        if (officialHosts.length === 0) {
+          result = failed(step.stage, `${step.stage}_failed`);
+          break;
+        }
         result = await research(step.stage, {
           routeId: request.routeId,
           current: baseRow.content,
           currentCases: baseRow.cases,
-          officialHosts: [...new Set(hosts)],
-          knownQuotes: await store.confirmedQuotes(request.routeId),
+          officialHosts,
           ...(step.stage === 'correction' && previous !== undefined && validation.success
             ? {
                 correction: {
@@ -444,7 +474,7 @@ export function createRuleUpdate({
         result =
           proposal === undefined
             ? failed(step.stage, 'out_of_order')
-            : await validate(step.stage, proposal, base.data);
+            : await validate(step.stage, proposal, base);
         break;
       }
     }

@@ -6,6 +6,7 @@ import {
   Output,
   type ProviderMetadata,
   StreamProviderError,
+  type ModelMessage,
   type SystemModelMessage,
   generateText,
   jsonSchema,
@@ -43,9 +44,9 @@ export interface StructuredCall {
   readonly timeoutMs: number;
   readonly anthropic?: Pick<AnthropicLanguageModelOptions, 'effort' | 'thinking'>;
   /**
-   * Text every call of one subject shares after the instructions, such as a route's current
-   * version: a second cached prefix, with the five-minute lifetime, so a request's later stage
-   * reads it from the cache (ADR-0031).
+   * Data every call of one subject shares, such as a route's current version: sent as the user
+   * turn's first block, never as instructions, and closed by a five-minute cache breakpoint so a
+   * request's later stage reads it from the cache (ADR-0031).
    */
   readonly context?: string;
   /**
@@ -53,11 +54,16 @@ export interface StructuredCall {
    * five minutes where the cache serves one request only, as an update request's (ADR-0031).
    */
   readonly cacheLifetime?: CacheLifetime;
-  /** Anthropic's web search and fetch server tools, limited to these hosts and their subdomains. */
+  /**
+   * Anthropic's web search and fetch server tools, limited to these hosts and their subdomains:
+   * the versions without dynamic filtering, so no code runs in Anthropic's sandbox (ADR-0031).
+   */
   readonly web?: {
     readonly allowedDomains: readonly string[];
     readonly maxSearches: number;
     readonly maxFetches: number;
+    /** The most content one fetched page adds to the context, in tokens. */
+    readonly maxFetchTokens: number;
   };
 }
 
@@ -128,13 +134,25 @@ function cachedInstructions(instructions: string, ttl: CacheLifetime = '1h'): Sy
   };
 }
 
-/** The shared context as a second cached prefix, with the five-minute lifetime (ADR-0031). */
-function cachedContext(context: string): SystemModelMessage {
-  return {
-    role: 'system',
-    content: context,
-    providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
-  };
+/**
+ * The call's data and its question as one user turn, the data first and closed by a five-minute
+ * cache breakpoint (ADR-0031): data, never system instructions, so nothing in it speaks with the
+ * instructions' authority.
+ */
+function dataTurn(context: string, prompt: string): ModelMessage[] {
+  return [
+    {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: context,
+          providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+        },
+        { type: 'text', text: prompt },
+      ],
+    },
+  ];
 }
 
 /** The web searches the provider reports in its raw usage, if it reports them. */
@@ -188,31 +206,30 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
     return provider(key);
   };
   const request = async (call: StructuredCall) => {
+    // An empty list would leave the web tools with no domain limit at all.
+    if (call.web?.allowedDomains.length === 0) throw new ClaudeCallError('failed');
     const provider = await anthropic();
     return {
       model: provider(call.model),
-      instructions:
-        call.context === undefined
-          ? cachedInstructions(call.instructions, call.cacheLifetime)
-          : [
-              cachedInstructions(call.instructions, call.cacheLifetime),
-              cachedContext(call.context),
-            ],
+      instructions: cachedInstructions(call.instructions, call.cacheLifetime),
       ...(call.web === undefined
         ? {}
         : {
             tools: {
-              web_search: provider.tools.webSearch_20260209({
+              web_search: provider.tools.webSearch_20250305({
                 maxUses: call.web.maxSearches,
                 allowedDomains: [...call.web.allowedDomains],
               }),
-              web_fetch: provider.tools.webFetch_20260209({
+              web_fetch: provider.tools.webFetch_20250910({
                 maxUses: call.web.maxFetches,
+                maxContentTokens: call.web.maxFetchTokens,
                 allowedDomains: [...call.web.allowedDomains],
               }),
             },
           }),
-      prompt: call.prompt,
+      ...(call.context === undefined
+        ? { prompt: call.prompt }
+        : { messages: dataTurn(call.context, call.prompt) }),
       output: Output.object({ schema: jsonSchema(call.schema), name: call.schemaName }),
       maxOutputTokens: call.maxOutputTokens,
       ...(call.anthropic === undefined ? {} : { providerOptions: { anthropic: call.anthropic } }),

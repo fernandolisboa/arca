@@ -3,13 +3,6 @@ import type { ValidatorVerdict } from '@arca/domain';
 import { z } from 'zod';
 import type { ModelReply } from '../../ai/model-call.js';
 
-/** A quote research gives for an item, by the item's key: the passage and the page it is on. */
-export interface ResearchQuote {
-  readonly key: string;
-  readonly url: string;
-  readonly quote: string;
-}
-
 /**
  * What research answers, still untrusted: the version and its cases as JSON text, since the rule
  * schema is recursive and structured output takes no recursive schema, and one quote per item.
@@ -46,8 +39,6 @@ export interface ResearchRequest {
   readonly currentCases: unknown;
   /** The hosts research may search and fetch on, from the route's approved lists. */
   readonly officialHosts: readonly string[];
-  /** Quotes an earlier request verified on their pages, as leads. */
-  readonly knownQuotes: readonly ResearchQuote[];
   readonly correction?: {
     readonly proposal: ResearchReply;
     /** Why the proposal is not a version, one line each, from code. */
@@ -104,6 +95,8 @@ export class RuleValidatorError extends Error {
 
 /** The validator behind its port (ADR-0031): one call for every item of a stage. */
 export interface RuleValidator {
+  /** What the validator is asked, part of every stored answer's key, so new wording asks again. */
+  readonly promptVersion: string;
   readonly validate: (
     items: readonly ValidationItem[],
     model: StageModel,

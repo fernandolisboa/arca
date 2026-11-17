@@ -9,7 +9,7 @@ import {
   updateStages,
 } from '@arca/domain';
 import { type Database, withIdentity } from '@arca/db';
-import type { RuleRows } from '@arca/knowledge';
+import { type RuleRowReading, type RuleRows, verifiedRouteVersion } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { sql } from 'drizzle-orm';
 import type { AuditLog } from '../../audit/log.js';
@@ -39,6 +39,7 @@ export interface UpdateRequestsDependencies {
   readonly audit: Pick<AuditLog, 'record'>;
   readonly store: UpdateStore;
   readonly rows: () => Promise<RuleRows>;
+  readonly reading: RuleRowReading;
   /** Whether every stage's provider has a key; outside production the scripted models need none. */
   readonly configured: () => Promise<boolean>;
   /** Starts the workflow run with the request's identifier only. */
@@ -75,6 +76,11 @@ function requestCost(stages: readonly StoredStage[]): UpdateProgress['cost'] {
   return microUsd > maxCheckCostMicroUsd ? { kind: 'unknown' } : { kind: 'priced', microUsd };
 }
 
+function progressState(end: StoredEnd | undefined, stalled: boolean): UpdateProgress['state'] {
+  if (end !== undefined) return end.failure === null ? 'finished' : 'failed';
+  return stalled ? 'stalled' : 'running';
+}
+
 function listCounts(end: StoredEnd | undefined): UpdateProgress['lists'] {
   if (end?.failure !== null) return null;
   const counts = Object.fromEntries(proposalLists.map((list) => [list, 0])) as Record<
@@ -92,6 +98,7 @@ export function createUpdateRequests({
   audit,
   store,
   rows,
+  reading,
   configured,
   run,
   logger,
@@ -100,11 +107,17 @@ export function createUpdateRequests({
   const isAdmin = async (accountId: string) =>
     role.basisOf(await readAdminHistory(db()), accountId) !== undefined;
 
+  /** The route's newest version, only when the read verifies it: research never starts from a row changed in place. */
   const baseOf = async (routeId: string) => {
-    const numbers = (await rows()).routeVersions
+    const stored = await rows();
+    const numbers = stored.routeVersions
       .filter((row) => row.routeId === routeId)
       .map(({ number }) => number);
-    return numbers.length === 0 ? undefined : Math.max(...numbers);
+    if (numbers.length === 0) return undefined;
+    const newest = Math.max(...numbers);
+    return verifiedRouteVersion(stored, routeId, newest, reading) === undefined
+      ? undefined
+      : newest;
   };
 
   return {
@@ -149,14 +162,7 @@ export function createUpdateRequests({
       const stalled = end === undefined && now() - request.requestedAt > updateLiveMs;
       const ended = end !== undefined || stalled;
       const next = nextUpdateStep(stages.map(asResult));
-      const state: UpdateProgress['state'] =
-        end === undefined
-          ? stalled
-            ? 'stalled'
-            : 'running'
-          : end.failure === null
-            ? 'finished'
-            : 'failed';
+      const state = progressState(end, stalled);
       return {
         requestId: request.id,
         routeId: request.routeId,

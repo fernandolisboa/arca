@@ -16,6 +16,8 @@ export {
   type RuleRows,
   refusedRows,
   routeVersionContentHash,
+  verifiedRouteVersion,
+  type VerifiedRouteVersion,
   ruleDataFromRows,
   ruleEngineData,
 } from './rule-rows.js';

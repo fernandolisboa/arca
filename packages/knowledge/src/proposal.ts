@@ -4,6 +4,7 @@ import {
   type Pin,
   type RouteVersion,
   checkRouteVersion,
+  checkVersionOrder,
   identityKey,
   routeVersionSchema,
 } from '@arca/domain';
@@ -80,6 +81,16 @@ export async function checkProposal(
   if (!sameJson(version.officialDomains, base.officialDomains)) {
     problems.push('/officialDomains: The lists of the version it updates');
   }
+  // Ordered among the route's stored versions as the build ordered files (spec 0002, R6).
+  const stored = rows.routeVersions.flatMap((row) => {
+    const read = routeVersionSchema.safeParse(row.content);
+    return row.routeId === base.routeId && read.success ? [read.data] : [];
+  });
+  const ordered =
+    problems.length === 0 ? checkVersionOrder([...stored, version]) : new Map<number, string[]>();
+  problems.push(
+    ...(ordered.get(version.number) ?? []).map((problem) => `/effectiveFrom: ${problem}`),
+  );
   const cases = casesFileSchema.safeParse(casesContent);
   if (!cases.success) {
     problems.push(
@@ -124,6 +135,13 @@ export async function checkProposal(
     reading,
     `former-countries/${version.formerCountries.id}/${String(version.formerCountries.number)}`,
   );
+  for (const { id, members } of entry.countrySets) {
+    if (members.some((member) => !current.has(member) && !former.has(member))) {
+      problems.push(
+        `/countrySets/${id}: A set's members are in the route's countries or former countries`,
+      );
+    }
+  }
   const setsWithFormer = new Set(
     entry.countrySets
       .filter(({ members }) => members.some((member) => !current.has(member)))

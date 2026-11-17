@@ -36,8 +36,16 @@ async function setUp() {
   });
   if (row === undefined) throw new Error('A route with inline cases expected');
   const base = routeVersionSchema.parse(row.content);
+  const later = new Date(`${base.effectiveFrom}T00:00:00Z`);
+  later.setUTCDate(later.getUTCDate() + 1);
   const next = (change: Partial<RouteVersion> = {}): Json =>
-    ({ ...base, number: base.number + 1, ...change }) as unknown as Json;
+    ({
+      // A proposal corrects nothing: it starts after every version of the route.
+      ...Object.fromEntries(Object.entries(base).filter(([key]) => key !== 'corrects')),
+      number: base.number + 1,
+      effectiveFrom: later.toISOString().slice(0, 10),
+      ...change,
+    }) as unknown as Json;
   const reading = { countryFiles, sha256, hostOf };
   const check = (content: Json, cases: unknown = row.cases) =>
     checkProposal(rows, base, content, cases, reading);
@@ -68,6 +76,11 @@ describe('checkProposal (ADR-0031)', () => {
       /officialDomains/,
     ],
     ['content outside the schema', ({ next }) => next({ title: '' }), /^\/title/],
+    [
+      'a version that starts no later than the one it updates',
+      ({ base, next }) => next({ effectiveFrom: base.effectiveFrom }),
+      /^\/effectiveFrom/,
+    ],
   ])('refuses %s', async (_, content, problem) => {
     const setup = await setUp();
     const result = await setup.check(content(setup));

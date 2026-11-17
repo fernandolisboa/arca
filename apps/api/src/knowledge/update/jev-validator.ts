@@ -8,7 +8,7 @@ import {
   type ValidatorAnswer,
 } from './ports.js';
 
-/** Bumped only when what Jev is asked changes; stored with nothing, so it stales nothing. */
+/** Bumped only when what Jev is asked changes; part of each stored answer's key, so it asks again. */
 export const jevValidatorPromptVersion = 'rule-validate-1';
 
 const timeoutMs = 60_000;
@@ -33,7 +33,7 @@ const responseSchema = z.object({
     z.object({
       type: z.literal('choice'),
       choice: z.enum(validatorVerdicts),
-      confidence: z.number(),
+      confidence: z.number().min(0).max(1),
     }),
   ),
   usage: z
@@ -56,6 +56,7 @@ export interface JevSettings {
  */
 export function jevRuleValidator({ apiKey, fetch = globalThis.fetch }: JevSettings): RuleValidator {
   return {
+    promptVersion: jevValidatorPromptVersion,
     validate: async (items, { model }) => {
       const key = await apiKey();
       if (key === undefined) throw new RuleValidatorError();
