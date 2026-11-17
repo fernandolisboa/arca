@@ -41,8 +41,10 @@ describe('inline imported cases (ADR-0031)', () => {
 
   it('rewrites exactly the versions whose cases pin a family, keeping every other field', async () => {
     const { rows, inlined } = await setUp();
-    const pinning = rows.routeVersions.filter((row) =>
-      casesFileSchema.parse(row.cases).cases.some((ruleCase) => ruleCase.family !== undefined),
+    const pinning = rows.routeVersions.filter(
+      (row) =>
+        row.cases !== null &&
+        casesFileSchema.parse(row.cases).cases.some((ruleCase) => ruleCase.family !== undefined),
     );
     expect(inlined.map(({ routeId, number }) => `${routeId}/${String(number)}`)).toEqual(
       pinning.map(({ routeId, number }) => `${routeId}/${String(number)}`),

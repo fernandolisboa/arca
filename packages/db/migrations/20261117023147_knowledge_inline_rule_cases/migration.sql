@@ -5,28 +5,28 @@ DO $check$
 BEGIN
   IF EXISTS (
     SELECT FROM (VALUES
-      ('is-remote-work', 1, 'da1f4ea81c6d8389f4ebcc393e1a263a278ee19e68b7618e66a8c1f8d66cb649'),
-      ('pt-d7', 1, '05ae5f5e259b58cce084b066ba4dc490a5f2e8256ee4d544481a1a9369f66104'),
-      ('pt-d7', 2, '06d1990c3b46ee735cd51930baaf6615a464027af5e85c88151aa59f8ef47b6f'),
-      ('pt-d7', 3, 'e4d834e4a2213cf84d20634a1c43d387b0f27c4137ee6763120e548f1285d9cb'),
-      ('pt-d7', 4, '11030f4d19fe5483f51e8701e744eeb719281120817cc14891d6a2cf27a08e02'),
-      ('pt-d7', 5, '5c2739278cd45824b9888093b49aeaeb4d9a4dd85435150c6f8ca505ebc04efc'),
-      ('pt-d7', 6, '70ba59185cb53c7ce1af18d8cfb657c604f60c0b13dabe8c94c9ba2c9caf41cc'),
-      ('pt-d8', 1, 'c063e67c2eefc4b5a7995d1f1479e19eaf6da7d3034b069c731816fdb0382e92'),
-      ('pt-d8', 2, 'd4ddfb7dc7c578c2c83da02aa8178f11fe1d4e08ad855be076dbab48e08b2128'),
-      ('pt-d8', 3, '66f14aabd22f29dabc7a8838da7f8f7072f877b09cc6f199005181587fc04a62'),
-      ('pt-d8', 4, 'd2793238218df95e032ab40437c336bbd5de44fdd58f9f1a5a29fb95f33221dd'),
-      ('pt-d8', 5, 'ea7824b4c139767ef85142c32953457b8d9d47bd9b7a71a8fc71b42e7404fc1a'),
-      ('pt-d8', 6, '69c2f6750dca3a75f9e71884ec0f464b149ae93829aba1d2d18d7a76814158ff'),
-      ('us-eb5', 1, '73292a839c6a73ddc3672a147fef6248be2cbf71a76fd14c045dced0f2bb50c7'),
-      ('us-eb5', 2, '13d3026c79ee12f628822211dcc3a9ee988091560162199ff4b1c983dfd25a72'),
-      ('us-eb5', 3, '3bf68805ca603234579f62d63660c051f5064363814d2504f9a82c3a4f4c254a'),
-      ('us-eb5', 4, 'e502541ba73715b5ce04821c2f09e163e57d297993b9c71ec3f6f5d2f637e206'),
-      ('us-eb5', 5, 'f695c19cc6d4db33fb0e899cf12f8378dad3bda79929aab0031c54d96c266ec9'),
-      ('us-eb5', 6, '628460a361fc0bb96132e6c8b0e394b23812c680a53fd180abba03aa3cb5f92a'),
-      ('us-eb5', 7, 'c2e77e000cfb0b5df8e18e39044ea62d4b7b0810540cdd43d3b70a1e2cebbb49'),
-      ('us-eb5', 8, '290223a2be2c3aa33b7be592e5d07b7ccccb3d81307eb7146e067429e97aed94')
-    ) AS imported (route_id, number, content_hash)
+      ('is-remote-work', 1),
+      ('pt-d7', 1),
+      ('pt-d7', 2),
+      ('pt-d7', 3),
+      ('pt-d7', 4),
+      ('pt-d7', 5),
+      ('pt-d7', 6),
+      ('pt-d8', 1),
+      ('pt-d8', 2),
+      ('pt-d8', 3),
+      ('pt-d8', 4),
+      ('pt-d8', 5),
+      ('pt-d8', 6),
+      ('us-eb5', 1),
+      ('us-eb5', 2),
+      ('us-eb5', 3),
+      ('us-eb5', 4),
+      ('us-eb5', 5),
+      ('us-eb5', 6),
+      ('us-eb5', 7),
+      ('us-eb5', 8)
+    ) AS imported (route_id, number)
     JOIN "knowledge"."decision" AS decided
       ON decided.subject_kind = 'route' AND decided.route_id = imported.route_id
       AND decided.version_number = imported.number AND decided.cases_hash IS NOT NULL
