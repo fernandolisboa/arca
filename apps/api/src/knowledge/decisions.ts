@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import {
   type DecideComparisonRequest,
+  type DecideOfficialDomainsRequest,
   type DecideVersionRequest,
   decideComparisonAction,
+  decideOfficialDomainsAction,
   decideVersionAction,
 } from '@arca/api-contract/routes';
 import { type Database, type Transaction, actAs } from '@arca/db';
@@ -14,11 +16,15 @@ import {
   type DecisionKind,
   type DecisionStates,
   type DecidedVersion,
+  type OfficialDomainsIdentity,
+  type Pin,
   type RouteCatalog,
   type VersionIdentity,
   decidedKey,
   decisionStates,
+  officialDomainsKey,
 } from '@arca/domain';
+import type { VerifiedOfficialDomainList } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { getTableColumns, sql } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
@@ -31,12 +37,26 @@ import { closeRuleReports } from './reports.js';
 
 export type DecisionOutcome =
   | { readonly decided: string }
-  | { readonly refused: 'not_admin' | 'not_found' | 'already_rejected' | 'step_up_required' };
+  | {
+      readonly refused:
+        'not_admin' | 'not_found' | 'already_rejected' | 'step_up_required' | 'list_pending';
+    };
 
-/** The version a decision is about: a route version or a comparison version (ADR-0026). */
+/**
+ * The version a decision is about: a route version, a comparison version (ADR-0026) or a first
+ * official-domain list a new-route request proposed (ADR-0031).
+ */
 export type DecisionTarget =
   | (DecideVersionRequest & { readonly subject: 'route' })
-  | (DecideComparisonRequest & { readonly subject: 'comparison' });
+  | (DecideComparisonRequest & { readonly subject: 'comparison' })
+  | (DecideOfficialDomainsRequest & { readonly subject: 'official_domains' });
+
+/** The official-domain lists the stored rules hold, and which ones each route version pins. */
+export interface OfficialDomainsView {
+  readonly lists: readonly VerifiedOfficialDomainList[];
+  /** The lists a stored route version pins; undefined when it does not read. */
+  readonly pinsOf: (routeId: string, number: number) => readonly Pin[] | undefined;
+}
 
 export interface KnowledgeDecisions {
   /**
@@ -66,6 +86,8 @@ export interface KnowledgeDecisionSettings {
   readonly casesHash: (contentHash: string) => Promise<string | undefined>;
   /** The only place a comparison hash is taken from: an indicator's hash alone is never decided. */
   readonly comparisons: Pick<ComparisonCatalog, 'identities'>;
+  /** The stored official-domain lists, the only place a list's hash is taken from (ADR-0031). */
+  readonly officialDomains: () => Promise<OfficialDomainsView>;
   /** Who is an admin: the owner list and the role's history (ADR-0027). */
   readonly role: AdminRole;
   /** The environment's own origin, which ADR-0022 decisions are re-verified against. */
@@ -75,6 +97,10 @@ export interface KnowledgeDecisionSettings {
 
 const routeActions = { activate: 'activateVersion', reject: 'rejectVersion' } as const;
 const comparisonActions = { activate: 'activateComparison', reject: 'rejectComparison' } as const;
+const listActions = {
+  activate: 'activateOfficialDomains',
+  reject: 'rejectOfficialDomains',
+} as const;
 
 /** A stored decision, with its time in microseconds to compare with the role's history. */
 type DecisionRow = typeof decision.$inferSelect & { readonly decidedMicros: string };
@@ -108,7 +134,8 @@ function basisCounts(row: DecisionRow, history: AdminHistory): boolean {
 /** A version from the stored rules with its subject kind; a route's carries what it corrects. */
 type KnownVersion =
   | { readonly subject: 'route'; readonly identity: VersionIdentity }
-  | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
+  | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity }
+  | { readonly subject: 'official_domains'; readonly identity: OfficialDomainsIdentity };
 
 /**
  * The step-up action a decision was approved with. Each subject kind has its own actions, so an
@@ -122,20 +149,36 @@ function decisionAction(
   nonce: Uint8Array,
 ): CanonicalAction {
   const { number, hash } = decided.identity;
-  const action =
-    decided.subject === 'route'
-      ? decideVersionAction(
+  switch (decided.subject) {
+    case 'route':
+      return {
+        ...decideVersionAction(
           routeActions[kind],
           { routeId: decided.identity.routeId, number },
           hash,
           casesHash ?? undefined,
-        )
-      : decideComparisonAction(
+        ),
+        nonce,
+      };
+    case 'comparison':
+      return {
+        ...decideComparisonAction(
           comparisonActions[kind],
           { comparisonId: decided.identity.comparisonId, number },
           hash,
-        );
-  return { ...action, nonce };
+        ),
+        nonce,
+      };
+    case 'official_domains':
+      return {
+        ...decideOfficialDomainsAction(
+          listActions[kind],
+          { listId: decided.identity.listId, number },
+          hash,
+        ),
+        nonce,
+      };
+  }
 }
 
 /** The audit event of a decision, naming the version it covers. */
@@ -146,6 +189,12 @@ function decisionEvent(kind: DecisionKind, decided: DecidedVersion, decisionId: 
     return kind === 'activate'
       ? { code: 'version_activated' as const, details: { decisionId, routeId, number } }
       : { code: 'version_rejected' as const, details: { decisionId, routeId, number } };
+  }
+  if (decided.subject === 'official_domains') {
+    const { listId } = decided.identity;
+    return kind === 'activate'
+      ? { code: 'official_domains_activated' as const, details: { decisionId, listId, number } }
+      : { code: 'official_domains_rejected' as const, details: { decisionId, listId, number } };
   }
   const { comparisonId } = decided.identity;
   return kind === 'activate'
@@ -187,12 +236,26 @@ function storedStepUp(row: DecisionRow): StoredStepUp | undefined {
  * fit its kind, which the database's check refuses, so such a row counts for nothing.
  */
 function rowVersion(row: DecisionRow): DecidedVersion | undefined {
-  const { versionNumber: number, contentHash: hash } = row;
-  if (row.subjectKind === 'route' && row.routeId !== null && row.comparisonId === null) {
-    return { subject: 'route', identity: { routeId: row.routeId, number, hash } };
+  const { versionNumber: number, contentHash: hash, routeId, comparisonId, listId } = row;
+  if (row.subjectKind === 'route' && routeId !== null && comparisonId === null && listId === null) {
+    return { subject: 'route', identity: { routeId, number, hash } };
   }
-  if (row.subjectKind === 'comparison' && row.comparisonId !== null && row.routeId === null) {
-    return { subject: 'comparison', identity: { comparisonId: row.comparisonId, number, hash } };
+  if (
+    row.subjectKind === 'comparison' &&
+    comparisonId !== null &&
+    routeId === null &&
+    listId === null
+  ) {
+    return { subject: 'comparison', identity: { comparisonId, number, hash } };
+  }
+  if (
+    row.subjectKind === 'official_domains' &&
+    listId !== null &&
+    routeId === null &&
+    comparisonId === null &&
+    row.proof === 'admin_step_up'
+  ) {
+    return { subject: 'official_domains', identity: { listId, number, hash } };
   }
   return undefined;
 }
@@ -204,6 +267,7 @@ export function createKnowledgeDecisions({
   catalog,
   casesHash,
   comparisons,
+  officialDomains,
   role,
   origin,
   logger,
@@ -271,6 +335,19 @@ export function createKnowledgeDecisions({
 
   /** The target's identity in the stored rules: the only source of a hash to decide on. */
   const versionOf = async (target: DecisionTarget): Promise<KnownVersion | undefined> => {
+    if (target.subject === 'official_domains') {
+      // Only a list a request proposed is decided; an imported one passed a reviewed pull request.
+      const list = (await officialDomains()).lists.find(
+        ({ id, number, fromRequest }) =>
+          fromRequest && id === target.listId && number === target.number,
+      );
+      return list === undefined
+        ? undefined
+        : {
+            subject: 'official_domains',
+            identity: { listId: list.id, number: list.number, hash: list.hash },
+          };
+    }
     if (target.subject === 'route') {
       const identity = (await catalog())
         .identities(target.routeId)
@@ -299,6 +376,7 @@ export function createKnowledgeDecisions({
     });
     if (decided.length === 0) return [];
     const routes = await catalog();
+    const { lists } = await officialDomains();
     const casesByHash = new Map<string, Promise<string | undefined>>();
     const casesOf = (hash: string) => {
       let known = casesByHash.get(hash);
@@ -310,21 +388,7 @@ export function createKnowledgeDecisions({
     };
     const refused: DecidedVersion[] = [];
     for (const { row, version } of decided) {
-      const { number } = version.identity;
-      const known: DecidedVersion | undefined =
-        version.subject === 'route'
-          ? routes
-              .identities(version.identity.routeId)
-              .filter((identity) => identity.number === number)
-              .map((identity) => ({ subject: 'route' as const, identity }))[0]
-          : comparisons
-              .identities()
-              .filter(
-                (identity) =>
-                  identity.comparisonId === version.identity.comparisonId &&
-                  identity.number === number,
-              )
-              .map((identity) => ({ subject: 'comparison' as const, identity }))[0];
+      const known = knownNow(version, routes, lists);
       if (known === undefined) continue;
       const changed =
         known.identity.hash !== row.contentHash ||
@@ -335,6 +399,57 @@ export function createKnowledgeDecisions({
       }
     }
     return refused;
+  };
+
+  /** The version a decided one names by ID and number, as the stored rules hold it now. */
+  const knownNow = (
+    version: DecidedVersion,
+    routes: Pick<RouteCatalog, 'identities'>,
+    lists: readonly VerifiedOfficialDomainList[],
+  ): DecidedVersion | undefined => {
+    const { number } = version.identity;
+    switch (version.subject) {
+      case 'route': {
+        const identity = routes
+          .identities(version.identity.routeId)
+          .find((each) => each.number === number);
+        return identity === undefined ? undefined : { subject: 'route', identity };
+      }
+      case 'comparison': {
+        const identity = comparisons
+          .identities()
+          .find(
+            (each) => each.comparisonId === version.identity.comparisonId && each.number === number,
+          );
+        return identity === undefined ? undefined : { subject: 'comparison', identity };
+      }
+      case 'official_domains': {
+        const list = lists.find(
+          ({ id, number: listNumber }) => id === version.identity.listId && listNumber === number,
+        );
+        return list === undefined
+          ? undefined
+          : { subject: 'official_domains', identity: { listId: list.id, number, hash: list.hash } };
+      }
+    }
+  };
+
+  /**
+   * Whether a route version pins a first official-domain list a request proposed that is not
+   * active: the list is decided apart, before the route (ADR-0031).
+   */
+  const pinsPendingList = async (
+    identity: VersionIdentity,
+    current: DecisionStates,
+  ): Promise<boolean> => {
+    const { lists, pinsOf } = await officialDomains();
+    const pins = pinsOf(identity.routeId, identity.number) ?? [];
+    return pins.some((pin) => {
+      const list = lists.find(({ id, number }) => id === pin.id && number === pin.number);
+      if (list === undefined) return true;
+      const key = officialDomainsKey({ listId: list.id, number: list.number, hash: list.hash });
+      return list.fromRequest && current.get(key) !== 'active';
+    });
   };
 
   const states = async () => {
@@ -380,6 +495,7 @@ export function createKnowledgeDecisions({
     const { identity } = decided;
     const routeId = decided.subject === 'route' ? decided.identity.routeId : null;
     const comparisonId = decided.subject === 'comparison' ? decided.identity.comparisonId : null;
+    const listId = decided.subject === 'official_domains' ? decided.identity.listId : null;
     // Committed first, on app_audit: a decision no event records must never be stored, so an
     // insert that fails after it leaves an event naming a decision that does not exist.
     await audit.record({
@@ -388,11 +504,11 @@ export function createKnowledgeDecisions({
       actorAccountId: accountId,
     });
     await tx.execute(sql`
-      INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id,
+      INSERT INTO knowledge.decision (id, kind, subject_kind, route_id, comparison_id, list_id,
         version_number, content_hash, cases_hash, approver_account_id, proof, admin_basis,
         admin_grant_id, credential_id, public_key, action_nonce, server_nonce, authenticator_data,
         client_data_json, signature, step_up_id)
-      VALUES (${id}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId},
+      VALUES (${id}, ${kind}, ${decided.subject}, ${routeId}, ${comparisonId}, ${listId},
         ${identity.number}, ${identity.hash}, ${cases}, ${accountId}, 'admin_step_up', ${basis},
         ${grantId}, ${spent.credentialId}, ${Buffer.from(spent.publicKey)},
         ${Buffer.from(actionNonce)}, ${Buffer.from(spent.nonce)},
@@ -409,8 +525,16 @@ export function createKnowledgeDecisions({
       if (decided === undefined) return { refused: 'not_found' };
       const cases = decided.subject === 'route' ? await casesHash(decided.identity.hash) : null;
       if (cases === undefined) return { refused: 'not_found' };
-      if ((await states()).get(decidedKey(decided)) === 'rejected') {
+      const current = await states();
+      if (current.get(decidedKey(decided)) === 'rejected') {
         return { refused: 'already_rejected' };
+      }
+      if (
+        kind === 'activate' &&
+        decided.subject === 'route' &&
+        (await pinsPendingList(decided.identity, current))
+      ) {
+        return { refused: 'list_pending' };
       }
       const decisionId = randomUUID();
       try {

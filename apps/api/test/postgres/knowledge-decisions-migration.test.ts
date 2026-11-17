@@ -76,6 +76,7 @@ describe('the session-decision migration (ADR-0027)', () => {
           identities: (routeId: string) => (routeId === version.routeId ? [version] : []),
         }),
       comparisons: { identities: () => [] },
+      officialDomains: () => Promise.resolve({ lists: [], pinsOf: () => [] }),
       role: adminRole(() => apiDb, [approver.signedIn.accountId]),
       origin,
       logger: {

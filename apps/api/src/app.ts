@@ -56,6 +56,7 @@ import {
   RemoveAiKey,
   SetAiKey,
   SetAiStage,
+  StartNewRouteRequest,
   StartUpdateRequest,
   EditItemRequest,
   VersionReviewQuery,
@@ -72,6 +73,7 @@ import {
   ComparisonVersionView,
   ComparisonViewQuery,
   DecideComparisonRequest,
+  DecideOfficialDomainsRequest,
   DecideVersionRequest,
   VersionCheck,
   VersionCheckProgress,
@@ -326,6 +328,8 @@ export type ErrorCode =
   | 'version_taken'
   | 'update_off'
   | 'update_not_started'
+  | 'links_needed'
+  | 'list_pending'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -1519,6 +1523,7 @@ export function createApp({
     step_up_required: 403,
     not_found: 404,
     already_rejected: 409,
+    list_pending: 409,
   } as const;
   const decided = (c: Context<AppEnv>, outcome: DecisionOutcome) =>
     'decided' in outcome
@@ -1540,7 +1545,9 @@ export function createApp({
     const target: DecisionTarget =
       subject === 'route'
         ? { subject, ...DecideVersionRequest.parse(body) }
-        : { subject, ...DecideComparisonRequest.parse(body) };
+        : subject === 'comparison'
+          ? { subject, ...DecideComparisonRequest.parse(body) }
+          : { subject, ...DecideOfficialDomainsRequest.parse(body) };
     const nonce = actionNonce(c);
     if (nonce === undefined) return fail(c, 'step_up_required', 403);
     return decided(c, await knowledge.decide(current, kind, target, nonce));
@@ -1923,6 +1930,39 @@ export function createApp({
     const request = await screen.requests.newest(screen.current.accountId, routeId);
     return request === 'not_admin' ? fail(c, request, 403) : c.json({ request }, 200);
   });
+  v1.openapi(openApiRoutes.startNewRouteRequest, async (c) => {
+    const screen = await updateScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { accountId } = screen.current;
+    // Before the body is read or the limit counted, so anyone else learns only that.
+    if (!(await admins?.isAdmin(accountId))) return fail(c, 'not_admin', 403);
+    const request = StartNewRouteRequest.parse(await c.req.json());
+    const limited = await overLimit(c, screen.limits, updateRequestLimits.hour, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await screen.requests.startNewRoute(accountId, request);
+    switch (outcome) {
+      case 'not_admin':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'live':
+        return fail(c, 'update_live', 409);
+      case 'links_needed':
+        return fail(c, outcome, 400);
+      case 'not_configured':
+        return fail(c, 'update_off', 503);
+      case 'not_started':
+        return fail(c, 'update_not_started', 502);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
+  v1.openapi(openApiRoutes.getNewRouteRequests, async (c) => {
+    const screen = await updateScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const listed = await screen.requests.newRoutes(screen.current.accountId);
+    return listed === 'not_admin' ? fail(c, listed, 403) : c.json(listed, 200);
+  });
   const reviewScreen = async (c: Context<AppEnv>) => {
     const current = await signedIn(c);
     return current === null || versionReviews === undefined || authLimits === undefined
@@ -2105,6 +2145,12 @@ export function createApp({
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));
   v1.openapi(openApiRoutes.activateComparison, (c) => decideVersion(c, 'activate', 'comparison'));
   v1.openapi(openApiRoutes.rejectComparison, (c) => decideVersion(c, 'reject', 'comparison'));
+  v1.openapi(openApiRoutes.activateOfficialDomains, (c) =>
+    decideVersion(c, 'activate', 'official_domains'),
+  );
+  v1.openapi(openApiRoutes.rejectOfficialDomains, (c) =>
+    decideVersion(c, 'reject', 'official_domains'),
+  );
 
   const changedAdmin = (c: Context<AppEnv>, outcome: AdminChangeOutcome) => {
     switch (outcome) {

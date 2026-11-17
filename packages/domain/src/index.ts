@@ -236,8 +236,10 @@ export {
   type DecidedVersion,
   type DecisionKind,
   type DecisionSubject,
+  type OfficialDomainsIdentity,
   decidedKey,
   decisionStates,
+  officialDomainsKey,
 } from './rules/decisions.js';
 export {
   type ExpressionView,
@@ -537,3 +539,10 @@ export {
   validatorVerdict,
   validatorVerdicts,
 } from './rule-update/pipeline.js';
+export {
+  type FirstListTrust,
+  firstListProblems,
+  isRegistrySuffix,
+  namedHosts,
+  registryNamesHost,
+} from './rule-update/first-list.js';

@@ -141,9 +141,13 @@ export const decision = knowledge.table(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     kind: text('kind', { enum: ['activate', 'reject'] }).notNull(),
-    subjectKind: text('subject_kind', { enum: ['route', 'comparison'] }).notNull(),
+    subjectKind: text('subject_kind', {
+      enum: ['route', 'comparison', 'official_domains'],
+    }).notNull(),
     routeId: text('route_id'),
     comparisonId: text('comparison_id'),
+    /** The official-domain list a new-route request proposed, on an `official_domains` row. */
+    listId: text('list_id'),
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
     authorAccountId: uuid('approver_account_id').notNull(),
@@ -179,8 +183,11 @@ export const decision = knowledge.table(
       'decision_subject',
       sql`CASE ${table.subjectKind}
         WHEN 'route' THEN ${table.routeId} IS NOT NULL AND ${table.comparisonId} IS NULL
+          AND ${table.listId} IS NULL
         WHEN 'comparison' THEN ${table.routeId} IS NULL
-          AND ${table.comparisonId} IS NOT DISTINCT FROM 'destinations'
+          AND ${table.comparisonId} IS NOT DISTINCT FROM 'destinations' AND ${table.listId} IS NULL
+        WHEN 'official_domains' THEN ${table.routeId} IS NULL AND ${table.comparisonId} IS NULL
+          AND ${table.listId} ~ '^[a-z0-9][a-z0-9-]{0,63}$' AND ${table.proof} = 'admin_step_up'
         ELSE false END`,
     ),
     check('decision_version_number_positive', sql`${table.versionNumber} > 0`),
@@ -840,7 +847,9 @@ export const routeVersion = knowledge.table(
           JOIN "knowledge"."update_request" "asked" ON "asked"."id" = "ended"."request_id"
         WHERE "ended"."request_id" = ${table.requestId} AND "ended"."failure" IS NULL
           AND "ended"."content_hash" = ${table.contentHash}
-          AND "asked"."route_id" = ${table.routeId})`,
+          AND ("asked"."route_id" = ${table.routeId}
+            OR ("asked"."route_id" IS NULL AND ${table.number} = 1
+              AND starts_with(${table.routeId}, lower("asked"."country") || '-'))))`,
     }),
     pgPolicy('route_version_read_definer', {
       for: 'select',
@@ -920,7 +929,9 @@ export const countrySet = knowledge.table(
 
 /**
  * Official-domain lists (ADR-0031), on the same terms. A list pins nothing, so its hash covers its
- * content alone, in the same `{ version, pinned }` form.
+ * content alone, in the same `{ version, pinned }` form. Besides the import, `app_jobs` stores a
+ * new country's first list with the new-route request whose end holds that very hash, once per
+ * request; it reads as proposed until an admin decides it.
  */
 export const officialDomainList = knowledge.table(
   'official_domain_list',
@@ -929,12 +940,15 @@ export const officialDomainList = knowledge.table(
     number: integer('number').notNull(),
     content: jsonb('content').notNull(),
     contentHash: text('content_hash').notNull(),
+    /** The new-route request that proposed this list; null for an imported one. */
+    requestId: uuid('request_id').references(() => updateRequest.id),
     insertedAt: timestamp('inserted_at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
   },
   (table) => [
     primaryKey({ name: 'official_domain_list_pkey', columns: [table.listId, table.number] }),
+    unique('official_domain_list_request_id_key').on(table.requestId),
     check('official_domain_list_list_id_format', ruleFileIdFormat(table.listId)),
     check('official_domain_list_number_positive', sql`${table.number} > 0`),
     check('official_domain_list_content_hash_format', contentHashFormat(table.contentHash)),
@@ -944,6 +958,15 @@ export const officialDomainList = knowledge.table(
         AND ${table.content} -> 'number' = pg_catalog.to_jsonb(${table.number})`,
     ),
     ...ruleRowPolicies('official_domain_list'),
+    pgPolicy('official_domain_list_insert_proposal', {
+      for: 'insert',
+      to: 'app_jobs',
+      withCheck: sql`EXISTS (SELECT FROM "knowledge"."update_end" "ended"
+          JOIN "knowledge"."update_request" "asked" ON "asked"."id" = "ended"."request_id"
+        WHERE "ended"."request_id" = ${table.requestId} AND "ended"."failure" IS NULL
+          AND "ended"."list_hash" = ${table.contentHash} AND "asked"."route_id" IS NULL
+          AND ${table.listId} = lower("asked"."country"))`,
+    }),
   ],
 );
 
@@ -1076,8 +1099,20 @@ export const updateRequest = knowledge.table(
   'update_request',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    routeId: text('route_id').notNull(),
-    baseNumber: integer('base_number').notNull(),
+    /** The route an update request is for; null on a new-route request. */
+    routeId: text('route_id'),
+    baseNumber: integer('base_number'),
+    /** A new-route request's country, ISO 3166-1 alpha-2, from the dataset. */
+    country: text('country'),
+    /** The visa or entry type a new-route request names, as the admin typed it. */
+    visa: text('visa'),
+    /** The admin's official links: as addresses for research, and their hosts for a new country. */
+    links: text('links').array(),
+    /**
+     * The country's approved official-domain lists, `<id>/<number>`, that the new route may pin and
+     * research may read; empty for a country with none, which then proposes its first list.
+     */
+    listPins: text('list_pins').array(),
     requestedAt: timestamp('requested_at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
@@ -1085,7 +1120,18 @@ export const updateRequest = knowledge.table(
   (table) => [
     check('update_request_route_id_format', routeIdFormat(table.routeId)),
     check('update_request_base_number_positive', sql`${table.baseNumber} > 0`),
+    check(
+      'update_request_shape',
+      sql`CASE WHEN ${table.routeId} IS NOT NULL
+        THEN ${table.baseNumber} IS NOT NULL AND ${table.country} IS NULL AND ${table.visa} IS NULL
+          AND ${table.links} IS NULL AND ${table.listPins} IS NULL
+        ELSE ${table.baseNumber} IS NULL AND ${table.country} ~ '^[A-Z]{2}$'
+          AND char_length(${table.visa}) BETWEEN 2 AND 120
+          AND cardinality(${table.links}) <= 10 AND ${table.listPins} IS NOT NULL
+          AND cardinality(${table.listPins}) <= 20 END`,
+    ),
     index('update_request_route_requested_idx').on(table.routeId, table.requestedAt),
+    index('update_request_country_requested_idx').on(table.country, table.requestedAt),
     pgPolicy('update_request_read', {
       for: 'select',
       to: ['app_api', 'app_jobs', 'knowledge_definer'],
@@ -1178,11 +1224,17 @@ export const updateEnd = knowledge.table(
     failure: text('failure'),
     contentHash: text('content_hash'),
     proposal: jsonb('proposal'),
+    /** The content hash of the first official-domain list a new country's proposal holds. */
+    listHash: text('list_hash'),
     at: timestamp('at', { withTimezone: true })
       .notNull()
       .default(sql`clock_timestamp()`),
   },
   (table) => [
+    check(
+      'update_end_list_hash',
+      sql`${table.listHash} IS NULL OR (${table.failure} IS NULL AND ${table.listHash} ~ '^[0-9a-f]{64}$')`,
+    ),
     check(
       'update_end_shape',
       sql`CASE WHEN ${table.failure} IS NULL

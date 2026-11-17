@@ -1,6 +1,7 @@
 import {
   type EditItemRequest,
   type EditItemResponse,
+  type ProposedDomainList,
   type ReviewItem,
   type VersionReview,
   editableItemKinds,
@@ -12,6 +13,8 @@ import {
   checkItems,
   identityKey,
   machineReadableUrls,
+  officialDomainListSchema,
+  officialDomainsKey,
   pageLanguages,
   verifyAnswers,
 } from '@arca/domain';
@@ -21,6 +24,7 @@ import {
   type RuleRowReading,
   type RuleRows,
   checkProposal,
+  verifiedOfficialDomainLists,
   verifiedRouteVersion,
 } from '@arca/knowledge';
 import { sql } from 'drizzle-orm';
@@ -130,6 +134,45 @@ interface EditRow {
 
 const asReviewItem = (item: UpdateItem): ReviewItem => ({ ...item, edited: false });
 
+/**
+ * The first official-domain list a version pins that a new-route request proposed, with its state
+ * (ADR-0031), or null when every list it pins was imported.
+ */
+function proposedListOf(
+  stored: RuleRows,
+  version: RouteVersion,
+  reading: RuleRowReading,
+  states: DecisionStates,
+): ProposedDomainList | null {
+  const lists = verifiedOfficialDomainLists(stored, reading);
+  for (const pin of version.officialDomains) {
+    const list = lists.find(({ id, number }) => id === pin.id && number === pin.number);
+    const row = stored.officialDomainLists.find(
+      ({ id, number }) => id === pin.id && number === pin.number,
+    );
+    const content = officialDomainListSchema.safeParse(row?.content);
+    if (list?.fromRequest !== true || !content.success) continue;
+    const identity = { listId: list.id, number: list.number, hash: list.hash };
+    return {
+      ...identity,
+      state: states.get(officialDomainsKey(identity)) ?? 'proposed',
+      issuer: content.data.issuer,
+      hosts: content.data.hosts.map(({ host, source }) => ({
+        host,
+        proof: { url: source.url, title: source.title },
+      })),
+    };
+  }
+  return null;
+}
+
+/** Until its first list is active, a new country's items rest on hosts nobody approved yet. */
+const listPending = (item: ReviewItem): ReviewItem => ({
+  ...item,
+  list: 'unconfirmed',
+  reason: 'list_pending',
+});
+
 const parseJson = (text: string): unknown => {
   try {
     return JSON.parse(text) as unknown;
@@ -219,7 +262,16 @@ export function createVersionReviews({
       const verified = verifiedRouteVersion(stored, routeId, number, reading);
       const lists = await listsOf(stored, routeId, number, 0);
       if (verified === undefined || lists === undefined) return 'not_found';
-      return { ...lists, editable: editableItems(verified.version, verified.row.content) };
+      const domainList = proposedListOf(stored, verified.version, reading, await states());
+      return {
+        ...lists,
+        items:
+          domainList === null || domainList.state === 'active'
+            ? lists.items
+            : lists.items.map(listPending),
+        editable: editableItems(verified.version, verified.row.content),
+        domainList,
+      };
     },
 
     edit: async (accountId, request) => {
@@ -275,7 +327,13 @@ export function createVersionReviews({
               ),
       } as unknown as Json;
 
-      const checked = await checkProposal(stored, version, content, verified.row.cases, reading);
+      const checked = await checkProposal(
+        stored,
+        { kind: 'update', base: version },
+        content,
+        verified.row.cases,
+        reading,
+      );
       if (!checked.ok) return refused(checked.problems);
       const checkItem = checkItems(checked.entry).find(({ key }) => key === itemKey);
       if (!checkItem?.urls.includes(source.url)) {

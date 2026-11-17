@@ -1,6 +1,7 @@
 import {
   type ApiError,
   type EditItemResponse,
+  type ProposedDomainList,
   type ReviewItem,
   type VersionReview,
   type VersionView,
@@ -16,6 +17,7 @@ import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { commonFailure, reach } from '../requests.js';
 import { OpenRouteVersionContext, TextArea } from './corrections.js';
+import { Decision, decideOfficialDomains } from './decision.js';
 import { card } from './review-parts.js';
 import { stateTone } from './state-tone.js';
 import type { KnowledgeWords } from './words.js';
@@ -281,6 +283,72 @@ function EditItem({
   );
 }
 
+/**
+ * A new country's first official-domain list (ADR-0031): each host with the registry page code
+ * found it on, decided apart and before the route that pins it.
+ */
+function DomainListReview({
+  list,
+  country,
+  words,
+}: {
+  readonly list: ProposedDomainList;
+  readonly country: string;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const titleId = useId();
+  const countryName = words.country(country);
+  return (
+    <section aria-labelledby={titleId} className={`${card} gap-4`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h5 id={titleId} className="font-medium">
+            {t('knowledge.proposal.domainList.title', { country: countryName })}
+          </h5>
+          <p className="text-small text-muted">
+            {t('knowledge.proposal.domainList.issuer', { issuer: list.issuer })}
+          </p>
+        </div>
+        <StatusChip
+          tone={stateTone(list.state)}
+          label={t('knowledge.proposal.domainList.state', { state: list.state })}
+        />
+      </div>
+      {list.state === 'proposed' && <p>{t('knowledge.proposal.domainList.lead')}</p>}
+      <ul className="grid gap-3 md:grid-cols-2">
+        {list.hosts.map(({ host, proof }) => (
+          <li key={host} className="flex min-w-0 flex-col gap-1">
+            <span className="font-medium break-words">{host}</span>
+            <span className="text-small break-words">
+              <span className="text-muted">{t('knowledge.proposal.domainList.proof')} </span>
+              <a
+                href={proof.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={textLinkClass}
+              >
+                {proof.title}
+              </a>{' '}
+              <span className="text-muted">{t('knowledge.proposal.opensSite')}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {list.state !== 'active' && (
+        <Decision
+          subject="list"
+          state={list.state}
+          decide={(kind) => decideOfficialDomains(kind, list)}
+          activateLead={t('knowledge.proposal.domainList.activateLead', { country: countryName })}
+          rejectWarning={null}
+          words={words}
+        />
+      )}
+    </section>
+  );
+}
+
 /** Every version of the route with its state, superseded and rejected ones included. */
 function RouteHistory({
   view,
@@ -381,6 +449,9 @@ export function ProposalReview({
           </Button>
         )}
       </div>
+      {data.domainList !== null && (
+        <DomainListReview list={data.domainList} country={view.country} words={words} />
+      )}
       {data.items.length > 0 && (
         <Lists
           items={data.items}

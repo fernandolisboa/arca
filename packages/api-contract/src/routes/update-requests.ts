@@ -1,8 +1,10 @@
 import {
+  countryCodeSchema,
   maxCheckCostMicroUsd,
   maxCheckItemKeyLength,
   proposalLists,
   routeIdSchema,
+  slugSchema,
   updateFailures,
   updateStages,
 } from '@arca/domain';
@@ -36,10 +38,9 @@ export const UpdateRequestQuery = z.strictObject({ routeId: routeIdSchema });
 /** A stage as the progress shows it. */
 export const updateStageStates = ['done', 'failed', 'running', 'pending', 'skipped'] as const;
 
-export const UpdateProgress = z.strictObject({
+/** What every request's progress shows, an update of a route or a new route alike. */
+const requestProgress = {
   requestId: z.uuid(),
-  routeId: routeIdSchema,
-  baseNumber: z.int().min(1),
   requestedAt: z.iso.datetime(),
   /** `stalled`: no end an hour after it was asked for, so it no longer blocks a new one. */
   state: z.enum(['running', 'finished', 'failed', 'stalled']),
@@ -67,6 +68,12 @@ export const UpdateProgress = z.strictObject({
     .nullable(),
   /** The number the proposal was stored under as a proposed version, once the request finished. */
   proposedNumber: z.int().min(1).nullable(),
+};
+
+export const UpdateProgress = z.strictObject({
+  ...requestProgress,
+  routeId: routeIdSchema,
+  baseNumber: z.int().min(1),
 });
 export type UpdateProgress = z.infer<typeof UpdateProgress>;
 
@@ -82,6 +89,70 @@ export const getNewestUpdateRequest = {
   query: UpdateRequestQuery,
   response: { description: 'The newest request, or null', schema: NewestUpdateRequest },
 } as const satisfies RouteDefinition<typeof NewestUpdateRequest>;
+
+/*
+ * New-route requests (ADR-0031, #461): an admin names a country from the dataset and a visa or
+ * entry type the catalog lacks, with official links. The same pipeline researches the route's
+ * first version, its cases and, for a country with no approved official-domain list, its first
+ * list, which the admin decides apart, before the route.
+ */
+
+/** The most links a new-route request names. */
+export const maxNewRouteLinks = 10;
+
+export const StartNewRouteRequest = z.strictObject({
+  country: countryCodeSchema,
+  /** The visa or entry type, as the admin names it; research reads it as data. */
+  visa: z.string().trim().min(2).max(120),
+  /**
+   * Official pages to start from: for a country with approved lists, those on them reach research
+   * as addresses; for a country with none, their hosts are the hosts research may start on.
+   */
+  links: z
+    .array(z.url({ protocol: /^https$/ }).max(2000))
+    .max(maxNewRouteLinks)
+    .default([]),
+});
+export type StartNewRouteRequest = z.input<typeof StartNewRouteRequest>;
+
+export const startNewRouteRequest = {
+  method: 'post',
+  path: '/knowledge/new-route-requests',
+  operationId: 'startNewRouteRequest',
+  summary:
+    "Starts, for an admin, a request for a new route of one country: research of its first version and cases on the country's approved official-domain lists or, for a country with none, from the hosts of the links given, proposing its first list; then validation, at most one correction and a final validation. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a country outside the dataset; 409 update_live while a new-route request of the country runs; 400 links_needed for a country with no approved list and no link; 502 update_not_started; 503 update_off where the AI keys are not set",
+  body: StartNewRouteRequest,
+  response: { description: 'Started', schema: StartedUpdateRequest },
+} as const satisfies RouteDefinition<typeof StartedUpdateRequest>;
+
+export const NewRouteProgress = z.strictObject({
+  ...requestProgress,
+  country: countryCodeSchema,
+  visa: z.string().max(120),
+  /** Whether the country had no approved list, so the request proposes its first. */
+  newCountry: z.boolean(),
+  /** The route ID the proposal took, once the request finished. */
+  proposedRouteId: routeIdSchema.nullable(),
+});
+export type NewRouteProgress = z.infer<typeof NewRouteProgress>;
+
+export const NewRouteRequests = z.strictObject({
+  requests: z.array(NewRouteProgress).max(10),
+  /** The country dataset's current codes, the countries a request may name. */
+  countries: z.array(countryCodeSchema).max(400),
+  /** The countries with an approved official-domain list, where a link is optional. */
+  countriesWithLists: z.array(countryCodeSchema).max(400),
+});
+export type NewRouteRequests = z.infer<typeof NewRouteRequests>;
+
+export const getNewRouteRequests = {
+  method: 'get',
+  path: '/knowledge/new-route-requests',
+  operationId: 'getNewRouteRequests',
+  summary:
+    'The ten newest new-route requests with their progress by stage and what they cost, the countries a request may name and those with an approved official-domain list; never calls a model. 403 not_admin',
+  response: { description: 'The newest requests', schema: NewRouteRequests },
+} as const satisfies RouteDefinition<typeof NewRouteRequests>;
 
 /*
  * Reviewing one route version (ADR-0031): its items in the three lists the request that proposed it
@@ -123,6 +194,27 @@ export const editableItemKinds = [
   'duration',
 ] as const;
 
+/**
+ * A first official-domain list a new-route request proposed (ADR-0031): each host with the
+ * registry page code found it on. It is decided apart, before the route that pins it.
+ */
+export const ProposedDomainList = z.strictObject({
+  listId: slugSchema,
+  number: z.int().min(1),
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+  state: z.enum(['active', 'rejected', 'proposed']),
+  issuer: z.string().max(200),
+  hosts: z
+    .array(
+      z.strictObject({
+        host: z.string().max(253),
+        proof: z.strictObject({ url: officialUrl, title: z.string().max(200) }),
+      }),
+    )
+    .max(100),
+});
+export type ProposedDomainList = z.infer<typeof ProposedDomainList>;
+
 export const VersionReview = z.strictObject({
   /**
    * Where the lists come from: the update request that proposed this version, a hand edit of one,
@@ -141,6 +233,11 @@ export const VersionReview = z.strictObject({
       }),
     )
     .max(200),
+  /**
+   * The first official-domain list the version pins and a new-route request proposed, if any. Until
+   * it is active, every item shows as not confirmed and the version cannot be activated.
+   */
+  domainList: ProposedDomainList.nullable(),
 });
 export type VersionReview = z.infer<typeof VersionReview>;
 
@@ -188,9 +285,55 @@ export const editVersionItem = {
   response: { description: 'Stored or refused', schema: EditItemResponse },
 } as const satisfies RouteDefinition<typeof EditItemResponse>;
 
+/*
+ * Deciding a first official-domain list (ADR-0031): as for a route version, after a
+ * knowledge_decision step-up bound to its content hash, with step-up actions of its own.
+ */
+
+export const DecideOfficialDomainsRequest = z.strictObject({
+  listId: slugSchema,
+  number: z.int().min(1).max(1_000_000),
+});
+export type DecideOfficialDomainsRequest = z.infer<typeof DecideOfficialDomainsRequest>;
+
+const DecidedOfficialDomains = z.object({ decisionId: z.uuid() });
+
+export const activateOfficialDomains = {
+  method: 'post',
+  path: '/knowledge/official-domains/activate',
+  operationId: 'activateOfficialDomains',
+  summary:
+    'Activates a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash. 403 not_admin, 403 step_up_required, 404 not_found for a list no request proposed, 409 already_rejected',
+  body: DecideOfficialDomainsRequest,
+  response: { description: 'Activated', schema: DecidedOfficialDomains },
+} as const satisfies RouteDefinition<typeof DecidedOfficialDomains>;
+
+export const rejectOfficialDomains = {
+  method: 'post',
+  path: '/knowledge/official-domains/reject',
+  operationId: 'rejectOfficialDomains',
+  summary:
+    'Rejects a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
+  body: DecideOfficialDomainsRequest,
+  response: { description: 'Rejected', schema: DecidedOfficialDomains },
+} as const satisfies RouteDefinition<typeof DecidedOfficialDomains>;
+
+/** The step-up action of a list decision: ID and number targets, the hash a field. */
+export function decideOfficialDomainsAction(
+  decision: 'activateOfficialDomains' | 'rejectOfficialDomains',
+  { listId, number }: DecideOfficialDomainsRequest,
+  contentHash: string,
+) {
+  return { action: decision, targets: [listId, String(number)], fields: { contentHash } };
+}
+
 export const updateRequestRoutes = {
   startUpdateRequest,
   getNewestUpdateRequest,
+  startNewRouteRequest,
+  getNewRouteRequests,
+  activateOfficialDomains,
+  rejectOfficialDomains,
   getVersionReview,
   editVersionItem,
 } as const;

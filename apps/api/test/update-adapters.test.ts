@@ -52,7 +52,12 @@ describe('the Claude researcher (ADR-0031)', () => {
     officialHosts: ['gov.example', 'immigration.gov.example'],
     today: '2026-11-17',
   };
-  const reply = { versionJson: '{"number":3}', casesJson: '{"cases":[]}', quotes: [] };
+  const reply = {
+    versionJson: '{"number":3}',
+    casesJson: '{"cases":[]}',
+    quotes: [],
+    domainListJson: '',
+  };
   const message = (text: string) =>
     Response.json({
       id: 'msg_1',

@@ -73,6 +73,7 @@ export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore
             number: officialDomainList.number,
             content: officialDomainList.content,
             contentHash: officialDomainList.contentHash,
+            requestId: officialDomainList.requestId,
           })
           .from(officialDomainList),
       }),

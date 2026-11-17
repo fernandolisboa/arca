@@ -9,7 +9,7 @@ import {
 } from '@arca/domain';
 import type { Database } from '@arca/db';
 import { ruleVerdict, updateEnd, updateRequest, updateStage } from '@arca/db/knowledge-schema';
-import { asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { researchReplySchema } from './ports.js';
 
@@ -29,11 +29,20 @@ export const updateItemSchema = z.strictObject({
 });
 export type UpdateItem = z.infer<typeof updateItemSchema>;
 
+/** A new country's first official-domain list, as code checked it with its proposal (ADR-0031). */
+export const proposedListSchema = z.strictObject({ content: z.json(), contentHash: z.string() });
+export type ProposedList = z.infer<typeof proposedListSchema>;
+
 /** What a validation found: the checked proposal, or why it is none, and each item's list. */
 export const validationOutputSchema = z.strictObject({
   problems: z.array(z.string().max(2000)).max(50),
   proposal: z
-    .strictObject({ content: z.json(), contentHash: z.string(), cases: z.json() })
+    .strictObject({
+      content: z.json(),
+      contentHash: z.string(),
+      cases: z.json(),
+      domainList: proposedListSchema.optional(),
+    })
     .nullable(),
   items: z.array(updateItemSchema).max(400),
   pages: z
@@ -58,16 +67,34 @@ export const endedProposalSchema = z.strictObject({
   contentHash: z.string(),
   cases: z.json(),
   items: z.array(updateItemSchema).max(400),
+  /** A new country's first official-domain list, stored with the version and decided apart. */
+  domainList: proposedListSchema.optional(),
 });
 export type EndedProposal = z.infer<typeof endedProposalSchema>;
 
-export interface StoredRequest {
+/** What a request asks for: a stored route researched again, or a new route of a country. */
+export type RequestSubject =
+  | { readonly kind: 'update'; readonly routeId: string; readonly baseNumber: number }
+  | {
+      readonly kind: 'new_route';
+      readonly country: string;
+      readonly visa: string;
+      readonly links: readonly string[];
+      /** The country's approved lists, `<id>/<number>`; empty for a country with none. */
+      readonly listPins: readonly string[];
+    };
+
+export type StoredRequest = RequestSubject & {
   readonly id: string;
-  readonly routeId: string;
-  readonly baseNumber: number;
   /** Milliseconds since the epoch, on the database's clock. */
   readonly requestedAt: number;
-}
+};
+
+/** A stored update of a route. */
+export type StoredUpdate = Extract<StoredRequest, { readonly kind: 'update' }>;
+
+/** A stored new-route request. */
+export type StoredNewRoute = Extract<StoredRequest, { readonly kind: 'new_route' }>;
 
 export interface StoredStage {
   readonly stage: UpdateStage;
@@ -98,7 +125,9 @@ export type StoredEnd =
 export interface UpdateStore {
   readonly request: (id: string) => Promise<StoredRequest | undefined>;
   /** A route's newest request, if it has one. */
-  readonly newest: (routeId: string) => Promise<StoredRequest | undefined>;
+  readonly newest: (routeId: string) => Promise<StoredUpdate | undefined>;
+  /** The newest new-route requests, newest first. */
+  readonly newRoutes: (limit: number) => Promise<readonly StoredNewRoute[]>;
   readonly stages: (requestId: string) => Promise<readonly StoredStage[]>;
   readonly end: (requestId: string) => Promise<StoredEnd | undefined>;
   readonly addStage: (requestId: string, position: number, stage: NewStage) => Promise<void>;
@@ -132,17 +161,35 @@ export function postgresUpdateStore(db: () => Database): UpdateStore {
     id: updateRequest.id,
     routeId: updateRequest.routeId,
     baseNumber: updateRequest.baseNumber,
+    country: updateRequest.country,
+    visa: updateRequest.visa,
+    links: updateRequest.links,
+    listPins: updateRequest.listPins,
     requestedAt: updateRequest.requestedAt,
   };
+  /** A row as its subject; the table's shape check makes every row one or the other. */
   const asRequest = (row: {
     id: string;
-    routeId: string;
-    baseNumber: number;
+    routeId: string | null;
+    baseNumber: number | null;
+    country: string | null;
+    visa: string | null;
+    links: string[] | null;
+    listPins: string[] | null;
     requestedAt: Date;
-  }) => ({
-    ...row,
-    requestedAt: ms(row.requestedAt),
-  });
+  }): StoredRequest => {
+    const common = { id: row.id, requestedAt: ms(row.requestedAt) };
+    return row.routeId !== null && row.baseNumber !== null
+      ? { ...common, kind: 'update', routeId: row.routeId, baseNumber: row.baseNumber }
+      : {
+          ...common,
+          kind: 'new_route',
+          country: row.country ?? '',
+          visa: row.visa ?? '',
+          links: row.links ?? [],
+          listPins: row.listPins ?? [],
+        };
+  };
   return {
     request: async (id) => {
       const [row] = await db()
@@ -158,7 +205,19 @@ export function postgresUpdateStore(db: () => Database): UpdateStore {
         .where(eq(updateRequest.routeId, routeId))
         .orderBy(desc(updateRequest.requestedAt))
         .limit(1);
-      return row === undefined ? undefined : asRequest(row);
+      const request = row === undefined ? undefined : asRequest(row);
+      return request?.kind === 'update' ? request : undefined;
+    },
+    newRoutes: async (limit) => {
+      const rows = await db()
+        .select(requestColumns)
+        .from(updateRequest)
+        .where(isNull(updateRequest.routeId))
+        .orderBy(desc(updateRequest.requestedAt))
+        .limit(limit);
+      return rows
+        .map(asRequest)
+        .flatMap((request) => (request.kind === 'new_route' ? [request] : []));
     },
     stages: async (requestId) => {
       const rows = await db()
@@ -215,17 +274,29 @@ export function postgresUpdateStore(db: () => Database): UpdateStore {
           INSERT INTO knowledge.update_end (request_id, failure) VALUES (${requestId}, ${end.failure})`);
         return;
       }
-      const { content, contentHash, cases } = end.proposal;
+      const { content, contentHash, cases, domainList } = end.proposal;
       // The end and the version it proposes in one transaction: the version's insert policy reads
-      // the end, and a version with no end is never stored (ADR-0031).
+      // the end, and a version with no end is never stored (ADR-0031). A new country's first list
+      // goes in with them, under the hash the end names.
       const stored = db().transaction(async (tx) => {
         await tx.execute(sql`
-          INSERT INTO knowledge.update_end (request_id, content_hash, proposal)
-          VALUES (${requestId}, ${contentHash}, ${JSON.stringify(end.proposal)}::jsonb)`);
+          INSERT INTO knowledge.update_end (request_id, content_hash, proposal, list_hash)
+          VALUES (${requestId}, ${contentHash}, ${JSON.stringify(end.proposal)}::jsonb,
+                  ${domainList?.contentHash ?? null})`);
+        if (domainList !== undefined) {
+          await tx.execute(sql`
+            INSERT INTO knowledge.official_domain_list (list_id, number, content, content_hash,
+                                                        request_id)
+            SELECT ${JSON.stringify(domainList.content)}::jsonb ->> 'id',
+                   (${JSON.stringify(domainList.content)}::jsonb ->> 'number')::integer,
+                   ${JSON.stringify(domainList.content)}::jsonb, ${domainList.contentHash},
+                   ${requestId}`);
+        }
         await tx.execute(sql`
           INSERT INTO knowledge.route_version (route_id, number, content, content_hash, cases,
                                                request_id)
-          SELECT asked.route_id, (${JSON.stringify(content)}::jsonb ->> 'number')::integer,
+          SELECT ${JSON.stringify(content)}::jsonb ->> 'routeId',
+                 (${JSON.stringify(content)}::jsonb ->> 'number')::integer,
                  ${JSON.stringify(content)}::jsonb, ${contentHash}, ${JSON.stringify(cases)}::jsonb,
                  asked.id
             FROM knowledge.update_request asked WHERE asked.id = ${requestId}`);

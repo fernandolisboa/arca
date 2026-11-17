@@ -70,6 +70,7 @@ function decisions(
     audit: auditLog(testDatabase.auditDb),
     catalog: () => Promise.resolve(identities),
     comparisons,
+    officialDomains: () => Promise.resolve({ lists: [], pinsOf: () => [] }),
     role: adminRole(() => testDatabase.apiDb, owners),
     origin,
     logger: {

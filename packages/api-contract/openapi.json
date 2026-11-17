@@ -3192,6 +3192,8 @@
                               "version_rejected",
                               "comparison_activated",
                               "comparison_rejected",
+                              "official_domains_activated",
+                              "official_domains_rejected",
                               "admin_granted",
                               "admin_removed",
                               "correction_requested",
@@ -37876,14 +37878,6 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "routeId": {
-                          "type": "string",
-                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
-                        },
-                        "baseNumber": {
-                          "type": "integer",
-                          "minimum": 1
-                        },
                         "requestedAt": {
                           "type": "string",
                           "format": "date-time"
@@ -38041,12 +38035,18 @@
                             "null"
                           ],
                           "minimum": 1
+                        },
+                        "routeId": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                        },
+                        "baseNumber": {
+                          "type": "integer",
+                          "minimum": 1
                         }
                       },
                       "required": [
                         "requestId",
-                        "routeId",
-                        "baseNumber",
                         "requestedAt",
                         "state",
                         "failure",
@@ -38054,7 +38054,9 @@
                         "cost",
                         "lists",
                         "contentHash",
-                        "proposedNumber"
+                        "proposedNumber",
+                        "routeId",
+                        "baseNumber"
                       ],
                       "additionalProperties": false
                     }
@@ -38063,6 +38065,529 @@
                     "request"
                   ],
                   "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/new-route-requests": {
+      "post": {
+        "operationId": "startNewRouteRequest",
+        "summary": "Starts, for an admin, a request for a new route of one country: research of its first version and cases on the country's approved official-domain lists or, for a country with none, from the hosts of the links given, proposing its first list; then validation, at most one correction and a final validation. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a country outside the dataset; 409 update_live while a new-route request of the country runs; 400 links_needed for a country with no approved list and no link; 502 update_not_started; 503 update_off where the AI keys are not set",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "country": {
+                    "type": "string",
+                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                  },
+                  "visa": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2000,
+                      "format": "uri"
+                    },
+                    "maxItems": 10,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "country",
+                  "visa"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "requestId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getNewRouteRequests",
+        "summary": "The ten newest new-route requests with their progress by stage and what they cost, the countries a request may name and those with an approved official-domain list; never calls a model. 403 not_admin",
+        "responses": {
+          "200": {
+            "description": "The newest requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "requestId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "requestedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "running",
+                              "finished",
+                              "failed",
+                              "stalled"
+                            ]
+                          },
+                          "failure": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "unknown_route",
+                              "not_configured",
+                              "research_failed",
+                              "research_timeout",
+                              "research_unparsable",
+                              "validation_failed",
+                              "correction_failed",
+                              "correction_timeout",
+                              "correction_unparsable",
+                              "final_validation_failed",
+                              "proposal_invalid",
+                              "out_of_order",
+                              null
+                            ]
+                          },
+                          "stages": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "stage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "research",
+                                    "validation",
+                                    "correction",
+                                    "final_validation"
+                                  ]
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "done",
+                                    "failed",
+                                    "running",
+                                    "pending",
+                                    "skipped"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "stage",
+                                "state"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "cost": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "priced"
+                                    ]
+                                  },
+                                  "microUsd": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 1000000000
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "microUsd"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "unknown"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "scripted"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "lists": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "confirmed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "divergent": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "unconfirmed": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            }
+                          },
+                          "contentHash": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[0-9a-f]{64}$"
+                          },
+                          "proposedNumber": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1
+                          },
+                          "country": {
+                            "type": "string",
+                            "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                          },
+                          "visa": {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          "newCountry": {
+                            "type": "boolean"
+                          },
+                          "proposedRouteId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          }
+                        },
+                        "required": [
+                          "requestId",
+                          "requestedAt",
+                          "state",
+                          "failure",
+                          "stages",
+                          "cost",
+                          "lists",
+                          "contentHash",
+                          "proposedNumber",
+                          "country",
+                          "visa",
+                          "newCountry",
+                          "proposedRouteId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 10
+                    },
+                    "countries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      },
+                      "maxItems": 400
+                    },
+                    "countriesWithLists": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      },
+                      "maxItems": 400
+                    }
+                  },
+                  "required": [
+                    "requests",
+                    "countries",
+                    "countriesWithLists"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/official-domains/activate": {
+      "post": {
+        "operationId": "activateOfficialDomains",
+        "summary": "Activates a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash. 403 not_admin, 403 step_up_required, 404 not_found for a list no request proposed, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "listId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "listId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/official-domains/reject": {
+      "post": {
+        "operationId": "rejectOfficialDomains",
+        "summary": "Rejects a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "listId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "listId",
+                  "number"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "decisionId"
+                  ]
                 }
               }
             }
@@ -38255,12 +38780,90 @@
                         "additionalProperties": false
                       },
                       "maxItems": 200
+                    },
+                    "domainList": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "listId": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                        },
+                        "number": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "hash": {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "rejected",
+                            "proposed"
+                          ]
+                        },
+                        "issuer": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "hosts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "host": {
+                                "type": "string",
+                                "maxLength": 253
+                              },
+                              "proof": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "maxLength": 2000
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  }
+                                },
+                                "required": [
+                                  "url",
+                                  "title"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "host",
+                              "proof"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 100
+                        }
+                      },
+                      "required": [
+                        "listId",
+                        "number",
+                        "hash",
+                        "state",
+                        "issuer",
+                        "hosts"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
                     "origin",
                     "items",
-                    "editable"
+                    "editable",
+                    "domainList"
                   ],
                   "additionalProperties": false
                 }

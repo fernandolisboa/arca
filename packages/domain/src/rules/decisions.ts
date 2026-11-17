@@ -8,8 +8,22 @@ import {
 
 export type DecisionKind = 'activate' | 'reject';
 
-/** What a decision is about (ADR-0026): a route version or a comparison version. */
-export type DecisionSubject = 'route' | 'comparison';
+/**
+ * What a decision is about: a route version, a comparison version (ADR-0026) or an official-domain
+ * list version a new-route request proposed (ADR-0031).
+ */
+export type DecisionSubject = 'route' | 'comparison' | 'official_domains';
+
+/** An official-domain list version's identity: its ID, number and content hash. */
+export interface OfficialDomainsIdentity {
+  readonly listId: string;
+  readonly number: number;
+  readonly hash: string;
+}
+
+/** The key of an official-domain list version in `DecisionStates`. */
+export const officialDomainsKey = ({ listId, number, hash }: OfficialDomainsIdentity): string =>
+  `official-domains/${listId}/${String(number)}/${hash}`;
 
 /** A version identity with the subject kind it belongs to, so each kind keeps its own identity. */
 export type DecidedVersion =
@@ -17,7 +31,8 @@ export type DecidedVersion =
       readonly subject: 'route';
       readonly identity: Pick<VersionIdentity, 'routeId' | 'number' | 'hash'>;
     }
-  | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity };
+  | { readonly subject: 'comparison'; readonly identity: ComparisonIdentity }
+  | { readonly subject: 'official_domains'; readonly identity: OfficialDomainsIdentity };
 
 /**
  * A stored decision on one version identity, with whether its admin and assertion check out.
@@ -30,17 +45,21 @@ export type CheckedDecision = DecidedVersion & {
 
 /** The key of a decided version in `DecisionStates`, by its subject kind. */
 export function decidedKey(decision: DecidedVersion): string {
-  return decision.subject === 'route'
-    ? identityKey(decision.identity)
-    : comparisonIdentityKey(decision.identity);
+  switch (decision.subject) {
+    case 'route':
+      return identityKey(decision.identity);
+    case 'comparison':
+      return comparisonIdentityKey(decision.identity);
+    case 'official_domains':
+      return officialDomainsKey(decision.identity);
+  }
 }
 
 /**
  * Each decided identity's state (ADR-0022): rejected if any rejection counts, else active if a
  * verified activation counts. A rejection counts even unverified, so a fault or a forged row can
- * only take a version out of use; an unverified activation counts for nothing. Route and
- * comparison versions have keys of different shapes, so a decision on one never counts for the
- * other (ADR-0026).
+ * only take a version out of use; an unverified activation counts for nothing. Each subject kind
+ * has keys of its own shape, so a decision on one never counts for another (ADR-0026).
  */
 export function decisionStates(decisions: readonly CheckedDecision[]): DecisionStates {
   const states = new Map<string, DecisionState>();

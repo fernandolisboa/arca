@@ -128,7 +128,8 @@
     "knowledge.answer_new_route_request",
     "knowledge.set_ai_stage",
     "knowledge.start_update_request",
-    "knowledge.edit_route_version"
+    "knowledge.edit_route_version",
+    "knowledge.start_new_route_request"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []

@@ -33,6 +33,8 @@ export interface PinnedFileRow {
   readonly number: number;
   readonly content: Json;
   readonly contentHash: string;
+  /** The new-route request that proposed an official-domain list; null or absent when imported. */
+  readonly requestId?: string | null;
 }
 
 /** Every rule row of the `knowledge` schema. */
@@ -47,6 +49,16 @@ export interface OfficialDomainHosts {
   readonly id: string;
   readonly number: number;
   readonly hosts: readonly string[];
+}
+
+/** An official-domain list as the read verified it, with its hash and where it came from. */
+export interface VerifiedOfficialDomainList extends OfficialDomainHosts {
+  readonly hash: string;
+  /**
+   * Whether a new-route request proposed it, so it counts only once an admin activates it; an
+   * imported list passed a reviewed pull request (ADR-0031).
+   */
+  readonly fromRequest: boolean;
 }
 
 /** One version's current cases, without their snapshots, for the activation screen. */
@@ -107,7 +119,7 @@ const keyOf = (kind: string, id: string, number: number): string =>
 /** The country sets and official-domain lists that hash to their stored hash, and how to pin them. */
 interface PinnedFiles {
   readonly refused: string[];
-  readonly officialDomains: OfficialDomainHosts[];
+  readonly officialDomains: VerifiedOfficialDomainList[];
   readonly sets: ReadonlyMap<
     string,
     { readonly content: Json; readonly set: CountrySet; readonly pinned: Record<string, Json> }
@@ -122,7 +134,7 @@ function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
     reading.sha256(canonicalize({ version, pinned }));
 
   const lists = new Map<string, Json>();
-  const officialDomains: OfficialDomainHosts[] = [];
+  const officialDomains: VerifiedOfficialDomainList[] = [];
   for (const row of rows.officialDomainLists) {
     const key = keyOf('official-domains', row.id, row.number);
     const parsed = officialDomainListSchema.safeParse(row.content);
@@ -140,6 +152,8 @@ function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
       id: row.id,
       number: row.number,
       hosts: parsed.data.hosts.map(({ host }) => host),
+      hash: row.contentHash,
+      fromRequest: row.requestId !== undefined && row.requestId !== null,
     });
   }
 
@@ -185,6 +199,16 @@ function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
 
   return { refused, officialDomains, sets, hashOf, commonPins };
 }
+
+/** The content hash of an official-domain list, which pins nothing (ADR-0031). */
+export const officialDomainListHash = (content: Json, reading: Pick<RuleRowReading, 'sha256'>) =>
+  reading.sha256(canonicalize({ version: content, pinned: {} }));
+
+/** The official-domain lists that read: their content parses, names its row and hashes to it. */
+export const verifiedOfficialDomainLists = (
+  rows: RuleRows,
+  reading: RuleRowReading,
+): readonly VerifiedOfficialDomainList[] => readPinnedFiles(rows, reading).officialDomains;
 
 /**
  * Everything a route version pins, by key, as its hash covers it: the countries files, its
@@ -276,7 +300,12 @@ export function routeVersionContentHash(
  */
 export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleData {
   const files = readPinnedFiles(rows, reading);
-  const { refused, officialDomains } = files;
+  const { refused } = files;
+  const officialDomains = files.officialDomains.map(({ id, number, hosts }) => ({
+    id,
+    number,
+    hosts,
+  }));
   const read: { identity: VersionIdentity; entry: CatalogEntry; cases: Json | null }[] = [];
   const ordered = [...rows.routeVersions].sort(
     (left, right) => left.routeId.localeCompare(right.routeId, 'en') || left.number - right.number,

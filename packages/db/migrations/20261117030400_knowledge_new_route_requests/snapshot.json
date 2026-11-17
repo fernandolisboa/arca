@@ -1,0 +1,584 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "aa11c123-0aca-4762-85d6-de4251ba8a11",
+  "prevIds": [
+    "5cc88a28-77fe-4e93-b204-64ccf62e8e61"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "list_id"
+      ],
+      "writes": [
+        "s|col|knowledge.decision.list_id",
+        "n|col|knowledge.decision.list_id",
+        "e|col|knowledge.decision.list_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "official_domain_list",
+        "request_id"
+      ],
+      "writes": [
+        "s|col|knowledge.official_domain_list.request_id",
+        "n|col|knowledge.official_domain_list.request_id",
+        "e|col|knowledge.official_domain_list.request_id"
+      ],
+      "reads": [
+        "n|tbl|knowledge.official_domain_list",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_end",
+        "list_hash"
+      ],
+      "writes": [
+        "s|col|knowledge.update_end.list_hash",
+        "n|col|knowledge.update_end.list_hash",
+        "e|col|knowledge.update_end.list_hash"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_end",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "country"
+      ],
+      "writes": [
+        "s|col|knowledge.update_request.country",
+        "n|col|knowledge.update_request.country",
+        "e|col|knowledge.update_request.country"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "visa"
+      ],
+      "writes": [
+        "s|col|knowledge.update_request.visa",
+        "n|col|knowledge.update_request.visa",
+        "e|col|knowledge.update_request.visa"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "links"
+      ],
+      "writes": [
+        "s|col|knowledge.update_request.links",
+        "n|col|knowledge.update_request.links",
+        "e|col|knowledge.update_request.links"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "list_pins"
+      ],
+      "writes": [
+        "s|col|knowledge.update_request.list_pins",
+        "n|col|knowledge.update_request.list_pins",
+        "e|col|knowledge.update_request.list_pins"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "route_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.update_request.route_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_request.route_id"
+      ],
+      "sqlHash": "5e290491e335dc4f"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "update_request",
+        "base_number"
+      ],
+      "writes": [
+        "s|colprop|knowledge.update_request.base_number.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_request.base_number"
+      ],
+      "sqlHash": "480a27f3770222ea"
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "official_domain_list"
+      ],
+      "writes": [
+        "s|uq|knowledge.official_domain_list.official_domain_list_request_id_key",
+        "n|uq|knowledge.official_domain_list.official_domain_list_request_id_key",
+        "e|uq|knowledge.official_domain_list.official_domain_list_request_id_key",
+        "n|con|knowledge.official_domain_list.official_domain_list_request_id_key",
+        "n|rel|knowledge.official_domain_list_request_id_key"
+      ],
+      "reads": [
+        "n|tbl|knowledge.official_domain_list",
+        "n|sch|knowledge",
+        "n|col|knowledge.official_domain_list.request_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "update_request",
+        "update_request_country_requested_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.update_request_country_requested_idx",
+        "n|idx|knowledge.update_request_country_requested_idx",
+        "e|idx|knowledge.update_request_country_requested_idx",
+        "n|rel|knowledge.update_request_country_requested_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_request.country",
+        "n|col|knowledge.update_request.requested_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "official_domain_list"
+      ],
+      "writes": [
+        "s|fk|knowledge.official_domain_list.official_domain_list_request_id_update_request_id_fkey",
+        "n|fk|knowledge.official_domain_list.official_domain_list_request_id_update_request_id_fkey",
+        "e|fk|knowledge.official_domain_list.official_domain_list_request_id_update_request_id_fkey",
+        "n|con|knowledge.official_domain_list.official_domain_list_request_id_update_request_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.official_domain_list",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.official_domain_list.request_id",
+        "n|col|knowledge.update_request.id",
+        "e|uniqueness|knowledge.update_request.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_end"
+      ],
+      "writes": [
+        "s|ck|knowledge.update_end.update_end_list_hash",
+        "n|ck|knowledge.update_end.update_end_list_hash",
+        "e|ck|knowledge.update_end.update_end_list_hash",
+        "n|con|knowledge.update_end.update_end_list_hash"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_end",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_end.list_hash",
+        "n|col|knowledge.update_end.failure"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_request"
+      ],
+      "writes": [
+        "s|ck|knowledge.update_request.update_request_shape",
+        "n|ck|knowledge.update_request.update_request_shape",
+        "e|ck|knowledge.update_request.update_request_shape",
+        "n|con|knowledge.update_request.update_request_shape"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_request.route_id",
+        "n|col|knowledge.update_request.base_number",
+        "n|col|knowledge.update_request.country",
+        "n|col|knowledge.update_request.visa",
+        "n|col|knowledge.update_request.links",
+        "n|col|knowledge.update_request.list_pins"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_subject"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.subject_kind",
+        "n|col|knowledge.decision.route_id",
+        "n|col|knowledge.decision.comparison_id",
+        "n|col|knowledge.decision.list_id",
+        "n|col|knowledge.decision.proof",
+        "e|col|knowledge.decision.subject_kind",
+        "e|col|knowledge.decision.route_id",
+        "e|col|knowledge.decision.comparison_id"
+      ],
+      "sqlHash": "3b066f0b6fb1ee2a"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "official_domain_list"
+      ],
+      "writes": [
+        "s|pol|knowledge.official_domain_list.official_domain_list_insert_proposal",
+        "n|pol|knowledge.official_domain_list.official_domain_list_insert_proposal",
+        "e|pol|knowledge.official_domain_list.official_domain_list_insert_proposal"
+      ],
+      "reads": [
+        "n|tbl|knowledge.official_domain_list",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.official_domain_list"
+      ]
+    },
+    {
+      "statementType": "alter_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "route_version"
+      ],
+      "writes": [
+        "s|pol|knowledge.route_version.route_version_insert_proposal"
+      ],
+      "reads": [
+        "n|tbl|knowledge.route_version",
+        "n|sch|knowledge",
+        "n|role|app_jobs"
+      ],
+      "sqlHash": "0bf63c654c36b842"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "list_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "official_domain_list",
+        "name": "request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "list_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "country",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "visa",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "links",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "list_pins",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_country_requested_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "country",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "requested_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "official_domain_list",
+        "name": "official_domain_list_request_id_update_request_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "update_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "official_domain_list",
+        "name": "official_domain_list_request_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "request_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_list_hash",
+        "value": "\"list_hash\" IS NULL OR (\"failure\" IS NULL AND \"list_hash\" ~ '^[0-9a-f]{64}$')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_shape",
+        "value": "CASE WHEN \"route_id\" IS NOT NULL\n        THEN \"base_number\" IS NOT NULL AND \"country\" IS NULL AND \"visa\" IS NULL\n          AND \"links\" IS NULL AND \"list_pins\" IS NULL\n        ELSE \"base_number\" IS NULL AND \"country\" ~ '^[A-Z]{2}$'\n          AND char_length(\"visa\") BETWEEN 2 AND 120\n          AND cardinality(\"links\") <= 10 AND \"list_pins\" IS NOT NULL\n          AND cardinality(\"list_pins\") <= 20 END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "official_domain_list",
+        "name": "official_domain_list_insert_proposal",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT FROM \"knowledge\".\"update_end\" \"ended\"\n          JOIN \"knowledge\".\"update_request\" \"asked\" ON \"asked\".\"id\" = \"ended\".\"request_id\"\n        WHERE \"ended\".\"request_id\" = \"knowledge\".\"official_domain_list\".\"request_id\" AND \"ended\".\"failure\" IS NULL\n          AND \"ended\".\"list_hash\" = \"knowledge\".\"official_domain_list\".\"content_hash\" AND \"asked\".\"route_id\" IS NULL\n          AND \"knowledge\".\"official_domain_list\".\"list_id\" = lower(\"asked\".\"country\"))",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"update_request\",\"route_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"update_request\",\"base_number\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"decision\",\"decision_subject\"]",
+      "set": {
+        "value": "CASE \"subject_kind\"\n        WHEN 'route' THEN \"route_id\" IS NOT NULL AND \"comparison_id\" IS NULL\n          AND \"list_id\" IS NULL\n        WHEN 'comparison' THEN \"route_id\" IS NULL\n          AND \"comparison_id\" IS NOT DISTINCT FROM 'destinations' AND \"list_id\" IS NULL\n        WHEN 'official_domains' THEN \"route_id\" IS NULL AND \"comparison_id\" IS NULL\n          AND \"list_id\" ~ '^[a-z0-9][a-z0-9-]{0,63}$' AND \"proof\" = 'admin_step_up'\n        ELSE false END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "policies\u0000[\"knowledge\",\"route_version\",\"route_version_insert_proposal\"]",
+      "set": {
+        "withCheck": "EXISTS (SELECT FROM \"knowledge\".\"update_end\" \"ended\"\n          JOIN \"knowledge\".\"update_request\" \"asked\" ON \"asked\".\"id\" = \"ended\".\"request_id\"\n        WHERE \"ended\".\"request_id\" = \"knowledge\".\"route_version\".\"request_id\" AND \"ended\".\"failure\" IS NULL\n          AND \"ended\".\"content_hash\" = \"knowledge\".\"route_version\".\"content_hash\"\n          AND (\"asked\".\"route_id\" = \"knowledge\".\"route_version\".\"route_id\"\n            OR (\"asked\".\"route_id\" IS NULL AND \"knowledge\".\"route_version\".\"number\" = 1\n              AND starts_with(\"knowledge\".\"route_version\".\"route_id\", lower(\"asked\".\"country\") || '-'))))"
+      }
+    }
+  ]
+}

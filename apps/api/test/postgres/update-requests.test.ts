@@ -14,6 +14,7 @@ import type { AdminGrants } from '../../src/knowledge/admin-grants.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { offlineFetcher } from '../../src/knowledge/check/environment.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
+import { officialDomainsView } from '../../src/knowledge/official-domains.js';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
 import {
   RuleResearcherError,
@@ -148,6 +149,7 @@ function setup({
     audit: auditLog(testDatabase.auditDb),
     store: postgresUpdateStore(() => testDatabase.apiDb),
     ...readRules(),
+    states: () => decisions().states(),
     configured: () => Promise.resolve(configured),
     run: (requestId) => {
       if (runFails) return Promise.reject(new Error('workflow down'));
@@ -250,6 +252,7 @@ function decisions() {
     catalog: async () => (await store.engine()).catalog,
     casesHash: async (contentHash) => versionCasesHash(await store.data(), contentHash),
     comparisons: { identities: () => [] },
+    officialDomains: async () => officialDomainsView(await store.rows(), store.reading),
     role: adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]),
     origin,
     logger: silentLogger,
@@ -423,6 +426,7 @@ function createAppRead(signedIn: Person) {
       audit: auditLog(testDatabase.auditDb),
       store: postgresUpdateStore(() => testDatabase.apiDb),
       ...readRules(),
+      states: () => decisions().states(),
       configured: () => Promise.resolve(true),
       run: () => Promise.resolve(),
       logger: silentLogger,

@@ -47,6 +47,7 @@ import { routineCorrectorRun } from './knowledge/corrector-run.js';
 import { adminRole } from './knowledge/admins.js';
 import { ownerList } from './knowledge/owner-list.js';
 import { createKnowledgeDecisions, type KnowledgeDecisions } from './knowledge/decisions.js';
+import { officialDomainsView } from './knowledge/official-domains.js';
 import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
 import { createRuleSummaries } from './knowledge/summaries.js';
@@ -160,6 +161,7 @@ function knowledgeDecisions(): KnowledgeDecisions {
     catalog: async () => (await rules.engine()).catalog,
     casesHash: async (contentHash) => versionCasesHash(await rules.data(), contentHash),
     comparisons: comparisonCatalog,
+    officialDomains: async () => officialDomainsView(await rules.rows(), rules.reading),
     role,
     origin: readAuthOrigin(),
     logger,
@@ -373,6 +375,7 @@ const updateRequests = createUpdateRequests({
   store: postgresUpdateStore(() => connected().db),
   rows: rules.rows,
   reading: rules.reading,
+  states: () => knowledgeDecisions().states(),
   configured: updateModelsFor(environment, aiSettings).configured,
   run: startUpdate,
   logger,

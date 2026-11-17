@@ -228,6 +228,18 @@ export const updateRequestQuery = (routeId: string) =>
       state.data?.request?.state === 'running' ? updatePollMs : false,
   });
 
+/** The newest new-route requests with their progress, read again while one runs (ADR-0031). */
+export const newRouteRequestsQuery = queryOptions({
+  queryKey: ['knowledge', 'new-route-requests'],
+  queryFn: () => api.call(routes.getNewRouteRequests),
+  networkMode: 'always',
+  retry: false,
+  refetchInterval: ({ state }) =>
+    state.data?.requests.some((request) => request.state === 'running') === true
+      ? updatePollMs
+      : false,
+});
+
 /** One route version's three lists, hand edits marked, and the items an admin may edit (ADR-0031). */
 export const versionReviewQuery = (routeId: string, number: number) =>
   queryOptions({

@@ -20,6 +20,8 @@ export const researchReplySchema = z.strictObject({
       }),
     )
     .max(400),
+  /** A new country's first official-domain list as JSON text; empty when none was asked for. */
+  domainListJson: z.string().max(200_000).default(''),
 });
 export type ResearchReply = z.infer<typeof researchReplySchema>;
 
@@ -32,11 +34,14 @@ export const researchReplyJsonSchema = z.toJSONSchema(researchReplySchema, { io:
  * the proposal it corrects with what code and the validator found wrong, never a person's words.
  */
 export interface ResearchRequest {
-  readonly routeId: string;
-  /** The version the request updates, as stored. */
+  /** The route the request updates; null for a new route. */
+  readonly routeId: string | null;
+  /** The version the request updates, as stored; null for a new route. */
   readonly current: unknown;
-  /** Its cases file, as stored, as an example of the cases a proposal carries. */
+  /** Its cases file, as stored, as an example of the cases a proposal carries; null for a new route. */
   readonly currentCases: unknown;
+  /** What a new-route request names (#461): public data an admin typed, never a member's words. */
+  readonly newRoute?: NewRouteSubject;
   /** The hosts research may search and fetch on, from the route's approved lists. */
   readonly officialHosts: readonly string[];
   /** Today in São Paulo, from code, so the model never guesses the date. */
@@ -48,6 +53,20 @@ export interface ResearchRequest {
     /** The items code or the validator rejected, each with its fixed reason. */
     readonly items: readonly { readonly key: string; readonly reason: string }[];
   };
+}
+
+/** The new route research looks for, as data. */
+export interface NewRouteSubject {
+  /** ISO 3166-1 alpha-2. */
+  readonly country: string;
+  /** The visa or entry type the admin named. */
+  readonly visa: string;
+  /** The admin's links on the hosts research may read, as addresses only. */
+  readonly links: readonly string[];
+  /** The approved official-domain lists the version may pin; empty for a new country. */
+  readonly listPins: readonly { readonly id: string; readonly number: number }[];
+  /** The ID and number of the first list a new country's proposal holds; absent otherwise. */
+  readonly firstList?: { readonly id: string; readonly number: number };
 }
 
 /** A stage's model and effort, as settings give them at call time. */

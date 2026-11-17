@@ -1,7 +1,7 @@
 import { type ApiError, type UpdateProgress, routes } from '@arca/api-contract/client';
 import { Button, Icon, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { use, useEffect, useId, useRef, useState } from 'react';
+import { type ReactNode, use, useEffect, useId, useRef, useState } from 'react';
 import { api, updateRequestQuery } from '../api.js';
 import { commonFailure, reach } from '../requests.js';
 import { OpenRouteVersionContext } from './corrections.js';
@@ -103,11 +103,14 @@ const stageTones: Record<UpdateProgress['stages'][number]['state'], StatusTone> 
   pending: 'unknown',
 };
 
-function UpdateCost({
+/** What every request's progress shows, an update of a route or a new route alike. */
+export type RequestProgressView = Omit<UpdateProgress, 'routeId' | 'baseNumber'>;
+
+function RequestCost({
   progress,
   words,
 }: {
-  readonly progress: UpdateProgress;
+  readonly progress: RequestProgressView;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -121,6 +124,87 @@ function UpdateCost({
     case 'scripted':
       return <p>{t('knowledge.update.costScripted')}</p>;
   }
+}
+
+export function RequestStateChip({
+  progress,
+  words,
+}: {
+  readonly progress: RequestProgressView;
+  readonly words: KnowledgeWords;
+}) {
+  return (
+    <StatusChip
+      tone={stateTones[progress.state]}
+      label={words.t('knowledge.update.chip', { state: progress.state })}
+    />
+  );
+}
+
+/**
+ * A request's state, its stages side by side on a wide screen, the three lists once it finished
+ * with `proposed` saying where the proposal waits, and what it cost.
+ */
+export function RequestProgressBody({
+  progress,
+  proposed,
+  words,
+}: {
+  readonly progress: RequestProgressView;
+  readonly proposed: ReactNode;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  return (
+    <>
+      <p role="status">
+        {t('knowledge.update.state', { state: progress.state })}
+        {progress.failure !== null &&
+          ` ${t('knowledge.update.failure', { failure: progress.failure })}`}
+      </p>
+      <ol
+        aria-label={t('knowledge.update.stages')}
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        {progress.stages.map(({ stage, state: stageState }) => (
+          <li
+            key={stage}
+            aria-current={stageState === 'running' ? 'step' : undefined}
+            className={`flex min-w-0 flex-col gap-1 ${stageState === 'pending' || stageState === 'skipped' ? 'text-muted' : ''}`}
+          >
+            <span className="font-medium">{t('knowledge.update.stage', { stage })}</span>
+            <span>
+              <StatusChip
+                tone={stageTones[stageState]}
+                label={t('knowledge.update.stageState', {
+                  // After a failure or a stall, a stage that never ran was not "not needed".
+                  state:
+                    stageState === 'skipped' && progress.state !== 'finished'
+                      ? 'not_run'
+                      : stageState,
+                })}
+              />
+            </span>
+          </li>
+        ))}
+      </ol>
+      {progress.lists !== null && (
+        <div className="flex flex-col gap-2">
+          <h5 className="font-medium">{t('knowledge.update.lists')}</h5>
+          <dl className="grid gap-3 sm:grid-cols-3">
+            {Object.entries(progress.lists).map(([list, count]) => (
+              <div key={list} className="flex flex-col">
+                <dt className="text-small text-muted">{t('knowledge.update.list', { list })}</dt>
+                <dd className="font-display text-title">{count}</dd>
+              </div>
+            ))}
+          </dl>
+          {proposed}
+        </div>
+      )}
+      <RequestCost progress={progress} words={words} />
+    </>
+  );
 }
 
 /** Where the finished request's proposal waits for review, with a way there. */
@@ -216,61 +300,17 @@ export function UpdateRequestCard({
                 })}
               </p>
             </div>
-            <StatusChip
-              tone={stateTones[progress.state]}
-              label={t('knowledge.update.chip', { state: progress.state })}
-            />
+            <RequestStateChip progress={progress} words={words} />
           </div>
-          <p role="status">
-            {t('knowledge.update.state', { state: progress.state })}
-            {progress.failure !== null &&
-              ` ${t('knowledge.update.failure', { failure: progress.failure })}`}
-          </p>
-          <ol
-            aria-label={t('knowledge.update.stages')}
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-          >
-            {progress.stages.map(({ stage, state: stageState }) => (
-              <li
-                key={stage}
-                aria-current={stageState === 'running' ? 'step' : undefined}
-                className={`flex min-w-0 flex-col gap-1 ${stageState === 'pending' || stageState === 'skipped' ? 'text-muted' : ''}`}
-              >
-                <span className="font-medium">{t('knowledge.update.stage', { stage })}</span>
-                <span>
-                  <StatusChip
-                    tone={stageTones[stageState]}
-                    label={t('knowledge.update.stageState', {
-                      // After a failure or a stall, a stage that never ran was not "not needed".
-                      state:
-                        stageState === 'skipped' && progress.state !== 'finished'
-                          ? 'not_run'
-                          : stageState,
-                    })}
-                  />
-                </span>
-              </li>
-            ))}
-          </ol>
-          {progress.lists !== null && (
-            <div className="flex flex-col gap-2">
-              <h5 className="font-medium">{t('knowledge.update.lists')}</h5>
-              <dl className="grid gap-3 sm:grid-cols-3">
-                {Object.entries(progress.lists).map(([list, count]) => (
-                  <div key={list} className="flex flex-col">
-                    <dt className="text-small text-muted">
-                      {t('knowledge.update.list', { list })}
-                    </dt>
-                    <dd className="font-display text-title">{count}</dd>
-                  </div>
-                ))}
-              </dl>
-              {progress.proposedNumber !== null && (
+          <RequestProgressBody
+            progress={progress}
+            proposed={
+              progress.proposedNumber !== null && (
                 <ProposedVersion number={progress.proposedNumber} words={words} />
-              )}
-            </div>
-          )}
-          <UpdateCost progress={progress} words={words} />
+              )
+            }
+            words={words}
+          />
         </section>
       )}
     </>
