@@ -1,5 +1,5 @@
 import { checkItems, routeVersionSchema } from '@arca/domain';
-import { casesFileSchema } from '@arca/knowledge';
+import { casesFileSchema, routeVersionContentHash } from '@arca/knowledge';
 import { bundledRuleData, ruleContent } from '@arca/knowledge/bundled';
 import { createLogger } from '@arca/telemetry';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -34,6 +34,8 @@ let routeId: string;
 let otherRouteId: string;
 let freeRouteId: string;
 let quotedRouteId: string;
+let sourceRouteId: string;
+let tamperedRouteId: string;
 let logLines: string[];
 
 const readRules = () => {
@@ -64,10 +66,19 @@ beforeAll(async () => {
       )
     );
   });
-  const [first, second, third, fourth] = passing;
-  if (first === undefined || second === undefined || third === undefined || fourth === undefined) {
-    throw new Error('Four routes expected');
+  const [first, second, third, fourth, fifth, sixth] = passing;
+  if (
+    first === undefined ||
+    second === undefined ||
+    third === undefined ||
+    fourth === undefined ||
+    fifth === undefined ||
+    sixth === undefined
+  ) {
+    throw new Error('Six routes expected');
   }
+  sourceRouteId = fifth.routeId;
+  tamperedRouteId = sixth.routeId;
   quotedRouteId = fourth.routeId;
   routeId = first.routeId;
   otherRouteId = second.routeId;
@@ -221,6 +232,14 @@ describe('update requests (ADR-0031)', () => {
     const ended = await progress(routeId);
     expect(ended).toMatchObject({ state: 'finished', failure: null, cost: { kind: 'scripted' } });
     expect(ended?.contentHash).toMatch(/^[0-9a-f]{64}$/);
+    // The stored proposal is the version itself, hashed as the read will re-check it.
+    const stored = await postgresUpdateStore(() => testDatabase.apiDb).end(requestId);
+    if (stored?.failure !== null) throw new Error('A proposal expected');
+    expect(routeVersionSchema.safeParse(stored.proposal.content).success).toBe(true);
+    const rules = readRules();
+    expect(
+      routeVersionContentHash(await rules.rows(), stored.proposal.content as never, rules.reading),
+    ).toBe(ended?.contentHash);
     expect(ended?.stages.every(({ state }) => state === 'done' || state === 'skipped')).toBe(true);
     const lists = ended?.lists ?? {};
     expect(Object.keys(lists).sort()).toEqual(['confirmed', 'divergent', 'unconfirmed']);
@@ -413,5 +432,59 @@ describe('validation with quotes (ADR-0031)', () => {
     const third = await run();
     expect(asked).toBe(2);
     expect(third?.lists?.['confirmed']).toBe(0);
+  });
+});
+
+describe('what code refuses (ADR-0031)', () => {
+  it('gives a new source nobody read no date: the proposal is refused, even after its correction', async () => {
+    const researcher: RuleResearcher = {
+      research: async (request, model) => {
+        const reply = await scriptedRuleResearcher.research(request, model);
+        const version = JSON.parse((reply.reply as { versionJson: string }).versionJson) as {
+          sources: { url: string }[];
+        };
+        const [source, ...rest] = version.sources;
+        if (source === undefined) throw new Error('A source expected');
+        const moved = {
+          ...version,
+          sources: [{ ...source, url: `${source.url}?moved=1` }, ...rest],
+        };
+        return {
+          ...reply,
+          reply: { ...(reply.reply as object), versionJson: JSON.stringify(moved) },
+        };
+      },
+    };
+    const { start, progress, runAll } = setup({ researcher });
+    const started = await start(sourceRouteId);
+    const { requestId } = (await started.json()) as { requestId: string };
+    await runAll(requestId);
+    expect(await progress(sourceRouteId)).toMatchObject({
+      state: 'failed',
+      failure: 'proposal_invalid',
+    });
+    const stages = await postgresUpdateStore(() => testDatabase.apiDb).stages(requestId);
+    expect(JSON.stringify(stages.at(-1)?.output)).toContain(
+      'could not be read, so it has no verification date',
+    );
+  });
+
+  it('never starts or runs research from a version row changed in place', async () => {
+    const { start, progress, runAll } = setup();
+    const started = await start(tamperedRouteId);
+    expect(started.status).toBe(200);
+    const { requestId } = (await started.json()) as { requestId: string };
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `UPDATE knowledge.route_version SET content_hash = repeat('0', 64) WHERE route_id = $1`,
+        [tamperedRouteId],
+      ),
+    );
+    await runAll(requestId);
+    expect(await progress(tamperedRouteId)).toMatchObject({
+      state: 'failed',
+      failure: 'unknown_route',
+    });
+    expect((await setup().start(tamperedRouteId)).status).toBe(404);
   });
 });

@@ -26,6 +26,7 @@ import {
   type RuleRows,
   canonicalize,
   checkProposal,
+  maxProposalProblems,
   verifiedRouteVersion,
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
@@ -297,9 +298,9 @@ export function createRuleUpdate({
     const dated = verifiedOn(first.entry.version, base, new Set(pages.keys()));
     if (dated.unread.length > 0) {
       return invalid(
-        dated.unread.map(
-          (url) => `/sources: ${url} could not be read, so it has no verification date`,
-        ),
+        dated.unread
+          .slice(0, maxProposalProblems)
+          .map((url) => `/sources: ${url} could not be read, so it has no verification date`),
       );
     }
     const checked = await checkProposal(rows, base, dated.content, cases, reading);
@@ -388,7 +389,7 @@ export function createRuleUpdate({
     });
     const output = validationOutputSchema.parse({
       problems: [],
-      proposal: { content: dated, contentHash: checked.hash, cases: checked.cases },
+      proposal: { content: dated.content, contentHash: checked.hash, cases: checked.cases },
       items: outcomes,
       pages: log,
     });
@@ -454,6 +455,7 @@ export function createRuleUpdate({
           current: baseRow.content,
           currentCases: baseRow.cases,
           officialHosts,
+          today: today(),
           ...(step.stage === 'correction' && previous !== undefined && validation.success
             ? {
                 correction: {

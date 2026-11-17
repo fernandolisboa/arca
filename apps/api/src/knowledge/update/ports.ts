@@ -39,6 +39,8 @@ export interface ResearchRequest {
   readonly currentCases: unknown;
   /** The hosts research may search and fetch on, from the route's approved lists. */
   readonly officialHosts: readonly string[];
+  /** Today in São Paulo, from code, so the model never guesses the date. */
+  readonly today: string;
   readonly correction?: {
     readonly proposal: ResearchReply;
     /** Why the proposal is not a version, one line each, from code. */
