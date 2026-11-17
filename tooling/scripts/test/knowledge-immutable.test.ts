@@ -419,69 +419,43 @@ describe('knowledge-immutable', () => {
     });
   });
 
-  describe('country guides', () => {
+  describe('retired country guides (ADR-0031)', () => {
     const guide = `${data}guides/qm/1.json`;
-    const withHash = (tree: Tree, path: string): void => {
-      hashesOf(tree).files.push({ path, sha256: '5' });
-    };
-
-    it('accepts new guides alone, with their hashes', async () => {
-      expect(
-        await problems((tree) => {
-          tree[guide] = { number: 1 };
-          tree[`${data}guides/qn/1.json`] = { number: 1 };
-          withHash(tree, 'guides/qm/1');
-          withHash(tree, 'guides/qn/1');
-        }),
-      ).toEqual([]);
-    });
-
-    it.each<[string, (tree: Tree) => void, string[]]>([
-      [
-        'a guide added with a route version',
-        (tree) => {
-          tree[guide] = { number: 1 };
-          tree[`${data}routes/qm-work/2.json`] = { number: 2 };
-        },
-        [`${guide}: changes a country guide together with other knowledge data`],
-      ],
-      [
-        'a guide added with a cases entry',
-        (tree) => {
-          tree[guide] = { number: 1 };
-          casesOf(tree).push(caseEntry('c2'));
-        },
-        [`${guide}: changes a country guide together with other knowledge data`],
-      ],
-      [
-        'a guide added with an official-domain list',
-        (tree) => {
-          tree[guide] = { number: 1 };
-          tree[`${data}official-domains/qm-gov/2.json`] = officialList([
-            ['gov.example', 'https://registry.example/gov'],
-          ]);
-        },
-        [
-          `${data}official-domains/qm-gov/2.json: changes an official-domain list together with other knowledge data`,
-          `${guide}: changes a country guide together with other knowledge data`,
-        ],
-      ],
-    ])('refuses %s', async (_, change, messages) => {
-      const found = await problems(change);
-      for (const message of messages) expect(found).toContain(message);
-    });
-
-    it('keeps a merged guide immutable', async () => {
+    const withGuide = (): Tree => {
       const base = baseTree();
       base[guide] = { number: 1 };
+      hashesOf(base).files.push({ path: 'guides/qm/1', sha256: '5' });
+      return base;
+    };
+
+    it('accepts deleting a guide with its hash', async () => {
       expect(
         await problems(
           (tree) => {
-            tree[guide] = { number: 1, title: 'changed' };
+            Reflect.deleteProperty(tree, guide);
+            hashesOf(tree).files = hashesOf(tree).files.filter(
+              ({ path }) => path !== 'guides/qm/1',
+            );
           },
-          { base },
+          { base: withGuide() },
         ),
-      ).toContain(`${guide}: was modified; it is immutable, so add a new numbered file instead`);
+      ).toEqual([]);
+    });
+
+    it('refuses a new guide', async () => {
+      expect(
+        await problems((tree) => {
+          tree[guide] = { number: 1 };
+        }),
+      ).toContain(`${guide}: is a country guide, which ADR-0031 retired`);
+    });
+
+    it('still refuses losing any other hash', async () => {
+      expect(
+        await problems((tree) => {
+          hashesOf(tree).files = [];
+        }),
+      ).toContain(`${data}hashes.json: lost the entry with path routes/qm-work/1.json`);
     });
   });
 

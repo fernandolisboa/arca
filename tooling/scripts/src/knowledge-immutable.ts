@@ -36,15 +36,17 @@ export const vendoredSources = '.github/policy/vendored-sources.json';
 const hashesPath = `${dataRoot}hashes.json`;
 const casesPattern = /^packages\/knowledge\/data\/routes\/[^/]+\/[^/]+\.cases\.json$/;
 const officialPattern = /^packages\/knowledge\/data\/official-domains\/([^/]+)\/([0-9]+)\.json$/;
-const guidePattern = /^packages\/knowledge\/data\/guides\/[^/]+\/[0-9]+\.json$/;
 /**
- * Trust roots (ADR-0014, ADR-0027): what counts as official, and what the independent check is
- * told about a country. Each kind changes in a pull request of its own, with only its hashes.
+ * Trust roots (ADR-0014): what counts as official. Each kind changes in a pull request of its own,
+ * with only its hashes.
  */
-const trustRoots = [
-  { pattern: officialPattern, kind: 'an official-domain list' },
-  { pattern: guidePattern, kind: 'a country guide' },
-] as const;
+const trustRoots = [{ pattern: officialPattern, kind: 'an official-domain list' }] as const;
+/**
+ * Country guides, retired with the independent check (ADR-0031): their files and their
+ * `hashes.json` entries may go, and none may be added.
+ */
+const retiredGuides = `${dataRoot}guides/`;
+const retiredGuideHashes = 'guides/';
 const regularFile = { mode: '100644', type: 'blob' };
 /** At least the build's nesting limit; the build applies its own, stricter one. */
 const maxJsonDepth = 64;
@@ -70,8 +72,9 @@ export interface KnowledgeVerdict {
 
 /**
  * The `knowledge-immutable` rules (spec 0002, R6 to R8): nothing under `data`, `vendor` or
- * `eval/families` that the base has may change, move or disappear; cases files, hashes.json and vendored.json only gain
- * entries; official-domain lists and country guides change alone; new vendored files match an entry already on main.
+ * `eval/families` that the base has may change, move or disappear, except retired country guides; cases files,
+ * hashes.json and vendored.json only gain entries; official-domain lists change alone; new vendored files match an entry
+ * already on main.
  */
 export async function checkKnowledgeChange(change: KnowledgeChange): Promise<KnowledgeVerdict> {
   const check = new Check(change);
@@ -111,6 +114,7 @@ class Check {
     for (const [path, file] of knowledgeFiles(base.files)) {
       const after = head.files.get(path);
       if (after === undefined) {
+        if (path.startsWith(retiredGuides)) continue;
         this.#add(path, 'exists on the base branch and was deleted or renamed; it is immutable');
       } else if (after.mode !== file.mode || after.type !== file.type) {
         this.#add(path, 'changed its file mode or type; it is immutable');
@@ -123,7 +127,9 @@ class Check {
       if (base.files.has(path)) continue;
       this.#changed.push(path);
       this.#added.push(path);
-      if (file.mode !== regularFile.mode || file.type !== regularFile.type) {
+      if (path.startsWith(retiredGuides)) {
+        this.#add(path, 'is a country guide, which ADR-0031 retired');
+      } else if (file.mode !== regularFile.mode || file.type !== regularFile.type) {
         this.#add(path, 'must be a regular file');
       } else if (casesPattern.test(path)) {
         this.#checkCases(path, undefined, await this.#json(head, path));
@@ -145,7 +151,10 @@ class Check {
     }
   }
 
-  /** hashes.json keeps every `vectors` entry by name and every `files` entry by path. */
+  /**
+   * hashes.json keeps every `vectors` entry by name and every `files` entry by path, but for a
+   * retired guide's.
+   */
   #checkHashes(before: unknown, after: unknown): void {
     if (!isRecord(before) || !isRecord(after)) {
       this.#add(hashesPath, 'is not a JSON object');
@@ -153,7 +162,7 @@ class Check {
     }
     this.#sameExcept(hashesPath, before, after, ['vectors', 'files']);
     this.#keepsEntries(hashesPath, before['vectors'], after['vectors'], 'name');
-    this.#keepsEntries(hashesPath, before['files'], after['files'], 'path');
+    this.#keepsEntries(hashesPath, before['files'], after['files'], 'path', retiredGuideHashes);
   }
 
   /**
@@ -201,14 +210,16 @@ class Check {
   }
 
   /**
-   * Every entry of `before` (an array of objects keyed by `key`) is in `after`, unchanged and once.
-   * Returns the old entries by key and the entries `after` adds.
+   * Every entry of `before` (an array of objects keyed by `key`) is in `after`, unchanged and once,
+   * but for one whose key starts with `mayGo`, which may be left out. Returns the old entries by key
+   * and the entries `after` adds.
    */
   #keepsEntries(
     path: string,
     before: unknown,
     after: unknown,
     key: string,
+    mayGo?: string,
   ): { old: Map<string, Record<string, unknown>>; added: Record<string, unknown>[] } | undefined {
     const oldEntries = keyed(before, key);
     const newEntries = keyed(after, key);
@@ -228,8 +239,10 @@ class Check {
     const current = new Map(newEntries.map((entry) => [entry[key] as string, entry]));
     for (const [name, entry] of old) {
       const now = current.get(name);
-      if (now === undefined) this.#add(path, `lost the entry with ${key} ${name}`);
-      else if (canonical(now) !== canonical(entry)) {
+      if (now === undefined) {
+        if (mayGo === undefined || !name.startsWith(mayGo))
+          this.#add(path, `lost the entry with ${key} ${name}`);
+      } else if (canonical(now) !== canonical(entry)) {
         this.#add(path, `changed the entry with ${key} ${name}; entries are append-only`);
       }
     }
