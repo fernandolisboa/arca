@@ -52,6 +52,8 @@ export interface OfficialDomainHosts {
 /** One version's current cases, without their snapshots, for the activation screen. */
 export interface VersionCases {
   readonly hash: string;
+  /** The hash of the version's cases file as stored, which a decision binds (ADR-0031). */
+  readonly casesHash: string;
   readonly cases: readonly RuleCaseSummary[];
 }
 
@@ -91,6 +93,13 @@ export interface RuleRowReading {
   /** The host official-source matching reads, as the knowledge build reads it. */
   readonly hostOf: (url: string) => string | undefined;
 }
+
+/**
+ * The hash of a version's cases file as stored (ADR-0031): its content hash leaves the cases out,
+ * so a decision binds this hash too, and the admin approves the cases they read.
+ */
+export const casesHashOf = (cases: Json | null, reading: Pick<RuleRowReading, 'sha256'>): string =>
+  reading.sha256(canonicalize({ cases }));
 
 const keyOf = (kind: string, id: string, number: number): string =>
   `${kind}/${id}/${String(number)}`;
@@ -314,7 +323,11 @@ export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleD
       continue;
     }
     entries.set(identityKey(identity), entry);
-    cases.push({ hash: identity.hash, cases: caseSummaries(file) });
+    cases.push({
+      hash: identity.hash,
+      casesHash: casesHashOf(file, reading),
+      cases: caseSummaries(file),
+    });
     for (const url of entry.version.sources.flatMap(sourceUrls)) {
       hosts[url] = reading.hostOf(url) ?? null;
     }
@@ -343,6 +356,10 @@ export function ruleEngineData(data: RuleData): RuleEngineData {
   }
   return engine;
 }
+
+/** The cases hash of the version read under this content hash, if the reading holds one. */
+export const versionCasesHash = (data: RuleData, contentHash: string): string | undefined =>
+  ruleContent(data).cases.find(({ hash }) => hash === contentHash)?.casesHash;
 
 /** `<kind>/<id>/<number>` of every row the reading left out: public rule identifiers only. */
 export const refusedRows = (data: RuleData): readonly string[] => ruleContent(data).refused;

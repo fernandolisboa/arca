@@ -82,7 +82,10 @@ function setup({
     } satisfies KnowledgeDecisions,
     knowledgeVersions: {
       list: () => Promise.resolve([]),
-      view: (_, number) => Promise.resolve(number === 2 ? ({} as VersionView) : undefined),
+      view: (_, number) =>
+        Promise.resolve(
+          number === 2 ? ({ casesHash: '' } as VersionView & { casesHash: string }) : undefined,
+        ),
       identities: () => Promise.resolve([]),
       officialHosts: () => Promise.resolve([]),
       comparisons: () => Promise.resolve([]),

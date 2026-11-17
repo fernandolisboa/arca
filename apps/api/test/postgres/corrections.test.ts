@@ -45,7 +45,7 @@ const view = {
   costs: [],
   durations: [],
   countrySets: [{ id: 'eu-free-movement', number: 2, title: 'UE' }],
-} as unknown as VersionView;
+} as unknown as VersionView & { casesHash: string };
 
 let states: DecisionStates = new Map();
 let notices: string[] = [];

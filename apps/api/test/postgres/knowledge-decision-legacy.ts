@@ -1,14 +1,15 @@
 import { randomBytes } from 'node:crypto';
-import { decideVersionAction, type StepUpOptionsRequest } from '@arca/api-contract/routes';
+import { decideVersionAction } from '@arca/api-contract/routes';
 import { comparisonSeriesId, type VersionIdentity } from '@arca/domain';
 import { expect } from 'vitest';
 import type { StepUpService } from '../../src/auth/step-up.js';
+import type { KnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import type { CanonicalAction } from '../../src/auth/step-up-encoding.js';
 import type { AuthTestDatabase } from './auth-database.js';
 import { ceremony, type Person, toRequest } from './step-up-people.js';
 
-// Decisions as ADR-0022 stored them, approved by a `knowledge_decision` step-up, which the
-// options route no longer offers (ADR-0027). Synthetic data only.
+// Decisions as ADR-0022 stored them, approved by a `knowledge_decision` step-up and copied into a
+// `step_up` row, which no runtime role may store any more. Synthetic data only.
 
 export const comparisonTarget = {
   subject: 'comparison',
@@ -20,25 +21,20 @@ export const comparisonTarget = {
 export const routeAction = (
   kind: 'activate' | 'reject',
   { routeId, number, hash }: Pick<VersionIdentity, 'routeId' | 'number' | 'hash'>,
+  casesHash?: string,
 ): CanonicalAction => ({
   ...decideVersionAction(
     kind === 'activate' ? 'activateVersion' : 'rejectVersion',
     { routeId, number },
     hash,
+    casesHash,
   ),
   nonce: randomBytes(16),
 });
 
-/**
- * Options and verify for a `knowledge_decision` step-up, as the options route offered it before
- * ADR-0027; the service itself still issues any purpose the database accepts.
- */
-export async function legacyStepUp(stepUp: StepUpService, who: Person, action: CanonicalAction) {
-  const request = {
-    ...toRequest('sensitive_settings', action),
-    purpose: 'knowledge_decision',
-  } as unknown as StepUpOptionsRequest;
-  const { verified } = await ceremony(stepUp, who, request);
+/** Options and verify for a `knowledge_decision` step-up bound to `action`, left unspent. */
+export async function decisionStepUp(stepUp: StepUpService, who: Person, action: CanonicalAction) {
+  const { verified } = await ceremony(stepUp, who, toRequest('knowledge_decision', action));
   expect(verified).toBe(true);
 }
 
@@ -53,7 +49,7 @@ export async function legacyDecision(
   action: CanonicalAction,
   changes: { readonly signature?: Uint8Array } = {},
 ) {
-  await legacyStepUp(stepUp, who, action);
+  await decisionStepUp(stepUp, who, action);
   expect(await stepUp.consume(who.signedIn, 'knowledge_decision', action)).toBe(true);
   const [routeId = '', number = '1'] = action.targets;
   const kind = action.action === 'activateVersion' ? 'activate' : 'reject';
@@ -78,4 +74,19 @@ export async function legacyDecision(
       ],
     ),
   );
+}
+
+/** A route decision as the app takes one since ADR-0031: a step-up bound to both hashes, then decide. */
+export async function decideWithStepUp(
+  stepUp: StepUpService,
+  service: KnowledgeDecisions,
+  who: Person,
+  kind: 'activate' | 'reject',
+  version: Pick<VersionIdentity, 'routeId' | 'number' | 'hash'>,
+  casesHash: string,
+) {
+  const action = routeAction(kind, version, casesHash);
+  await decisionStepUp(stepUp, who, action);
+  const { routeId, number } = version;
+  return service.decide(who.signedIn, kind, { subject: 'route', routeId, number }, action.nonce);
 }

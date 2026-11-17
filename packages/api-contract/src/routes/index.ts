@@ -240,15 +240,11 @@ export type StepUpAction = z.infer<typeof StepUpAction>;
 /** The header a guarded route reads the action's nonce from. */
 export const stepUpNonceHeader = 'arca-step-up-nonce';
 
-/**
- * `vault_unlock` approves a window, not an action, so it alone carries no target.
- * `knowledge_decision` is no longer offered: decisions need no step-up since ADR-0027, and the
- * purpose stays in the enum only so the decisions it approved before verify again.
- */
+/** `vault_unlock` approves a window, not an action, so it alone carries no target. */
 export const StepUpOptionsRequest = z.union([
   z.strictObject({ purpose: z.literal('vault_unlock') }),
   z.strictObject({
-    purpose: StepUpPurpose.exclude(['vault_unlock', 'knowledge_decision']),
+    purpose: StepUpPurpose.exclude(['vault_unlock']),
     target: StepUpAction,
   }),
 ]);
@@ -891,6 +887,12 @@ export const auditEventDetails = {
     requestId: z.uuid(),
     routeId: routeIdSchema,
     baseNumber: z.int().min(1),
+  }),
+  /** An admin stored a route version they edited by hand, correcting another (ADR-0031). */
+  version_edited: z.strictObject({
+    routeId: routeIdSchema,
+    number: z.int().min(1),
+    corrects: z.int().min(1),
   }),
   /** An owner-list admin made a corrector key, which replaced any live one (ADR-0029). */
   corrector_key_created: z.strictObject({ keyId: z.uuid() }),

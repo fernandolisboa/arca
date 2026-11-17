@@ -10,7 +10,6 @@ import {
   type UpdateFailure,
   type UpdateStage,
   type ValidatorVerdict,
-  addressPages,
   asDataText,
   checkItems,
   itemOutcome,
@@ -31,9 +30,8 @@ import {
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { type ModelReply, loggedModelCall } from '../../ai/model-call.js';
-import { addressesAsRead } from '../check/answer-text.js';
-import { type FetchOutcome, type SourceFetcher, textDigest } from '../check/fetcher.js';
-import { fetchPages } from '../check/read-pages.js';
+import { type SourceFetcher, textDigest } from '../check/fetcher.js';
+import { readOfficialPage } from './official-page.js';
 import {
   type ResearchReply,
   type ResearchRequest,
@@ -210,34 +208,20 @@ export function createRuleUpdate({
     const addresses = machineReadableUrls(entry);
     const pages = new Map<string, ReadPage>();
     const log: ValidationOutput['pages'] = [];
-    const read = async ([url, allowed]: [string, string[]]) => {
-      const address = addresses.get(url);
-      const outcome: FetchOutcome =
-        address === undefined
-          ? await fetcher.fetch(url, allowed)
-          : await fetchPages(fetcher, addressPages(address), allowed);
-      return [url, outcome] as const;
-    };
+    const read = async ([url, allowed]: [string, string[]]) =>
+      [url, await readOfficialPage(fetcher, url, addresses.get(url), allowed)] as const;
     const wanted = [...hosts].slice(0, maxPages);
     // A few pages at a time, so the stage stays well inside the function's duration limit.
     for (let start = 0; start < wanted.length; start += parallelReads) {
       const batch = await Promise.all(wanted.slice(start, start + parallelReads).map(read));
-      for (const [url, outcome] of batch) {
+      for (const [url, { outcome, page }] of batch) {
         if (!outcome.ok) logger.info({ route, errorCode: `update_fetch_${outcome.failure}` });
         log.push({
           url,
           outcome: outcome.ok ? 'read' : outcome.failure,
           sha256: outcome.ok ? textDigest(outcome.text) : null,
         });
-        if (outcome.ok) {
-          pages.set(url, {
-            url,
-            text: asDataText(outcome.text),
-            cut: outcome.cut,
-            chain: outcome.chain,
-            echoes: addressesAsRead(outcome.chain).map(asDataText),
-          });
-        }
+        if (page !== undefined) pages.set(url, page);
       }
     }
     return { pages, log };

@@ -215,9 +215,29 @@ export function postgresUpdateStore(db: () => Database): UpdateStore {
           INSERT INTO knowledge.update_end (request_id, failure) VALUES (${requestId}, ${end.failure})`);
         return;
       }
-      await db().execute(sql`
-        INSERT INTO knowledge.update_end (request_id, content_hash, proposal)
-        VALUES (${requestId}, ${end.proposal.contentHash}, ${JSON.stringify(end.proposal)}::jsonb)`);
+      const { content, contentHash, cases } = end.proposal;
+      // The end and the version it proposes in one transaction: the version's insert policy reads
+      // the end, and a version with no end is never stored (ADR-0031).
+      const stored = db().transaction(async (tx) => {
+        await tx.execute(sql`
+          INSERT INTO knowledge.update_end (request_id, content_hash, proposal)
+          VALUES (${requestId}, ${contentHash}, ${JSON.stringify(end.proposal)}::jsonb)`);
+        await tx.execute(sql`
+          INSERT INTO knowledge.route_version (route_id, number, content, content_hash, cases,
+                                               request_id)
+          SELECT asked.route_id, (${JSON.stringify(content)}::jsonb ->> 'number')::integer,
+                 ${JSON.stringify(content)}::jsonb, ${contentHash}, ${JSON.stringify(cases)}::jsonb,
+                 asked.id
+            FROM knowledge.update_request asked WHERE asked.id = ${requestId}`);
+      });
+      // A request that ran past its live hour may find its number taken by an edit or a later
+      // request; it then ends out of order instead of never ending.
+      await stored.catch(async (error: unknown) => {
+        if ((error as { cause?: { code?: unknown } }).cause?.code !== '23505') throw error;
+        await db().execute(sql`
+          INSERT INTO knowledge.update_end (request_id, failure)
+          VALUES (${requestId}, 'out_of_order')`);
+      });
     },
     verdicts: async (keys) => {
       if (keys.length === 0) return new Map();

@@ -10,6 +10,7 @@ import { createAdminGrants, type AdminGrants } from '../../src/knowledge/admin-g
 import { adminRole } from '../../src/knowledge/admins.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+import { decideWithStepUp } from './knowledge-decision-legacy.js';
 import { ceremony, origin, person, toRequest, type Person } from './step-up-people.js';
 
 // The admin role on the real migrations (ADR-0027). Synthetic data only.
@@ -33,6 +34,7 @@ const version: VersionIdentity = {
   hash: 'a'.repeat(64),
 };
 const identityKey = `qm-sample/1/${'a'.repeat(64)}`;
+const casesHash = 'd'.repeat(64);
 
 const role = () => adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]);
 
@@ -53,7 +55,8 @@ function grants(): AdminGrants {
 const decisions = () =>
   createKnowledgeDecisions({
     db: testDatabase.apiDb,
-    authDb: () => testDatabase.authDb,
+    stepUp,
+    casesHash: () => Promise.resolve(casesHash),
     audit: auditLog(testDatabase.auditDb),
     catalog: () =>
       Promise.resolve({
@@ -300,8 +303,9 @@ describe("a granted admin's decisions (ADR-0027)", () => {
   it('stores a decision naming the grant, which keeps counting after the role is taken away', async () => {
     await inOneCase(owner, ana);
     await grantWithStepUp(owner, ana);
-    const request = { subject: 'route', routeId: version.routeId, number: 1 } as const;
-    expect(await decisions().decide(ana.signedIn, 'activate', request)).toHaveProperty('decided');
+    expect(
+      await decideWithStepUp(stepUp, decisions(), ana, 'activate', version, casesHash),
+    ).toHaveProperty('decided');
     const [anaGrant] = await history();
     const stored = await testDatabase.asAdmin(
       async (client) =>
@@ -315,7 +319,7 @@ describe("a granted admin's decisions (ADR-0027)", () => {
 
     await grants().remove(owner.signedIn, ana.signedIn.accountId);
     expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
-    expect(await decisions().decide(ana.signedIn, 'reject', request)).toEqual({
+    expect(await decideWithStepUp(stepUp, decisions(), ana, 'reject', version, casesHash)).toEqual({
       refused: 'not_admin',
     });
   });

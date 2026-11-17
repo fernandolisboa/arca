@@ -143,17 +143,45 @@ test('the seed admin activates a version, reads and closes its reports, then rej
     violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
   ).toEqual([]);
 
-  const stepUps = watchStepUps(page);
+  // A hand edit whose page does not back it is refused with the reason, and nothing is stored.
+  const proposal = page.getByRole('region', { name: 'Revisão da proposta' });
+  await expect(proposal).toContainText('Esta versão não veio de um pedido de atualização');
+  await proposal.getByRole('button', { name: 'Editar item' }).click();
+  await proposal.getByLabel('Endereço da página oficial').fill('https://example.gov/not-cited');
+  await proposal.getByLabel('Nome da página').fill('Página sintética');
+  await proposal.getByLabel('Trecho da página que confirma o item').fill('Um trecho sintético.');
+  await proposal.getByRole('button', { name: 'Conferir e salvar' }).click();
+  await expect(proposal.getByText(/^O Arca não salvou\./)).toBeVisible();
+  // The page is on no official host of the country, which code names first.
+  await expect(
+    proposal
+      .getByRole('listitem')
+      .filter({ hasText: 'An official source is on a pinned official host' }),
+  ).toHaveCount(1);
+
+  const stepUp = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
   const activation = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/versions/activate'),
   );
   await page.getByRole('button', { name: 'Ativar esta versão' }).click();
-  await expect(page.getByText('confirme com sua chave de acesso')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('status')).toHaveText('Versão ativada.');
-  // One request with the version alone, and no passkey prompt (ADR-0027).
+  await expect(page.getByText('Para valer, a decisão pede a sua chave de acesso.')).toBeVisible();
+  await page.getByRole('button', { name: 'Confirmar com a chave de acesso' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Versão ativada.' })).toBeVisible();
+  // The passkey approves the content and cases hashes the screen showed (ADR-0031).
+  const asked = (await stepUp).postDataJSON() as {
+    purpose: string;
+    target: { action: string; fields: Record<string, string> };
+  };
+  expect(asked).toMatchObject({
+    purpose: 'knowledge_decision',
+    target: { action: 'activateVersion' },
+  });
+  expect(Object.keys(asked.target.fields).sort()).toEqual(['casesHash', 'contentHash']);
   expect((await activation).postDataJSON()).toEqual({ routeId: 'us-eb5', number: Number(version) });
-  await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
+  // The version's own state, then the same state in the route's history below it.
+  await expect(page.getByText('Versão ativa', { exact: true })).toHaveCount(2);
 
   await memberReportsARequirement(browser);
   await page.reload();
@@ -183,10 +211,9 @@ test('the seed admin activates a version, reads and closes its reports, then rej
       ),
     ),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('status')).toHaveText('Versão recusada.');
+  await page.getByRole('button', { name: 'Confirmar com a chave de acesso' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Versão recusada.' })).toBeVisible();
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
-  expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
 
@@ -237,13 +264,19 @@ test('the seed admin reviews, activates and rejects a comparison version (ADR-00
     violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
   ).toEqual([]);
 
-  const stepUps = watchStepUps(page);
+  const stepUp = page.waitForRequest((request) =>
+    request.url().endsWith('/v1/auth/step-up/options'),
+  );
   const activation = page.waitForRequest((request) =>
     request.url().endsWith('/v1/knowledge/comparisons/activate'),
   );
   await page.getByRole('button', { name: 'Ativar esta versão' }).click();
-  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('button', { name: 'Confirmar com a chave de acesso' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão ativada.');
+  expect((await stepUp).postDataJSON()).toMatchObject({
+    purpose: 'knowledge_decision',
+    target: { action: 'activateComparison' },
+  });
   expect((await activation).postDataJSON()).toEqual({ comparisonId: 'destinations', number: 1 });
   await expect(page.getByText('Versão ativa', { exact: true })).toBeVisible();
 
@@ -253,10 +286,9 @@ test('the seed admin reviews, activates and rejects a comparison version (ADR-00
   await expect(
     page.getByText('Hoje a comparação usa esta versão. Se recusar, ela fica sem dados de países'),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await page.getByRole('button', { name: 'Confirmar com a chave de acesso' }).click();
   await expect(page.getByRole('status')).toHaveText('Versão recusada.');
   await expect(page.getByText('Esta versão foi recusada e não volta a ser usada.')).toBeVisible();
-  expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
 
@@ -321,99 +353,6 @@ test('the seed admin gives a member of the case the admin role and takes it away
   await expect(bruno.getByText('Administrador', { exact: true })).toHaveCount(0);
   expect(await rulesLinkAfterReload(memberPage)).toBe(false);
   await memberContext.close();
-  expect(problems).toEqual([]);
-});
-
-// In this file, after the tests above, for the same reason.
-test('the seed admin approves the checked versions with one tap, and the server skips one its reports do not back (ADR-0027)', async ({
-  page,
-}, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop', 'runs once, on the desktop project');
-  const [account] = await runSeed();
-  if (account === undefined) throw new Error('the seed lists no account');
-  await Promise.all([
-    restartSeededCounter(account.id),
-    clearKnowledgeDecisions(),
-    resetRateLimits(),
-  ]);
-  const problems = watchProblems(page);
-  await virtualAuthenticator(page, seededCredential(account.passkey.label), {
-    userId: account.id,
-  });
-  await withoutAutofill(page);
-  await page.goto(`${databaseServer.origin}/sign-in`);
-  await page.getByRole('button', { name: 'Entrar com chave de acesso' }).click();
-  await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
-
-  await page.goto(`${databaseServer.origin}/knowledge`);
-  await expect(page.getByRole('region', { name: 'Versões propostas' })).toBeVisible();
-  // The scripted checker's reports are never clean, so the action is not offered.
-  await expect(page.getByRole('region', { name: 'Conferidas pelo Arca' })).toHaveCount(0);
-
-  // The screen is told one EB-5 version is checked; the server reads its own reports instead.
-  const { version } = await eb5InEffect(page);
-  await page.route('**/v1/knowledge/versions', async (route) => {
-    const response = await route.fetch();
-    const listed = (await response.json()) as KnowledgeVersions;
-    await route.fulfill({
-      response,
-      json: {
-        ...listed,
-        versions: listed.versions.map((each) =>
-          each.routeId === 'us-eb5' && String(each.number) === version
-            ? { ...each, check: 'checked' }
-            : each,
-        ),
-      },
-    });
-  });
-  await page.reload();
-  const batch = page.getByRole('region', { name: 'Conferidas pelo Arca' });
-  await batch.getByRole('button', { name: 'Aprovar a versão conferida' }).click();
-  await expect(batch.getByRole('listitem')).toHaveText([
-    new RegExp(`^EB-5 immigrant investor .* versão ${version} · `),
-  ]);
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(await horizontalOverflow(page)).toBe(0);
-  await page.setViewportSize({ width: 1280, height: 800 });
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-    .analyze();
-  expect(
-    violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
-  ).toEqual([]);
-
-  const stepUps = watchStepUps(page);
-  const activation = page.waitForRequest((request) =>
-    request.url().endsWith('/v1/knowledge/versions/activate-checked'),
-  );
-  await batch.getByRole('button', { name: 'Ativar', exact: true }).click();
-  await expect(batch.getByRole('status')).toHaveText('Nenhuma versão foi ativada.');
-  // Flagged once the scripted report lands, not checked while it runs: never activated either way.
-  await expect(batch.getByRole('region', { name: 'Ficaram de fora' })).toContainText(
-    new RegExp(
-      `EB-5 immigrant investor .* versão ${version}: (a nova verificação não confirmou todos os itens|a verificação venceu ou ainda não terminou)`,
-    ),
-  );
-  expect((await activation).postDataJSON()).toEqual({
-    versions: [
-      {
-        routeId: 'us-eb5',
-        number: Number(version),
-        hash: expect.stringMatching(/^[0-9a-f]{64}$/) as unknown,
-      },
-    ],
-  });
-  await page.unrouteAll({ behavior: 'wait' });
-  await page.reload();
-  const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
-  await expect(
-    proposed.getByRole('button', {
-      name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`),
-    }),
-  ).toBeVisible();
-  expect(stepUps).toEqual([]);
   expect(problems).toEqual([]);
 });
 
@@ -634,15 +573,6 @@ async function rulesLinkAfterReload(page: Page): Promise<boolean> {
   const rules = page.getByRole('link', { name: 'Regras', exact: true });
   await (admin ? expect(rules.first()).toBeVisible() : expect(rules).toHaveCount(0));
   return admin;
-}
-
-/** Every step-up the page asks for from now on; a decision asks for none (ADR-0027). */
-function watchStepUps(page: Page): string[] {
-  const asked: string[] = [];
-  page.on('request', (request) => {
-    if (request.url().includes('/v1/auth/step-up/')) asked.push(request.url());
-  });
-  return asked;
 }
 
 /** Jumps to one step of a version's review from its step list. */

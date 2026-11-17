@@ -1,12 +1,19 @@
 import { checkItems, routeVersionSchema } from '@arca/domain';
-import { casesFileSchema, routeVersionContentHash } from '@arca/knowledge';
+import { casesFileSchema, routeVersionContentHash, versionCasesHash } from '@arca/knowledge';
 import { bundledRuleData, ruleContent } from '@arca/knowledge/bundled';
+import { withIdentity } from '@arca/db';
 import { createLogger } from '@arca/telemetry';
+import { randomUUID } from 'node:crypto';
+import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { auditLog } from '../../src/audit/log.js';
+import { credentialStore } from '../../src/auth/auth.js';
+import { createStepUp } from '../../src/auth/step-up.js';
+import type { AdminGrants } from '../../src/knowledge/admin-grants.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { offlineFetcher } from '../../src/knowledge/check/environment.js';
+import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
 import {
   RuleResearcherError,
@@ -15,6 +22,7 @@ import {
 } from '../../src/knowledge/update/ports.js';
 import type { SourceFetcher } from '../../src/knowledge/check/fetcher.js';
 import { createUpdateRequests, updateLiveMs } from '../../src/knowledge/update/requests.js';
+import { createVersionReviews } from '../../src/knowledge/update/review.js';
 import { createRuleUpdate } from '../../src/knowledge/update/run.js';
 import {
   scriptedRuleResearcher,
@@ -23,6 +31,7 @@ import {
 import { postgresUpdateStore } from '../../src/knowledge/update/store.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
+import { decideWithStepUp } from './knowledge-decision-legacy.js';
 import { origin, person, type Person } from './step-up-people.js';
 
 // Update requests (ADR-0031) on the real migrations and the imported rules, with the scripted
@@ -36,6 +45,7 @@ let freeRouteId: string;
 let quotedRouteId: string;
 let sourceRouteId: string;
 let tamperedRouteId: string;
+let reviewRouteId: string;
 let logLines: string[];
 
 const readRules = () => {
@@ -66,17 +76,19 @@ beforeAll(async () => {
       )
     );
   });
-  const [first, second, third, fourth, fifth, sixth] = passing;
+  const [first, second, third, fourth, fifth, sixth, seventh] = passing;
   if (
     first === undefined ||
     second === undefined ||
     third === undefined ||
     fourth === undefined ||
     fifth === undefined ||
-    sixth === undefined
+    sixth === undefined ||
+    seventh === undefined
   ) {
-    throw new Error('Six routes expected');
+    throw new Error('Seven routes expected');
   }
+  reviewRouteId = seventh.routeId;
   sourceRouteId = fifth.routeId;
   tamperedRouteId = sixth.routeId;
   quotedRouteId = fourth.routeId;
@@ -100,6 +112,8 @@ interface Options {
   readonly researcher?: RuleResearcher;
   readonly validator?: RuleValidator;
   readonly fetcher?: SourceFetcher;
+  /** The page text every official page reads as, for a hand edit's quote. */
+  readonly pageText?: string;
   /** Milliseconds added to the clock the progress reads. */
   readonly later?: number;
 }
@@ -111,6 +125,7 @@ function setup({
   researcher = scriptedRuleResearcher,
   validator = scriptedRuleValidator,
   fetcher = offlineFetcher,
+  pageText = '',
   later = 0,
 }: Options = {}) {
   const runs: string[] = [];
@@ -142,6 +157,19 @@ function setup({
     logger: createLogger((line) => logLines.push(line)),
     now: () => Date.now() + later,
   });
+  const reviews = createVersionReviews({
+    db: () => testDatabase.apiDb,
+    role: adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]),
+    audit: auditLog(testDatabase.auditDb),
+    store: postgresUpdateStore(() => testDatabase.apiDb),
+    ...readRules(),
+    states: () => decisions().states(),
+    fetcher: {
+      fetch: (url) =>
+        Promise.resolve({ ok: true, status: 200, text: pageText, cut: false, chain: [url] }),
+    },
+    today: () => '2026-11-17',
+  });
   const app = createApp({
     checkDatabase: () => Promise.resolve('ok'),
     logger: silentLogger,
@@ -153,7 +181,28 @@ function setup({
     },
     authLimits: noLimits,
     updateRequests: requests,
+    versionReviews: reviews,
+    admins: {
+      isAdmin: (accountId) => Promise.resolve(accountId === owner.signedIn.accountId),
+      list: () => Promise.reject(new Error('not used')),
+      grant: () => Promise.reject(new Error('not used')),
+      remove: () => Promise.reject(new Error('not used')),
+    } satisfies AdminGrants,
   });
+  const review = async (route: string, number: number) => {
+    const response = await app.request(
+      `/v1/knowledge/versions/review?routeId=${route}&number=${String(number)}`,
+    );
+    return { status: response.status, body: (await response.json()) as Review };
+  };
+  const edit = async (body: unknown) => {
+    const response = await app.request('/v1/knowledge/versions/edit-item', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return { status: response.status, body: await response.json() };
+  };
   const start = (route: string) =>
     app.request('/v1/knowledge/update-requests', {
       method: 'POST',
@@ -169,7 +218,7 @@ function setup({
   const runAll = async (requestId: string) => {
     for (let index = 0; index < 5 && (await step(requestId)); index += 1);
   };
-  return { start, progress, runAll, runs };
+  return { start, progress, runAll, runs, review, edit };
 }
 
 interface Progress {
@@ -182,6 +231,48 @@ interface Progress {
   cost: { kind: string } | null;
   lists: Record<string, number> | null;
   contentHash: string | null;
+  proposedNumber: number | null;
+}
+
+interface Review {
+  origin: string;
+  items: { key: string; list: string; edited: boolean; quotes: { url: string; quote: string }[] }[];
+  editable: { key: string; kind: string; content: string }[];
+}
+
+/** The decisions over the stored rules, as the server builds them, with a step-up service. */
+function decisions() {
+  const store = postgresRuleStore(() => testDatabase.apiDb, silentLogger);
+  return createKnowledgeDecisions({
+    db: testDatabase.apiDb,
+    stepUp: stepUpService(),
+    audit: auditLog(testDatabase.auditDb),
+    catalog: async () => (await store.engine()).catalog,
+    casesHash: async (contentHash) => versionCasesHash(await store.data(), contentHash),
+    comparisons: { identities: () => [] },
+    role: adminRole(() => testDatabase.apiDb, [owner.signedIn.accountId]),
+    origin,
+    logger: silentLogger,
+  });
+}
+
+const stepUpService = () =>
+  createStepUp({
+    db: testDatabase.authDb,
+    credentials: credentialStore(testDatabase.authDb),
+    audit: auditLog(testDatabase.auditDb),
+    origin,
+    logger: silentLogger,
+  });
+
+/** The stored rules' identity of one route version, with its content and cases hashes. */
+async function storedIdentity(route: string, number: number) {
+  const store = postgresRuleStore(() => testDatabase.apiDb, silentLogger);
+  const identity = (await store.engine()).catalog
+    .identities(route)
+    .find((each) => each.number === number);
+  if (identity === undefined) throw new Error('A stored version expected');
+  return { identity, casesHash: versionCasesHash(await store.data(), identity.hash) ?? '' };
 }
 
 const states = (progress: Progress | null) =>
@@ -232,6 +323,18 @@ describe('update requests (ADR-0031)', () => {
     const ended = await progress(routeId);
     expect(ended).toMatchObject({ state: 'finished', failure: null, cost: { kind: 'scripted' } });
     expect(ended?.contentHash).toMatch(/^[0-9a-f]{64}$/);
+    // The proposal is stored as a proposed version that names its request.
+    const proposed = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<{ number: number; content_hash: string }>(
+            'SELECT number, content_hash FROM knowledge.route_version WHERE request_id = $1',
+            [requestId],
+          )
+        ).rows,
+    );
+    expect(proposed).toEqual([{ number: ended?.proposedNumber, content_hash: ended?.contentHash }]);
+    expect(ended?.proposedNumber).toBe((ended?.baseNumber ?? 0) + 1);
     // The stored proposal is the version itself, hashed as the read will re-check it.
     const stored = await postgresUpdateStore(() => testDatabase.apiDb).end(requestId);
     if (stored?.failure !== null) throw new Error('A proposal expected');
@@ -486,5 +589,203 @@ describe('what code refuses (ADR-0031)', () => {
       failure: 'unknown_route',
     });
     expect((await setup().start(tamperedRouteId)).status).toBe(404);
+  });
+});
+
+describe('reviewing a proposal (ADR-0031, #460)', () => {
+  /** The review route's newest imported version's items that state no value, with an official page. */
+  const quotable = () => {
+    const entries = [...ruleContent(bundledRuleData).entries.values()].filter(
+      ({ version }) => version.routeId === reviewRouteId,
+    );
+    const newest = entries.reduce((left, right) =>
+      left.version.number >= right.version.number ? left : right,
+    );
+    return checkItems(newest).filter(({ values, urls }) => values.length === 0 && urls.length > 0);
+  };
+
+  /** Runs a request of the review route to its proposal and answers the proposed number. */
+  const propose = async () => {
+    const { start, progress, runAll } = setup();
+    const started = await start(reviewRouteId);
+    expect(started.status).toBe(200);
+    const { requestId } = (await started.json()) as { requestId: string };
+    await runAll(requestId);
+    const ended = await progress(reviewRouteId);
+    if (ended?.proposedNumber == null) throw new Error('A proposed version expected');
+    return ended;
+  };
+
+  it('shows the three lists of the request that proposed it, then approves and rejects it with a step-up', async () => {
+    const ended = await propose();
+    const number = ended.proposedNumber ?? 0;
+    const { review } = setup();
+    const shown = await review(reviewRouteId, number);
+    expect(shown.status).toBe(200);
+    expect(shown.body.origin).toBe('request');
+    const counted = Object.fromEntries(
+      ['confirmed', 'divergent', 'unconfirmed'].map((list) => [
+        list,
+        shown.body.items.filter((item) => item.list === list).length,
+      ]),
+    );
+    expect(counted).toEqual(ended.lists);
+    expect(shown.body.items.every(({ edited }) => !edited)).toBe(true);
+    expect(shown.body.editable.length).toBeGreaterThan(0);
+    // The version the request started from reads as no request's.
+    expect((await review(reviewRouteId, ended.baseNumber)).body).toMatchObject({
+      origin: 'none',
+      items: [],
+    });
+    expect((await review(reviewRouteId, number + 50)).status).toBe(404);
+    expect((await setup({ signedIn: member }).review(reviewRouteId, number)).status).toBe(403);
+
+    const { identity, casesHash } = await storedIdentity(reviewRouteId, number);
+    const key = `${reviewRouteId}/${String(number)}/${identity.hash}`;
+    expect((await decisions().states()).get(key)).toBeUndefined();
+    const stepUp = stepUpService();
+    expect(
+      await decideWithStepUp(stepUp, decisions(), owner, 'activate', identity, casesHash),
+    ).toHaveProperty('decided');
+    expect((await decisions().states()).get(key)).toBe('active');
+    // A step-up bound to other cases decides nothing.
+    expect(
+      await decideWithStepUp(stepUp, decisions(), owner, 'reject', identity, 'f'.repeat(64)),
+    ).toEqual({ refused: 'step_up_required' });
+    expect(
+      await decideWithStepUp(stepUp, decisions(), owner, 'reject', identity, casesHash),
+    ).toHaveProperty('decided');
+    expect((await decisions().states()).get(key)).toBe('rejected');
+  });
+
+  it('ends a request whose number another version took meanwhile as out of order', async () => {
+    const ended = await propose();
+    const store = postgresUpdateStore(() => testDatabase.jobsDb);
+    const prior = await store.end(ended.requestId);
+    if (prior?.failure !== null) throw new Error('A proposal expected');
+    // A request that ran past its live hour: the route is free, so another one starts.
+    const late = await setup().start(reviewRouteId);
+    const { requestId } = (await late.json()) as { requestId: string };
+    await store.finish(requestId, { proposal: prior.proposal });
+    expect(await store.end(requestId)).toMatchObject({ failure: 'out_of_order' });
+  });
+
+  it('lets no role store a proposed version or a hand edit past the checks the database makes', async () => {
+    const ended = await propose();
+    const number = ended.proposedNumber ?? 0;
+    const content = sql`(SELECT content FROM knowledge.route_version
+                          WHERE route_id = ${reviewRouteId} AND number = ${number})`;
+    const proposal = (requestId: string, hash: string | null) => sql`
+      INSERT INTO knowledge.route_version (route_id, number, content, content_hash, cases,
+                                           request_id)
+      VALUES (${reviewRouteId}, ${number + 1}, ${content}, ${hash ?? ended.contentHash}, NULL,
+              ${requestId})`;
+    const refusedBy = (pattern: RegExp) => ({
+      cause: { message: expect.stringMatching(pattern) as unknown },
+    });
+    // app_jobs: a request with no end, or an end under another hash.
+    const openId = randomUUID();
+    await testDatabase.asAdmin((client) =>
+      client.query(
+        `INSERT INTO knowledge.update_request (id, route_id, base_number, requested_at)
+         VALUES ($1, $2, $3, now() - interval '2 hours')`,
+        [openId, reviewRouteId, number],
+      ),
+    );
+    await expect(testDatabase.jobsDb.execute(proposal(openId, null))).rejects.toMatchObject(
+      refusedBy(/row-level security/),
+    );
+    await expect(
+      testDatabase.jobsDb.execute(proposal(ended.requestId, '0'.repeat(64))),
+    ).rejects.toMatchObject(refusedBy(/row-level security|duplicate key/));
+    // app_api: no direct write, and the function re-checks the basis it is given.
+    await expect(
+      testDatabase.apiDb.execute(sql`
+        INSERT INTO knowledge.version_edit (route_id, number, item_key, url, quote)
+        VALUES (${reviewRouteId}, ${number}, 'requirement:x', 'https://example.gov', 'x')`),
+    ).rejects.toMatchObject(refusedBy(/^permission denied/));
+    await expect(
+      withIdentity(testDatabase.apiDb, { accountId: member.signedIn.accountId }, (tx) =>
+        tx.execute(sql`
+          SELECT knowledge.edit_route_version(${reviewRouteId}, ${number + 1}, ${number},
+            ${content}, ${'0'.repeat(64)}, NULL, 'requirement:x', 'https://example.gov', 'x',
+            'grant', ${randomUUID()}::uuid)`),
+      ),
+    ).rejects.toMatchObject(refusedBy(/only an admin edits/));
+  });
+
+  it('stores a hand edit as a new proposed version that corrects the edited one, quote checked on the page', async () => {
+    const ended = await propose();
+    const number = ended.proposedNumber ?? 0;
+    const [item] = quotable();
+    if (item === undefined) throw new Error('A quotable item expected');
+    const url = item.urls[0] ?? '';
+    const quote = `The official text that states ${item.key} on this page.`;
+    const shown = (await setup().review(reviewRouteId, number)).body;
+    const stored = shown.editable.find(({ key }) => key === item.key);
+    if (stored === undefined) throw new Error('The item is editable');
+    const request = {
+      routeId: reviewRouteId,
+      number,
+      itemKey: item.key,
+      content: stored.content,
+      source: { url, title: 'Official page' },
+      quote,
+    };
+
+    // A quote the page does not hold is refused with the reason, and nothing is stored.
+    const missing = await setup({ pageText: 'Another text.' }).edit(request);
+    expect(missing.status).toBe(200);
+    expect(missing.body).toMatchObject({ outcome: 'refused' });
+    // An item whose ID changed is refused too.
+    const renamed = await setup({ pageText: quote }).edit({
+      ...request,
+      content: JSON.stringify({ ...(JSON.parse(stored.content) as object), id: 'renamed' }),
+    });
+    expect(renamed.body).toMatchObject({ outcome: 'refused' });
+    expect((await setup({ signedIn: member, pageText: quote }).edit(request)).status).toBe(403);
+
+    const { edit, review } = setup({ pageText: quote });
+    const saved = await edit(request);
+    expect(saved).toEqual({ status: 200, body: { outcome: 'stored', number: number + 1 } });
+    const row = await testDatabase.asAdmin(
+      async (client) =>
+        (
+          await client.query<Record<string, unknown>>(
+            `SELECT v.request_id, v.content->>'corrects' AS corrects, e.item_key, e.url, e.quote
+               FROM knowledge.route_version v
+               JOIN knowledge.version_edit e USING (route_id, number)
+              WHERE v.route_id = $1 AND v.number = $2`,
+            [reviewRouteId, number + 1],
+          )
+        ).rows,
+    );
+    expect(row).toEqual([
+      { request_id: null, corrects: String(number), item_key: item.key, url, quote },
+    ]);
+    const corrected = (await review(reviewRouteId, number + 1)).body;
+    expect(corrected.origin).toBe('edit');
+    expect(corrected.items[0]).toMatchObject({
+      key: item.key,
+      list: 'confirmed',
+      edited: true,
+      quotes: [{ url, quote }],
+    });
+    expect(corrected.items.filter(({ key }) => key === item.key)).toHaveLength(1);
+    // The edit reads as proposed, so it is decided like any version.
+    const { identity, casesHash } = await storedIdentity(reviewRouteId, number + 1);
+    const key = `${reviewRouteId}/${String(number + 1)}/${identity.hash}`;
+    expect((await decisions().states()).get(key)).toBeUndefined();
+    expect(
+      await decideWithStepUp(stepUpService(), decisions(), owner, 'reject', identity, casesHash),
+    ).toHaveProperty('decided');
+    expect((await edit({ ...request, number: number + 1 })).body).toEqual({
+      error: { code: 'already_rejected' },
+    });
+
+    // While a request of the route runs, no edit takes its number.
+    const live = await setup().start(reviewRouteId);
+    expect(live.status).toBe(200);
+    expect(await edit(request)).toEqual({ status: 409, body: { error: { code: 'update_live' } } });
   });
 });

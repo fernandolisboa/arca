@@ -251,12 +251,6 @@ function setup({
   const advance = (milliseconds: number) => {
     time += milliseconds;
   };
-  const activateChecked = (body: unknown, headers: Record<string, string> = { origin }) =>
-    app.request('/v1/knowledge/versions/activate-checked', {
-      method: 'POST',
-      headers: { ...headers, 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-    });
   const startOne = (number: number, headers: Record<string, string> = { origin }) =>
     app.request('/v1/knowledge/versions/check/start', {
       method: 'POST',
@@ -283,7 +277,6 @@ function setup({
     starts,
     progress,
     advance,
-    activateChecked,
     decided,
     startOne,
     limited,
@@ -554,90 +547,6 @@ describe('GET /v1/knowledge/versions/check (ADR-0027)', () => {
   it('answers 404 for a version the catalog does not hold, and 403 to anyone but an admin', async () => {
     expect((await setup().read(9)).status).toBe(404);
     expect((await setup({ admitted: false }).read(1)).status).toBe(403);
-  });
-});
-
-const shown = (number: number, versionHash = hash(number)) => ({
-  routeId: 'qm-sample',
-  number,
-  hash: versionHash,
-});
-const flaggedItem = {
-  key: 'requirement:means',
-  status: 'differs',
-  quotes: [{ quote: 'means of at least EUR 920', url: law }],
-  note: null,
-  reason: null,
-} as const;
-
-describe('POST /v1/knowledge/versions/activate-checked (ADR-0027)', () => {
-  it('activates each checked version, one decision each, and skips the rest with a reason', async () => {
-    const { startQueued, runs, report, advance, activateChecked, decided } = setup({
-      count: 6,
-      states: new Map([[5, 'rejected']]),
-    });
-    await startQueued();
-    // The rejected version 5 is never started; version 6 gets no report.
-    const [first, second, third, fourth] = runs;
-    await report(first);
-    await report(second, { clean: false, items: [flaggedItem] });
-    // Stale: written for content that is no longer the bundled version's.
-    await report(third, { contentHash: 'f'.repeat(64) });
-    await report(fourth);
-    advance(31 * minute);
-    const response = await activateChecked({
-      versions: [shown(1), shown(2), shown(3), shown(4, 'e'.repeat(64)), shown(5), shown(6)],
-    });
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
-      activated: [
-        { routeId: 'qm-sample', number: 1, decisionId: '0d1e2f30-4152-4637-8a9b-0c1d2e3f4a51' },
-      ],
-      skipped: [
-        { routeId: 'qm-sample', number: 2, reason: 'flagged' },
-        { routeId: 'qm-sample', number: 3, reason: 'not_checked' },
-        { routeId: 'qm-sample', number: 4, reason: 'changed' },
-        { routeId: 'qm-sample', number: 5, reason: 'rejected' },
-        { routeId: 'qm-sample', number: 6, reason: 'not_checked' },
-      ],
-    });
-    expect(decided).toEqual([
-      [admin, 'activate', { subject: 'route', routeId: 'qm-sample', number: 1 }],
-    ]);
-  });
-
-  it('skips a version an admin can no longer activate when its own decision refuses it', async () => {
-    const { startQueued, runs, report, activateChecked } = setup({
-      count: 2,
-      refusals: new Map([[2, 'already_rejected']]),
-    });
-    await startQueued();
-    for (const recorded of runs) await report(recorded);
-    expect(await (await activateChecked({ versions: [shown(1), shown(2)] })).json()).toEqual({
-      activated: [
-        { routeId: 'qm-sample', number: 1, decisionId: '0d1e2f30-4152-4637-8a9b-0c1d2e3f4a51' },
-      ],
-      skipped: [{ routeId: 'qm-sample', number: 2, reason: 'rejected' }],
-    });
-  });
-
-  it('activates nothing where no check runs', async () => {
-    const { activateChecked, decided } = setup({ count: 1, enabled: false });
-    expect(await (await activateChecked({ versions: [shown(1)] })).json()).toEqual({
-      activated: [],
-      skipped: [{ routeId: 'qm-sample', number: 1, reason: 'not_checked' }],
-    });
-    expect(decided).toEqual([]);
-  });
-
-  it('is for admins only, from the same origin, and refuses a body that repeats a version', async () => {
-    const body = { versions: [shown(1)] };
-    expect((await setup({ admitted: false }).activateChecked(body)).status).toBe(403);
-    const { activateChecked, decided } = setup();
-    expect((await activateChecked(body, { origin: 'https://evil.example' })).status).toBe(403);
-    expect((await activateChecked({ versions: [shown(1), shown(1)] })).status).toBe(400);
-    expect((await activateChecked({ versions: [] })).status).toBe(400);
-    expect(decided).toEqual([]);
   });
 });
 

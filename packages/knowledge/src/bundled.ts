@@ -8,7 +8,11 @@ import { z } from 'zod';
 export { ruleContent, sealRuleData } from './rule-rows.js';
 
 const casesSchema = z.array(
-  z.strictObject({ hash: sha256Schema, cases: z.array(ruleCaseSummarySchema) }),
+  z.strictObject({
+    hash: sha256Schema,
+    casesHash: sha256Schema,
+    cases: z.array(ruleCaseSummarySchema),
+  }),
 );
 
 const officialDomainsSchema = z.array(

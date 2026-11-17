@@ -57,6 +57,8 @@ import {
   SetAiKey,
   SetAiStage,
   StartUpdateRequest,
+  EditItemRequest,
+  VersionReviewQuery,
   TestAiKey,
   UpdateRequestQuery,
   CorrectionFileReference,
@@ -67,7 +69,6 @@ import {
   handOverCasePersonAction,
   addCaseMemberAction,
   leaveCaseAction,
-  ActivateCheckedRequest,
   ComparisonVersionView,
   ComparisonViewQuery,
   DecideComparisonRequest,
@@ -107,6 +108,7 @@ import {
   aiSettingsLimits,
   correctorRunLimits,
   updateRequestLimits,
+  versionEditLimits,
   correctorLimits,
   ruleSummaryLimits,
   ruleCheckLimits,
@@ -138,12 +140,12 @@ import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
 import { type DecisionKind, type DecisionSubject } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
-import { createCheckedActivation } from './knowledge/checked-activation.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { AiSettingsService } from './ai/settings.js';
 import type { UpdateRequests } from './knowledge/update/requests.js';
+import type { VersionReviews } from './knowledge/update/review.js';
 import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
@@ -264,6 +266,8 @@ export interface AppDependencies {
   readonly correctorRun?: CorrectorRun;
   /** Update requests (ADR-0031); absent where no database is connected. */
   readonly updateRequests?: UpdateRequests;
+  /** Reviews and hand edits of route versions (ADR-0031); absent where no database is connected. */
+  readonly versionReviews?: VersionReviews;
   /** Configurações › IA (ADR-0031); absent, its routes answer 401. */
   readonly aiSettings?: AiSettingsService;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
@@ -319,6 +323,7 @@ export type ErrorCode =
   | 'corrector_off'
   | 'corrector_not_started'
   | 'update_live'
+  | 'version_taken'
   | 'update_off'
   | 'update_not_started'
   | 'step_up_refused'
@@ -501,6 +506,7 @@ export function createApp({
   corrector,
   aiSettings,
   updateRequests,
+  versionReviews,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1510,6 +1516,7 @@ export function createApp({
 
   const refusedDecision = {
     not_admin: 403,
+    step_up_required: 403,
     not_found: 404,
     already_rejected: 409,
   } as const;
@@ -1526,15 +1533,17 @@ export function createApp({
     if (current === null || knowledge === undefined || admins === undefined) {
       return unauthorized(c);
     }
-    // Before the body is read, so anyone else learns only that they may not decide; the service
-    // checks again in the transaction that stores the decision, as the authority (ADR-0027).
+    // Before the body or the nonce is read, so anyone else learns only that they may not decide;
+    // the service checks again in the transaction that stores the decision, as the authority.
     if (!(await admins.isAdmin(current.accountId))) return fail(c, 'not_admin', 403);
     const body: unknown = await c.req.json();
     const target: DecisionTarget =
       subject === 'route'
         ? { subject, ...DecideVersionRequest.parse(body) }
         : { subject, ...DecideComparisonRequest.parse(body) };
-    return decided(c, await knowledge.decide(current, kind, target));
+    const nonce = actionNonce(c);
+    if (nonce === undefined) return fail(c, 'step_up_required', 403);
+    return decided(c, await knowledge.decide(current, kind, target, nonce));
   };
   /** An admin's reads; anyone else learns only that they may not decide. */
   const adminReads = async (c: Context<AppEnv>) => {
@@ -1914,6 +1923,45 @@ export function createApp({
     const request = await screen.requests.newest(screen.current.accountId, routeId);
     return request === 'not_admin' ? fail(c, request, 403) : c.json({ request }, 200);
   });
+  const reviewScreen = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    return current === null || versionReviews === undefined || authLimits === undefined
+      ? { refused: unauthorized(c) }
+      : { reviews: versionReviews, current, limits: authLimits };
+  };
+  v1.openapi(openApiRoutes.getVersionReview, async (c) => {
+    const screen = await reviewScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { routeId, number } = VersionReviewQuery.parse(c.req.query());
+    const review = await screen.reviews.review(screen.current.accountId, routeId, number);
+    if (review === 'not_admin') return fail(c, review, 403);
+    return review === 'not_found' ? fail(c, review, 404) : c.json(review, 200);
+  });
+  v1.openapi(openApiRoutes.editVersionItem, async (c) => {
+    const screen = await reviewScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { accountId } = screen.current;
+    // Before the body is read or the limit counted, so anyone else learns only that.
+    if (!(await admins?.isAdmin(accountId))) return fail(c, 'not_admin', 403);
+    const request = EditItemRequest.parse(await c.req.json());
+    const limited = await overLimit(c, screen.limits, versionEditLimits.hour, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await screen.reviews.edit(accountId, request);
+    switch (outcome) {
+      case 'not_admin':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'already_rejected':
+        return fail(c, outcome, 409);
+      case 'live':
+        return fail(c, 'update_live', 409);
+      case 'taken':
+        return fail(c, 'version_taken', 409);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
   const aiScreen = async (c: Context<AppEnv>) => {
     const current = await signedIn(c);
     return current === null || aiSettings === undefined || authLimits === undefined
@@ -2052,24 +2100,6 @@ export function createApp({
       default:
         return fail(c, outcome, 409);
     }
-  });
-  const checkedActivation =
-    knowledge === undefined || knowledgeVersions === undefined
-      ? undefined
-      : createCheckedActivation({
-          listed: () => versionsWithChecks(knowledgeVersions, versionChecks),
-          decisions: knowledge,
-        });
-  v1.openapi(openApiRoutes.activateCheckedVersions, async (c) => {
-    const current = await signedIn(c);
-    if (current === null || checkedActivation === undefined || admins === undefined) {
-      return unauthorized(c);
-    }
-    // As for one decision: anyone else learns only that they may not decide, and each decision
-    // checks the role again in the transaction that stores it (ADR-0027).
-    if (!(await admins.isAdmin(current.accountId))) return fail(c, 'not_admin', 403);
-    const { versions } = ActivateCheckedRequest.parse(await c.req.json());
-    return c.json(await checkedActivation.activate(current, versions), 200);
   });
   v1.openapi(openApiRoutes.activateVersion, (c) => decideVersion(c, 'activate', 'route'));
   v1.openapi(openApiRoutes.rejectVersion, (c) => decideVersion(c, 'reject', 'route'));

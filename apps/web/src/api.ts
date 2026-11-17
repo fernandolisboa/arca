@@ -228,6 +228,15 @@ export const updateRequestQuery = (routeId: string) =>
       state.data?.request?.state === 'running' ? updatePollMs : false,
   });
 
+/** One route version's three lists, hand edits marked, and the items an admin may edit (ADR-0031). */
+export const versionReviewQuery = (routeId: string, number: number) =>
+  queryOptions({
+    queryKey: ['knowledge', 'review', routeId, number],
+    queryFn: () => api.call(routes.getVersionReview, { routeId, number }),
+    networkMode: 'always',
+    retry: false,
+  });
+
 /**
  * Everything cached for one account, the session first; a new query that is the account's own
  * joins this list.
