@@ -102,6 +102,11 @@ export const correctorRunLimits = {
   hour: { name: 'corrector_run_account', limit: 4, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Update requests (ADR-0031): each one pays for research, so few per admin an hour. */
+export const updateRequestLimits = {
+  hour: { name: 'update_request_account', limit: 10, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 /** The corrector key screen: making and revoking keys per owner-list admin. */
 export const correctorKeyLimits = {
   change: { name: 'corrector_key_change_account', limit: 20, windowSeconds: 24 * hour },

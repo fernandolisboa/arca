@@ -56,7 +56,9 @@ import {
   RemoveAiKey,
   SetAiKey,
   SetAiStage,
+  StartUpdateRequest,
   TestAiKey,
+  UpdateRequestQuery,
   CorrectionFileReference,
   StartCorrectionUpload,
   CloseRuleReportsRequest,
@@ -104,6 +106,7 @@ import {
   correctorKeyLimits,
   aiSettingsLimits,
   correctorRunLimits,
+  updateRequestLimits,
   correctorLimits,
   ruleSummaryLimits,
   ruleCheckLimits,
@@ -140,6 +143,7 @@ import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './know
 import type { Corrections } from './knowledge/corrections.js';
 import type { Corrector, CorrectorKeys } from './knowledge/corrector.js';
 import type { AiSettingsService } from './ai/settings.js';
+import type { UpdateRequests } from './knowledge/update/requests.js';
 import type { CorrectorRun } from './knowledge/corrector-run.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import { type VersionChecks, versionsWithChecks } from './knowledge/checks.js';
@@ -258,6 +262,8 @@ export interface AppDependencies {
   readonly corrector?: Corrector;
   /** Starts the owner's corrector run from the app (ADR-0029); absent, its route answers 503. */
   readonly correctorRun?: CorrectorRun;
+  /** Update requests (ADR-0031); absent where no database is connected. */
+  readonly updateRequests?: UpdateRequests;
   /** Configurações › IA (ADR-0031); absent, its routes answer 401. */
   readonly aiSettings?: AiSettingsService;
   /** Whether the account's inviter confirmed it, read on the app_auth pool (spec 0003, R2). */
@@ -312,6 +318,9 @@ export type ErrorCode =
   | 'check_not_started'
   | 'corrector_off'
   | 'corrector_not_started'
+  | 'update_live'
+  | 'update_off'
+  | 'update_not_started'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -491,6 +500,7 @@ export function createApp({
   correctorRun,
   corrector,
   aiSettings,
+  updateRequests,
   accountConfirmed,
   memoryObjects,
   notifications,
@@ -1867,6 +1877,42 @@ export function createApp({
     const limited = await overLimit(c, screen.limits, correctorRunLimits.hour, accountId);
     if (limited !== undefined) return limited;
     return (await correctorRun.start()) ? c.json({}, 200) : fail(c, 'corrector_not_started', 502);
+  });
+  const updateScreen = async (c: Context<AppEnv>) => {
+    const current = await signedIn(c);
+    return current === null || updateRequests === undefined || authLimits === undefined
+      ? { refused: unauthorized(c) }
+      : { requests: updateRequests, current, limits: authLimits };
+  };
+  v1.openapi(openApiRoutes.startUpdateRequest, async (c) => {
+    const screen = await updateScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { routeId } = StartUpdateRequest.parse(await c.req.json());
+    const { accountId } = screen.current;
+    const limited = await overLimit(c, screen.limits, updateRequestLimits.hour, accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await screen.requests.start(accountId, routeId);
+    switch (outcome) {
+      case 'not_admin':
+        return fail(c, outcome, 403);
+      case 'not_found':
+        return fail(c, outcome, 404);
+      case 'live':
+        return fail(c, 'update_live', 409);
+      case 'not_configured':
+        return fail(c, 'update_off', 503);
+      case 'not_started':
+        return fail(c, 'update_not_started', 502);
+      default:
+        return c.json(outcome, 200);
+    }
+  });
+  v1.openapi(openApiRoutes.getNewestUpdateRequest, async (c) => {
+    const screen = await updateScreen(c);
+    if ('refused' in screen) return screen.refused;
+    const { routeId } = UpdateRequestQuery.parse(c.req.query());
+    const request = await screen.requests.newest(screen.current.accountId, routeId);
+    return request === 'not_admin' ? fail(c, request, 403) : c.json({ request }, 200);
   });
   const aiScreen = async (c: Context<AppEnv>) => {
     const current = await signedIn(c);

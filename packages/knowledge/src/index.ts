@@ -15,10 +15,19 @@ export {
   type RuleRowReading,
   type RuleRows,
   refusedRows,
+  routeVersionContentHash,
   ruleDataFromRows,
   ruleEngineData,
 } from './rule-rows.js';
-export type { Json } from './canonical.js';
+export { type Json, canonicalize } from './canonical.js';
+export { type CasesFile, type RuleCase, casesFileSchema } from './cases.js';
+export { runVersionCases } from './case-run.js';
+export {
+  type CheckedProposal,
+  type RefusedProposal,
+  checkProposal,
+  maxProposalProblems,
+} from './proposal.js';
 
 /** The destination comparison's versions (ADR-0026); content only for an active one. */
 export const comparisonCatalog = createComparisonCatalog(parseComparisons(comparisonData));

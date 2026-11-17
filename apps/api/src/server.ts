@@ -29,6 +29,10 @@ import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
 import { postgresRuleStore } from './knowledge/rule-store.js';
+import { updateModelsFor } from './knowledge/update/environment.js';
+import { createUpdateRequests } from './knowledge/update/requests.js';
+import { postgresUpdateStore } from './knowledge/update/store.js';
+import { startUpdate } from './workflows/start-update.js';
 import { createCorrections } from './knowledge/corrections.js';
 import { createCorrector } from './knowledge/corrector.js';
 import { aiKeyCipher } from './ai/key-cipher.js';
@@ -350,6 +354,19 @@ const intake =
         now: () => performance.now(),
       });
 
+/** Update requests (ADR-0031): started here, run by the workflow on app_jobs. */
+const updateRequests = createUpdateRequests({
+  db: () => connected().db,
+  role,
+  audit: lazyAudit,
+  store: postgresUpdateStore(() => connected().db),
+  rows: rules.rows,
+  configured: updateModelsFor(environment, aiSettings).configured,
+  run: startUpdate,
+  logger,
+  now: () => Date.now(),
+});
+
 const knowledgeVersions = createKnowledgeVersions({
   states: () => knowledgeDecisions().states(),
   today: () => todayInSaoPaulo(),
@@ -594,6 +611,7 @@ const app = createApp({
   }),
   correctorKeys,
   aiSettings,
+  updateRequests,
   ...(correctorRun === undefined ? {} : { correctorRun }),
   corrector,
   knowledgeVersions,

@@ -1,0 +1,1193 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "57e258d5-5169-426a-9d4c-093b8206070e",
+  "prevIds": [
+    "968ecdfa-34ce-4321-bcb6-eb2652087397"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_verdict"
+      ],
+      "writes": [
+        "s|tbl|knowledge.rule_verdict",
+        "n|tbl|knowledge.rule_verdict",
+        "e|tbl|knowledge.rule_verdict",
+        "n|rel|knowledge.rule_verdict",
+        "n|type|knowledge.rule_verdict",
+        "n|rel|knowledge.rule_verdict_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_end"
+      ],
+      "writes": [
+        "s|tbl|knowledge.update_end",
+        "n|tbl|knowledge.update_end",
+        "e|tbl|knowledge.update_end",
+        "n|rel|knowledge.update_end",
+        "n|type|knowledge.update_end",
+        "n|rel|knowledge.update_end_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_request"
+      ],
+      "writes": [
+        "s|tbl|knowledge.update_request",
+        "n|tbl|knowledge.update_request",
+        "e|tbl|knowledge.update_request",
+        "n|rel|knowledge.update_request",
+        "n|type|knowledge.update_request",
+        "n|rel|knowledge.update_request_pkey"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_stage"
+      ],
+      "writes": [
+        "s|tbl|knowledge.update_stage",
+        "n|tbl|knowledge.update_stage",
+        "e|tbl|knowledge.update_stage",
+        "n|rel|knowledge.update_stage",
+        "n|type|knowledge.update_stage",
+        "n|rel|knowledge.update_stage_pkey",
+        "n|rel|knowledge.update_stage_request_position_key"
+      ],
+      "reads": [
+        "n|sch|knowledge"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "knowledge",
+        "update_request",
+        "update_request_route_requested_idx"
+      ],
+      "writes": [
+        "s|idx|knowledge.update_request_route_requested_idx",
+        "n|idx|knowledge.update_request_route_requested_idx",
+        "e|idx|knowledge.update_request_route_requested_idx",
+        "n|rel|knowledge.update_request_route_requested_idx"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_request.route_id",
+        "n|col|knowledge.update_request.requested_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_end"
+      ],
+      "writes": [
+        "s|fk|knowledge.update_end.update_end_request_id_update_request_id_fkey",
+        "n|fk|knowledge.update_end.update_end_request_id_update_request_id_fkey",
+        "e|fk|knowledge.update_end.update_end_request_id_update_request_id_fkey",
+        "n|con|knowledge.update_end.update_end_request_id_update_request_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_end",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_end.request_id",
+        "n|col|knowledge.update_request.id",
+        "e|uniqueness|knowledge.update_request.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_stage"
+      ],
+      "writes": [
+        "s|fk|knowledge.update_stage.update_stage_request_id_update_request_id_fkey",
+        "n|fk|knowledge.update_stage.update_stage_request_id_update_request_id_fkey",
+        "e|fk|knowledge.update_stage.update_stage_request_id_update_request_id_fkey",
+        "n|con|knowledge.update_stage.update_stage_request_id_update_request_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_stage",
+        "n|sch|knowledge",
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|col|knowledge.update_stage.request_id",
+        "n|col|knowledge.update_request.id",
+        "e|uniqueness|knowledge.update_request.id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_verdict"
+      ],
+      "writes": [
+        "s|pol|knowledge.rule_verdict.rule_verdict_read",
+        "n|pol|knowledge.rule_verdict.rule_verdict_read",
+        "e|pol|knowledge.rule_verdict.rule_verdict_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.rule_verdict",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.rule_verdict"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "rule_verdict"
+      ],
+      "writes": [
+        "s|pol|knowledge.rule_verdict.rule_verdict_insert",
+        "n|pol|knowledge.rule_verdict.rule_verdict_insert",
+        "e|pol|knowledge.rule_verdict.rule_verdict_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.rule_verdict",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.rule_verdict"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_end"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_end.update_end_read",
+        "n|pol|knowledge.update_end.update_end_read",
+        "e|pol|knowledge.update_end.update_end_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_end",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "n|role|app_jobs",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.update_end"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_end"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_end.update_end_insert",
+        "n|pol|knowledge.update_end.update_end_insert",
+        "e|pol|knowledge.update_end.update_end_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_end",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.update_end"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_request.update_request_read",
+        "n|pol|knowledge.update_request.update_request_read",
+        "e|pol|knowledge.update_request.update_request_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "n|role|app_jobs",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.update_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_request"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_request.update_request_insert_by_definer",
+        "n|pol|knowledge.update_request.update_request_insert_by_definer",
+        "e|pol|knowledge.update_request.update_request_insert_by_definer"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_request",
+        "n|sch|knowledge",
+        "n|role|knowledge_definer",
+        "e|rls|knowledge.update_request"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_stage"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_stage.update_stage_read",
+        "n|pol|knowledge.update_stage.update_stage_read",
+        "e|pol|knowledge.update_stage.update_stage_read"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_stage",
+        "n|sch|knowledge",
+        "n|role|app_api",
+        "n|role|app_jobs",
+        "e|rls|knowledge.update_stage"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "update_stage"
+      ],
+      "writes": [
+        "s|pol|knowledge.update_stage.update_stage_insert",
+        "n|pol|knowledge.update_stage.update_stage_insert",
+        "e|pol|knowledge.update_stage.update_stage_insert"
+      ],
+      "reads": [
+        "n|tbl|knowledge.update_stage",
+        "n|sch|knowledge",
+        "n|role|app_jobs",
+        "e|rls|knowledge.update_stage"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "rule_verdict",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "update_end",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "update_request",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "name": "update_stage",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "cache_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "verdict",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "failure",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "proposal",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "base_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "requested_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "request_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "stage",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "failure",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "needs_correction",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "proposal_valid",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "output",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "input_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "output_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "cache_read_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "cache_write_tokens",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "web_searches",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "clock_timestamp()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_route_requested_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "route_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "requested_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_request_id_update_request_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "update_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_request_id_update_request_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "request_id"
+        ],
+        "schemaTo": "knowledge",
+        "tableTo": "update_request",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "rule_verdict_pkey",
+        "columns": [
+          "cache_key"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_pkey",
+        "columns": [
+          "request_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_request_position_key",
+        "nameExplicit": true,
+        "columns": [
+          "request_id",
+          "position"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "rule_verdict_cache_key_format",
+        "value": "\"cache_key\" ~ '^[0-9a-f]{64}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "rule_verdict_verdict",
+        "value": "\"verdict\" IN ('supports', 'contradicts', 'cannot_tell')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_shape",
+        "value": "CASE WHEN \"failure\" IS NULL\n        THEN \"proposal\" IS NOT NULL AND \"content_hash\" ~ '^[0-9a-f]{64}$'\n        ELSE \"failure\" ~ '^[a-z][a-z_]{0,63}$' AND \"proposal\" IS NULL AND \"content_hash\" IS NULL END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_proposal_size",
+        "value": "\"proposal\" IS NULL OR octet_length(\"proposal\"::text) <= 2000000",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_route_id_format",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_base_number_positive",
+        "value": "\"base_number\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_position",
+        "value": "\"position\" BETWEEN 0 AND 3",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_stage",
+        "value": "\"stage\" IN ('research', 'validation', 'correction', 'final_validation')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_in_order",
+        "value": "\"stage\" = (ARRAY['research', 'validation', 'correction', 'final_validation'])[\"position\" + 1]",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_failure_format",
+        "value": "\"failure\" IS NULL OR \"failure\" ~ '^[a-z][a-z_]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_outcome",
+        "value": "(\"failure\" IS NULL) = (\"needs_correction\" IS NOT NULL AND \"proposal_valid\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_output_size",
+        "value": "\"output\" IS NULL OR octet_length(\"output\"::text) <= 2000000",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_model_format",
+        "value": "\"model\" IS NULL OR \"model\" ~ '^[a-z0-9][a-z0-9.-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_tokens",
+        "value": "coalesce(\"input_tokens\", 0) >= 0 AND coalesce(\"output_tokens\", 0) >= 0\n        AND coalesce(\"cache_read_tokens\", 0) >= 0 AND coalesce(\"cache_write_tokens\", 0) >= 0\n        AND coalesce(\"web_searches\", 0) >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "rule_verdict_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "rule_verdict",
+        "name": "rule_verdict_insert",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api",
+          "app_jobs",
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_end",
+        "name": "update_end_insert",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api",
+          "app_jobs",
+          "knowledge_definer"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_request",
+        "name": "update_request_insert_by_definer",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "knowledge_definer"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_read",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api",
+          "app_jobs"
+        ],
+        "using": "true",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "update_stage",
+        "name": "update_stage_insert",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": null,
+        "withCheck": "true",
+        "entityType": "policies"
+      }
+    }
+  ]
+}

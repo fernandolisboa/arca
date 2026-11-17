@@ -12,6 +12,7 @@ import { Decision, decideVersion } from './decision.js';
 import { ChangeList, CheckAndHash, card, cardOf, changeLines, surfaceOf } from './review-parts.js';
 import { ExpressionTree } from './expression-tree.js';
 import { CheckRunButton, CheckRunConfirm, useCheckRun } from './check-run.js';
+import { UpdateRequestButton, UpdateRequestCard, useUpdateRequest } from './update-request.js';
 import { RuleSummaryButton, RuleSummaryCard, useRuleSummary } from './rule-summary.js';
 import { stateTone } from './state-tone.js';
 import { type TallyTone, pointTone, shownPoints, stepTallies } from './step-checks.js';
@@ -439,6 +440,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
   const checkRun = useCheckRun(checked, () => {
     void navigate({ to: '/knowledge/check', search: checked });
   });
+  const update = useUpdateRequest(view.routeId);
   const steps = reviewSteps(view);
   const [currentKey, setCurrentKey] = useState<StepKey>('changes');
   const movedRef = useRef(false);
@@ -515,6 +517,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             <div className="flex flex-wrap items-center gap-2">
               <RuleSummaryButton state={summary} />
               <CheckRunButton state={checkRun} words={words} />
+              <UpdateRequestButton state={update} words={words} />
             </div>
           </div>
           <p className="text-small text-muted">
@@ -544,6 +547,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
           )}
         </header>
         <CheckRunConfirm state={checkRun} words={words} />
+        <UpdateRequestCard state={update} words={words} />
         <RuleSummaryCard state={summary} />
         <CorrectionsSection view={view} words={words} />
         <CheckSummary tallies={tallies} scripted={report?.scripted === true} words={words} />

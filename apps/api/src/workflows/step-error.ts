@@ -5,7 +5,8 @@ export type StepErrorCode =
   | 'email_unavailable'
   | 'delivery_unavailable'
   | 'storage_unavailable'
-  | 'check_failed';
+  | 'check_failed'
+  | 'update_failed';
 
 /** Step errors carry a code only: the SDK logs and stores them (ADR-0009). */
 export class StepError extends Error {

@@ -7,6 +7,7 @@ import { createRetention, type Retention } from '../account/retention.js';
 import {
   databaseTargetFrom,
   readAuditDatabasePassword,
+  readAiKeyEncryptionKey,
   readAnthropicApiKey,
   readAuthOrigin,
   readAuthSecrets,
@@ -16,6 +17,9 @@ import {
   readOwnOrigin,
   readVapidPrivateKey,
 } from '../config.js';
+import { aiKeyCipher } from '../ai/key-cipher.js';
+import { aiSettingsReader } from '../ai/settings.js';
+import { todayInSaoPaulo } from '../calendar.js';
 import { roleDatabase } from '../database.js';
 import { emailRouteFor, emailSenderFor } from '../email/environment.js';
 import { createNotices } from '../email/notices.js';
@@ -30,6 +34,9 @@ import { type VersionCheck, createVersionCheck } from '../knowledge/check/run.js
 import { postgresCheckReportStore } from '../knowledge/check/store.js';
 import { postgresRuleStore } from '../knowledge/rule-store.js';
 import { createCheckSubjects } from '../knowledge/versions.js';
+import { updateModelsFor } from '../knowledge/update/environment.js';
+import { type RuleUpdateStep, createRuleUpdate } from '../knowledge/update/run.js';
+import { postgresUpdateStore } from '../knowledge/update/store.js';
 import { createCorrectionContents } from '../knowledge/correction-contents.js';
 import { createDelivery, deliverNow, type Delivery } from '../notification/delivery.js';
 import { createNotifier } from '../notification/notifier.js';
@@ -193,6 +200,40 @@ export const checkSteps = once((): Promise<VersionCheck> => {
       locator: passageLocatorFor(environment, apiKey),
       store: postgresCheckReportStore(jobsDatabase),
       progress: postgresCheckProgressStore(jobsDatabase),
+      logger: stepLogger,
+      now: () => performance.now(),
+    }),
+  );
+});
+
+/**
+ * Update requests (ADR-0031) on the app_jobs pool, which reads public rule data and the AI
+ * settings and inserts each stage, the end and the validator's answers: no account, no case data.
+ */
+export const updateSteps = once((): Promise<RuleUpdateStep> => {
+  const environment = readDeploymentEnvironment();
+  const encryptionKey = readAiKeyEncryptionKey();
+  const anthropicKey = readAnthropicApiKey();
+  const models = updateModelsFor(
+    environment,
+    aiSettingsReader({
+      db: jobsDatabase,
+      environment,
+      ...(encryptionKey === undefined ? {} : { cipher: aiKeyCipher(encryptionKey) }),
+      environmentKeys: anthropicKey === undefined ? {} : { anthropic: anthropicKey },
+    }),
+  );
+  const rules = postgresRuleStore(jobsDatabase, stepLogger);
+  return Promise.resolve(
+    createRuleUpdate({
+      store: postgresUpdateStore(jobsDatabase),
+      rows: rules.rows,
+      reading: rules.reading,
+      fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
+      researcher: models.researcher,
+      validator: models.validator,
+      model: models.model,
+      today: () => todayInSaoPaulo(),
       logger: stepLogger,
       now: () => performance.now(),
     }),

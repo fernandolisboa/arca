@@ -101,7 +101,19 @@ const keyOf = (kind: string, id: string, number: number): string =>
  * over everything it pins, to the hash stored with it. A row that fails any of these, or pins one
  * that does, is refused, so a row changed outside the insert-only grants is never evaluated.
  */
-export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleData {
+/** The country sets and official-domain lists that hash to their stored hash, and how to pin them. */
+interface PinnedFiles {
+  readonly refused: string[];
+  readonly officialDomains: OfficialDomainHosts[];
+  readonly sets: ReadonlyMap<
+    string,
+    { readonly content: Json; readonly set: CountrySet; readonly pinned: Record<string, Json> }
+  >;
+  readonly hashOf: (version: Json, pinned: Record<string, Json>) => string;
+  readonly commonPins: (data: CountrySet | RouteVersion) => Record<string, Json> | undefined;
+}
+
+function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
   const refused: string[] = [];
   const hashOf = (version: Json, pinned: Record<string, Json>): string =>
     reading.sha256(canonicalize({ version, pinned }));
@@ -168,6 +180,47 @@ export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleD
     sets.set(key, { content: row.content, set: parsed.data, pinned });
   }
 
+  return { refused, officialDomains, sets, hashOf, commonPins };
+}
+
+/**
+ * Everything a route version pins, by key, as its hash covers it: the countries files, its
+ * official-domain lists and its country sets with what they pin. Undefined when one of them is
+ * missing or refused.
+ */
+function routePins(files: PinnedFiles, version: RouteVersion): Record<string, Json> | undefined {
+  const pinned = files.commonPins(version);
+  if (pinned === undefined) return undefined;
+  for (const pin of version.countrySets) {
+    const key = keyOf('country-sets', pin.id, pin.number);
+    const set = files.sets.get(key);
+    if (set === undefined) return undefined;
+    pinned[key] = set.content;
+    Object.assign(pinned, set.pinned);
+  }
+  return pinned;
+}
+
+/**
+ * The content hash a new route version would be stored under (spec 0002, R6), over everything it
+ * pins among the rows read; undefined when its content does not parse or pins a file the rows
+ * lack or refuse. The same hashing the read re-checks, so a row stored with it reads back.
+ */
+export function routeVersionContentHash(
+  rows: RuleRows,
+  content: Json,
+  reading: RuleRowReading,
+): string | undefined {
+  const parsed = routeVersionSchema.safeParse(content);
+  if (!parsed.success) return undefined;
+  const files = readPinnedFiles(rows, reading);
+  const pinned = routePins(files, parsed.data);
+  return pinned === undefined ? undefined : files.hashOf(content, pinned);
+}
+
+export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleData {
+  const files = readPinnedFiles(rows, reading);
+  const { refused, officialDomains } = files;
   const read: { identity: VersionIdentity; entry: CatalogEntry; cases: Json | null }[] = [];
   const ordered = [...rows.routeVersions].sort(
     (left, right) => left.routeId.localeCompare(right.routeId, 'en') || left.number - right.number,
@@ -175,32 +228,21 @@ export function ruleDataFromRows(rows: RuleRows, reading: RuleRowReading): RuleD
   for (const row of ordered) {
     const key = keyOf('routes', row.routeId, row.number);
     const parsed = routeVersionSchema.safeParse(row.content);
-    const pinned = parsed.success ? commonPins(parsed.data) : undefined;
-    const pinnedSets = parsed.success
-      ? parsed.data.countrySets.map((pin) => {
-          const set = sets.get(keyOf('country-sets', pin.id, pin.number));
-          return set && { key: keyOf('country-sets', pin.id, pin.number), ...set };
-        })
-      : [];
-    const found = pinnedSets.filter((set) => set !== undefined);
+    const pinned = parsed.success ? routePins(files, parsed.data) : undefined;
     if (
       !parsed.success ||
       pinned === undefined ||
-      found.length !== pinnedSets.length ||
       parsed.data.routeId !== row.routeId ||
-      parsed.data.number !== row.number
+      parsed.data.number !== row.number ||
+      files.hashOf(row.content, pinned) !== row.contentHash
     ) {
       refused.push(key);
       continue;
     }
-    for (const set of found) {
-      pinned[set.key] = set.content;
-      Object.assign(pinned, set.pinned);
-    }
-    if (hashOf(row.content, pinned) !== row.contentHash) {
-      refused.push(key);
-      continue;
-    }
+    const found = parsed.data.countrySets.flatMap((pin) => {
+      const set = files.sets.get(keyOf('country-sets', pin.id, pin.number));
+      return set === undefined ? [] : [set];
+    });
     const identity = versionIdentity(parsed.data, row.contentHash);
     read.push({
       identity,

@@ -3200,6 +3200,7 @@
                               "ai_key_set",
                               "ai_key_removed",
                               "ai_stage_set",
+                              "update_requested",
                               "corrector_key_created",
                               "corrector_key_revoked",
                               "corrector_key_refused",
@@ -37887,6 +37888,325 @@
                   "required": [
                     "result"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/update-requests": {
+      "post": {
+        "operationId": "startUpdateRequest",
+        "summary": "Starts, for an admin, an update request for one route's newest version: research, validation, at most one correction and a final validation, then a proposal. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a route with no version; 409 update_live while a request of the route runs; 502 update_not_started when the run could not begin, which then counts as running for up to an hour; 503 update_off where the AI keys are not set",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  }
+                },
+                "required": [
+                  "routeId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "requestId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getNewestUpdateRequest",
+        "summary": "The newest update request of a route with its progress by stage and what it cost, or null when it has none; never calls a model. 403 not_admin",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+            },
+            "required": true,
+            "name": "routeId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The newest request, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "request": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "requestId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "routeId": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                        },
+                        "baseNumber": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "requestedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "running",
+                            "finished",
+                            "failed",
+                            "stalled"
+                          ]
+                        },
+                        "failure": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "unknown_route",
+                            "not_configured",
+                            "research_failed",
+                            "research_timeout",
+                            "research_unparsable",
+                            "validation_failed",
+                            "correction_failed",
+                            "correction_timeout",
+                            "correction_unparsable",
+                            "final_validation_failed",
+                            "proposal_invalid",
+                            "out_of_order",
+                            null
+                          ]
+                        },
+                        "stages": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "stage": {
+                                "type": "string",
+                                "enum": [
+                                  "research",
+                                  "validation",
+                                  "correction",
+                                  "final_validation"
+                                ]
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "done",
+                                  "failed",
+                                  "running",
+                                  "pending",
+                                  "skipped"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "stage",
+                              "state"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "cost": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "priced"
+                                  ]
+                                },
+                                "microUsd": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1000000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "microUsd"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "scripted"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "lists": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "confirmed": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "divergent": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "unconfirmed": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          }
+                        },
+                        "contentHash": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "pattern": "^[0-9a-f]{64}$"
+                        }
+                      },
+                      "required": [
+                        "requestId",
+                        "routeId",
+                        "baseNumber",
+                        "requestedAt",
+                        "state",
+                        "failure",
+                        "stages",
+                        "cost",
+                        "lists",
+                        "contentHash"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "request"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

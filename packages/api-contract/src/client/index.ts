@@ -99,6 +99,7 @@ export type {
   ActivateCheckedResponse,
   CheckCost,
   CheckProgress,
+  UpdateProgress,
   ComparisonVersionView,
   DecideComparisonRequest,
   DecideVersionRequest,

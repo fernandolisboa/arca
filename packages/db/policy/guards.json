@@ -126,7 +126,8 @@
     "knowledge.own_correction_request_rows",
     "knowledge.newest_route_requests",
     "knowledge.answer_new_route_request",
-    "knowledge.set_ai_stage"
+    "knowledge.set_ai_stage",
+    "knowledge.start_update_request"
   ],
   "migrationExtensions": [],
   "deferrableConstraints": []
