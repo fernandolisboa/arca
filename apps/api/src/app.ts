@@ -330,6 +330,7 @@ export type ErrorCode =
   | 'update_not_started'
   | 'links_needed'
   | 'list_pending'
+  | 'list_active'
   | 'step_up_refused'
   | 'step_up_required'
   | 'invalid_code'
@@ -1524,6 +1525,7 @@ export function createApp({
     not_found: 404,
     already_rejected: 409,
     list_pending: 409,
+    list_active: 409,
   } as const;
   const decided = (c: Context<AppEnv>, outcome: DecisionOutcome) =>
     'decided' in outcome
@@ -1919,6 +1921,8 @@ export function createApp({
         return fail(c, 'update_off', 503);
       case 'not_started':
         return fail(c, 'update_not_started', 502);
+      case 'list_pending':
+        return fail(c, outcome, 409);
       default:
         return c.json(outcome, 200);
     }

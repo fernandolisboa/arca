@@ -543,6 +543,7 @@ export {
   type FirstListTrust,
   firstListProblems,
   isRegistrySuffix,
+  maxFirstListHosts,
   namedHosts,
   registryNamesHost,
 } from './rule-update/first-list.js';

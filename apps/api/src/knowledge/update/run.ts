@@ -168,7 +168,7 @@ type RequestContext =
       /** The hosts the admin named, for a new country; empty otherwise. */
       readonly namedHosts: readonly string[];
       /** The hosts of every imported list, where a first list's registry proof may also sit. */
-      readonly approvedHosts: readonly string[];
+      readonly importedHosts: readonly string[];
     };
 
 function requestContext(
@@ -226,7 +226,7 @@ function requestContext(
     country: request.country,
     pins: known.map(({ id, number }) => ({ id, number })),
     namedHosts: named,
-    approvedHosts: [
+    importedHosts: [
       ...new Set(lists.filter(({ fromRequest }) => !fromRequest).flatMap(({ hosts }) => hosts)),
     ],
     research: {
@@ -400,19 +400,23 @@ export function createRuleUpdate({
     problems.push(
       ...firstListProblems(list, {
         namedHosts: context.namedHosts,
-        approvedHosts: context.approvedHosts,
+        importedHosts: context.importedHosts,
         hostOf: reading.hostOf,
       }),
     );
     if (problems.length > 0) return { problems };
-    const trusted = [...context.namedHosts, ...context.approvedHosts];
-    const proofs = await Promise.all(
-      list.hosts.map(async ({ host, source }) => {
-        const { outcome } = await readOfficialPage(fetcher, source.url, undefined, trusted);
-        if (!outcome.ok) logger.info({ route, errorCode: `update_fetch_${outcome.failure}` });
-        return outcome.ok && registryNamesHost(outcome.text, host);
-      }),
-    );
+    const trusted = [...context.namedHosts, ...context.importedHosts];
+    const proofOf = async ({ host, source }: (typeof list.hosts)[number]) => {
+      const { outcome } = await readOfficialPage(fetcher, source.url, undefined, trusted);
+      if (!outcome.ok) logger.info({ route, errorCode: `update_fetch_${outcome.failure}` });
+      return outcome.ok && registryNamesHost(outcome.text, host);
+    };
+    const proofs: boolean[] = [];
+    for (let start = 0; start < list.hosts.length; start += parallelReads) {
+      proofs.push(
+        ...(await Promise.all(list.hosts.slice(start, start + parallelReads).map(proofOf))),
+      );
+    }
     proofs.forEach((found, index) => {
       if (!found) {
         problems.push(

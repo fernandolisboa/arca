@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { firstListProblems, registryNamesHost } from '../../src/rule-update/first-list.js';
+import {
+  firstListProblems,
+  maxFirstListHosts,
+  registryNamesHost,
+} from '../../src/rule-update/first-list.js';
 import type { CalendarDate } from '../../src/index.js';
 import type { OfficialDomainList } from '../../src/rules/route-version.js';
 
@@ -25,13 +29,20 @@ const list = (...hosts: [string, string][]): OfficialDomainList => ({
   })),
 });
 
-const trust = { namedHosts: ['registry.qn'], approvedHosts: ['europa.eu'], hostOf };
+const trust = {
+  namedHosts: ['registry.qn', 'interior.qn', 'migra.qn'],
+  importedHosts: ['europa.eu'],
+  hostOf,
+};
 
 describe('firstListProblems (ADR-0031)', () => {
-  it('takes hosts whose proof sits on a named host or an approved list', () => {
+  it('takes named hosts and their subdomains, with proofs on a named host or an imported list', () => {
     expect(
       firstListProblems(
-        list(['interior.qn', 'https://registry.qn/bodies'], ['migra.qn', 'https://europa.eu/qn']),
+        list(
+          ['interior.qn', 'https://registry.qn/bodies'],
+          ['visas.migra.qn', 'https://europa.eu/qn'],
+        ),
         trust,
       ),
     ).toEqual([]);
@@ -54,6 +65,31 @@ describe('firstListProblems (ADR-0031)', () => {
       'a proof on a parent of a host of the list',
       list(['migra.registry.qn', 'https://registry.qn/']),
       /same list/,
+    ],
+    [
+      'a host nobody named, as research might add',
+      list(['interior.qn', 'https://registry.qn/'], ['pages.example', 'https://registry.qn/']),
+      /pages\.example is not a host the admin named/,
+    ],
+    [
+      'a proof address with a query, which a search page echoes',
+      list(['interior.qn', 'https://registry.qn/search?q=bodies']),
+      /has no query/,
+    ],
+    [
+      'a proof address that names the host, which a not-found page echoes',
+      list(['interior.qn', 'https://registry.qn/interior.qn']),
+      /does not name interior\.qn/,
+    ],
+    [
+      'more hosts than a first list holds',
+      list(
+        ...Array.from({ length: maxFirstListHosts + 1 }, (_, index): [string, string] => [
+          `s${String(index)}.interior.qn`,
+          'https://registry.qn/',
+        ]),
+      ),
+      /At most/,
     ],
     [
       'a proof on a host nobody approved',

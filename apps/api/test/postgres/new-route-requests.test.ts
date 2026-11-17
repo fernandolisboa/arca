@@ -176,6 +176,12 @@ function newRouteResearcher(asked: ResearchRequest[]): RuleResearcher {
   };
 }
 
+/** The registry page and a page on each host of the moved route's lists: the hosts the admin names. */
+const newCountryLinks = () => [
+  registryLink,
+  ...found().moved.hosts.map((entry) => `https://${(entry as { host: string }).host}/visas`),
+];
+
 /** Every page reads as a registry naming every host of the moved route's lists, or as `text`. */
 const pagesFetcher = (text?: string): SourceFetcher => ({
   fetch: (url) =>
@@ -311,7 +317,13 @@ function setup({
     if (shown === undefined) throw new Error('The request expected in the list');
     return shown;
   };
-  return { start, listed, review, runAll, ask, runs };
+  const updateRequest = (routeId: string) =>
+    app.request('/v1/knowledge/update-requests', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json' },
+      body: JSON.stringify({ routeId }),
+    });
+  return { start, listed, review, runAll, ask, runs, updateRequest };
 }
 
 interface Progress {
@@ -440,6 +452,9 @@ describe('new-route requests in a country with approved lists (ADR-0031, #461)',
     expect(again).toMatchObject({ state: 'failed', failure: 'proposal_invalid' });
     expect((await listed()).status).toBe(200);
     expect((await start({ country, visa: 'x' })).status).toBe(400);
+    // The visa goes to the model as typed, so what looks like personal data is refused.
+    expect((await start({ country, visa: 'Visa for passport 12345678' })).status).toBe(400);
+    expect((await start({ country, visa: 'Visa for someone@example.com' })).status).toBe(400);
   });
 
   it('allows one live new-route request per country, and refuses anyone but an admin', async () => {
@@ -468,15 +483,17 @@ describe('new-route requests in a country with no list (ADR-0031, #461)', () => 
 
   it('proposes the first list with the route, decided apart and before it', async () => {
     const asked: ResearchRequest[] = [];
-    const { ask, review } = setup({ researcher: newRouteResearcher(asked) });
+    const { ask, review, updateRequest } = setup({ researcher: newRouteResearcher(asked) });
     const ended = await ask({
       country: newCountry,
       visa: 'Synthetic long stay',
-      links: [registryLink],
+      links: newCountryLinks(),
     });
     expect(ended).toMatchObject({ newCountry: true, state: 'finished', failure: null });
-    // Research started only on the host the admin named, and was asked for the first list.
-    expect(asked[0]?.officialHosts).toEqual(['registry.example']);
+    // Research started only on the hosts the admin named, and was asked for the first list.
+    expect(asked[0]?.officialHosts).toEqual(
+      newCountryLinks().map((link) => new URL(link).hostname),
+    );
     expect(asked[0]?.newRoute?.firstList).toEqual({ id: 'fr', number: 1 });
 
     const routeId = ended.proposedRouteId ?? '';
@@ -509,6 +526,10 @@ describe('new-route requests in a country with no list (ADR-0031, #461)', () => 
     expect(
       await decideWithStepUp(stepUpService(), decisions(), owner, 'activate', identity, casesHash),
     ).toEqual({ refused: 'list_pending' });
+    // Research never runs again on hosts nobody approved.
+    const updated = await updateRequest(routeId);
+    expect(updated.status).toBe(409);
+    expect(await updated.json()).toEqual({ error: { code: 'list_pending' } });
     // An imported list is no decision subject; a stale hash decides nothing.
     expect(await decideList('activate', 'pt', 1, 'a'.repeat(64))).toEqual({ refused: 'not_found' });
     expect(await decideList('activate', 'fr', 1, 'b'.repeat(64))).toEqual({
@@ -522,13 +543,17 @@ describe('new-route requests in a country with no list (ADR-0031, #461)', () => 
     expect(
       await decideWithStepUp(stepUpService(), decisions(), owner, 'activate', identity, casesHash),
     ).toHaveProperty('decided');
+    // An active list may hold up an active route, so it is never rejected.
+    expect(await decideList('reject', 'fr', 1, list?.hash ?? '')).toEqual({
+      refused: 'list_active',
+    });
   });
 
   it('refuses a first list whose registry page does not name its host, even after the correction', async () => {
     const fresh = await setup({ fetcher: pagesFetcher('A registry that lists nothing.') }).ask({
       country: 'BE',
       visa: 'Synthetic visa',
-      links: [registryLink],
+      links: newCountryLinks(),
     });
     expect(fresh).toMatchObject({ newCountry: true, state: 'failed', failure: 'proposal_invalid' });
     const stages = fresh.stages.map(({ stage, state }) => `${stage}:${state}`);
@@ -545,6 +570,46 @@ describe('new-route requests in a country with no list (ADR-0031, #461)', () => 
     expect(
       problems.every((line) => /^domainList\/hosts\/\d+\/source\/url: A registry page/.test(line)),
     ).toBe(true);
+  });
+});
+
+describe('knowledge.start_new_route_request (ADR-0031, #461)', () => {
+  /** Calls the definer as app_api with the account set, in a transaction rolled back after. */
+  const call = (
+    accountId: string | null,
+    basis: string,
+    grantId: string | null,
+    pins: string[] = [],
+  ) =>
+    testDatabase.asAdmin(async (client) => {
+      await client.query('BEGIN');
+      try {
+        await client.query('SET LOCAL ROLE app_api');
+        if (accountId !== null) {
+          await client.query(`SELECT set_config('app.account_id', $1, true)`, [accountId]);
+        }
+        const { rows } = await client.query<{ id: string | null }>(
+          `SELECT knowledge.start_new_route_request('IT', 'Synthetic visa', '{}', $1, $2, $3::uuid)
+             AS id`,
+          [pins, basis, grantId],
+        );
+        return rows[0]?.id ?? null;
+      } catch (error) {
+        return (error as { code?: string }).code ?? 'error';
+      } finally {
+        await client.query('ROLLBACK');
+      }
+    });
+
+  it('refuses anyone the admin basis does not hold for, and a pin that is no pin', async () => {
+    expect(await call(null, 'owner_list', null)).toBe('42501');
+    expect(await call(member.signedIn.accountId, 'grant', member.signedIn.accountId)).toBe('42501');
+    expect(await call(owner.signedIn.accountId, 'nonsense', null)).toBe('42501');
+    // The shape check refuses a malformed pin: 23514 is check_violation.
+    expect(await call(owner.signedIn.accountId, 'owner_list', null, ['../it'])).toBe('23514');
+    expect(await call(owner.signedIn.accountId, 'owner_list', null, ['it/1'])).toMatch(
+      /^[0-9a-f-]{36}$/,
+    );
   });
 });
 

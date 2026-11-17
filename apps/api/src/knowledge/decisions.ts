@@ -39,7 +39,12 @@ export type DecisionOutcome =
   | { readonly decided: string }
   | {
       readonly refused:
-        'not_admin' | 'not_found' | 'already_rejected' | 'step_up_required' | 'list_pending';
+        | 'not_admin'
+        | 'not_found'
+        | 'already_rejected'
+        | 'step_up_required'
+        | 'list_pending'
+        | 'list_active';
     };
 
 /**
@@ -443,7 +448,8 @@ export function createKnowledgeDecisions({
     current: DecisionStates,
   ): Promise<boolean> => {
     const { lists, pinsOf } = await officialDomains();
-    const pins = pinsOf(identity.routeId, identity.number) ?? [];
+    const pins = pinsOf(identity.routeId, identity.number);
+    if (pins === undefined) return true;
     return pins.some((pin) => {
       const list = lists.find(({ id, number }) => id === pin.id && number === pin.number);
       if (list === undefined) return true;
@@ -535,6 +541,14 @@ export function createKnowledgeDecisions({
         (await pinsPendingList(decided.identity, current))
       ) {
         return { refused: 'list_pending' };
+      }
+      // An active list may be pinned by an active route, which a rejection would leave standing.
+      if (
+        kind === 'reject' &&
+        decided.subject === 'official_domains' &&
+        current.get(decidedKey(decided)) === 'active'
+      ) {
+        return { refused: 'list_active' };
       }
       const decisionId = randomUUID();
       try {

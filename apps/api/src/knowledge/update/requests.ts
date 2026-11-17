@@ -11,7 +11,6 @@ import {
   maxCheckCostMicroUsd,
   namedHosts,
   nextUpdateStep,
-  officialDomainsKey,
   proposalLists,
   routeVersionSchema,
   updateStages,
@@ -20,8 +19,9 @@ import { type Database, withIdentity } from '@arca/db';
 import {
   type RuleRowReading,
   type RuleRows,
+  approvedOfficialDomainLists,
+  pinKey,
   pinnedCountries,
-  verifiedOfficialDomainLists,
   verifiedRouteVersion,
 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
@@ -31,10 +31,13 @@ import { type AdminRole, readAdminHistory } from '../admins.js';
 import { updateModelPrices, webSearchMicroUsd } from './prices.js';
 import type { StoredEnd, StoredRequest, StoredStage, UpdateStore } from './store.js';
 
-export type StartRefusal = 'not_admin' | 'not_found' | 'live' | 'not_configured' | 'not_started';
+type CommonRefusal = 'not_admin' | 'not_found' | 'live' | 'not_configured' | 'not_started';
 
-/** Why a new-route request did not start: as an update's, or a new country with no host to start on. */
-export type NewRouteRefusal = StartRefusal | 'links_needed';
+/** Why an update did not start: as any request's, or its route rests on a list nobody activated. */
+export type StartRefusal = CommonRefusal | 'list_pending';
+
+/** Why a new-route request did not start: as any request's, or a new country with no host to start on. */
+export type NewRouteRefusal = CommonRefusal | 'links_needed';
 
 export interface UpdateRequests {
   /** Asks for the route's newest version to be researched again, and starts the run. */
@@ -133,31 +136,21 @@ const proposedRouteId = (content: unknown): string | null => {
 const newRoutesShown = 10;
 
 /**
- * Each country's approved official-domain lists, `<id>/<number>` (ADR-0031): those its stored
- * route versions pin that read and are imported or activated by an admin. A country with none is
- * a new country.
+ * Each country's approved official-domain lists as pins (ADR-0031): those its stored route
+ * versions pin that are approved. A country with none is a new country.
  */
 function countryPins(
   rows: RuleRows,
   reading: RuleRowReading,
   states: DecisionStates,
 ): ReadonlyMap<string, readonly string[]> {
-  const approved = new Set(
-    verifiedOfficialDomainLists(rows, reading)
-      .filter(
-        ({ id, number, hash, fromRequest }) =>
-          !fromRequest || states.get(officialDomainsKey({ listId: id, number, hash })) === 'active',
-      )
-      .map(({ id, number }) => `${id}/${String(number)}`),
-  );
+  const approved = new Set(approvedOfficialDomainLists(rows, reading, states).map(pinKey));
   const pins = new Map<string, Set<string>>();
   for (const row of rows.routeVersions) {
     const parsed = routeVersionSchema.safeParse(row.content);
     if (!parsed.success) continue;
     const { country, officialDomains } = parsed.data;
-    for (const { id, number } of officialDomains) {
-      const pin = `${id}/${String(number)}`;
-      if (!approved.has(pin)) continue;
+    for (const pin of officialDomains.map(pinKey).filter((key) => approved.has(key))) {
       const held = pins.get(country) ?? new Set<string>();
       held.add(pin);
       pins.set(country, held);
@@ -191,9 +184,15 @@ export function createUpdateRequests({
       .map(({ number }) => number);
     if (numbers.length === 0) return undefined;
     const newest = Math.max(...numbers);
-    return verifiedRouteVersion(stored, routeId, newest, reading) === undefined
-      ? undefined
-      : newest;
+    const verified = verifiedRouteVersion(stored, routeId, newest, reading);
+    if (verified === undefined) return undefined;
+    // Research never reads hosts no person approved: a first list waits for its decision.
+    const approved = new Set(
+      approvedOfficialDomainLists(stored, reading, await states()).map(pinKey),
+    );
+    return verified.version.officialDomains.every((pin) => approved.has(pinKey(pin)))
+      ? newest
+      : 'list_pending';
   };
 
   return {
@@ -201,6 +200,7 @@ export function createUpdateRequests({
       if (!(await isAdmin(accountId))) return 'not_admin';
       const baseNumber = await baseOf(routeId);
       if (baseNumber === undefined) return 'not_found';
+      if (baseNumber === 'list_pending') return 'list_pending';
       if (!(await configured())) return 'not_configured';
       const stored = await withIdentity(db(), { accountId }, async (tx) => {
         const held = await role.held(tx, accountId);
@@ -281,7 +281,7 @@ export function createUpdateRequests({
       if (!(await isAdmin(accountId))) return 'not_admin';
       const [requests, pins] = await Promise.all([
         store.newRoutes(newRoutesShown),
-        (async () => countryPins(await rows(), reading, await states()))(),
+        rows().then(async (stored) => countryPins(stored, reading, await states())),
       ]);
       const shown = await Promise.all(
         requests.map(async (request) => {

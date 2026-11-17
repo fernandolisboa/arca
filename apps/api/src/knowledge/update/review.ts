@@ -24,6 +24,8 @@ import {
   type RuleRowReading,
   type RuleRows,
   checkProposal,
+  approvedOfficialDomainLists,
+  pinKey,
   verifiedOfficialDomainLists,
   verifiedRouteVersion,
 } from '@arca/knowledge';
@@ -262,13 +264,14 @@ export function createVersionReviews({
       const verified = verifiedRouteVersion(stored, routeId, number, reading);
       const lists = await listsOf(stored, routeId, number, 0);
       if (verified === undefined || lists === undefined) return 'not_found';
-      const domainList = proposedListOf(stored, verified.version, reading, await states());
+      const current = await states();
+      const domainList = proposedListOf(stored, verified.version, reading, current);
+      // Masked unless every list the version pins is approved, so an unread list fails closed.
+      const approved = new Set(approvedOfficialDomainLists(stored, reading, current).map(pinKey));
+      const pending = verified.version.officialDomains.some((pin) => !approved.has(pinKey(pin)));
       return {
         ...lists,
-        items:
-          domainList === null || domainList.state === 'active'
-            ? lists.items
-            : lists.items.map(listPending),
+        items: pending ? lists.items.map(listPending) : lists.items,
         editable: editableItems(verified.version, verified.row.content),
         domainList,
       };

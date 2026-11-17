@@ -16,6 +16,7 @@ import {
   type PinnedFileRow,
   type RuleRowReading,
   type RuleRows,
+  pinKey,
   routeVersionContentHash,
   ruleContent,
   ruleDataFromRows,
@@ -53,8 +54,6 @@ export type ProposalTarget =
       /** The first official-domain list the same proposal holds, already checked on its own. */
       readonly list?: PinnedFileRow;
     };
-
-const pinKey = ({ id, number }: Pin) => `${id}/${String(number)}`;
 
 /** The most problems a refused proposal names, so the correction's input stays bounded. */
 export const maxProposalProblems = 50;

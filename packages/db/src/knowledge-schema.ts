@@ -849,7 +849,8 @@ export const routeVersion = knowledge.table(
           AND "ended"."content_hash" = ${table.contentHash}
           AND ("asked"."route_id" = ${table.routeId}
             OR ("asked"."route_id" IS NULL AND ${table.number} = 1
-              AND starts_with(${table.routeId}, lower("asked"."country") || '-'))))`,
+              AND starts_with(${table.routeId}, lower("asked"."country") || '-')
+              AND ${table.content}->>'country' = "asked"."country")))`,
     }),
     pgPolicy('route_version_read_definer', {
       for: 'select',
@@ -965,7 +966,7 @@ export const officialDomainList = knowledge.table(
           JOIN "knowledge"."update_request" "asked" ON "asked"."id" = "ended"."request_id"
         WHERE "ended"."request_id" = ${table.requestId} AND "ended"."failure" IS NULL
           AND "ended"."list_hash" = ${table.contentHash} AND "asked"."route_id" IS NULL
-          AND ${table.listId} = lower("asked"."country"))`,
+          AND cardinality("asked"."list_pins") = 0 AND ${table.listId} = lower("asked"."country"))`,
     }),
   ],
 );
@@ -1125,10 +1126,13 @@ export const updateRequest = knowledge.table(
       sql`CASE WHEN ${table.routeId} IS NOT NULL
         THEN ${table.baseNumber} IS NOT NULL AND ${table.country} IS NULL AND ${table.visa} IS NULL
           AND ${table.links} IS NULL AND ${table.listPins} IS NULL
-        ELSE ${table.baseNumber} IS NULL AND ${table.country} ~ '^[A-Z]{2}$'
-          AND char_length(${table.visa}) BETWEEN 2 AND 120
+        ELSE ${table.baseNumber} IS NULL AND ${table.country} IS NOT NULL
+          AND ${table.country} ~ '^[A-Z]{2}$' AND ${table.visa} IS NOT NULL
+          AND char_length(${table.visa}) BETWEEN 2 AND 120 AND ${table.links} IS NOT NULL
           AND cardinality(${table.links}) <= 10 AND ${table.listPins} IS NOT NULL
-          AND cardinality(${table.listPins}) <= 20 END`,
+          AND cardinality(${table.listPins}) <= 20
+          AND array_to_string(${table.listPins}, ',')
+            ~ '^([a-z0-9][a-z0-9-]*/[1-9][0-9]*(,[a-z0-9][a-z0-9-]*/[1-9][0-9]*)*)?$' END`,
     ),
     index('update_request_route_requested_idx').on(table.routeId, table.requestedAt),
     index('update_request_country_requested_idx').on(table.country, table.requestedAt),

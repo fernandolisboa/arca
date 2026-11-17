@@ -29,6 +29,9 @@ const isStartCode = (code: string): code is (typeof startCodes)[number] =>
 const startFailure = (error: unknown) =>
   commonFailure(error, ({ code }: ApiError) => (isStartCode(code) ? code : undefined));
 
+/** Room for every link at the contract's longest address, one per line. */
+const linksTextLength = maxNewRouteLinks * 2001;
+
 function NewRouteForm({
   countries,
   withLists,
@@ -102,7 +105,7 @@ function NewRouteForm({
       <TextArea
         label={t('knowledge.newRoute.links')}
         value={linksText}
-        maxLength={maxNewRouteLinks * 2001}
+        maxLength={linksTextLength}
         rows={4}
         onChange={setLinksText}
       />

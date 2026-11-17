@@ -328,9 +328,12 @@ function DomainListReview({
                 rel="noopener noreferrer"
                 className={textLinkClass}
               >
-                {proof.title}
+                {proof.url}
               </a>{' '}
               <span className="text-muted">{t('knowledge.proposal.opensSite')}</span>
+            </span>
+            <span className="text-small text-muted break-words">
+              {t('knowledge.proposal.domainList.proofTitle', { title: proof.title })}
             </span>
           </li>
         ))}

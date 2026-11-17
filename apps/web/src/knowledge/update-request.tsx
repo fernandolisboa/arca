@@ -8,7 +8,13 @@ import { OpenRouteVersionContext } from './corrections.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
-const startCodes = ['update_live', 'update_off', 'update_not_started', 'not_found'] as const;
+const startCodes = [
+  'update_live',
+  'update_off',
+  'update_not_started',
+  'not_found',
+  'list_pending',
+] as const;
 const isStartCode = (code: string): code is (typeof startCodes)[number] =>
   (startCodes as readonly string[]).includes(code);
 const startFailure = (error: unknown) =>

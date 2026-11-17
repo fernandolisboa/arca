@@ -9,6 +9,7 @@ import {
   countrySetSchema,
   identityKey,
   officialDomainListSchema,
+  officialDomainsKey,
   routeVersionSchema,
   sourceUrls,
   versionIdentity,
@@ -209,6 +210,23 @@ export const verifiedOfficialDomainLists = (
   rows: RuleRows,
   reading: RuleRowReading,
 ): readonly VerifiedOfficialDomainList[] => readPinnedFiles(rows, reading).officialDomains;
+
+/** A pin as `<id>/<number>`, the form a request stores its allowed lists in. */
+export const pinKey = ({ id, number }: Pin): string => `${id}/${String(number)}`;
+
+/**
+ * The official-domain lists a route may rest on (ADR-0031): those that read and are imported, or
+ * that a request proposed and an admin activated; `states` holds the decisions by decided key.
+ */
+export const approvedOfficialDomainLists = (
+  rows: RuleRows,
+  reading: RuleRowReading,
+  states: ReadonlyMap<string, string>,
+): readonly VerifiedOfficialDomainList[] =>
+  verifiedOfficialDomainLists(rows, reading).filter(
+    ({ id, number, hash, fromRequest }) =>
+      !fromRequest || states.get(officialDomainsKey({ listId: id, number, hash })) === 'active',
+  );
 
 /**
  * Everything a route version pins, by key, as its hash covers it: the countries files, its

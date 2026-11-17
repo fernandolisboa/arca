@@ -24,6 +24,8 @@ export {
   ruleDataFromRows,
   ruleEngineData,
   versionCasesHash,
+  approvedOfficialDomainLists,
+  pinKey,
   verifiedOfficialDomainLists,
 } from './rule-rows.js';
 export { type Json, canonicalize } from './canonical.js';

@@ -31620,7 +31620,7 @@
     "/knowledge/versions/activate": {
       "post": {
         "operationId": "activateVersion",
-        "summary": "Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected, 409 list_pending while it pins a first official-domain list that is not active",
         "requestBody": {
           "required": true,
           "content": {
@@ -37775,7 +37775,7 @@
     "/knowledge/update-requests": {
       "post": {
         "operationId": "startUpdateRequest",
-        "summary": "Starts, for an admin, an update request for one route's newest version: research, validation, at most one correction and a final validation, then a proposal. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a route with no version; 409 update_live while a request of the route runs; 502 update_not_started when the run could not begin, which then counts as running for up to an hour; 503 update_off where the AI keys are not set",
+        "summary": "Starts, for an admin, an update request for one route's newest version: research, validation, at most one correction and a final validation, then a proposal. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a route with no version; 409 update_live while a request of the route runs; 409 list_pending while the version pins a first official-domain list nobody activated, whose hosts research may not read yet; 502 update_not_started when the run could not begin, which then counts as running for up to an hour; 503 update_off where the AI keys are not set",
         "requestBody": {
           "required": true,
           "content": {
@@ -38545,7 +38545,7 @@
     "/knowledge/official-domains/reject": {
       "post": {
         "operationId": "rejectOfficialDomains",
-        "summary": "Rejects a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a first official-domain list a new-route request proposed and nobody activated, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected, 409 list_active once the list is active, since a route that pins it may be in use",
         "requestBody": {
           "required": true,
           "content": {

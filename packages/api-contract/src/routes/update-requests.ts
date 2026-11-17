@@ -28,7 +28,7 @@ export const startUpdateRequest = {
   path: '/knowledge/update-requests',
   operationId: 'startUpdateRequest',
   summary:
-    "Starts, for an admin, an update request for one route's newest version: research, validation, at most one correction and a final validation, then a proposal. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a route with no version; 409 update_live while a request of the route runs; 502 update_not_started when the run could not begin, which then counts as running for up to an hour; 503 update_off where the AI keys are not set",
+    "Starts, for an admin, an update request for one route's newest version: research, validation, at most one correction and a final validation, then a proposal. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a route with no version; 409 update_live while a request of the route runs; 409 list_pending while the version pins a first official-domain list nobody activated, whose hosts research may not read yet; 502 update_not_started when the run could not begin, which then counts as running for up to an hour; 503 update_off where the AI keys are not set",
   body: StartUpdateRequest,
   response: { description: 'Started', schema: StartedUpdateRequest },
 } as const satisfies RouteDefinition<typeof StartedUpdateRequest>;
@@ -102,8 +102,17 @@ export const maxNewRouteLinks = 10;
 
 export const StartNewRouteRequest = z.strictObject({
   country: countryCodeSchema,
-  /** The visa or entry type, as the admin names it; research reads it as data. */
-  visa: z.string().trim().min(2).max(120),
+  /**
+   * The visa or entry type, as the admin names it; research reads it as data. It goes to the
+   * model as typed, so a run of five digits or an `@`, as in a document number or an address, is
+   * refused.
+   */
+  visa: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .refine((text) => !/\d{5}|@/.test(text), 'A visa name, not personal data'),
   /**
    * Official pages to start from: for a country with approved lists, those on them reach research
    * as addresses; for a country with none, their hosts are the hosts research may start on.
@@ -313,7 +322,7 @@ export const rejectOfficialDomains = {
   path: '/knowledge/official-domains/reject',
   operationId: 'rejectOfficialDomains',
   summary:
-    'Rejects a first official-domain list a new-route request proposed, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
+    'Rejects a first official-domain list a new-route request proposed and nobody activated, for an admin after a knowledge_decision step-up bound to its hash, for good; a route version that pins it can then never be activated. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected, 409 list_active once the list is active, since a route that pins it may be in use',
   body: DecideOfficialDomainsRequest,
   response: { description: 'Rejected', schema: DecidedOfficialDomains },
 } as const satisfies RouteDefinition<typeof DecidedOfficialDomains>;

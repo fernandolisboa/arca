@@ -1497,7 +1497,7 @@ export const ptBR = {
       confirm: 'Pedir agora',
       starting: 'Começando a atualização…',
       startFailure:
-        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} not_found {O Arca não encontrou esta rota.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para pedir a atualização. Tente de novo.}}',
+        '{reason, select, limited {Muitos pedidos seguidos. Espere um pouco e tente de novo.} update_live {Já tem uma atualização desta rota em andamento.} update_off {Faltam as chaves da IA. Cadastre em Configurações › IA e tente de novo.} update_not_started {A atualização não conseguiu começar. A rota fica livre de novo em até 1 hora.} not_found {O Arca não encontrou esta rota.} list_pending {Esta rota depende de uma lista de sites oficiais que ainda não foi ativada. Ative ou recuse a lista na revisão da proposta antes de pedir outra atualização.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para pedir a atualização. Tente de novo.}}',
       title: 'Atualização da rota',
       requestedAt: 'Pedida em {date}, a partir da versão {number}',
       chip: '{state, select, running {Em andamento} finished {Pronta} failed {Parou} other {Parou no meio}}',
@@ -1665,6 +1665,7 @@ export const ptBR = {
         lead: 'O Arca ainda não tinha sites oficiais para este país. Esta é a primeira lista: cada site vem com a página de um registro oficial onde o código achou o nome dele. Ative a lista antes da rota. Enquanto ela não estiver ativa, nenhum item da rota conta como confirmado.',
         issuer: 'Quem publica: {issuer}',
         proof: 'Achado em',
+        proofTitle: 'Nome da página, segundo o Arca: {title}',
         state: '{state, select, active {Ativa} rejected {Recusada} other {Espera a sua decisão}}',
         activateLead:
           'Ao ativar, o Arca passa a ler estes sites como oficiais para {country}, nesta rota e nas próximas.',
