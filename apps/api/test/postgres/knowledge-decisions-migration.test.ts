@@ -7,7 +7,7 @@ import { createStepUp } from '../../src/auth/step-up.js';
 import { adminRole } from '../../src/knowledge/admins.js';
 import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
-import { legacyStepUp, routeAction } from './knowledge-decision-legacy.js';
+import { decisionStepUp, routeAction } from './knowledge-decision-legacy.js';
 import { origin, person } from './step-up-people.js';
 
 // A decision stored by app_auth under ADR-0022, on the migrations before ADR-0027's, still counts
@@ -43,7 +43,7 @@ describe('the session-decision migration (ADR-0027)', () => {
     });
     const approver = await person(testDatabase);
     const action = routeAction('activate', version);
-    await legacyStepUp(stepUp, approver, action);
+    await decisionStepUp(stepUp, approver, action);
     // The insert ADR-0022's service ran, admitted by that migration's policy on app_auth.
     const spent = await stepUp.spend(
       approver.signedIn,
@@ -68,7 +68,8 @@ describe('the session-decision migration (ADR-0027)', () => {
     const errors: string[] = [];
     const decisions = createKnowledgeDecisions({
       db: apiDb,
-      authDb: () => authDb,
+      stepUp,
+      casesHash: () => Promise.resolve('d'.repeat(64)),
       audit: auditLog(auditDb),
       catalog: () =>
         Promise.resolve({

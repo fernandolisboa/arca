@@ -161,7 +161,7 @@ const auditColumns = [
   'details',
 ];
 
-/** The assertion an ADR-0022 decision copies; no role writes one since ADR-0027. */
+/** The spent step-up a decision copies (ADR-0022), which app_auth writes again since ADR-0031. */
 const decisionStepUpColumns = [
   'credential_id',
   'public_key',
@@ -186,6 +186,7 @@ const decisionColumns = [
   'admin_basis',
   'admin_grant_id',
   ...decisionStepUpColumns,
+  'cases_hash',
   'decided_at',
 ];
 
@@ -759,33 +760,94 @@ const ruleTables = {
     'content',
     'content_hash',
     'cases',
+    'request_id',
     'inserted_at',
   ],
   'knowledge.country_set': ['set_id', 'number', 'content', 'content_hash', 'inserted_at'],
   'knowledge.official_domain_list': ['list_id', 'number', 'content', 'content_hash', 'inserted_at'],
 };
 
+const versionColumns = ruleTables['knowledge.route_version'];
+const versionEditColumns = ['route_id', 'number', 'item_key', 'url', 'quote', 'at'];
+const editVersionSignature =
+  'knowledge.edit_route_version(text, integer, integer, jsonb, text, jsonb, text, text, text, text, uuid)';
+
+async function runsEditVersion(role: string) {
+  return withClient(adminTarget(database), async (client) => {
+    const row = await client.query<{ granted: boolean }>(
+      `SELECT pg_catalog.has_function_privilege($1, $2, 'EXECUTE') AS granted`,
+      [role, editVersionSignature],
+    );
+    return row.rows[0]?.granted === true;
+  });
+}
+
 describe('the rule tables access matrix (ADR-0031)', () => {
-  it.each(['app_api', 'app_jobs'])('lets %s only read the rule rows', async (role) => {
+  it('lets app_api only read the rule rows and hand edits, and store an edit through the function', async () => {
     for (const [table, columns] of Object.entries(ruleTables)) {
-      expect(await columnPrivileges(role, table, columns), table).toEqual({
+      expect(await columnPrivileges('app_api', table, columns), table).toEqual({
         usage: true,
         create: false,
         columns: onEvery(columns, ['SELECT']),
         table: [],
       });
     }
+    expect(
+      (await columnPrivileges('app_api', 'knowledge.version_edit', versionEditColumns)).columns,
+    ).toEqual(onEvery(versionEditColumns, ['SELECT']));
+    expect(await runsEditVersion('app_api')).toBe(true);
+  });
+
+  it('lets app_jobs read the rule rows and insert a proposed version, never its time', async () => {
+    for (const [table, columns] of Object.entries(ruleTables)) {
+      const inserts = table === 'knowledge.route_version';
+      expect(await columnPrivileges('app_jobs', table, columns), table).toEqual({
+        usage: true,
+        create: false,
+        columns: {
+          ...onEvery(columns, inserts ? ['SELECT', 'INSERT'] : ['SELECT']),
+          inserted_at: ['SELECT'],
+        },
+        table: [],
+      });
+    }
+    expect(
+      (await columnPrivileges('app_jobs', 'knowledge.version_edit', versionEditColumns)).columns,
+    ).toEqual(onEvery(versionEditColumns, []));
+    expect(await runsEditVersion('app_jobs')).toBe(false);
+  });
+
+  it('lets knowledge_definer insert an edited version and its edit row, and read only numbers', async () => {
+    expect(
+      (await columnPrivileges('knowledge_definer', 'knowledge.route_version', versionColumns))
+        .columns,
+    ).toEqual({
+      ...onEvery(versionColumns, []),
+      route_id: ['SELECT', 'INSERT'],
+      number: ['SELECT', 'INSERT'],
+      content: ['INSERT'],
+      content_hash: ['INSERT'],
+      cases: ['INSERT'],
+    });
+    expect(
+      (await columnPrivileges('knowledge_definer', 'knowledge.version_edit', versionEditColumns))
+        .columns,
+    ).toEqual({ ...onEvery(versionEditColumns, ['INSERT']), at: [] });
   });
 
   it.each([
     ...runtimeRoles.filter((role) => !['app_api', 'app_jobs'].includes(role)),
     ...retiredRoles,
   ])('gives %s no access to the rule rows', async (role) => {
-    for (const [table, columns] of Object.entries(ruleTables)) {
+    for (const [table, columns] of Object.entries({
+      ...ruleTables,
+      'knowledge.version_edit': versionEditColumns,
+    })) {
       const privileges = await columnPrivileges(role, table, columns);
       expect(privileges.columns, table).toEqual(onEvery(columns, []));
       expect(privileges.table, table).toEqual([]);
     }
+    expect(await runsEditVersion(role)).toBe(false);
   });
 
   it('leaves the migrator, which owns them, able to read and insert, never to change, delete or truncate', async () => {
@@ -877,23 +939,21 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
         { name: 'update_end', forced: true },
         { name: 'update_request', forced: true },
         { name: 'update_stage', forced: true },
+        { name: 'version_edit', forced: true },
       ],
       // A correction request's sources and events, which go with it, a file source's upload, the
       // corrector key an event names and the key a revocation ends (ADR-0029), the AI key a
-      // removal ends, and an update request's stages and end (ADR-0031).
-      foreignKeys: 8,
+      // removal ends, an update request's stages and end, the request a proposed version names
+      // and the version a hand edit stored (ADR-0031).
+      foreignKeys: 10,
     });
   });
 
-  it('lets app_auth insert a session decision, with no step-up field and no time, and nothing else (ADR-0027)', async () => {
+  it('lets app_auth insert a decision with its step-up, never its time, and nothing else (ADR-0031)', async () => {
     expect(await decisionPrivileges('app_auth')).toEqual({
       usage: true,
       create: false,
-      columns: {
-        ...onEvery(decisionColumns, ['INSERT']),
-        ...onEvery(decisionStepUpColumns, []),
-        decided_at: [],
-      },
+      columns: { ...onEvery(decisionColumns, ['INSERT']), decided_at: [] },
       table: [],
     });
   });

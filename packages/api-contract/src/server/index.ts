@@ -114,7 +114,6 @@ export const openApiRoutes = {
   writeComparisonPreferences: toOpenApiRoute(routes.writeComparisonPreferences),
   activateVersion: toOpenApiRoute(routes.activateVersion),
   rejectVersion: toOpenApiRoute(routes.rejectVersion),
-  activateCheckedVersions: toOpenApiRoute(routes.activateCheckedVersions),
   activateComparison: toOpenApiRoute(routes.activateComparison),
   rejectComparison: toOpenApiRoute(routes.rejectComparison),
   listKnowledgeVersions: toOpenApiRoute(routes.listKnowledgeVersions),
@@ -154,6 +153,8 @@ export const openApiRoutes = {
   testAiKey: toOpenApiRoute(routes.testAiKey),
   startUpdateRequest: toOpenApiRoute(routes.startUpdateRequest),
   getNewestUpdateRequest: toOpenApiRoute(routes.getNewestUpdateRequest),
+  getVersionReview: toOpenApiRoute(routes.getVersionReview),
+  editVersionItem: toOpenApiRoute(routes.editVersionItem),
 } as const;
 
 export const openApiInfo = { title: 'Arca API', version: '1.0.0' } as const;

@@ -1,5 +1,10 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { comparisonCatalog, countryGuide, pinnedCountries } from '@arca/knowledge';
+import {
+  comparisonCatalog,
+  countryGuide,
+  pinnedCountries,
+  versionCasesHash,
+} from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -31,6 +36,7 @@ import { createAdminGrants } from './knowledge/admin-grants.js';
 import { postgresRuleStore } from './knowledge/rule-store.js';
 import { updateModelsFor } from './knowledge/update/environment.js';
 import { createUpdateRequests } from './knowledge/update/requests.js';
+import { createVersionReviews } from './knowledge/update/review.js';
 import { postgresUpdateStore } from './knowledge/update/store.js';
 import { startUpdate } from './workflows/start-update.js';
 import { createCorrections } from './knowledge/corrections.js';
@@ -49,7 +55,7 @@ import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
 import { postgresSummaryStore } from './knowledge/summary/store.js';
 import { createCheckSubjects, createKnowledgeVersions } from './knowledge/versions.js';
 import { createVersionChecks } from './knowledge/checks.js';
-import { ruleCheckerFor } from './knowledge/check/environment.js';
+import { checkFetcherFor, ruleCheckerFor } from './knowledge/check/environment.js';
 import { postgresCheckProgressStore } from './knowledge/check/progress.js';
 import { postgresCheckStarts } from './knowledge/check/starts.js';
 import { postgresCheckReportStore } from './knowledge/check/store.js';
@@ -57,6 +63,7 @@ import {
   databaseTargetFrom,
   readAiKeyEncryptionKey,
   readAnthropicApiKey,
+  readOfflineRuleCheck,
   readCorrectorRunToken,
   readApiSecrets,
   readAuditDatabasePassword,
@@ -145,9 +152,13 @@ let knowledgeInstance: KnowledgeDecisions | undefined;
 function knowledgeDecisions(): KnowledgeDecisions {
   knowledgeInstance ??= createKnowledgeDecisions({
     db: connected().db,
-    authDb: authConnection,
+    stepUp: {
+      spend: async (signedIn, purpose, action, record) =>
+        (await authParts()).stepUp.spend(signedIn, purpose, action, record),
+    },
     audit: lazyAudit,
     catalog: async () => (await rules.engine()).catalog,
+    casesHash: async (contentHash) => versionCasesHash(await rules.data(), contentHash),
     comparisons: comparisonCatalog,
     role,
     origin: readAuthOrigin(),
@@ -366,6 +377,19 @@ const updateRequests = createUpdateRequests({
   run: startUpdate,
   logger,
   now: () => Date.now(),
+});
+
+/** Reviews and hand edits of route versions (ADR-0031): no model, the guarded fetcher only. */
+const versionReviews = createVersionReviews({
+  db: () => connected().db,
+  role,
+  audit: lazyAudit,
+  store: postgresUpdateStore(() => connected().db),
+  rows: rules.rows,
+  reading: rules.reading,
+  states: () => knowledgeDecisions().states(),
+  fetcher: checkFetcherFor(environment, readOfflineRuleCheck()),
+  today: () => todayInSaoPaulo(),
 });
 
 const knowledgeVersions = createKnowledgeVersions({
@@ -595,7 +619,8 @@ const app = createApp({
     notify: async (accountId, kind) => (await authParts()).adminNotice(accountId, kind),
   }),
   knowledge: {
-    decide: (signedIn, kind, target) => knowledgeDecisions().decide(signedIn, kind, target),
+    decide: (signedIn, kind, target, nonce) =>
+      knowledgeDecisions().decide(signedIn, kind, target, nonce),
     states: () => knowledgeDecisions().states(),
   },
   ...(intake === undefined ? {} : { intake }),
@@ -613,6 +638,7 @@ const app = createApp({
   correctorKeys,
   aiSettings,
   updateRequests,
+  versionReviews,
   ...(correctorRun === undefined ? {} : { correctorRun }),
   corrector,
   knowledgeVersions,

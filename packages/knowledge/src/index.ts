@@ -14,12 +14,14 @@ export {
   type RuleEngineData,
   type RuleRowReading,
   type RuleRows,
+  casesHashOf,
   refusedRows,
   routeVersionContentHash,
   verifiedRouteVersion,
   type VerifiedRouteVersion,
   ruleDataFromRows,
   ruleEngineData,
+  versionCasesHash,
 } from './rule-rows.js';
 export { type Json, canonicalize } from './canonical.js';
 export { type CasesFile, type RuleCase, casesFileSchema } from './cases.js';

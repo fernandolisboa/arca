@@ -91,6 +91,12 @@ function listCounts(end: StoredEnd | undefined): UpdateProgress['lists'] {
   return counts;
 }
 
+/** The number a finished request's proposal names, which it was stored under. */
+const proposedNumber = (content: unknown): number | null => {
+  const number = (content as { number?: unknown } | null)?.number;
+  return typeof number === 'number' && Number.isInteger(number) && number > 0 ? number : null;
+};
+
 /** Update requests on the app_api pool (ADR-0031): the start goes through the definer function. */
 export function createUpdateRequests({
   db,
@@ -183,6 +189,7 @@ export function createUpdateRequests({
         cost: requestCost(stages),
         lists: listCounts(end),
         contentHash: end?.failure === null ? end.proposal.contentHash : null,
+        proposedNumber: end?.failure === null ? proposedNumber(end.proposal.content) : null,
       };
     },
   };

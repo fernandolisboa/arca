@@ -1,4 +1,8 @@
-import { KnowledgeComparisonVersion, KnowledgeVersion } from '@arca/api-contract/routes';
+import {
+  KnowledgeComparisonVersion,
+  KnowledgeVersion,
+  stepUpNonceHeader,
+} from '@arca/api-contract/routes';
 import { describe, expect, it } from 'vitest';
 import type { Logger } from '@arca/telemetry';
 import { createApp } from '../src/app.js';
@@ -15,6 +19,8 @@ const admin: SignedIn = {
   accountId: '3f2b8a4e-6c1d-4e5f-9a7b-0c1d2e3f4a5b',
   sessionId: '6a1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b',
 };
+const nonce = 'MzMzMzMzMzMzMzMzMzMzMw';
+const nonceBytes = new Uint8Array(Buffer.from(nonce, 'base64url'));
 const decisionId = '0d1e2f30-4152-4637-8a9b-0c1d2e3f4a5b';
 const version = { routeId: 'pt-d7', number: 2 };
 const comparison = { comparisonId: 'destinations', number: 1 };
@@ -107,7 +113,7 @@ function setup({
     kind: 'activate' | 'reject',
     body: unknown = version,
     collection: 'versions' | 'comparisons' = 'versions',
-    headers: Record<string, string> = { origin },
+    headers: Record<string, string> = { origin, [stepUpNonceHeader]: nonce },
   ) =>
     app.request(`/v1/knowledge/${collection}/${kind}`, {
       method: 'POST',
@@ -146,17 +152,36 @@ describe('GET /v1/session for admins (ADR-0027)', () => {
   });
 });
 
-describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0027)', () => {
-  it.each(['activate', 'reject'] as const)('%ss with no step-up', async (kind) => {
+describe('POST /v1/knowledge/versions (spec 0007, R7; ADR-0031)', () => {
+  it.each(['activate', 'reject'] as const)(
+    '%ss with the step-up nonce the client sent',
+    async (kind) => {
+      const { decide, calls } = setup();
+      const response = await decide(kind);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ decisionId });
+      expect(calls).toEqual([[admin, kind, { subject: 'route', ...version }, nonceBytes]]);
+    },
+  );
+
+  it('answers step_up_required with no nonce, deciding nothing', async () => {
     const { decide, calls } = setup();
-    const response = await decide(kind);
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ decisionId });
-    expect(calls).toEqual([[admin, kind, { subject: 'route', ...version }]]);
+    for (const collection of ['versions', 'comparisons'] as const) {
+      const response = await decide(
+        'activate',
+        collection === 'versions' ? version : comparison,
+        collection,
+        { origin },
+      );
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: { code: 'step_up_required' } });
+    }
+    expect(calls).toEqual([]);
   });
 
   it.each<[Extract<DecisionOutcome, { refused: string }>['refused'], number]>([
     ['not_admin', 403],
+    ['step_up_required', 403],
     ['not_found', 404],
     ['already_rejected', 409],
   ])('answers %s with %i', async (refused, status) => {
@@ -230,7 +255,7 @@ describe('POST /v1/knowledge/comparisons (ADR-0026)', () => {
       const response = await decide(kind, comparison, 'comparisons');
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ decisionId });
-      expect(calls).toEqual([[admin, kind, { subject: 'comparison', ...comparison }]]);
+      expect(calls).toEqual([[admin, kind, { subject: 'comparison', ...comparison }, nonceBytes]]);
     },
   );
 

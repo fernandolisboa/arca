@@ -107,6 +107,11 @@ export const updateRequestLimits = {
   hour: { name: 'update_request_account', limit: 10, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Hand edits of a route version (ADR-0031): each one reads an official page. */
+export const versionEditLimits = {
+  hour: { name: 'version_edit_account', limit: 10, windowSeconds: hour },
+} as const satisfies Record<string, RateLimitRule>;
+
 /** The corrector key screen: making and revoking keys per owner-list admin. */
 export const correctorKeyLimits = {
   change: { name: 'corrector_key_change_account', limit: 20, windowSeconds: 24 * hour },

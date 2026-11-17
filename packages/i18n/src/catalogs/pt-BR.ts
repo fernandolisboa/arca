@@ -1512,7 +1512,8 @@ export const ptBR = {
         '{state, select, done {Feita} failed {Falhou} running {Agora} skipped {Não precisou} not_run {Não rodou} other {Na fila}}',
       lists: 'O que a proposta traz',
       list: '{list, select, confirmed {Confirmados} divergent {Divergentes} other {Não confirmados}}',
-      review: 'Em breve você vai poder revisar e aprovar a proposta aqui.',
+      review: 'A proposta virou a versão {number}. Abra para revisar e decidir.',
+      open: 'Revisar a versão {number}',
       spent:
         '{state, select, running {Gasto até agora: {cost}.} other {Esta atualização custou {cost}.}}',
       costUnknown:
@@ -1574,23 +1575,6 @@ export const ptBR = {
       filterStatus: '{status, select, all {Todos} matches {Bate} differs {Difere} other {Confira}}',
       backToList: 'Voltar para a lista',
     },
-    /** Activating every version the independent check found clean, with one tap (ADR-0027). */
-    checkedBatch: {
-      title: 'Conferidas pelo Arca',
-      intro:
-        '{n, plural, one {Uma versão proposta bate com as fontes oficiais em todos os itens.} other {# versões propostas batem com as fontes oficiais em todos os itens.}}',
-      action: '{n, plural, one {Aprovar a versão conferida} other {Aprovar as # conferidas}}',
-      lead: '{n, plural, one {O Arca conferiu esta versão nas fontes oficiais e não achou diferença. Ao confirmar, ela fica ativa e passa a valer a partir da sua data de vigência:} other {O Arca conferiu estas versões nas fontes oficiais e não achou diferença. Ao confirmar, todas ficam ativas de uma vez, e cada uma passa a valer a partir da sua data de vigência:}}',
-      oneByOne:
-        'As versões marcadas para revisão e os dados da comparação continuam sendo decididos um por um.',
-      confirm: '{n, plural, one {Ativar} other {Ativar todas}}',
-      waiting: 'Ativando as versões…',
-      activated:
-        '{n, plural, =0 {Nenhuma versão foi ativada.} one {# versão ativada:} other {# versões ativadas:}}',
-      skippedTitle: 'Ficaram de fora',
-      skipped:
-        '{version}: {reason, select, not_found {o app não tem mais esta versão.} changed {a versão mudou depois que você abriu a tela.} rejected {ela já tinha sido recusada.} already_active {ela já estava ativa.} flagged {a nova verificação não confirmou todos os itens. Abra a versão e decida.} not_admin {você não é mais administrador.} other {a verificação venceu ou ainda não terminou. Abra a versão e decida.}}',
-    },
     activate: 'Ativar esta versão',
     reject: 'Recusar esta versão',
     activateLead:
@@ -1598,13 +1582,51 @@ export const ptBR = {
     rejectLead: 'A recusa vale para sempre: esta versão nunca mais será usada.',
     rejectFallback:
       '{current, select, proposed {Hoje a rota escolhe esta versão, que ainda aguarda ativação.} other {Hoje a rota usa esta versão.}} {fallback, select, none {Se recusar, a rota fica sem versão e as avaliações mostram Indisponível.} active {Se recusar, ela volta para a versão {number}, que está ativa.} other {Se recusar, ela passa para a versão {number}, e as avaliações mostram Versão aguardando ativação até você ativá-la.}}',
-    confirm: 'Confirmar',
+    confirm: 'Confirmar com a chave de acesso',
     cancel: 'Agora não',
-    waiting: 'Salvando sua decisão…',
+    passkeyLead: 'Para valer, a decisão pede a sua chave de acesso.',
+    waiting: 'Confirme no seu dispositivo para continuar.',
     decided: '{kind, select, activate {Versão ativada.} other {Versão recusada.}}',
     rejectedNote: 'Esta versão foi recusada e não volta a ser usada.',
     failure:
-      '{reason, select, limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, cancelled {Não deu para confirmar com a chave de acesso. Nada mudou. Tente de novo quando quiser.} changed {A confirmação não valeu: a versão pode ter mudado depois que você abriu a tela, ou a confirmação expirou. Nada foi decidido. Atualize a página e confira de novo.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} rejected {Esta versão já foi recusada, e a recusa não pode ser desfeita.} other {Não deu certo desta vez. Tente de novo.}}',
+    /** A proposal's three lists, hand edits and the route's history (ADR-0031). */
+    proposal: {
+      title: 'Revisão da proposta',
+      origin:
+        '{origin, select, request {Os itens que a atualização pesquisou e conferiu, cada um com a página oficial e o trecho que o código achou nela.} edit {Esta versão edita um item à mão. Os outros itens vêm da proposta que ela corrige.} other {Esta versão não veio de um pedido de atualização, então não tem as três listas. Você ainda pode editar um item à mão.}}',
+      list: '{list, select, confirmed {Confirmados} divergent {Divergentes} other {Não confirmados}}',
+      listLead:
+        '{list, select, confirmed {O trecho está na página e o validador confirmou o valor.} divergent {O validador ou o código acharam um problema. Leia o motivo.} other {Ninguém conseguiu confirmar. Não é erro: abra a página oficial e confira você.}}',
+      empty: 'Nenhum item.',
+      edited: 'Editado à mão',
+      quote: 'Trecho da página oficial',
+      opensSite: '(abre o site oficial)',
+      reason:
+        '{reason, select, validator_contradicts {O validador leu o trecho e achou que ele não confirma o valor.} validator_cannot_tell {O validador não conseguiu dizer se o trecho confirma o valor.} no_source_cited {Este item não cita nenhuma fonte oficial.} no_page_read {Nenhuma página deste item abriu.} not_answered {A pesquisa não citou nenhum trecho para este item.} quote_count {A pesquisa não citou nenhum trecho, ou citou trechos demais.} url_not_cited {O trecho veio de uma página que este item não cita.} page_not_read {A página não abriu.} page_cut {A página não foi lida inteira, então o trecho não basta.} quote_length {O trecho é curto ou longo demais.} quote_not_on_page {O trecho não está na página.} echoes_address {O trecho só repete o endereço da página.} value_not_in_quote {O trecho não traz os valores deste item.} other {Não deu para conferir.}}',
+      loadFailure: 'Não conseguimos carregar a revisão desta versão.',
+      edit: 'Editar item',
+      editTitle: 'Editar um item à mão',
+      editLead:
+        'Escreva o item como ele deve ficar, com a página oficial e o trecho que o confirma. O Arca abre a página, procura o trecho e roda os casos da versão. Se tudo passar, nasce uma nova versão proposta que corrige esta. Nada muda até você aprovar.',
+      editItem: 'Item',
+      editContent: 'O item, em JSON',
+      editUrl: 'Endereço da página oficial',
+      editSourceTitle: 'Nome da página',
+      editQuote: 'Trecho da página que confirma o item',
+      editSave: 'Conferir e salvar',
+      editSaving: 'Abrindo a página e rodando os casos…',
+      editStored: 'Pronto. A correção virou a versão {number}, que espera a sua aprovação.',
+      editOpen: 'Abrir a versão {number}',
+      editRefused:
+        'O Arca não salvou. Ajuste o que está abaixo e tente de novo. Os motivos vêm das checagens do código, em inglês:',
+      editFailure:
+        '{reason, select, limited {Muitas correções seguidas. Espere um pouco e tente de novo.} update_live {Há uma atualização desta rota em andamento. Espere ela terminar.} version_taken {Outra versão desta rota foi salva enquanto você editava. Abra a mais nova e tente de novo.} already_rejected {Esta versão foi recusada e não pode ser corrigida.} not_found {O Arca não achou este item nesta versão.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar. Tente de novo.}}',
+      history: 'Histórico da rota',
+      historyVersion: 'Versão {number}, a partir de {date}',
+      thisVersion: 'esta versão',
+      superseded: 'substituída',
+    },
     /** A comparison version: criteria and country data for comparing destinations (ADR-0026). */
     comparison: {
       meta: 'Dados da comparação de destinos',

@@ -15,7 +15,6 @@ import {
   versionViewQuery,
 } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
-import { CheckedBatch } from '../knowledge/checked-batch.js';
 import { CheckChip } from '../knowledge/checks.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
@@ -160,7 +159,6 @@ function Knowledge() {
     <Page title={title} lead={t('knowledge.lead')}>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
-          <CheckedBatch versions={proposed} words={words} />
           <ProposedVersions
             groups={reviewOrder(
               proposed.filter((version) => passes(filter, version)),

@@ -542,6 +542,7 @@
                           "data_export",
                           "financial_action",
                           "vault_write",
+                          "knowledge_decision",
                           "admin_grant",
                           "corrector_key",
                           "ai_key"
@@ -3201,6 +3202,7 @@
                               "ai_key_removed",
                               "ai_stage_set",
                               "update_requested",
+                              "version_edited",
                               "corrector_key_created",
                               "corrector_key_revoked",
                               "corrector_key_refused",
@@ -31616,7 +31618,7 @@
     "/knowledge/versions/activate": {
       "post": {
         "operationId": "activateVersion",
-        "summary": "Activates a route version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected",
+        "summary": "Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31696,7 +31698,7 @@
     "/knowledge/versions/reject": {
       "post": {
         "operationId": "rejectVersion",
-        "summary": "Rejects a route version for a signed-in admin, with no step-up, at once and for good. 403 not_admin, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a route version for an admin after a knowledge_decision step-up bound to its hashes, at once and for good. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -31773,169 +31775,10 @@
         }
       }
     },
-    "/knowledge/versions/activate-checked": {
-      "post": {
-        "operationId": "activateCheckedVersions",
-        "summary": "Activates, for a signed-in admin with no step-up, each shown route version that is still proposed, matches the bundled hash and has a clean current independent check, one decision each; answers which were activated and which were skipped, with a reason each. 403 not_admin",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "versions": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "routeId": {
-                          "type": "string",
-                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
-                        },
-                        "number": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 1000000
-                        },
-                        "hash": {
-                          "type": "string",
-                          "pattern": "^[0-9a-f]{64}$"
-                        }
-                      },
-                      "required": [
-                        "routeId",
-                        "number",
-                        "hash"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "minItems": 1,
-                    "maxItems": 100
-                  }
-                },
-                "required": [
-                  "versions"
-                ],
-                "additionalProperties": false
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Activated and skipped",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "activated": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "routeId": {
-                            "type": "string",
-                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
-                          },
-                          "number": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "decisionId": {
-                            "type": "string",
-                            "format": "uuid"
-                          }
-                        },
-                        "required": [
-                          "routeId",
-                          "number",
-                          "decisionId"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "maxItems": 100
-                    },
-                    "skipped": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "routeId": {
-                            "type": "string",
-                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
-                          },
-                          "number": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "reason": {
-                            "type": "string",
-                            "enum": [
-                              "not_found",
-                              "changed",
-                              "rejected",
-                              "already_active",
-                              "flagged",
-                              "not_checked",
-                              "not_admin"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "routeId",
-                          "number",
-                          "reason"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "maxItems": 100
-                    }
-                  },
-                  "required": [
-                    "activated",
-                    "skipped"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "pattern": "^[a-z_]{1,64}$"
-                        }
-                      },
-                      "required": [
-                        "code"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "error"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/knowledge/comparisons/activate": {
       "post": {
         "operationId": "activateComparison",
-        "summary": "Activates a comparison version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected",
+        "summary": "Activates a comparison version for an admin after a knowledge_decision step-up bound to its hash. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -32015,7 +31858,7 @@
     "/knowledge/comparisons/reject": {
       "post": {
         "operationId": "rejectComparison",
-        "summary": "Rejects a comparison version for a signed-in admin, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_admin, 404 not_found, 409 already_rejected",
+        "summary": "Rejects a comparison version for an admin after a knowledge_decision step-up bound to its hash, at once and for good; the newest active version before it stays in use. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected",
         "requestBody": {
           "required": true,
           "content": {
@@ -32316,6 +32159,10 @@
                       "minimum": 1
                     },
                     "hash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "casesHash": {
                       "type": "string",
                       "pattern": "^[0-9a-f]{64}$"
                     },
@@ -33312,6 +33159,7 @@
                     "routeId",
                     "number",
                     "hash",
+                    "casesHash",
                     "state",
                     "title",
                     "country",
@@ -38186,6 +38034,13 @@
                             "null"
                           ],
                           "pattern": "^[0-9a-f]{64}$"
+                        },
+                        "proposedNumber": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1
                         }
                       },
                       "required": [
@@ -38198,7 +38053,8 @@
                         "stages",
                         "cost",
                         "lists",
-                        "contentHash"
+                        "contentHash",
+                        "proposedNumber"
                       ],
                       "additionalProperties": false
                     }
@@ -38207,6 +38063,361 @@
                     "request"
                   ],
                   "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/review": {
+      "get": {
+        "operationId": "getVersionReview",
+        "summary": "One route version's items in the three lists its update request ended with, hand edits marked, and the content of each item an admin may edit; never calls a model. 403 not_admin, 404 not_found",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+            },
+            "required": true,
+            "name": "routeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "required": true,
+            "name": "number",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "origin": {
+                      "type": "string",
+                      "enum": [
+                        "request",
+                        "edit",
+                        "none"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          "kind": {
+                            "type": "string",
+                            "maxLength": 40
+                          },
+                          "title": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "list": {
+                            "type": "string",
+                            "enum": [
+                              "confirmed",
+                              "divergent",
+                              "unconfirmed"
+                            ]
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 40
+                          },
+                          "quotes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "url": {
+                                  "type": "string",
+                                  "maxLength": 2000
+                                },
+                                "quote": {
+                                  "type": "string",
+                                  "maxLength": 2000
+                                }
+                              },
+                              "required": [
+                                "url",
+                                "quote"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 5
+                          },
+                          "urls": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "maxLength": 2000
+                            },
+                            "maxItems": 20
+                          },
+                          "edited": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "kind",
+                          "title",
+                          "list",
+                          "reason",
+                          "quotes",
+                          "urls",
+                          "edited"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 400
+                    },
+                    "editable": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "maxLength": 120
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "requirement",
+                              "assessment",
+                              "dependent",
+                              "cost",
+                              "duration"
+                            ]
+                          },
+                          "title": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "content": {
+                            "type": "string",
+                            "maxLength": 100000
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "kind",
+                          "title",
+                          "content"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 200
+                    }
+                  },
+                  "required": [
+                    "origin",
+                    "items",
+                    "editable"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/versions/edit-item": {
+      "post": {
+        "operationId": "editVersionItem",
+        "summary": "Stores, for an admin, a new proposed route version with one item edited by hand, which corrects the version named: checked in code as a proposal is (the rule schema, official hosts, the version's cases) and with the quote found on the official page it cites, or refused with the reasons. Decided like any version. 10 per account per hour (429 rate_limited). 403 not_admin; 404 not_found for a version or item the rules do not hold; 409 already_rejected; 409 update_live while a request of the route runs; 409 version_taken when another version was stored meanwhile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "itemKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 100000
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "title"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "quote": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "number",
+                  "itemKey",
+                  "content",
+                  "source",
+                  "quote"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored or refused",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "stored"
+                          ]
+                        },
+                        "number": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "number"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "refused"
+                          ]
+                        },
+                        "problems": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "maxLength": 500
+                          },
+                          "maxItems": 50
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "problems"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               }
             }

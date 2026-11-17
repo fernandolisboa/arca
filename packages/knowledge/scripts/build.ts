@@ -72,7 +72,11 @@ function versionCases(
   const cases: VersionCases[] = [];
   for (const [version, file] of files) {
     const hash = hashes.get(version);
-    if (hash !== undefined) cases.push({ hash, cases: caseSummaries(file) });
+    if (hash !== undefined) {
+      // The digest `casesHashOf` computes, which the build cannot import at run time.
+      const casesHash = contentHash({ cases: file });
+      cases.push({ hash, casesHash, cases: caseSummaries(file) });
+    }
   }
   return cases;
 }

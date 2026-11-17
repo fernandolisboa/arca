@@ -1,32 +1,54 @@
-import { routes, type ComparisonVersionView, type VersionView } from '@arca/api-contract/client';
+import {
+  routes,
+  decideComparisonAction,
+  decideVersionAction,
+  type ComparisonVersionView,
+  type VersionView,
+} from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
-import { api } from '../api.js';
+import { passkeys } from '../platform.js';
 import { commonFailure, reach, type CommonFailure } from '../requests.js';
+import { stepUpFor } from '../step-up.js';
 import type { KnowledgeWords } from './words.js';
 
 type DecisionKind = 'activate' | 'reject';
-type Failure = CommonFailure | 'rejected';
+type Failure = CommonFailure | 'rejected' | 'changed';
 
-/** A route version decision: one request, with no passkey prompt (ADR-0027). */
+/**
+ * A route version decision after its own `knowledge_decision` step-up, bound to the content hash
+ * and the cases hash this screen showed (ADR-0031): a version that changed since is not decided.
+ */
 export async function decideVersion(kind: DecisionKind, view: VersionView): Promise<void> {
   const route = kind === 'activate' ? routes.activateVersion : routes.rejectVersion;
-  await reach(api.call(route, { routeId: view.routeId, number: view.number }));
+  const request = { routeId: view.routeId, number: view.number };
+  const approved = await stepUpFor(
+    passkeys,
+    decideVersionAction(route.operationId, request, view.hash, view.casesHash),
+    'knowledge_decision',
+  );
+  await reach(approved.call(route, request));
 }
 
-/** A comparison version decision, as for a route version (ADR-0026, ADR-0027). */
+/** A comparison version decision, with the comparison's own step-up actions (ADR-0026). */
 export async function decideComparison(
   kind: DecisionKind,
   view: ComparisonVersionView,
 ): Promise<void> {
   const route = kind === 'activate' ? routes.activateComparison : routes.rejectComparison;
-  await reach(api.call(route, { comparisonId: view.comparisonId, number: view.number }));
+  const request = { comparisonId: view.comparisonId, number: view.number };
+  const approved = await stepUpFor(
+    passkeys,
+    decideComparisonAction(route.operationId, request, view.hash),
+    'knowledge_decision',
+  );
+  await reach(approved.call(route, request));
 }
 
 /**
- * An admin's decision on a route or comparison version: activate, reject, or neither once
- * rejected. `rejectWarning` says what a rejection would change today, when it changes something.
+ * An admin's decision on a route or comparison version, confirmed with a passkey: activate,
+ * reject, or neither once rejected. `rejectWarning` says what a rejection would change today, when it changes something.
  */
 export function Decision({
   state: versionState,
@@ -58,8 +80,13 @@ export function Decision({
       })
       .catch((error: unknown) => {
         setState({
+          // A step-up bound to hashes the server no longer holds is never found to spend.
           failure: commonFailure(error, (apiError) =>
-            apiError.code === 'already_rejected' ? 'rejected' : undefined,
+            apiError.code === 'already_rejected'
+              ? 'rejected'
+              : apiError.code === 'step_up_required'
+                ? 'changed'
+                : undefined,
           ),
         });
       })
@@ -123,6 +150,7 @@ export function Decision({
               <p>{words.t('knowledge.rejectLead')}</p>
             </>
           )}
+          <p className="text-small text-muted">{words.t('knowledge.passkeyLead')}</p>
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => {

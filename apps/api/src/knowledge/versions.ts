@@ -20,7 +20,11 @@ import { checkContent } from './version-content.js';
 export interface KnowledgeVersions {
   /** Every stored version with its state, the newest first (spec 0007, R7; ADR-0031). */
   readonly list: () => Promise<readonly Omit<KnowledgeVersion, 'check' | 'points'>[]>;
-  readonly view: (routeId: string, number: number) => Promise<VersionView | undefined>;
+  /** One version as the admin reads it, with the hash of its cases a decision binds (ADR-0031). */
+  readonly view: (
+    routeId: string,
+    number: number,
+  ) => Promise<(VersionView & { readonly casesHash: string }) | undefined>;
   /** A route's version identities, which never carry a version's content. */
   readonly identities: (routeId: string) => Promise<readonly VersionIdentity[]>;
   /** The hosts of a country's newest official-domain list, by its lower-case code; none without one. */
@@ -106,8 +110,9 @@ export function createKnowledgeVersions({
       const catalog = await displayed();
       const versions = catalog.versions(routeId);
       const entry = versions.find(({ identity }) => identity.number === number);
-      if (entry === undefined) return undefined;
-      return versionView({
+      const casesHash = entry === undefined ? undefined : catalog.casesHash(entry.identity.hash);
+      if (entry === undefined || casesHash === undefined) return undefined;
+      const view = versionView({
         versions,
         number,
         cases: catalog.cases(entry.identity.hash),
@@ -115,6 +120,7 @@ export function createKnowledgeVersions({
         today: today(),
         hostOf: catalog.hostOf,
       });
+      return view === undefined ? undefined : { ...view, casesHash };
     },
 
     comparisons: async () => {

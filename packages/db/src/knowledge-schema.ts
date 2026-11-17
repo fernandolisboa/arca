@@ -25,23 +25,32 @@ import {
  * assertion and the passkey's public key, so it verifies again after the passkey is revoked, the
  * step-up is swept or its author's account is erased. A `session` row (ADR-0027) was made by a
  * signed-in admin with no step-up, so it has none of those fields and instead records why its
- * author was an admin: the owner list, or the admin grant in force, which it names. A database check keeps the proof and those fields consistent, and no
- * foreign key leaves this schema.
+ * author was an admin: the owner list, or the admin grant in force, which it names. An
+ * `admin_step_up` row (ADR-0031) has both: the copied assertion, public key and spent step-up, and
+ * the admin basis; a route row also names the hash of the cases the admin approved. A database
+ * check keeps the proof and those fields consistent, and no foreign key leaves this schema.
  *
- * Insert-only, as the audit log: `app_auth` inserts only `session` rows, by the transaction's own
- * account, with the time the database sets; `app_api` reads them all, since every evaluation needs
- * the states. With no update or delete policy under forced row-level security nobody updates or
- * deletes. Kept for good, as the record of which rule and comparison versions are in use.
+ * Insert-only, as the audit log: `app_auth` inserts only `admin_step_up` rows, by the transaction's
+ * own account, copying a `knowledge_decision` step-up that account spent, with the time the
+ * database sets; rows of the older proofs stay and count as they say. `app_api` reads them all,
+ * since every evaluation needs the states. With no update or delete policy under forced row-level
+ * security nobody updates or deletes. Kept for good, as the record of which rule and comparison
+ * versions are in use.
  */
 export const knowledge = pgSchema('knowledge');
 
-/** How a decision proves a person made it: a step-up (ADR-0022) or an admin's session (ADR-0027). */
-export const decisionProofs = ['step_up', 'session'] as const;
+/**
+ * How a decision proves a person made it: a step-up (ADR-0022), an admin's session (ADR-0027), or
+ * an admin's step-up (ADR-0031), the only one stored now.
+ */
+export const decisionProofs = ['step_up', 'session', 'admin_step_up'] as const;
 /**
  * Why an admin was one when they acted (ADR-0027): the owner list in the repository, or the admin
  * grant in force, which the row names.
  */
 export const adminBases = ['owner_list', 'grant'] as const;
+
+const contentHashFormat = (column: unknown) => sql`${column} ~ '^[0-9a-f]{64}$'`;
 
 /** The transaction's own account, which `app_auth` sets per transaction (ADR-0008). */
 const isIdentity = (column: unknown) =>
@@ -139,7 +148,7 @@ export const decision = knowledge.table(
     contentHash: text('content_hash').notNull(),
     authorAccountId: uuid('approver_account_id').notNull(),
     proof: text('proof', { enum: decisionProofs }).notNull(),
-    /** Why a `session` row's author was an admin; null on a `step_up` row. */
+    /** Why the author was an admin; null on a `step_up` row. */
     adminBasis: text('admin_basis', { enum: adminBases }),
     /** The admin grant in force for the author, under a `grant` basis. */
     adminGrantId: uuid('admin_grant_id'),
@@ -154,6 +163,8 @@ export const decision = knowledge.table(
     clientDataJson: bytea('client_data_json'),
     signature: bytea('signature'),
     stepUpId: uuid('step_up_id'),
+    /** The hash of the route version's cases the admin approved, on an `admin_step_up` route row. */
+    casesHash: text('cases_hash'),
     /** Set by the database when the row is inserted, after the inserting transaction's lock. */
     decidedAt: timestamp('decided_at', { withTimezone: true })
       .notNull()
@@ -189,14 +200,35 @@ export const decision = knowledge.table(
           AND ${table.actionNonce} IS NULL AND ${table.serverNonce} IS NULL
           AND ${table.authenticatorData} IS NULL AND ${table.clientDataJson} IS NULL
           AND ${table.signature} IS NULL AND ${table.stepUpId} IS NULL
+        WHEN 'admin_step_up' THEN ${basisShape(table.adminBasis, table.adminGrantId)}
+          AND ${table.credentialId} IS NOT NULL AND ${table.publicKey} IS NOT NULL
+          AND ${table.actionNonce} IS NOT NULL AND ${table.serverNonce} IS NOT NULL
+          AND ${table.authenticatorData} IS NOT NULL AND ${table.clientDataJson} IS NOT NULL
+          AND ${table.signature} IS NOT NULL AND ${table.stepUpId} IS NOT NULL
+          AND (${table.casesHash} IS NOT NULL) = (${table.subjectKind} = 'route')
         ELSE false END`,
     ),
-    pgPolicy('decision_insert_session', {
+    check(
+      'decision_cases_hash',
+      sql`${table.casesHash} IS NULL OR (${table.proof} = 'admin_step_up' AND ${contentHashFormat(table.casesHash)})`,
+    ),
+    // The row copies the step-up its author spent for this purpose, field by field (ADR-0031).
+    pgPolicy('decision_insert_with_step_up', {
       for: 'insert',
       to: 'app_auth',
-      withCheck: sql`${table.proof} = 'session' AND ${isIdentity(table.authorAccountId)}
+      withCheck: sql`${table.proof} = 'admin_step_up' AND ${isIdentity(table.authorAccountId)}
         AND (${table.adminBasis} = 'owner_list'
-          OR ${grantOf(table.adminGrantId, table.authorAccountId)})`,
+          OR ${grantOf(table.adminGrantId, table.authorAccountId)})
+        AND EXISTS (SELECT FROM "auth"."step_up"
+          WHERE "auth"."step_up"."id" = ${table.stepUpId}
+            AND "auth"."step_up"."account_id" = ${table.authorAccountId}
+            AND "auth"."step_up"."purpose" = 'knowledge_decision'
+            AND "auth"."step_up"."consumed_at" IS NOT NULL
+            AND "auth"."step_up"."credential_id" = ${table.credentialId}
+            AND "auth"."step_up"."nonce" = ${table.serverNonce}
+            AND "auth"."step_up"."authenticator_data" = ${table.authenticatorData}
+            AND "auth"."step_up"."client_data_json" = ${table.clientDataJson}
+            AND "auth"."step_up"."signature" = ${table.signature})`,
     }),
     pgPolicy('decision_read', { for: 'select', to: 'app_api', using: sql`true` }),
   ],
@@ -744,7 +776,6 @@ export const correctionEvent = knowledge.table(
 );
 
 const ruleFileIdFormat = (column: unknown) => sql`${column} ~ '^[a-z0-9][a-z0-9-]{0,63}$'`;
-const contentHashFormat = (column: unknown) => sql`${column} ~ '^[0-9a-f]{64}$'`;
 
 /**
  * The policies of a rule table (ADR-0031): `app_api` and `app_jobs` read every row, since every
@@ -764,6 +795,11 @@ const ruleRowPolicies = (name: string) => [
  * (R8). The content names the ID and number the row is stored under. The API recomputes the hash
  * when it reads a row and leaves out one that does not match, so a row changed behind the grants is
  * never evaluated. Public rule data, no account.
+ *
+ * Besides the import, two writers insert, each only its own kind of row: `app_jobs` stores an
+ * update request's proposal, naming the request whose end holds that very hash, once per request;
+ * `knowledge_definer` stores an admin's edited version through `knowledge.edit_route_version`,
+ * naming no request. Neither decides anything: a new row reads as proposed until a decision.
  */
 export const routeVersion = knowledge.table(
   'route_version',
@@ -778,6 +814,8 @@ export const routeVersion = knowledge.table(
      * inserts rows (ADR-0031).
      */
     cases: jsonb('cases'),
+    /** The update request whose proposal this row is; null for an imported or edited row. */
+    requestId: uuid('request_id').references(() => updateRequest.id),
     /** Set by the database when the row is inserted. */
     insertedAt: timestamp('inserted_at', { withTimezone: true })
       .notNull()
@@ -785,6 +823,7 @@ export const routeVersion = knowledge.table(
   },
   (table) => [
     primaryKey({ name: 'route_version_pkey', columns: [table.routeId, table.number] }),
+    unique('route_version_request_id_key').on(table.requestId),
     check('route_version_route_id_format', routeIdFormat(table.routeId)),
     check('route_version_number_positive', sql`${table.number} > 0`),
     check('route_version_content_hash_format', contentHashFormat(table.contentHash)),
@@ -794,6 +833,62 @@ export const routeVersion = knowledge.table(
         AND ${table.content} -> 'number' = pg_catalog.to_jsonb(${table.number})`,
     ),
     ...ruleRowPolicies('route_version'),
+    pgPolicy('route_version_insert_proposal', {
+      for: 'insert',
+      to: 'app_jobs',
+      withCheck: sql`EXISTS (SELECT FROM "knowledge"."update_end" "ended"
+          JOIN "knowledge"."update_request" "asked" ON "asked"."id" = "ended"."request_id"
+        WHERE "ended"."request_id" = ${table.requestId} AND "ended"."failure" IS NULL
+          AND "ended"."content_hash" = ${table.contentHash}
+          AND "asked"."route_id" = ${table.routeId})`,
+    }),
+    pgPolicy('route_version_read_definer', {
+      for: 'select',
+      to: 'knowledge_definer',
+      using: sql`true`,
+    }),
+    pgPolicy('route_version_insert_edit', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`${table.requestId} IS NULL`,
+    }),
+  ],
+);
+
+/**
+ * What an admin changed by hand in an edited route version (ADR-0031): the item, the official page
+ * and the quote code found on it. One row per edited version, inserted with the version by
+ * `knowledge.edit_route_version`; who edited is in the audit log, so a row names no account.
+ * `app_api` reads them; nobody updates or deletes.
+ */
+export const versionEdit = knowledge.table(
+  'version_edit',
+  {
+    routeId: text('route_id').notNull(),
+    number: integer('number').notNull(),
+    itemKey: text('item_key').notNull(),
+    url: text('url').notNull(),
+    quote: text('quote').notNull(),
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
+  },
+  (table) => [
+    primaryKey({ name: 'version_edit_pkey', columns: [table.routeId, table.number] }),
+    foreignKey({
+      name: 'version_edit_version_fkey',
+      columns: [table.routeId, table.number],
+      foreignColumns: [routeVersion.routeId, routeVersion.number],
+    }),
+    check('version_edit_item_key_length', sql`char_length(${table.itemKey}) BETWEEN 1 AND 120`),
+    check('version_edit_url_length', sql`char_length(${table.url}) BETWEEN 1 AND 2000`),
+    check('version_edit_quote_length', sql`char_length(${table.quote}) BETWEEN 1 AND 2000`),
+    pgPolicy('version_edit_read', { for: 'select', to: 'app_api', using: sql`true` }),
+    pgPolicy('version_edit_insert_by_definer', {
+      for: 'insert',
+      to: 'knowledge_definer',
+      withCheck: sql`true`,
+    }),
   ],
 );
 
@@ -1070,8 +1165,8 @@ export const updateStage = knowledge.table(
 /**
  * How an update request ended (ADR-0031): finished with its proposal, or failed with a fixed code
  * and none. The proposal is the checked version's content, its content hash, its cases and the
- * three lists; it is not a route version row until a reviewed decision path writes one (#460).
- * One per request; `app_jobs` inserts it; `app_api` and `app_jobs` read it; nobody updates or
+ * three lists; the same transaction stores the proposal as a route version that names the request,
+ * which then reads as proposed (#460). One per request; `app_jobs` inserts it; `app_api` and `app_jobs` read it; nobody updates or
  * deletes.
  */
 export const updateEnd = knowledge.table(

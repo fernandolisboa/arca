@@ -6,7 +6,6 @@ import {
   checkReasons,
   checkStatuses,
   checkFailures,
-  checkedBatchSkips,
   fetchOutcomes,
   listedCheckStatuses,
   maxCheckCostMicroUsd,
@@ -27,7 +26,6 @@ import {
   ruleCaseSummarySchema,
   slugSchema,
   sourceSchema,
-  versionKey,
   viewSections,
 } from '@arca/domain';
 import { z } from 'zod';
@@ -41,14 +39,16 @@ import {
 } from './uploads.js';
 
 /*
- * Activating and rejecting a route version (spec 0007, R7; ADR-0027). Only an admin may decide
- * (403 not_admin), signed in, with no step-up; the body names the version and nothing else, and
- * the API takes its hash from the catalog it bundles. 404 not_found for a version the catalog does
- * not hold, 409 already_rejected for one already rejected.
+ * Activating and rejecting a route version (spec 0007, R7; ADR-0031). Only an admin may decide
+ * (403 not_admin), after a knowledge_decision step-up (403 step_up_required) bound to the action,
+ * the route ID and the version number as targets, and the content hash and the cases hash as the
+ * fields contentHash and casesHash, as the admin saw them; the body names the version and nothing
+ * else, and the API takes both hashes from the rules it read, so an approval of anything else
+ * never matches. 404 not_found for a version the rules do not hold, 409 already_rejected for one
+ * already rejected.
  *
- * Decisions stored before ADR-0027 were approved by a knowledge_decision step-up bound to the
- * action, the route ID and the version number as targets, and the content hash as the field
- * contentHash; `decideVersionAction` rebuilds that action so they verify again (ADR-0022).
+ * Decisions stored before ADR-0027 were approved by the same step-up with the content hash alone;
+ * `decideVersionAction` without a cases hash rebuilds that action so they verify again (ADR-0022).
  */
 
 export const DecideVersionRequest = z.strictObject({
@@ -65,7 +65,7 @@ export const activateVersion = {
   path: '/knowledge/versions/activate',
   operationId: 'activateVersion',
   summary:
-    'Activates a route version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected',
+    'Activates a route version for an admin after a knowledge_decision step-up bound to its hashes. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -75,27 +75,35 @@ export const rejectVersion = {
   path: '/knowledge/versions/reject',
   operationId: 'rejectVersion',
   summary:
-    'Rejects a route version for a signed-in admin, with no step-up, at once and for good. 403 not_admin, 404 not_found, 409 already_rejected',
+    'Rejects a route version for an admin after a knowledge_decision step-up bound to its hashes, at once and for good. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideVersionRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
 
-/** The step-up action of an ADR-0022 decision: the route and number as targets, the hash a field. */
+/**
+ * The step-up action of a route decision: the route and number as targets, the hashes as fields.
+ * An ADR-0022 decision bound the content hash alone, so it has no cases hash.
+ */
 export function decideVersionAction(
   decision: 'activateVersion' | 'rejectVersion',
   { routeId, number }: DecideVersionRequest,
   contentHash: string,
+  casesHash?: string,
 ) {
-  return { action: decision, targets: [routeId, String(number)], fields: { contentHash } };
+  return {
+    action: decision,
+    targets: [routeId, String(number)],
+    fields: casesHash === undefined ? { contentHash } : { contentHash, casesHash },
+  };
 }
 
 const contentHash = z.string().regex(/^[0-9a-f]{64}$/);
 
 /*
- * Activating and rejecting a comparison version (ADR-0026, ADR-0027), as for a route version. The
- * API takes the content hash over the version and every indicator it pins from the catalog it
- * bundles. Decisions stored before ADR-0027 used their own step-up actions, so an approval of one
- * kind never verifies as the other.
+ * Activating and rejecting a comparison version (ADR-0026, ADR-0031), as for a route version, with
+ * the content hash alone. The API takes the content hash over the version and every indicator it
+ * pins from the catalog it bundles. Each subject kind has its own step-up actions, so an approval
+ * of one kind never verifies as the other.
  */
 
 export const DecideComparisonRequest = z.strictObject({
@@ -109,7 +117,7 @@ export const activateComparison = {
   path: '/knowledge/comparisons/activate',
   operationId: 'activateComparison',
   summary:
-    'Activates a comparison version for a signed-in admin, with no step-up. 403 not_admin, 404 not_found, 409 already_rejected',
+    'Activates a comparison version for an admin after a knowledge_decision step-up bound to its hash. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Activated', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
@@ -119,12 +127,12 @@ export const rejectComparison = {
   path: '/knowledge/comparisons/reject',
   operationId: 'rejectComparison',
   summary:
-    'Rejects a comparison version for a signed-in admin, with no step-up, at once and for good; the newest active version before it stays in use. 403 not_admin, 404 not_found, 409 already_rejected',
+    'Rejects a comparison version for an admin after a knowledge_decision step-up bound to its hash, at once and for good; the newest active version before it stays in use. 403 not_admin, 403 step_up_required, 404 not_found, 409 already_rejected',
   body: DecideComparisonRequest,
   response: { description: 'Rejected', schema: DecideVersionResponse },
 } as const satisfies RouteDefinition<typeof DecideVersionResponse>;
 
-/** The step-up action of an ADR-0022 comparison decision: ID and number targets, the hash a field. */
+/** The step-up action of a comparison decision: ID and number targets, the hash a field. */
 export function decideComparisonAction(
   decision: 'activateComparison' | 'rejectComparison',
   { comparisonId, number }: DecideComparisonRequest,
@@ -209,6 +217,8 @@ export const VersionView = z.object({
   routeId: routeIdSchema,
   number: z.int().min(1),
   hash: contentHash,
+  /** The hash of the version's cases as stored, which a decision binds with `hash` (ADR-0031). */
+  casesHash: contentHash,
   state: decisionState,
   title: z.string().max(200),
   country: z.string().regex(/^[A-Z]{2}$/),
@@ -1127,59 +1137,9 @@ export const getVersionCheckProgress = {
   response: { description: 'The progress', schema: VersionCheckProgress },
 } as const satisfies RouteDefinition<typeof VersionCheckProgress>;
 
-/* Activating every checked version at once (ADR-0027): the identities the screen showed. */
-
-const shownVersion = z.strictObject({
-  routeId: routeIdSchema,
-  number: z.int().min(1).max(1_000_000),
-  hash: contentHash,
-});
-
-export const ActivateCheckedRequest = z.strictObject({
-  versions: z
-    .array(shownVersion)
-    .min(1)
-    .max(100)
-    .refine((list) => new Set(list.map(versionKey)).size === list.length, 'each version once'),
-});
-export type ActivateCheckedRequest = z.infer<typeof ActivateCheckedRequest>;
-
-export const ActivateCheckedResponse = z.strictObject({
-  activated: z
-    .array(
-      z.strictObject({
-        routeId: routeIdSchema,
-        number: z.int().min(1),
-        decisionId: z.uuid(),
-      }),
-    )
-    .max(100),
-  skipped: z
-    .array(
-      z.strictObject({
-        routeId: routeIdSchema,
-        number: z.int().min(1),
-        reason: z.enum(checkedBatchSkips),
-      }),
-    )
-    .max(100),
-});
-export type ActivateCheckedResponse = z.infer<typeof ActivateCheckedResponse>;
-
-export const activateCheckedVersions = {
-  method: 'post',
-  path: '/knowledge/versions/activate-checked',
-  operationId: 'activateCheckedVersions',
-  summary:
-    'Activates, for a signed-in admin with no step-up, each shown route version that is still proposed, matches the bundled hash and has a clean current independent check, one decision each; answers which were activated and which were skipped, with a reason each. 403 not_admin',
-  body: ActivateCheckedRequest,
-  response: { description: 'Activated and skipped', schema: ActivateCheckedResponse },
-} as const satisfies RouteDefinition<typeof ActivateCheckedResponse>;
-
 export const knowledgeRoutes = {
   activateVersion,
   rejectVersion,
-  activateCheckedVersions,
   activateComparison,
   rejectComparison,
   listKnowledgeVersions,

@@ -18,6 +18,8 @@ export interface DisplayCatalog {
   readonly comparisons: () => readonly ComparisonEntry[];
   readonly versions: (routeId: string) => readonly CatalogEntry[];
   readonly cases: (hash: string) => readonly RuleCaseSummary[];
+  /** The hash of the cases file of the version read under this content hash (ADR-0031). */
+  readonly casesHash: (hash: string) => string | undefined;
   /**
    * The host of a cited URL or machine-readable address as the build's official-source matching
    * read it, if it has one.
@@ -47,7 +49,7 @@ const comparisonHosts = hostDataSchema.parse(comparisonHostData);
 export function createDisplayCatalog(data: RuleData): DisplayCatalog {
   const rules = ruleContent(data);
   const all = [...rules.entries.values()];
-  const byHash = new Map(rules.cases.map((entry) => [entry.hash, entry.cases]));
+  const byHash = new Map(rules.cases.map((entry) => [entry.hash, entry]));
   const byUrl = new Map(Object.entries({ ...comparisonHosts, ...rules.hosts }));
   const lists = new Map(
     rules.officialDomains.map((list) => [`${list.id}/${String(list.number)}`, list.hosts]),
@@ -60,7 +62,8 @@ export function createDisplayCatalog(data: RuleData): DisplayCatalog {
     entries: () => all,
     comparisons: () => comparisons,
     versions: (routeId) => all.filter(({ identity }) => identity.routeId === routeId),
-    cases: (hash) => byHash.get(hash) ?? [],
+    cases: (hash) => byHash.get(hash)?.cases ?? [],
+    casesHash: (hash) => byHash.get(hash)?.casesHash,
     hostOf: (url) => byUrl.get(url) ?? undefined,
     officialHosts: (pins) => {
       const hosts: string[] = [];

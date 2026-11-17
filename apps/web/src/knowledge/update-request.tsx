@@ -1,9 +1,10 @@
 import { type ApiError, type UpdateProgress, routes } from '@arca/api-contract/client';
 import { Button, Icon, StatusChip, type StatusTone } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useRef, useState } from 'react';
+import { use, useEffect, useId, useRef, useState } from 'react';
 import { api, updateRequestQuery } from '../api.js';
 import { commonFailure, reach } from '../requests.js';
+import { OpenRouteVersionContext } from './corrections.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -122,6 +123,33 @@ function UpdateCost({
   }
 }
 
+/** Where the finished request's proposal waits for review, with a way there. */
+function ProposedVersion({
+  number,
+  words,
+}: {
+  readonly number: number;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const open = use(OpenRouteVersionContext);
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="text-small text-muted">{t('knowledge.update.review', { number })}</p>
+      {open !== undefined && (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            open(number);
+          }}
+        >
+          {t('knowledge.update.open', { number })}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 /**
  * The confirmation, then the newest request's progress: its stages side by side on a wide screen,
  * the three lists once it finished, and what it cost.
@@ -237,7 +265,9 @@ export function UpdateRequestCard({
                   </div>
                 ))}
               </dl>
-              <p className="text-small text-muted">{t('knowledge.update.review')}</p>
+              {progress.proposedNumber !== null && (
+                <ProposedVersion number={progress.proposedNumber} words={words} />
+              )}
             </div>
           )}
           <UpdateCost progress={progress} words={words} />

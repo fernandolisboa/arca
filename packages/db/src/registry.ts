@@ -612,6 +612,12 @@ export const registry: Registry = {
         "How an update request ended (ADR-0031): a fixed code, or the proposed version's public content, hash, cases and the three lists; it names no account.",
     },
     {
+      table: 'knowledge.version_edit',
+      personalData: 'none',
+      reason:
+        "An admin's hand edit of a route version (ADR-0031): the item, the official page and the quote, public rule data; the audit log names who edited, so it names no account.",
+    },
+    {
       table: 'knowledge.rule_verdict',
       personalData: 'none',
       reason:
