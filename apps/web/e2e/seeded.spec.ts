@@ -515,30 +515,20 @@ test('the seed admin points out an error on a version and closes the request (AD
   await requests.getByRole('button', { name: 'Baixar arquivo' }).click();
   expect((await saved).suggestedFilename()).toBe('pedido-de-correcao-arquivo-2.txt');
 
+  // The corrector run's routes stay unserved until #463, so even a live key reads no request,
+  // and no member's note or file can reach its session (ADR-0031).
   const key = await correctorKeyFromSettings(page);
   const corrector = { authorization: `Bearer ${key}`, origin: databaseServer.origin };
   const listed = await page.request.get(`${databaseServer.origin}/v1/corrector/requests`, {
     headers: corrector,
   });
-  expect(listed.status()).toBe(200);
-  const [request] = ((await listed.json()) as { requests: { id: string }[] }).requests;
-  const answer = (body: unknown) =>
-    page.request.post(`${databaseServer.origin}/v1/corrector/requests/answer`, {
-      headers: corrector,
-      data: { requestId: request?.id, answer: body },
-    });
-  expect((await answer({ kind: 'taken' })).status()).toBe(200);
-  const explanation = 'Nenhuma fonte oficial confirma: https://www.uscis.gov/eb-5 mantém o valor.';
-  expect((await answer({ kind: 'no_change', explanation })).status()).toBe(200);
+  expect(listed.status()).toBe(401);
   await page.goto(`${databaseServer.origin}/knowledge`);
   await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
-  await expect(requests).toContainText('Respondido');
-  await expect(requests).toContainText('A sessão de correção não mudou a regra:');
-  await expect(requests).toContainText(explanation);
-  await expect(requests.getByRole('link', { name: /uscis/ })).toHaveCount(0);
+  await expect(requests).toContainText('Aberto');
   await requests.getByRole('button', { name: 'Fechar pedido' }).click();
   await expect(requests).toContainText('Fechado');
   await expect(requests.getByRole('button', { name: 'Fechar pedido' })).toHaveCount(0);
