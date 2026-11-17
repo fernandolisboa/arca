@@ -1,4 +1,4 @@
-import { asDataText, routeVersionJsonSchema } from '@arca/domain';
+import { routeVersionJsonSchema } from '@arca/domain';
 import { casesFileSchema } from '@arca/knowledge';
 import type { JSONSchema7 } from 'ai';
 import { z } from 'zod';
@@ -46,6 +46,13 @@ export const ruleResearchInstructions = [
   casesJsonSchema,
 ].join('\n');
 
+/**
+ * JSON with every angle bracket as a JSON escape, so nothing inside can close a tag, while the
+ * text still decodes to the exact characters: snapshot keys such as `p2>p1` survive a round trip.
+ */
+const framedJson = (value: unknown) =>
+  JSON.stringify(value).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e');
+
 /** The route's stable data, cached after the instructions, which a correction reads again from cache. */
 export function ruleResearchContext({
   routeId,
@@ -54,8 +61,7 @@ export function ruleResearchContext({
   officialHosts,
   today,
 }: ResearchRequest): string {
-  // Framed as data text, so nothing inside can close the tag.
-  return `<route_data>\n${asDataText(JSON.stringify({ routeId, today, officialHosts, currentVersion: current, currentCases }))}\n</route_data>`;
+  return `<route_data>\n${framedJson({ routeId, today, officialHosts, currentVersion: current, currentCases })}\n</route_data>`;
 }
 
 /** What changes between research and its correction. */
@@ -66,13 +72,11 @@ export function ruleResearchMessage({ correction }: ResearchRequest): string {
   return [
     'Your proposal below was checked. Fix what was found and answer with the whole corrected proposal.',
     '<checked_proposal>',
-    asDataText(
-      JSON.stringify({
-        proposal: correction.proposal,
-        problems: correction.problems,
-        rejectedItems: correction.items,
-      }),
-    ),
+    framedJson({
+      proposal: correction.proposal,
+      problems: correction.problems,
+      rejectedItems: correction.items,
+    }),
     '</checked_proposal>',
   ].join('\n');
 }

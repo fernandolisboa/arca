@@ -145,6 +145,24 @@ describe('the Claude researcher (ADR-0031)', () => {
     expect(text).toContain('"today\\":\\"2026-11-17');
   });
 
+  it('keeps every character of the data, so a snapshot key such as p2>p1 survives', async () => {
+    const { fetch, calls } = fakeFetch(() => Promise.resolve(message(JSON.stringify(reply))));
+    const key = 'lineage@p2 line p2>p1 <x>';
+    await claudeRuleResearcher({ apiKey: 'test-key', fetch }).research(
+      { ...request, currentCases: { cases: [key] } },
+      { model, effort: null },
+    );
+    const [{ body }] = calls as [(typeof calls)[number]];
+    const [turn] = body['messages'] as { content: { text: string }[] }[];
+    const framed = turn?.content[0]?.text ?? '';
+    const data = JSON.parse(
+      framed.replace('<route_data>\n', '').replace('\n</route_data>', ''),
+    ) as {
+      currentCases: unknown;
+    };
+    expect(data.currentCases).toEqual({ cases: [key] });
+  });
+
   it('never calls the provider with no official host, which would leave the tools unlimited', async () => {
     const { fetch, calls } = fakeFetch(() => Promise.resolve(message(JSON.stringify(reply))));
     const error = await failure(
