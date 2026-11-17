@@ -20,6 +20,7 @@ export const noticeKinds = [
   'inactivity_warning',
   'admin_role_changed',
   'correction_requested',
+  'update_requested',
   'corrector_key_changed',
   'ai_key_changed',
 ] as const;

@@ -15,6 +15,7 @@ import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page, PageColumns } from '../page.js';
 import { groupResults, resultsAnchor } from '../results/group.js';
 import { ReportRule } from '../results/report-rule.js';
+import { RouteUpdateRequest } from '../results/update-request.js';
 import { statusTones } from '../results/status-tone.js';
 
 export const Route = createFileRoute('/family_/results')({ component: Results });
@@ -171,6 +172,9 @@ function Evaluated({
               {routes.map((group) => {
                 const routeTitle =
                   group.route?.title ?? t('results.unnamedRoute', { id: group.routeId });
+                const [versionNumber] = group.results.flatMap((result) =>
+                  result.version === null ? [] : [result.version.number],
+                );
                 return (
                   <article
                     key={group.routeId}
@@ -178,6 +182,13 @@ function Evaluated({
                     className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4"
                   >
                     <h4 className="font-medium break-words">{routeTitle}</h4>
+                    {versionNumber !== undefined && (
+                      <RouteUpdateRequest
+                        routeId={group.routeId}
+                        versionNumber={versionNumber}
+                        words={words}
+                      />
+                    )}
                     {group.results.map((result) => (
                       <PrincipalResult
                         key={result.principalId}

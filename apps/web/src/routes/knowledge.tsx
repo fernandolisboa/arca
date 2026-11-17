@@ -20,6 +20,7 @@ import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { CorrectorRun, QueuedChecks } from '../knowledge/admin-starts.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
+import { MemberRequestsSection } from '../knowledge/member-requests.js';
 import { NewRouteRequestsSection } from '../knowledge/new-route-requests.js';
 import { RouteRequestsSection } from '../knowledge/route-requests.js';
 import { ReviewFilters, needTone } from '../knowledge/review-filters.js';
@@ -226,6 +227,13 @@ function Knowledge() {
         </div>
         <div className="flex min-w-0 flex-col gap-8">
           <ReportsSection versions={all} words={words} />
+          <MemberRequestsSection
+            versions={all}
+            words={words}
+            onOpenVersion={(routeId, number) => {
+              setPicked({ subject: 'route', routeId, number });
+            }}
+          />
           <NewRouteRequestsSection
             words={words}
             onOpenVersion={(routeId, number) => {

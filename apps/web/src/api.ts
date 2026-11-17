@@ -125,6 +125,22 @@ export const correctionRequestsQuery = (routeId: string, number: number) =>
     retry: false,
   });
 
+/** The signed-in account's own update requests and their state (ADR-0031, #462). */
+export const ownUpdateRequestsQuery = queryOptions({
+  queryKey: ['knowledge', 'own-update-requests'],
+  queryFn: () => api.call(routes.getOwnUpdateRequests),
+  networkMode: 'always',
+  retry: false,
+});
+
+/** The newest members' update requests, for an admin to release or decline (ADR-0031, #462). */
+export const memberUpdateRequestsQuery = queryOptions({
+  queryKey: ['knowledge', 'member-update-requests'],
+  queryFn: () => api.call(routes.getMemberUpdateRequests),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** Every request for a new route, and the countries one may name (ADR-0029, new routes). */
 export const routeRequestsQuery = queryOptions({
   queryKey: ['knowledge', 'route-requests'],

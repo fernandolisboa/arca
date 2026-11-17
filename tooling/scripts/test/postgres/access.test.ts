@@ -284,6 +284,7 @@ const correctionTables = {
     'country_code',
     'item_kind',
     'item_key',
+    'request_kind',
     'note',
     'author_account_id',
     'created_at',
@@ -306,6 +307,7 @@ const correctionTables = {
     'proposed_version',
     'proposed_route_id',
     'explanation',
+    'update_request_id',
     'at',
   ],
   'knowledge.correction_upload': [
@@ -358,6 +360,15 @@ const correctionFunctions = [
   'knowledge.answer_new_route_request(uuid, bytea, uuid, text, integer)',
   'knowledge.admin_basis_holds(text, uuid)',
   'knowledge.corrector_key_holds(uuid, bytea)',
+  'knowledge.file_update_request(text, integer, text, jsonb)',
+  'knowledge.start_update_upload(text, integer, bytea)',
+  'knowledge.attach_update_file(uuid, integer, uuid)',
+  'knowledge.member_update_requests(text, uuid)',
+  'knowledge.own_update_requests()',
+  'knowledge.release_update_request(uuid, uuid, text, uuid)',
+  'knowledge.decline_update_request(uuid, text, text, uuid)',
+  'knowledge.member_request_open(uuid)',
+  'knowledge.member_request_events(uuid)',
 ];
 
 /** Every privilege a role holds on the correction request tables, and the functions it may run. */
@@ -429,6 +440,13 @@ describe('the correction request access matrix (ADR-0029)', () => {
         'knowledge.own_correction_request_rows',
         'knowledge.newest_route_requests',
         'knowledge.answer_new_route_request',
+        'knowledge.file_update_request',
+        'knowledge.start_update_upload',
+        'knowledge.attach_update_file',
+        'knowledge.member_update_requests',
+        'knowledge.own_update_requests',
+        'knowledge.release_update_request',
+        'knowledge.decline_update_request',
       ],
     });
   });
@@ -723,7 +741,7 @@ describe('the update request access matrix (ADR-0031)', () => {
     });
   });
 
-  it('lets knowledge_definer only insert a request and read what the live check needs', async () => {
+  it('lets knowledge_definer only insert a request and read what the live check and member releases need', async () => {
     expect(await updateAccess('knowledge_definer')).toEqual({
       tables: updateMatrix({
         'knowledge.update_request': {
@@ -736,7 +754,11 @@ describe('the update request access matrix (ADR-0031)', () => {
           list_pins: ['INSERT'],
           requested_at: ['SELECT'],
         },
-        'knowledge.update_end': onEach('knowledge.update_end', ['SELECT'], ['request_id']),
+        'knowledge.update_end': onEach(
+          'knowledge.update_end',
+          ['SELECT'],
+          ['request_id', 'failure'],
+        ),
       }),
       runsStart: true,
     });
@@ -971,8 +993,9 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
       // A correction request's sources and events, which go with it, a file source's upload, the
       // corrector key an event names and the key a revocation ends (ADR-0029), the AI key a
       // removal ends, an update request's stages and end, the request a proposed version or first
-      // official-domain list names and the version a hand edit stored (ADR-0031).
-      foreignKeys: 11,
+      // official-domain list names, the version a hand edit stored and the update request a
+      // member's request released (ADR-0031).
+      foreignKeys: 12,
     });
   });
 

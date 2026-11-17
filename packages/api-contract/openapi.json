@@ -3204,6 +3204,9 @@
                               "ai_key_removed",
                               "ai_stage_set",
                               "update_requested",
+                              "update_filed",
+                              "update_released",
+                              "update_declined",
                               "version_edited",
                               "corrector_key_created",
                               "corrector_key_revoked",
@@ -34666,7 +34669,7 @@
     "/knowledge/corrections/uploads": {
       "post": {
         "operationId": "startCorrectionUpload",
-        "summary": "Starts the upload of one file for a correction request, for an owner-list admin, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only",
+        "summary": "Starts the upload of one file for a correction or update request, for any signed-in account, and says where to send it: PDF, HTML or plain text, at most 16 MB; 60 per 24 hours per account (429 rate_limited)",
         "requestBody": {
           "required": true,
           "content": {
@@ -34796,7 +34799,7 @@
     "/knowledge/corrections/uploads/url": {
       "post": {
         "operationId": "correctionUploadUrl",
-        "summary": "A presigned upload for one of the admin's own unused correction uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only; 404 not_found unless the pathname is such an upload started within the hour",
+        "summary": "A presigned upload for one of the account's own unused request uploads, valid for 5 minutes and limited to its declared size and type; 60 per 24 hours per account (429 rate_limited). 404 not_found unless the pathname is such an upload started within the hour",
         "requestBody": {
           "required": true,
           "content": {
@@ -34926,7 +34929,7 @@
     "/knowledge/corrections/files/url": {
       "post": {
         "operationId": "correctionFileUrl",
-        "summary": "A URL that downloads one request's file, as an attachment, for 5 minutes, for an admin; 120 per 24 hours per account (429 rate_limited). 403 not_admin; 404 not_found for a source that is not a stored file",
+        "summary": "A URL that downloads one request's file, as an attachment, for 5 minutes, for an owner-list admin only, since a member may attach a personal document by mistake; 120 per 24 hours per account (429 rate_limited). 403 not_admin; 403 owner_list_only for an admin by grant; 404 not_found for a source that is not a stored file",
         "requestBody": {
           "required": true,
           "content": {
@@ -39021,6 +39024,590 @@
                       "additionalProperties": false
                     }
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/member-update-requests": {
+      "post": {
+        "operationId": "fileMemberUpdateRequest",
+        "summary": "Files, for any signed-in account, a request to update one route version it sees, with an optional note, links and files; it waits for an admin, and the owner-list admins are emailed. 30 per 24 hours per account (429 rate_limited). 404 not_found for a version or upload it does not hold; 409 update_live while a member's request of the route waits or an update request of the route runs; 409 not_uploaded before a file arrived; 409 upload_mismatch when a file is not what its upload declared",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "versionNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2048,
+                      "pattern": "^https:\\/\\/\\S+$"
+                    },
+                    "maxItems": 5,
+                    "default": []
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "maxItems": 5,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "versionNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Filed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getMemberUpdateRequests",
+        "summary": "The newest members' update requests, for an admin. 403 not_admin",
+        "responses": {
+          "200": {
+            "description": "Members' requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "canDownload": {
+                      "type": "boolean"
+                    },
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "versionNumber": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 4000
+                          },
+                          "erased": {
+                            "type": "boolean"
+                          },
+                          "sources": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "link"
+                                      ]
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "url"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "text"
+                                      ]
+                                    },
+                                    "text": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 20000
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "text"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "file"
+                                      ]
+                                    },
+                                    "mediaType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "application/pdf",
+                                        "text/html",
+                                        "text/plain"
+                                      ]
+                                    },
+                                    "size": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 16777216
+                                    },
+                                    "pageUrl": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 2048,
+                                      "pattern": "^https:\\/\\/\\S+$"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "mediaType",
+                                    "size",
+                                    "pageUrl"
+                                  ]
+                                }
+                              ]
+                            },
+                            "maxItems": 5
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "received",
+                              "released",
+                              "finished",
+                              "declined"
+                            ]
+                          },
+                          "run": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "running",
+                              "finished",
+                              "failed",
+                              "stalled",
+                              null
+                            ]
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 500
+                          },
+                          "canRelease": {
+                            "type": "boolean"
+                          },
+                          "canDecline": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "routeId",
+                          "versionNumber",
+                          "createdAt",
+                          "note",
+                          "erased",
+                          "sources",
+                          "state",
+                          "run",
+                          "reason",
+                          "canRelease",
+                          "canDecline"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 50
+                    }
+                  },
+                  "required": [
+                    "canDownload",
+                    "requests"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/member-update-requests/own": {
+      "get": {
+        "operationId": "getOwnUpdateRequests",
+        "summary": "The signed-in account's own newest update requests with their state",
+        "responses": {
+          "200": {
+            "description": "Their own requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "routeId": {
+                            "type": "string",
+                            "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                          },
+                          "versionNumber": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "received",
+                              "released",
+                              "finished",
+                              "declined"
+                            ]
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 500
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "routeId",
+                          "versionNumber",
+                          "createdAt",
+                          "state",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 50
+                    }
+                  },
+                  "required": [
+                    "requests"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/member-update-requests/release": {
+      "post": {
+        "operationId": "releaseMemberUpdateRequest",
+        "summary": "Releases, for an admin, a member's waiting request: starts an update request of the route's newest version, as startUpdateRequest does, and records the release in the same transaction. 10 per account per hour (429 rate_limited), shared with startUpdateRequest. 403 not_admin; 404 not_found; 409 decided for a request already released or declined; then startUpdateRequest's refusals",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Released",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "requestId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge/member-update-requests/decline": {
+      "post": {
+        "operationId": "declineMemberUpdateRequest",
+        "summary": "Declines, for an admin, a member's request that waits, or whose release ended with no proposal, with an optional reason the member reads. 403 not_admin; 404 not_found; 409 decided otherwise",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Declined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": false
                 }
               }
             }

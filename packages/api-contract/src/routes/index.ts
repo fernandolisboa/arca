@@ -898,6 +898,19 @@ export const auditEventDetails = {
     z.strictObject({ requestId: z.uuid(), routeId: routeIdSchema, baseNumber: z.int().min(1) }),
     z.strictObject({ requestId: z.uuid(), country: z.string().regex(/^[A-Z]{2}$/) }),
   ]),
+  /**
+   * A member filed an update request on a route version (ADR-0031, #462); its note, links and
+   * files stay out.
+   */
+  update_filed: z.strictObject({
+    requestId: z.uuid(),
+    routeId: routeIdSchema,
+    number: z.int().min(1),
+  }),
+  /** An admin released a member's update request, which started this update request. */
+  update_released: z.strictObject({ requestId: z.uuid(), updateRequestId: z.uuid() }),
+  /** An admin declined a member's update request; the reason stays out. */
+  update_declined: z.strictObject({ requestId: z.uuid() }),
   /** An admin stored a route version they edited by hand, correcting another (ADR-0031). */
   version_edited: z.strictObject({
     routeId: routeIdSchema,

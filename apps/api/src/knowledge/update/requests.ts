@@ -33,17 +33,24 @@ import type { StoredEnd, StoredRequest, StoredStage, UpdateStore } from './store
 
 type CommonRefusal = 'not_admin' | 'not_found' | 'live' | 'not_configured' | 'not_started';
 
-/** Why an update did not start: as any request's, or its route rests on a list nobody activated. */
-export type StartRefusal = CommonRefusal | 'list_pending';
+/**
+ * Why an update did not start: as any request's, or its route rests on a list nobody activated,
+ * or the member's request it releases was released or declined meanwhile.
+ */
+export type StartRefusal = CommonRefusal | 'list_pending' | 'decided';
 
 /** Why a new-route request did not start: as any request's, or a new country with no host to start on. */
 export type NewRouteRefusal = CommonRefusal | 'links_needed';
 
 export interface UpdateRequests {
-  /** Asks for the route's newest version to be researched again, and starts the run. */
+  /**
+   * Asks for the route's newest version to be researched again, and starts the run; `releasing`
+   * names the member's request of the route it releases, recorded in the same transaction.
+   */
   readonly start: (
     accountId: string,
     routeId: string,
+    releasing?: string,
   ) => Promise<{ readonly requestId: string } | StartRefusal>;
   /** The route's newest request with its progress; never calls a model. */
   readonly newest: (
@@ -77,6 +84,9 @@ export interface UpdateRequestsDependencies {
   /** Milliseconds since the epoch. */
   readonly now: () => number;
 }
+
+/** A member's request was released or declined meanwhile, so its release rolls back. */
+class ReleaseRefused extends Error {}
 
 /** A request with no end this long after it was asked for no longer blocks a new one. */
 export const updateLiveMs = 60 * 60 * 1000;
@@ -196,7 +206,7 @@ export function createUpdateRequests({
   };
 
   return {
-    start: async (accountId, routeId) => {
+    start: async (accountId, routeId, releasing) => {
       if (!(await isAdmin(accountId))) return 'not_admin';
       const baseNumber = await baseOf(routeId);
       if (baseNumber === undefined) return 'not_found';
@@ -211,6 +221,19 @@ export function createUpdateRequests({
                                                 ${grantId}::uuid) AS id`);
         const requestId = started[0]?.id ?? null;
         if (requestId === null) return 'live' as const;
+        if (releasing !== undefined) {
+          const { rows: released } = await tx.execute<{ outcome: string }>(sql`
+            SELECT knowledge.release_update_request(${releasing}, ${requestId}, ${basis},
+                                                    ${grantId}::uuid) AS outcome`);
+          // Nothing is stored unless the release is: the update request goes with it.
+          if (released[0]?.outcome !== 'released') throw new ReleaseRefused();
+          await audit.record({
+            code: 'update_released',
+            subjectAccountId: accountId,
+            actorAccountId: accountId,
+            details: { requestId: releasing, updateRequestId: requestId },
+          });
+        }
         await audit.record({
           code: 'update_requested',
           subjectAccountId: accountId,
@@ -218,6 +241,9 @@ export function createUpdateRequests({
           details: { requestId, routeId, baseNumber },
         });
         return { requestId };
+      }).catch((error: unknown) => {
+        if (error instanceof ReleaseRefused) return 'decided' as const;
+        throw error;
       });
       if (typeof stored === 'string') return stored;
       try {

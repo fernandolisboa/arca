@@ -198,7 +198,7 @@ interface AuthParts {
   readonly i18n: I18n;
   readonly accountDeletion: AccountDeletion;
   readonly adminNotice: AccountNotice<'admin_role_changed'>;
-  readonly correctionNotice: AccountNotice<'correction_requested'>;
+  readonly correctionNotice: AccountNotice<'correction_requested' | 'update_requested'>;
   readonly correctorKeyNotice: AccountNotice<'corrector_key_changed'>;
   readonly aiKeyNotice: AccountNotice<'ai_key_changed'>;
 }
@@ -267,7 +267,7 @@ function authParts(): Promise<AuthParts> {
         logger,
         label: 'AdminRoleNotice',
       }),
-      correctionNotice: accountNotice<'correction_requested'>({
+      correctionNotice: accountNotice<'correction_requested' | 'update_requested'>({
         notifier,
         logger,
         label: 'CorrectionRequestNotice',
@@ -429,7 +429,9 @@ const ruleSummaries =
         now: () => performance.now(),
       });
 
-const { keys: correctorKeys, corrector } = createCorrector({
+// The corrector run's routes stay unserved (401): it would list members' notes and files for a
+// model, which ADR-0031 forbids. Its code goes with the old loop (#463).
+const { keys: correctorKeys } = createCorrector({
   db: () => connected().db,
   role,
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
@@ -637,13 +639,13 @@ const app = createApp({
     audit: lazyAudit,
     notify: async (accountId, kind) => (await authParts()).correctionNotice(accountId, kind),
     storage: documentStorage?.storage ?? unconnectedObjectStorage,
+    now: () => Date.now(),
   }),
   correctorKeys,
   aiSettings,
   updateRequests,
   versionReviews,
   ...(correctorRun === undefined ? {} : { correctorRun }),
-  corrector,
   knowledgeVersions,
   ...(versionChecks === undefined ? {} : { versionChecks }),
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
