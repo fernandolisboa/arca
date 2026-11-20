@@ -127,6 +127,11 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_dk',
     versions: [{ routeId: 'dk-pay-limit', number: 3 }],
   },
+  {
+    id: '2026-11-ge',
+    migration: 'knowledge_session_review_2026_11_ge',
+    versions: [{ routeId: 'ge-property-short-term', number: 3 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */
