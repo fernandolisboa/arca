@@ -242,9 +242,15 @@ export async function reviewMigrationFile(
   migrationsDir: string,
   review: SessionReview,
 ): Promise<string> {
-  const folder = (await readdir(migrationsDir)).find((name) =>
-    name.endsWith(`_${review.migration}`),
+  const folders = (await readdir(migrationsDir)).filter(
+    (name) => name.replace(/^\d+_/u, '') === review.migration,
   );
-  if (folder === undefined) throw new Error(`No ${review.migration} migration folder`);
+  const [folder] = folders;
+  // A second folder under the name would be a migration the comparison never reads.
+  if (folder === undefined || folders.length > 1) {
+    throw new Error(
+      `${review.migration} needs one migration folder, found ${String(folders.length)}`,
+    );
+  }
   return join(migrationsDir, folder, 'migration.sql');
 }
