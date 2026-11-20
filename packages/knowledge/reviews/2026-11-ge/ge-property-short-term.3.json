@@ -93,7 +93,7 @@
   "requirements": [
     {
       "id": "property-value",
-      "title": "Funds for a Georgian property, not agricultural land, whose market value exceeds the equivalent in GEL of USD 150,000",
+      "title": "Liquid funds of more than USD 150,000, standing in for a Georgian property, not agricultural land, whose market value exceeds the equivalent in GEL of USD 150,000",
       "expression": {
         "op": "gt",
         "left": {
@@ -203,7 +203,7 @@
     },
     {
       "id": "children",
-      "title": "Children, of any age: Article 15(j) and the Agency name the owner's child or children with no age limit, where Article 15(h) and (k) limit theirs to a minor child",
+      "title": "Child or children of the owner, of any age",
       "path": ["child"],
       "condition": {
         "op": "bool",
