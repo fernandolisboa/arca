@@ -4,6 +4,10 @@ Research notes for Denmark's Pay Limit Scheme, route `dk-pay-limit` in `packages
 
 ## Audits
 
+### 2026-11-20
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 3 corrects version 2 from 2026-01-01 and is stored active. What changed, the rounds and the leftover list are in [the review](../../../packages/knowledge/reviews/2026-11-dk/README.md). Nothing published up to 2026-11-20 changes the 2026 rules; the 2027 pay limit and fee order are not out, so version 4, from 2027-01-01, is still owed.
+
 ### 2026-11-11
 
 The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on demand, in one pull request with the Czech, Latvian, Georgian and Icelandic routes ([Czech record](cz-eu-blue-card.md)).
