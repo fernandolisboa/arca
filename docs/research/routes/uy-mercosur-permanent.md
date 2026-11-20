@@ -4,6 +4,16 @@ Research notes for Uruguay's permanent residence for nationals of the Mercosur s
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-uy/README.md](../../../packages/knowledge/reviews/2026-11-uy/README.md).
+
+- **Version audited:** 3 (effective 2023-02-17), the newest stored.
+- **Outcome:** three new versions, stored already active by the review's pull request: version 4 corrects version 3 from 2023-02-17 with articles 45, C, and 46 of Ley N.º 18.250 as first worded, and adds the criminal record certificates, the vaccination certificate, the papers, the minors' consent, where to apply and the fees in indexed units as assessments; version 5, from 2024-01-01, follows the wording Ley N.º 20.212 gave those articles; version 6, from 2024-12-06, shows a Panamanian principal as possible.
+- **Sources re-read** (all on 2026-11-20 with `curl`): Ley N.º 18.250, articles 10, 33, 45 and 46, current and original wording; Ley N.º 20.075, article 169; Ley N.º 20.212, article 2; Decreto N.º 45/023 whole; the agreements of Ley N.º 17.927; Ley N.º 18.246, article 1; Decreto N.º 394/009, article 16; Civil Code, article 280; the directorate's pages `residencia-legal` (updated 2026-07-29) and `residencia-legal-permanente-mercosur` (updated 2026-10-20); the Presidency's news of 2024-12-06 on Panama.
+- **Amendments looked for**, up to 2026-11-20: the IMPO notes and references of each article; Ley N.º 20.446 (2025) rewords only articles 24 and 26; Decretos N.º 138/024 and 239/026 serve asylum seekers who cannot use article 33; Ley N.º 20.531 (2026) has no migration article; Decreto N.º 45/023 has no amendment.
+- **Watch next:** the directorate listing Panama; the six-monthly readjustment of the fees in indexed units.
+
 ### 2026-11-11
 
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes. The pull request carries the four Mercosur routes, as the [Argentine record](ar-mercosur-temporary.md) explains.
@@ -30,10 +40,3 @@ The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/is
 - **Check loop:** runs [43061828774](https://github.com/fernandolisboa/arca/actions/runs/43061828774) (3 of 8 items match), [43064316443](https://github.com/fernandolisboa/arca/actions/runs/43064316443) (3 of 8), [43065678291](https://github.com/fernandolisboa/arca/actions/runs/43065678291) (1 of 8) and, on the reviewed head, [43068431755](https://github.com/fernandolisboa/arca/actions/runs/43068431755) (3 of 8, none differs). The two assessments matched in every run but the third, on the same pages: the passage locator's run-to-run variance. Left over:
   - `checker-gap`: `dependent:spouse`, `dependent:children` and `dependent:parents`, whose restriction to principals from the agreement's parties joins its opening to article 9.2; `dependent:partner`, which joins article 1 of Ley N.º 18.246 (five years, written "cinco años") to article 16 of Decreto N.º 394/009, and whose value check refused the quote; `dependent:spouse-children`, possible only because article 10 does not name them, an absence no quote can show.
 - **Watch next:** the directorate's page, the only text with the fees and the list of states; whether the Uruguay and Paraguay agreement (Ley N.º 20.019) is in force; Decreto N.º 239/026, in force from 2027-01-24, which does not reach this route.
-
-### 2026-11-20
-
-A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), `2026-11-uy`: versions 4, 5 and 6, stored active by the review's pull request. What changed, the review rounds and the leftover list are in the [review's README](../../../packages/knowledge/reviews/2026-11-uy/README.md).
-
-- **Version reviewed:** 3.
-- **Outcome:** version 4 corrects 3 from 2023-02-17 with articles 45, C, and 46 of Ley N.º 18.250 as first worded; version 5, from 2024-01-01, follows their wording by Ley N.º 20.212; version 6, from 2024-12-06, shows a Panamanian principal as possible. All three add the papers, certificates, minors' consent, where to apply and the fees in indexed units as assessments.

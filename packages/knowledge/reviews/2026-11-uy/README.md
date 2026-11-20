@@ -30,7 +30,7 @@ The proposal check and the quote check, which reads the official pages through t
 ## Leftover
 
 1. **Fees in indexed units.** A UI amount has two decimals and the currency code UYI none, so no version has a cost; the fees are in an assessment's title ([OPEN-QUESTIONS](../../../../docs/OPEN-QUESTIONS.md)). The amounts are the directorate's page of 2026-10-20; no official text gives earlier ones, so versions 4 and 5 repeat them.
-2. **Panama** shows as possible, not eligible, until the directorate lists it.
+2. **Panama** shows as possible, not eligible, until the directorate lists it: the app reads "Faltam informações" with no fact to supply, as for every unmodeled condition.
 3. **Naturalized nationals.** Article 33, B, asks only for the nationality; the agreements' article 2 counts a naturalized national after five years, which no fact reads, so every listed citizenship counts, as in version 3.
 4. **Family members with a listed nationality of their own** qualify under article 33, B, themselves; the dependent rules still show them by the principal's nationality, as in version 3.
 5. **Procedure not modeled:** Decreto N.º 45/023, article 6 (the directorate may decide after 365 days without the missing papers), and article 2, e) (the police checks within 15 business days).

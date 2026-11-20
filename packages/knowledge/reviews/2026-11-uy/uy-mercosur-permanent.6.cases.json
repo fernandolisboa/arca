@@ -1089,6 +1089,98 @@
         "possibleDependents": [],
         "missingFacts": []
       }
+    },
+    {
+      "id": "panamanian-with-a-dependent-foreign-spouse",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1983-05-05",
+            "citizenships": [
+              {
+                "country": "PA",
+                "acquired": "1983-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"],
+            "financiallyDependentOn": []
+          },
+          {
+            "id": "p2",
+            "birthDate": "1984-06-06",
+            "citizenships": [
+              {
+                "country": "US",
+                "acquired": "1984-06-06",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"],
+            "financiallyDependentOn": ["p1"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2012-01-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": ["p2"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "panamanian-and-brazilian",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-04-12",
+            "citizenships": [
+              {
+                "country": "PA",
+                "acquired": "1985-04-12",
+                "lost": "none",
+                "basis": "birth"
+              },
+              {
+                "country": "BR",
+                "acquired": "1985-04-12",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["parents"]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
     }
   ]
 }

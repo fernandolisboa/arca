@@ -132,7 +132,7 @@
     {
       "id": "decreto-45-2023-consular",
       "url": "https://www.impo.com.uy/bases/decretos/45-2023/4",
-      "title": "Decreto N.º 45/023, article 4: a consulate’s certificate lets the applicant enter as a resident in process, with 30 business days after entry to complete the papers at the directorate",
+      "title": "Decreto N.º 45/023, article 4: a consulate's certificate lets the applicant enter as a resident in process, with 30 business days after entry to complete the papers at the directorate",
       "kind": "official",
       "verifiedAt": "2026-11-20"
     },
@@ -209,7 +209,7 @@
     },
     {
       "id": "documents",
-      "title": "Original, valid papers: photo, ID or passport, any marriage certificate under a year old; foreign papers apostilled or legalized, unless verifiable online, and translated, save Brazil’s",
+      "title": "Original, valid papers: photo, ID or passport, any marriage certificate under a year old; foreign papers apostilled or legalized, unless verifiable online, and translated, save Brazil's",
       "evidence": ["principal.citizenships"],
       "sources": ["decreto-45-2023-requirements", "dnm-permanente-mercosur"]
     },
