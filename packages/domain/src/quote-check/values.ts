@@ -7,7 +7,12 @@ import { writesAnniversary, writesNumberInWords } from './number-words.js';
  * picks the passage; code compares the value.
  */
 export type CheckValue =
-  | { readonly kind: 'number'; readonly value: string }
+  | {
+      readonly kind: 'number';
+      readonly value: string;
+      /** For a count of months that makes whole years (never 0 or 1): those years, as law text may write them. */
+      readonly wholeYears?: string;
+    }
   | { readonly kind: 'date'; readonly value: CalendarDate };
 
 /** A non-negative decimal written with digits and at most one dot, without needless zeros. */
@@ -299,6 +304,44 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
   return false;
 }
 
+const yearWords = String.raw`(?:years?|anni|anno|anos?|años?)(?!\p{L})`;
+/** A whole figure right before a word for years: never the tail of 1.5, 5-3 or 2,5. */
+const figureBeforeYears = new RegExp(
+  String.raw`(?<![\d.,-])(\d+(?:[.,]\d+)*)\s*(?:${yearWords}|年)`,
+  'giu',
+);
+/** One word, or words joined by hyphens, right before a word for years: "five", "twenty-five". */
+const wordBeforeYears = new RegExp(
+  String.raw`(?<![\p{L}\p{N}-])(\p{L}+(?:-\p{L}+)*)\s+${yearWords}`,
+  'giu',
+);
+/** A whole run of kanji numerals right before 年, not after 第. */
+const kanjiBeforeYears = /(?<![〇一二三四五六七八九十百千第])([〇一二三四五六七八九十百千]+年)/gu;
+
+/**
+ * Whether a text states a number of years: the number right before a word for years, as a figure
+ * or in words ("5 years", "cinque anni", 五年以上), so "article 5", "5 days" or a 五 earlier in the
+ * clause does not. Full-width digits read as plain ones.
+ */
+export function statesYears(
+  text: string,
+  years: string,
+  languages: readonly string[] = [],
+): boolean {
+  const plain = text.normalize('NFKC');
+  return (
+    [...plain.matchAll(figureBeforeYears)].some(([, figure = '']) =>
+      numbersIn(figure).has(years),
+    ) ||
+    [...plain.matchAll(wordBeforeYears)].some(([, words = '']) =>
+      writesNumberInWords(words, years, languages),
+    ) ||
+    [...plain.matchAll(kanjiBeforeYears)].some(([, run = '']) =>
+      writesNumberInWords(run, years, languages),
+    )
+  );
+}
+
 /**
  * Whether a text states the value: a number among the numbers it writes, as a figure or as a
  * percentage of one, or a whole number written in words of one of `languages`; a date in ISO form,
@@ -315,7 +358,8 @@ export function statesValue(
       numbers.has(value.value) ||
       percentagesIn(text).has(value.value) ||
       writesNumberInWords(text, value.value, languages) ||
-      writesAnniversary(text, value.value, languages)
+      writesAnniversary(text, value.value, languages) ||
+      (value.wholeYears !== undefined && statesYears(text, value.wholeYears, languages))
     );
   }
   if (text.includes(value.value)) return true;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { checkItems, expressionValues, machineReadableUrls } from '../../src/quote-check/items.js';
 import type { Expression } from '../../src/rules/expression.js';
+import { statesValue } from '../../src/quote-check/values.js';
 import { countrySetSchema, routeVersionSchema } from '../../src/rules/route-version.js';
 import { entry, treaty } from '../rules/fixtures.js';
 
@@ -120,6 +121,16 @@ describe('expressionValues', () => {
       ['2', '6'],
     ],
     [
+      'a duration in months that make whole years',
+      { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P60M' },
+      ['60'],
+    ],
+    [
+      'a duration of twelve months, with no reading of one year',
+      { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P12M' },
+      ['12'],
+    ],
+    [
       'no duration of one year',
       { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P1Y' },
       [],
@@ -186,5 +197,43 @@ describe('machineReadableUrls', () => {
       countrySets: [],
     });
     expect(read.size).toBe(0);
+  });
+});
+
+describe('the whole years of a count of months', () => {
+  const since = (duration: string): Expression => ({
+    op: 'since',
+    date: { op: 'fact', key: 'person.birthDate' },
+    duration,
+  });
+
+  it('reads 60 months also as 5 years, and 12 months never as 1', () => {
+    expect(expressionValues(since('P60M'))).toEqual([
+      { kind: 'number', value: '60', wholeYears: '5' },
+    ]);
+    expect(expressionValues(since('P12M'))).toEqual([{ kind: 'number', value: '12' }]);
+  });
+
+  it('never takes a lone 1 as stating 12 months', () => {
+    const [twelve] = expressionValues(since('P12M'));
+    expect(twelve && statesValue(twelve, 'Article 1. 一 一年以上', ['ja'])).toBe(false);
+  });
+
+  it('keeps a plain 60 and 60 months apart', () => {
+    const both: Expression = {
+      op: 'all',
+      operands: [
+        {
+          op: 'gte',
+          left: { op: 'fact', key: 'person.ageYears' },
+          right: { op: 'int', value: 60 },
+        },
+        since('P60M'),
+      ],
+    };
+    expect(expressionValues(both)).toEqual([
+      { kind: 'number', value: '60' },
+      { kind: 'number', value: '60', wholeYears: '5' },
+    ]);
   });
 });

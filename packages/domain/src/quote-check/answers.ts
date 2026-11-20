@@ -1,6 +1,6 @@
 import type { CheckItem } from './items.js';
 import { numberRunBounds } from './number-words.js';
-import { type CheckValue, figureBounds, statesValue } from './values.js';
+import { type CheckValue, figureBounds, statesValue, statesYears } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
 export type CheckStatus = (typeof checkStatuses)[number];
@@ -195,7 +195,12 @@ const opensMarkup = (text: string) => /<|&#|\\u[0-9a-f]{4}/iu.test(text);
  * a server might, and as the reader renders it. One that cannot be decoded, or that holds markup
  * or an escape of its own, is taken as an echo whatever the quote.
  */
-function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValue[]) {
+function echoesAddress(
+  quote: string,
+  page: ReadPage,
+  values: readonly CheckValue[],
+  languages: readonly string[],
+) {
   const decoded = page.chain.map(addressTexts);
   if (decoded.includes(undefined)) return true;
   const addresses = decoded.flatMap((texts) => texts ?? []);
@@ -207,8 +212,29 @@ function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValu
     texts.some(
       (text) =>
         queryValues(text).some((value) => lower.includes(value.toLowerCase())) ||
-        values.some((value) => statesValue(value, text)),
+        values.some((value) => echoesValue(value, text, quote, languages)),
     )
+  );
+}
+
+/**
+ * Whether an address states an item's value: as the value itself, or as the whole years a count
+ * of months makes when the quote relies on that reading, so a quote that states the months is not
+ * held to an address that happens to hold the years.
+ */
+function echoesValue(
+  value: CheckValue,
+  address: string,
+  quote: string,
+  languages: readonly string[],
+): boolean {
+  if (value.kind !== 'number') return statesValue(value, address, languages);
+  const { wholeYears } = value;
+  return (
+    statesValue({ kind: 'number', value: value.value }, address, languages) ||
+    (wholeYears !== undefined &&
+      statesValue({ kind: 'number', value: wholeYears }, address, languages) &&
+      statesYears(quote, wholeYears, languages))
   );
 }
 
@@ -324,7 +350,9 @@ function checkQuote(
   const whole = wholeWords(normalizeWhitespace(page.text), quote, languages);
   if (whole === undefined) return { ok: false, reason: 'quote_not_on_page' };
   if (whole.length > maxQuoteLength) return { ok: false, reason: 'quote_length' };
-  if (echoesAddress(whole, page, item.values)) return { ok: false, reason: 'echoes_address' };
+  if (echoesAddress(whole, page, item.values, languages)) {
+    return { ok: false, reason: 'echoes_address' };
+  }
   return { ok: true, quote: { quote: whole, url }, page };
 }
 

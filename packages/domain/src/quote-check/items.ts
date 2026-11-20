@@ -43,16 +43,27 @@ export const maxCheckItemKeyLength = 120;
  */
 const structuralIntegers = new Set([0, 1]);
 
-const numberValue = (decimal: string): CheckValue => ({
+const numberValue = (decimal: string): Extract<CheckValue, { kind: 'number' }> => ({
   kind: 'number',
   value: canonicalNumber(decimal),
 });
 
+const monthsPerYear = 12;
+
 function durationValues(duration: Duration): CheckValue[] {
   const { years, months, days } = durationParts(duration);
-  return [years, months, days]
-    .filter((part) => !structuralIntegers.has(part))
-    .map((part) => numberValue(String(part)));
+  const inYears = months % monthsPerYear === 0 ? months / monthsPerYear : undefined;
+  return [
+    { part: years, wholeYears: undefined },
+    { part: months, wholeYears: inYears },
+    { part: days, wholeYears: undefined },
+  ]
+    .filter(({ part }) => !structuralIntegers.has(part))
+    .map(({ part, wholeYears }) =>
+      wholeYears === undefined || structuralIntegers.has(wholeYears)
+        ? numberValue(String(part))
+        : { ...numberValue(String(part)), wholeYears: String(wholeYears) },
+    );
 }
 
 /** The values an expression states, without repeats, in the order they appear. */
@@ -88,7 +99,12 @@ export function expressionValues(expression: Expression): CheckValue[] {
 }
 
 function uniqueValues(values: readonly CheckValue[]): CheckValue[] {
-  const seen = new Map(values.map((value) => [`${value.kind}:${value.value}`, value]));
+  const seen = new Map(
+    values.map((value) => [
+      `${value.kind}:${value.value}:${value.kind === 'number' ? (value.wholeYears ?? '') : ''}`,
+      value,
+    ]),
+  );
   return [...seen.values()];
 }
 

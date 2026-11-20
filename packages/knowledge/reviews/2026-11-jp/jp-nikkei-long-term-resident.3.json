@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "routeId": "jp-nikkei-long-term-resident",
+  "number": 3,
+  "title": "Japanese long-term resident status (teijusha) for the third generation of Japanese descent (sansei), with their spouse and children",
+  "country": "JP",
+  "tags": ["descent", "temporary-residence"],
+  "effectiveFrom": "2026-10-01",
+  "status": "open",
+  "currency": "JPY",
+  "leapDayBirthday": "march-1",
+  "leapDayBirthdaySources": ["age-calculation-act", "civil-code-periods"],
+  "sources": [
+    {
+      "id": "teijusha-notice",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "title": "Ministry of Justice Notice No. 132 of 1990 on long-term resident status, last amended by Notice No. 220 of 28 October 2021: items 3 to 7",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "immigration-act-foreigner",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_2",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 2(i): a foreigner is a person who does not have Japanese nationality",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_2"
+    },
+    {
+      "id": "immigration-act-denial",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_5",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 5: the grounds on which a foreigner is denied landing",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_5"
+    },
+    {
+      "id": "immigration-act-landing",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_7",
+      "title": "Immigration Control and Refugee Recognition Act (Cabinet Order No. 319 of 1951), art. 7(1)(ii): activities fit a status of residence; for a long-term resident, a notice lists them",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/326CO0000000319?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_7"
+    },
+    {
+      "id": "civil-code-majority",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "title": "Civil Code (Act No. 89 of 1896), art. 4: majority at 18 since 1 April 2022 (Act No. 59 of 2018)",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_4"
+    },
+    {
+      "id": "civil-code-periods",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_143",
+      "title": "Civil Code (Act No. 89 of 1896), art. 143: periods of weeks, months or years are counted by the calendar",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/129AC0000000089?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_143"
+    },
+    {
+      "id": "age-calculation-act",
+      "url": "https://laws.e-gov.go.jp/law/135AC1000000050",
+      "title": "Act on the Calculation of Age (Act No. 50 of 1902): age counts from the day of birth, applying Civil Code art. 143",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/135AC1000000050?response_format=xml&law_full_text_format=xml"
+    },
+    {
+      "id": "enforcement-ordinance-periods",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054",
+      "title": "Ordinance for Enforcement of the Immigration Control and Refugee Recognition Act, appended table II: a long-term resident of a notice status stays 5 years, 3 years, 1 year or 6 months",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/356M50000010054?response_format=xml&law_full_text_format=xml"
+    },
+    {
+      "id": "enforcement-ordinance-documents",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20261001_508M60000010047",
+      "title": "Immigration Act Enforcement Ordinance, appended tables III and III-7 in force from 1 October 2026: papers a long-term resident files to land or change status (III), or extend a stay (III-7)",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/356M50000010054_20261001_508M60000010047?response_format=xml&law_full_text_format=xml"
+    },
+    {
+      "id": "extension-guideline",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "title": "Immigration Services Agency guideline on permission to change status or extend a period of stay (last revised June 2026): what the decision weighs",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "stay-fees-order",
+      "url": "https://laws.e-gov.go.jp/law/410CO0000000178#Mp-At_25",
+      "title": "Immigration Act Enforcement Order (Cabinet Order No. 178 of 1998), art. 25(1)(i), from 1 October 2026: fee to change status or extend a stay, by period granted",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://laws.e-gov.go.jp/api/2/law_data/410CO0000000178?response_format=xml&law_full_text_format=xml&elm=MainProvision-Article_25"
+    },
+    {
+      "id": "stay-fees-leaflet",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "title": "Immigration Services Agency leaflet on the residence permit fees from 1 October 2026 (Order art. 25(1)), at a counter and online",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "jp",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "japanese-descent",
+      "title": "A biological grandchild of a Japanese national: the parent was born while the grandparent was Japanese, or the grandparent, born to a Japanese national, was once Japanese with a register in Japan",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 2,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "gt",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.generation"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 1
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.edgeKind"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "biological"
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "lineage.citizenshipsAtChildBirth"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["JP"]
+                  }
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "eq",
+                    "left": {
+                      "op": "fact",
+                      "key": "lineage.edgeKind"
+                    },
+                    "right": {
+                      "op": "token",
+                      "value": "biological"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "some",
+            "over": "principal.ancestors",
+            "generations": 3,
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "gt",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.generation"
+                  },
+                  "right": {
+                    "op": "int",
+                    "value": 1
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "lineage.edgeKind"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "biological"
+                  }
+                },
+                {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "lineage.citizenshipsAtChildBirth"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["JP"]
+                  }
+                },
+                {
+                  "op": "every",
+                  "over": "lineage.links",
+                  "where": {
+                    "op": "eq",
+                    "left": {
+                      "op": "fact",
+                      "key": "lineage.edgeKind"
+                    },
+                    "right": {
+                      "op": "token",
+                      "value": "biological"
+                    }
+                  }
+                },
+                {
+                  "op": "unmodeled"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "sources": ["teijusha-notice", "immigration-act-landing"]
+    },
+    {
+      "id": "not-japanese-national",
+      "title": "Not a Japanese national: statuses of residence are only for foreigners, who hold no Japanese nationality",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["JP"]
+          }
+        }
+      },
+      "sources": ["immigration-act-foreigner"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "good-conduct",
+      "title": "Good conduct, and none of the grounds for refusing landing (criminal record, earlier deportation and the others in art. 5 of the act)",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["teijusha-notice", "immigration-act-denial"]
+    },
+    {
+      "id": "family-conditions",
+      "title": "If family come: a lawful spouse; each child's supporter, and for the spouse's child also the spouse, holds a stay of a year or more; spouse and biological children of good conduct",
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["teijusha-notice"]
+    },
+    {
+      "id": "extension-documents",
+      "title": "Papers for each extension of stay: family status documents, proof of income and tax paid (or, without income, the supporter's job and income), and a guarantor living in Japan",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["enforcement-ordinance-documents"]
+    },
+    {
+      "id": "extension-conditions",
+      "title": "Each extension weighs: still fitting the notice (an age or support that later lapses does not alone bar it), good conduct, a self-supporting household, no long absence abroad without good reason",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["extension-guideline", "teijusha-notice"]
+    },
+    {
+      "id": "extension-obligations",
+      "title": "Each extension also weighs: work on terms that meet labour law; taxes paid; statutory payments such as health insurance paid (serious arrears count against); residence card and other notices filed",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["extension-guideline"]
+    },
+    {
+      "id": "landing-documents",
+      "title": "Papers to land, for a certificate of eligibility or to change to this status: family status documents, proof of means for the whole stay and a guarantor living in Japan",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["enforcement-ordinance-documents"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["teijusha-notice"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried biological children under 18 whom the principal supports",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          }
+        ]
+      },
+      "sources": ["teijusha-notice", "civil-code-majority"]
+    },
+    {
+      "id": "adopted-children",
+      "title": "Adopted children under 6 whom the principal supports",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "fact",
+            "key": "person.dependsOnPrincipal"
+          }
+        ]
+      },
+      "sources": ["teijusha-notice"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's unmarried biological children under 18 whom the principal or the spouse supports",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["teijusha-notice", "civil-code-majority"]
+    },
+    {
+      "id": "spouse-adopted-children",
+      "title": "The spouse's adopted children under 6 whom the principal or the spouse supports",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 6
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["teijusha-notice"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "extension-fee",
+      "title": "Fee for each change of status to, or extension of, the principal's stay, by the period granted: JPY 18,000 for 6 months, 33,000 for 1 year, 64,000 for 3 years, 75,000 for 5 years (shown), less online",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 75000,
+        "currency": "JPY"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["stay-fees-leaflet", "stay-fees-order"]
+    },
+    {
+      "id": "extension-fee-dependents",
+      "title": "Fee for each change of status to, or extension of, a relative's stay, by the period granted: JPY 18,000 for 6 months, 33,000 for 1 year, 64,000 for 3 years, 75,000 for 5 years (shown), less online",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 75000,
+        "currency": "JPY"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["stay-fees-leaflet", "stay-fees-order"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "period-of-stay",
+      "title": "Period of stay as a long-term resident (teijusha) of a status the notice sets: 5 years, 3 years, 1 year or 6 months",
+      "min": "P6M",
+      "max": "P60M",
+      "sources": ["enforcement-ordinance-periods"]
+    }
+  ]
+}
