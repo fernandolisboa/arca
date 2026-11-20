@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:aged-18-or-over",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 1.3. The applicant must be aged 18 or over on the date of application."
+    },
+    {
+      "key": "requirement:not-british-or-irish",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77/section/2",
+      "quote": "(1)A person is under this Act to have the right of abode in the United Kingdom if— (a)he is a British citizen; or"
+    },
+    {
+      "key": "requirement:not-british-or-irish",
+      "url": "https://www.legislation.gov.uk/ukpga/1971/77/section/3ZA",
+      "quote": "(1)An Irish citizen does not require leave to enter or remain in the United Kingdom, unless subsection (2), (3) or (4) applies to that citizen."
+    },
+    {
+      "key": "requirement:not-british-or-irish",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "quote": "5C. Save where expressly indicated throughout these rules, these rules do not apply to an Irish citizen who as a result of section 3ZA of the Immigration Act 1971 does not require leave to enter or remain"
+    },
+    {
+      "key": "requirement:not-applying-from-abroad-as-afghan",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 3.3 A person must not be applying for entry clearance as a Skilled Worker as a national or citizen of Afghanistan."
+    },
+    {
+      "key": "requirement:not-applying-from-abroad-as-afghan",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1619-5-march-2026/explanatory-memorandum-to-the-statement-of-changes-in-the-immigration-rules-hc-1691-5-march-2026-accessible",
+      "quote": "Additionally, we will refuse Skilled Worker visa applications from main applicants who are nationals of Afghanistan. This will come into effect from 26 March but will not affect applications made before 26 March."
+    },
+    {
+      "key": "assessment:sponsored-job",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 5.2. The sponsor must be authorised by the Home Office to sponsor the job in question under the Skilled Worker route."
+    },
+    {
+      "key": "assessment:sponsored-job",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 5.3. The sponsor must be listed as A-rated on the Home Office’s register of licensed sponsors, unless the applicant was last granted permission as a Skilled Worker and is applying to continue working for the same sponsor as in their last permission."
+    },
+    {
+      "key": "assessment:eligible-occupation",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(a) Table 1, Table 2 or Table 3 of Appendix Skilled Occupations; or (b) the Immigration Salary List in Appendix Immigration Salary List; or (c) the Temporary Shortage List in SW 6.1A; or"
+    },
+    {
+      "key": "assessment:eligible-occupation",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(b) an application has been made using a certificate of sponsorship issued by a sponsor to an applicant before 31 December 2026."
+    },
+    {
+      "key": "assessment:eligible-occupation",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 6.1B. If the applicant is being sponsored in the SOC 2020 occupation code “6135 Care workers and home carers” or “6136 Senior care workers”, the application must be for permission to stay"
+    },
+    {
+      "key": "assessment:salary",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "A The applicant’s salary equals or exceeds both: • £41,700 per year; and • the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:salary-phd",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "The applicant has a PhD in a subject relevant to the job and their salary equals or exceeds both: • £37,500 per year; and • 90% of the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:salary-phd",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "The applicant has a PhD in a STEM subject relevant to the job and their salary equals or exceeds both: • £33,400 per year; and • 80% of the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:salary-isl-or-new-entrant",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "The applicant is being sponsored for a job on the Immigration Salary List and their salary equals or exceeds both: • £33,400 per year; and • the going rate for the SOC 2020 occupation code SW 11.1."
+    },
+    {
+      "key": "assessment:salary-isl-or-new-entrant",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "The applicant is a new entrant at the start of their career and their salary equals or exceeds both: • £33,400 per year and • 70% of the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:salary-health-education-or-earlier-worker",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(i) they are being sponsored for a Health and Care ASHE salary job; or (ii) the date of application is before 4 April 2030, they were granted permission as a Skilled Worker under the rules in place before 4 April 2024"
+    },
+    {
+      "key": "assessment:salary-health-education-or-earlier-worker",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(c) An applicant can only be awarded points from option K if they are being sponsored for a job in an appropriate eligible SOC 2020 occupation code listed in Table 3 or Table 3a of Appendix Skilled Occupations."
+    },
+    {
+      "key": "assessment:salary-health-education-or-earlier-worker",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "F The applicant’s salary equals or exceeds both: • £31,300 per year; and • the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:salary-health-education-or-earlier-worker",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "K The applicant is being sponsored for a job in a listed health or education occupation and their salary equals or exceeds both: • £25,000 per year; and • the going rate for the SOC 2020 occupation code."
+    },
+    {
+      "key": "assessment:english-b2",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "English language skills at level B2 or, where the applicant’s most recent permission was as a Skilled Worker and which was granted subject to a requirement at level B1, level B1"
+    },
+    {
+      "key": "assessment:english-b2",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 7.2. The applicant must show they meet the English language requirement as specified in Appendix English Language."
+    },
+    {
+      "key": "assessment:english-b2",
+      "url": "https://www.gov.uk/government/publications/statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025/explanatory-memorandum-to-the-statement-of-changes-to-the-immigration-rules-hc-1333-14-october-2025-accessible",
+      "quote": "5.22 The English language requirement for the Skilled Worker, High Potential Individual and Scale-up routes is increased from B1 Level to B2 Level"
+    },
+    {
+      "key": "assessment:english-b2",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-english-language",
+      "quote": "EL 6.1. An applicant will meet the English language requirement if they have provided a valid digital reference number from an approved provider showing they have passed an approved English language test"
+    },
+    {
+      "key": "assessment:funds",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 15.1. If the applicant is applying for permission to stay and has been in the UK with permission for 12 months or longer on the date of application, they will meet the financial requirement and do not need to show funds."
+    },
+    {
+      "key": "assessment:funds",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(a) the applicant must have funds of at least £1,270; or (b) the applicant’s A-rated sponsor must certify that they will, if necessary, maintain and accommodate the applicant"
+    },
+    {
+      "key": "assessment:funds",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 15.3. If SW 15.2.(a) applies, the applicant must show that they have held the required funds for a 28-day period"
+    },
+    {
+      "key": "assessment:funds-dependants",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 33.1. If the applicant is applying for permission to stay and has been living in the UK with permission for 12 months or longer on the date of application, they will meet the financial requirement and do not need to show funds."
+    },
+    {
+      "key": "assessment:funds-dependants",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(a) £285 for a dependent partner in the UK, or applying for entry clearance; and (b) £315 for the first dependent child in the UK, or applying for entry clearance; and (c) £200 for any other dependent child in the UK, or applying for entry clearance."
+    },
+    {
+      "key": "assessment:funds-dependants",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 33.5. If SW 33.2.(a) applies, the funds must have been held for a 28-day period"
+    },
+    {
+      "key": "assessment:tuberculosis-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 3.2. A person applying for entry clearance as a Skilled Worker must, if Appendix Tuberculosis applies, provide a valid medical certificate"
+    },
+    {
+      "key": "assessment:tuberculosis-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 28.2. A person applying for entry clearance as the partner or child of a Skilled Worker must, if Appendix Tuberculosis applies, provide a valid medical certificate"
+    },
+    {
+      "key": "assessment:tuberculosis-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-tuberculosis-tb",
+      "quote": "TB2. A valid TB certificate is required if the applicant has been continuously present in a country or countries listed at TB6 for 6 months or more, which includes a period (of any length) within the 6 months before the date of application."
+    },
+    {
+      "key": "assessment:criminal-record-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 16.1. If the applicant is applying for entry clearance and is being sponsored for a job in any of the SOC 2020 occupation codes listed below, they must provide a criminal record certificate from the relevant authority in any country in which they have been present for 12 months or more (whether continuously or in total) in the 10 years before the date of application, and while aged 18 or over:"
+    },
+    {
+      "key": "assessment:criminal-record-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 34.1. Where a Skilled Worker is being sponsored for a job in an SOC 2020 occupation code listed in SW 16.1, an applicant applying for entry clearance as the partner of the Skilled Worker must provide a criminal record certificate"
+    },
+    {
+      "key": "assessment:atas-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 6.3A. If the ATAS requirement in Appendix ATAS applies, the applicant must provide a valid ATAS certificate."
+    },
+    {
+      "key": "assessment:atas-certificate",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-atas-academic-technology-approval-scheme-atas",
+      "quote": "The ATAS requirement means the applicant must obtain a valid ATAS certificate, issued by the Counter-Proliferation and Arms Control Centre, and to provide it with an application on Student, Skilled Worker"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 26.3. If the applicant is applying as a dependent partner they must be aged 18 or over on the date of application."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 29.1A. In SW 29.1(a) and (b), P must have (or be applying for) entry clearance or permission as a Skilled Worker sponsored for a job in Table 1, Table 2 or Table 3 of Appendix Skilled Occupations"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-relationship-with-partner",
+      "quote": "RWP 1.1. The applicant and their partner must be aged 18 or over on the date of application."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 26.3. If the applicant is applying as a dependent partner they must be aged 18 or over on the date of application."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-relationship-with-partner",
+      "quote": "RWP 5.1. Where the applicant and their partner are not married or in a civil partnership, they must have been in a relationship similar to a marriage or civil partnership for at least 2 years before the date of application."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "quote": "(c) unmarried partner, where the couple have been in a relationship similar to marriage or civil partnership for at least 2 years."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
+      "quote": "CHI 1.1. The applicant must be under the age of 18 on the date of application unless CHI 1.2 applies."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
+      "quote": "CHI 1.2. The applicant may be aged 18 or older on the date of application if the applicant was last granted entry clearance or permission to stay as the dependent child of their parent or parents"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 32A.2. In Appendix Children, where CHI 3.1 (a) or (b) refer to the applicant applying as the child of a person (P), P must be a Skilled Worker sponsored for a job in Table 1, Table 2 or Table 3"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £819"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] [footnote 3] - main applicant and dependants £324"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,618"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,235"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] [footnote 3] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £819"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] [footnote 3] - main applicant and dependants £324"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,618"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,235"
+    },
+    {
+      "key": "cost:visa-fee-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] [footnote 3] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £943"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] [footnote 3] - main applicant and dependants £324"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,865"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,235"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] [footnote 3] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £943"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-up-to-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for three years or less [footnote 2] [footnote 3] - main applicant and dependants £324"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker, where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,865"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - a job on the Immigration Salary List where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] - main applicant and dependants £1,235"
+    },
+    {
+      "key": "cost:visa-fee-in-uk-over-3-years-dependant",
+      "url": "https://www.gov.uk/government/publications/visa-regulations-revised-table/home-office-immigration-and-nationality-fees-8-october-2026",
+      "quote": "Skilled Worker - Health and Care Visa - where a certificate of sponsorship has been issued or approval to sponsor under Sponsor a Worker has been given for over three years [footnote 2] [footnote 3] - main applicant and dependants £628"
+    },
+    {
+      "key": "cost:health-surcharge",
+      "url": "https://www.gov.uk/healthcare-immigration-application/how-much-pay",
+      "quote": "£1,035 per year for all other visa and immigration applications"
+    },
+    {
+      "key": "cost:health-surcharge",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(the end date of the certificate of sponsorship may be up to a maximum of 5 years after the start date of their certificate of sponsorship)"
+    },
+    {
+      "key": "cost:health-surcharge",
+      "url": "https://www.gov.uk/healthcare-immigration-application/who-needs-pay",
+      "quote": "you’re a health and care worker who is eligible for a Health and Care Worker visa (or you’re their dependant)"
+    },
+    {
+      "key": "cost:health-surcharge-adult-dependant",
+      "url": "https://www.gov.uk/healthcare-immigration-application/how-much-pay",
+      "quote": "£1,035 per year for all other visa and immigration applications"
+    },
+    {
+      "key": "cost:health-surcharge-adult-dependant",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(the end date of the certificate of sponsorship may be up to a maximum of 5 years after the start date of their certificate of sponsorship)"
+    },
+    {
+      "key": "cost:health-surcharge-adult-dependant",
+      "url": "https://www.gov.uk/healthcare-immigration-application/who-needs-pay",
+      "quote": "you’re a health and care worker who is eligible for a Health and Care Worker visa (or you’re their dependant)"
+    },
+    {
+      "key": "cost:health-surcharge-adult-dependant",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 26.3. If the applicant is applying as a dependent partner they must be aged 18 or over on the date of application."
+    },
+    {
+      "key": "cost:health-surcharge-child",
+      "url": "https://www.gov.uk/healthcare-immigration-application/how-much-pay",
+      "quote": "£776 per year for visa and immigration applicants who are under the age of 18 at time of application"
+    },
+    {
+      "key": "cost:health-surcharge-child",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "(the end date of the certificate of sponsorship may be up to a maximum of 5 years after the start date of their certificate of sponsorship)"
+    },
+    {
+      "key": "cost:health-surcharge-child",
+      "url": "https://www.gov.uk/healthcare-immigration-application/who-needs-pay",
+      "quote": "you’re a health and care worker who is eligible for a Health and Care Worker visa (or you’re their dependant)"
+    },
+    {
+      "key": "duration:permission",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
+      "quote": "SW 18.1. The applicant will be granted entry clearance or permission to stay until 14 days after the end date of their certificate of sponsorship (the end date of the certificate of sponsorship may be up to a maximum of 5 years after the start date of their certificate of sponsorship)"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "quote": "“Must not be leading an independent life” or “is not leading an independent life” means that the person: (a) does not have a partner; and"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "quote": "(c) unmarried partner, where the couple have been in a relationship similar to marriage or civil partnership for at least 2 years."
+    }
+  ]
+}
