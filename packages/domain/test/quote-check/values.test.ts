@@ -162,6 +162,10 @@ describe('statesValue', () => {
     [inYears('60', '5'), 'within 5 days, under article 5', false],
     [inYears('60', '5'), 'a reduction of 5 %', false],
     [inYears('60', '5'), '5 anni di residenza', true],
+    [inYears('60', '5'), 'within 1.5 years', false],
+    [inYears('60', '5'), 'article 5-3 years', false],
+    [inYears('60', '5'), 'twenty-five years', false],
+    [inYears('300', '25'), 'twenty-five years', false],
   ])('%o in %s: %s', (value, text, expected) => {
     expect(statesValue(value, text)).toBe(expected);
   });
@@ -169,6 +173,10 @@ describe('statesValue', () => {
   it('reads whole years of months in kanji', () => {
     expect(statesValue(inYears('60', '5'), '五年、三年、一年又は六月', ['ja'])).toBe(true);
     expect(statesValue(inYears('60', '5'), '第五条 五日以内', ['ja'])).toBe(false);
+    expect(statesValue(inYears('60', '5'), '五日以内に一年', ['ja'])).toBe(false);
+    expect(statesValue(inYears('60', '5'), '五日以内に滞在期間は三年', ['ja'])).toBe(false);
+    expect(statesValue(inYears('60', '5'), '五年以上', ['ja'])).toBe(true);
+    expect(statesValue(inYears('60', '5'), '５年', ['ja'])).toBe(true);
     expect(statesValue(inYears('60', '5'), 'cinque anni di residenza', ['it'])).toBe(true);
   });
 });
