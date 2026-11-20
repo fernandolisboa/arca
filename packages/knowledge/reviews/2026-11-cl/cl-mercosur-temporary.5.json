@@ -258,7 +258,7 @@
     },
     {
       "id": "children",
-      "title": "The principal's children under 18; older children only with a disability, or 18 or older and under 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "title": "The principal's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": [
         "child"
       ],
@@ -288,7 +288,7 @@
     },
     {
       "id": "spouse-children",
-      "title": "The spouse's children under 18; older children only with a disability, or 18 or older and under 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "title": "The spouse's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": [
         "spouse",
         "child"
@@ -319,7 +319,7 @@
     },
     {
       "id": "partner-children",
-      "title": "The partner's children under 18; older children only with a disability, or 18 or older and under 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "title": "The partner's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
       "path": [
         "partner",
         "child"
@@ -406,6 +406,7 @@
       },
       "sources": [
         "fee-table-by-nationality",
+        "sermig-bolivia-agreement",
         "codigo-civil"
       ]
     }

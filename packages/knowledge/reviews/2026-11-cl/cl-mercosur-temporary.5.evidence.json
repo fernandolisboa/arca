@@ -180,6 +180,26 @@
       "key": "cost:dependent-fee",
       "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
       "quote": "el que ha cumplido dieciocho años"
+    },
+    {
+      "key": "cost:dependent-fee",
+      "url": "https://serviciomigraciones.cl/chile-y-bolivia-acuerdo-migracion-regular/",
+      "quote": "se elimina el pago de 90 dólares que se cobraba a las y los ciudadanos bolivianos"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a con discapacidad del titular, conviviente o cónyuge"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a con discapacidad del titular, conviviente o cónyuge"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a con discapacidad del titular, conviviente o cónyuge"
     }
   ]
 }
