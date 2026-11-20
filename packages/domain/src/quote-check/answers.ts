@@ -1,6 +1,6 @@
 import type { CheckItem } from './items.js';
 import { numberRunBounds } from './number-words.js';
-import { type CheckValue, figureBounds, statesValue } from './values.js';
+import { type CheckValue, figureBounds, statesValue, statesYears } from './values.js';
 
 export const checkStatuses = ['matches', 'differs', 'could_not_check'] as const;
 export type CheckStatus = (typeof checkStatuses)[number];
@@ -228,12 +228,13 @@ function echoesValue(
   quote: string,
   languages: readonly string[],
 ): boolean {
-  if (value.kind !== 'number' || value.wholeYears === undefined) return statesValue(value, address);
-  const months: CheckValue = { kind: 'number', value: value.value };
-  const years: CheckValue = { kind: 'number', value: value.wholeYears };
+  if (value.kind !== 'number') return statesValue(value, address, languages);
+  const { wholeYears } = value;
   return (
-    statesValue(months, address) ||
-    (statesValue(years, address) && statesValue(years, quote, languages))
+    statesValue({ kind: 'number', value: value.value }, address, languages) ||
+    (wholeYears !== undefined &&
+      statesValue({ kind: 'number', value: wholeYears }, address, languages) &&
+      statesYears(quote, wholeYears, languages))
   );
 }
 

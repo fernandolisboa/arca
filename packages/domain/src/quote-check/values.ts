@@ -10,7 +10,7 @@ export type CheckValue =
   | {
       readonly kind: 'number';
       readonly value: string;
-      /** A count of months that makes whole years, which law text may write in years instead. */
+      /** For a count of months that makes whole years (never 0 or 1): those years, as law text may write them. */
       readonly wholeYears?: string;
     }
   | { readonly kind: 'date'; readonly value: CalendarDate };
@@ -304,6 +304,24 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
   return false;
 }
 
+/** A figure or a run of number words right before a word for years, in the languages read. */
+const beforeYears = /([\p{L}\p{N}-]+)\s*(?:years?|anni|anno|anos?|años?|年)(?!\p{L})/giu;
+
+/**
+ * Whether a text states a number of years: the number, as a figure or in words, right before a
+ * word for years ("5 years", "cinque anni", 五年), so a stray "5" in "article 5" or "5 days" does not.
+ */
+export function statesYears(
+  text: string,
+  years: string,
+  languages: readonly string[] = [],
+): boolean {
+  return [...text.matchAll(beforeYears)].some(
+    ([written = '', number = '']) =>
+      numbersIn(number).has(years) || writesNumberInWords(written, years, languages),
+  );
+}
+
 /**
  * Whether a text states the value: a number among the numbers it writes, as a figure or as a
  * percentage of one, or a whole number written in words of one of `languages`; a date in ISO form,
@@ -316,12 +334,13 @@ export function statesValue(
 ): boolean {
   const numbers = numbersIn(text);
   if (value.kind === 'number') {
-    const states = (number: string) =>
-      numbers.has(number) ||
-      percentagesIn(text).has(number) ||
-      writesNumberInWords(text, number, languages) ||
-      writesAnniversary(text, number, languages);
-    return states(value.value) || (value.wholeYears !== undefined && states(value.wholeYears));
+    return (
+      numbers.has(value.value) ||
+      percentagesIn(text).has(value.value) ||
+      writesNumberInWords(text, value.value, languages) ||
+      writesAnniversary(text, value.value, languages) ||
+      (value.wholeYears !== undefined && statesYears(text, value.wholeYears, languages))
+    );
   }
   if (text.includes(value.value)) return true;
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);

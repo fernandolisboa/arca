@@ -158,11 +158,17 @@ describe('statesValue', () => {
     [inYears('60', '5'), 'a period of 60 months', true],
     [inYears('60', '5'), 'a period of 6 years', false],
     [number('18'), 'a period of 1 year', false],
+    [inYears('60', '5'), 'on the fifth anniversary', false],
+    [inYears('60', '5'), 'within 5 days, under article 5', false],
+    [inYears('60', '5'), 'a reduction of 5 %', false],
+    [inYears('60', '5'), '5 anni di residenza', true],
   ])('%o in %s: %s', (value, text, expected) => {
     expect(statesValue(value, text)).toBe(expected);
   });
 
   it('reads whole years of months in kanji', () => {
     expect(statesValue(inYears('60', '5'), '五年、三年、一年又は六月', ['ja'])).toBe(true);
+    expect(statesValue(inYears('60', '5'), '第五条 五日以内', ['ja'])).toBe(false);
+    expect(statesValue(inYears('60', '5'), 'cinque anni di residenza', ['it'])).toBe(true);
   });
 });
