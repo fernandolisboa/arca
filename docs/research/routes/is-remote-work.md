@@ -1,8 +1,25 @@
 # is-remote-work
 
-Research notes for Iceland's long-term visa for remote work, route `is-remote-work` in `packages/knowledge/data/routes`. The seed research is in [other-destinations.md](../other-destinations.md); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Iceland's long-term visa for remote work, route `is-remote-work`, stored in the database's `knowledge` schema ([ADR-0031](../../adr/0031-rule-updates-on-request.md)): version 1 was imported from `packages/knowledge/data/routes`, and later versions come from an update request or from `packages/knowledge/reviews`. The seed research is in [other-destinations.md](../other-destinations.md); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
+
+### 2026-11-20, session review
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)), asked for by the owner in a project thread.
+
+- **Version audited:** 1, the route's only stored version.
+- **Outcome:** no change, so no review files and no new version. The closure still holds, and the sources keep their `verifiedAt` of 2026-11-07, since a version is immutable.
+- **Sources re-read** (all on 2026-11-20 UTC, with `curl` and `pdftotext`): Regulation No. 725/2026, art. 1 (chapter II of Regulation No. 540/2017 now headed "Skammtímadvalarleyfi", with no ground for remote work); the Visa Act No. 37/2026, art. 23(1)(c) and (d); Regulation No. 1048/2020, art. 2 (the former art. 5 a); Act No. 15/2005, art. 8. All four answer 200.
+- **Amendments looked for**, up to 2026-11-20:
+  - The history of Regulation No. 540/2017 on `island.is/reglugerdir/nr/0540-2017` lists no amendment after Nos. 724/2026 and 725/2026 of 2026-06-27.
+  - The gazette search (`officialJournalOfIcelandAdverts`), departments A and B, from 2026-06-20 for "útlendinga", "dvalarleyfi", "fjarvinnu" and "vegabréfsáritun", and from 2026-09-01 for "áritanir", "langtímaáritun" and "lög um útlendinga": no instrument brings the visa back.
+  - Act No. 79/2026 (published 2026-07-07): its art. 11 amends art. 20 of the Foreign Nationals' Right to Work Act No. 97/2002, not the repealed art. 20 of Act No. 80/2016.
+- **Leads:** none.
+- **Rounds:** none. With no change to propose there was no version for reviewer subagents to try to prove wrong; the out-of-date search above stands in for that angle.
+- **Findings:** none.
+- **Left over:** Iceland has no open route in the app. Skilled work, study and family permits are new routes, which a session review cannot add; they go through an update request for a new route ("Pedir rota nova ao Arca") ([ADR-0031](../../adr/0031-rule-updates-on-request.md)).
+- **Watch next:** a regulation under Act No. 37/2026 that creates a visa for remote work, which would be a new version with a later `effectiveFrom`. The checker this note's 2026-11-11 entry waited on was removed ([#463](https://github.com/fernandolisboa/arca/issues/463)).
 
 ### 2026-11-11
 
