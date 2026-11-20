@@ -1,0 +1,788 @@
+{
+  "schemaVersion": 1,
+  "routeId": "es-non-lucrative",
+  "number": 4,
+  "corrects": 3,
+  "title": "Non-lucrative residence visa for people living on their own means without working",
+  "country": "ES",
+  "tags": ["retirement", "temporary-residence"],
+  "effectiveFrom": "2025-06-16",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "rd-1155-2024-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 62.1 and 62.2: means for the permit's period, or a periodic income, of 400% of the monthly IPREM for the applicant plus 100% per family member in their charge",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-means-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 62.3: availability is shown by any proof admitted in law, including property titles, certified cheques, and credit cards with a bank certificate of the credit available",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-no-work",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.1 and 61.2 a): residence without work or professional activity, on means that cover living costs with no need for any such activity",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-partner",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.3 a): the spouse, registered partner or duly proven stable partner; a year of unbroken cohabitation, or children in common with stable cohabitation, proves the bond",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.3 b) and c): unmarried minor children, \"or who have not formed their own family unit\"; adults with a disability needing support or unable to cope for health reasons",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.2 b): the applicant must have health insurance",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-no-return",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.2 c): not within a period of commitment not to return to Spain taken on when returning voluntarily to the country of origin",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-public-order",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, articles 61.2 d) and 63.3: no threat to public order, security or health, checked through criminal records in Spain and a police report, which alone does not refuse the permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-irregular-stay",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 38 b): a residence visa requires not being irregularly in Spanish territory",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-refusable",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 38 c): a residence visa requires not being listed as refusable in the territory of countries with which Spain has an agreement to that effect",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-passport",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 38 d): a passport or travel document in force, recognized as valid in Spain, valid for at least one year",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 38 e): an applicant of criminal majority age has no criminal record, in the countries lived in during the last five years, for offences under Spanish law",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-medical-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 38 i): a medical certificate that the applicant has none of the diseases with serious public health effects under the International Health Regulations of 2005",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-permit-length",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 61.4: the initial non-lucrative temporary residence permit lasts one year",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-renewal",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 64.7: the renewed permit is valid for two years, unless a long-term residence permit is due",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-permit-decision",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 63.4: the permit is decided within one month from the receipt of the consulate's communication; with no answer in that time the application is taken as refused",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-visa-issue",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 39.5: the consulate decides and issues the visa within one month from receiving the favourable decision on the permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-identity-card",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 63.5: within one month of entering Spain the holder applies in person for the foreigner identity card",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ley-31-2022",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-22128",
+      "title": "Ley 31/2022 (State Budget for 2023), additional provision 90: monthly IPREM of EUR 600 and yearly IPREM of EUR 7,200; no later law or decree in the BOE sets another amount (searched 2026-11-20)",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "orden-efd-581-2026",
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-12521",
+      "title": "Orden EFD/581/2026, whose title states that the 2023 State Budget (Ley 31/2022) stays extended for 2024, 2025 and 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "codigo-civil",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "title": "Código Civil, article 5.1: a period in years with no matching day in its last month ends on that month's last day; article 240: majority at 18",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "codigo-penal",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1995-25444",
+      "title": "Código Penal (Ley Orgánica 10/1995), article 19: people under 18 are not criminally responsible under the code",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "lo-4-2000",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "title": "Ley Orgánica 4/2000, article 1: Spanish nationals are not foreigners under this law, and EU citizens and others under the EU regime follow that regime's rules",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-240-2007",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "title": "Real Decreto 240/2007, article 1 and third additional provision: residence in Spain of citizens of other EU and EEA states, and of Swiss citizens",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "lo-4-2000-fees",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "title": "Ley Orgánica 4/2000, articles 44.2, 46.1 and 48.1: fees for processing residence permits, identity cards and visas, owed by each applicant or holder, in amounts set by ministerial order",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "lo-4-2000-reciprocity",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "title": "Ley Orgánica 4/2000, article 48.4: visa fees follow the amount that may be set by applying the principle of reciprocity",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "orden-auc-891-2024",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-17292",
+      "title": "Orden AUC/891/2024, article 1: EUR 90 for processing a national long-stay visa (type D) application, for every application from one month after its publication on 2024-08-24",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "orden-pjc-617-2025-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "title": "Orden PJC/617/2025, in force from 2025-06-16, annex, fee 2.1.1: EUR 10.94 for the initial non-lucrative temporary residence permit, for the principal holder and for family members",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "orden-pjc-617-2025-card",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "title": "Orden PJC/617/2025, in force from 2025-06-16, annex, fee 4.2: EUR 16.08 for the foreigner identity card that documents the first grant of a temporary residence permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-application-place",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 26.1: visa applications are filed, and visas collected, in person at the consular office of the district where the applicant lives, with other ways the article lists",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "rd-1155-2024-visa-collection",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "title": "Real Decreto 1155/2024, article 28.4: the visa is collected within one month of the notification that it was granted; otherwise the applicant is taken to have given it up and the file is closed",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "lo-4-2000-criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "title": "Ley Orgánica 4/2000, article 31.5: temporary residence requires no criminal record in Spain or in the earlier countries of residence, for offences that exist in Spanish law",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "lo-4-2000-inadmission",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "title": "Ley Orgánica 4/2000, fourth additional provision, 1 c), d) and e): no admission of a refused application repeated unchanged, under an expulsion order (save exceptions) or proceeding, or an entry ban",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "es",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil"],
+  "requirements": [
+    {
+      "id": "household-means",
+      "title": "The principal's passive income of EUR 2,400 a month plus 600 per dependent (400% and 100% of the IPREM), or savings of 28,800 plus 7,200 each; relatives' means or a mix: open; other proofs not counted",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.monthlyPassiveIncome"
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "mul",
+                "operand": {
+                  "op": "money",
+                  "amount": 60000,
+                  "currency": "EUR"
+                },
+                "by": "4"
+              },
+              "right": {
+                "op": "sum",
+                "over": "unit.dependents",
+                "value": {
+                  "op": "money",
+                  "amount": 60000,
+                  "currency": "EUR"
+                }
+              }
+            }
+          },
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "principal.liquidAssets"
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "mul",
+                "operand": {
+                  "op": "money",
+                  "amount": 720000,
+                  "currency": "EUR"
+                },
+                "by": "4"
+              },
+              "right": {
+                "op": "sum",
+                "over": "unit.dependents",
+                "value": {
+                  "op": "money",
+                  "amount": 720000,
+                  "currency": "EUR"
+                }
+              }
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "gte",
+                    "left": {
+                      "op": "sum",
+                      "over": "unit.members",
+                      "value": {
+                        "op": "fact",
+                        "key": "person.monthlyPassiveIncome"
+                      }
+                    },
+                    "right": {
+                      "op": "add",
+                      "left": {
+                        "op": "mul",
+                        "operand": {
+                          "op": "money",
+                          "amount": 60000,
+                          "currency": "EUR"
+                        },
+                        "by": "4"
+                      },
+                      "right": {
+                        "op": "sum",
+                        "over": "unit.dependents",
+                        "value": {
+                          "op": "money",
+                          "amount": 60000,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "op": "gte",
+                    "left": {
+                      "op": "fact",
+                      "key": "unit.liquidAssets"
+                    },
+                    "right": {
+                      "op": "add",
+                      "left": {
+                        "op": "mul",
+                        "operand": {
+                          "op": "money",
+                          "amount": 720000,
+                          "currency": "EUR"
+                        },
+                        "by": "4"
+                      },
+                      "right": {
+                        "op": "sum",
+                        "over": "unit.dependents",
+                        "value": {
+                          "op": "money",
+                          "amount": 720000,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "gt",
+                        "left": {
+                          "op": "add",
+                          "left": {
+                            "op": "sum",
+                            "over": "unit.members",
+                            "value": {
+                              "op": "fact",
+                              "key": "person.monthlyPassiveIncome"
+                            }
+                          },
+                          "right": {
+                            "op": "fact",
+                            "key": "unit.liquidAssets"
+                          }
+                        },
+                        "right": {
+                          "op": "fact",
+                          "key": "unit.liquidAssets"
+                        }
+                      },
+                      {
+                        "op": "gte",
+                        "left": {
+                          "op": "add",
+                          "left": {
+                            "op": "sum",
+                            "over": "unit.members",
+                            "value": {
+                              "op": "fact",
+                              "key": "person.monthlyPassiveIncome"
+                            }
+                          },
+                          "right": {
+                            "op": "fact",
+                            "key": "unit.liquidAssets"
+                          }
+                        },
+                        "right": {
+                          "op": "add",
+                          "left": {
+                            "op": "mul",
+                            "operand": {
+                              "op": "money",
+                              "amount": 60000,
+                              "currency": "EUR"
+                            },
+                            "by": "4"
+                          },
+                          "right": {
+                            "op": "sum",
+                            "over": "unit.dependents",
+                            "value": {
+                              "op": "money",
+                              "amount": 60000,
+                              "currency": "EUR"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "rd-1155-2024-means",
+        "rd-1155-2024-means-proof",
+        "ley-31-2022",
+        "orden-efd-581-2026"
+      ]
+    },
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a Spanish citizen, who is no foreigner under the law, nor a citizen of another EU or EEA state or of Switzerland, who live in Spain under EU free movement rules, not this visa",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["lo-4-2000", "rd-240-2007"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "no-work",
+      "title": "The principal and the family live in Spain without any work or professional activity: the permit does not allow it, and the means must cover living costs with no need for it",
+      "evidence": ["principal.monthlyActiveIncome", "principal.monthlyPassiveIncome"],
+      "sources": ["rd-1155-2024-no-work"]
+    },
+    {
+      "id": "health-insurance",
+      "title": "Each applicant: health insurance",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["rd-1155-2024-insurance"]
+    },
+    {
+      "id": "no-return-commitment",
+      "title": "Each applicant: not within a period of commitment not to return to Spain, taken on when returning voluntarily to the country of origin",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["rd-1155-2024-no-return"]
+    },
+    {
+      "id": "public-order",
+      "title": "Each applicant: no threat to public order, security or health; Spain checks its own criminal records and a police report, and a police record alone does not refuse the permit",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["rd-1155-2024-public-order"]
+    },
+    {
+      "id": "criminal-record-abroad",
+      "title": "Each applicant aged 18 or over: no criminal record for offences under Spanish law where they lived in the last five years; the law asks it of Spain and earlier countries of residence, with no limit",
+      "evidence": ["principal.ageYears", "principal.residenceCountry"],
+      "sources": ["rd-1155-2024-criminal-record", "codigo-penal", "lo-4-2000-criminal-record"]
+    },
+    {
+      "id": "not-irregularly-in-spain",
+      "title": "Each applicant: not irregularly in Spanish territory",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["rd-1155-2024-irregular-stay"]
+    },
+    {
+      "id": "not-listed-as-refusable",
+      "title": "Each applicant: not listed as refusable in the territory of countries with which Spain has an agreement to that effect",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["rd-1155-2024-refusable"]
+    },
+    {
+      "id": "passport-validity",
+      "title": "Each applicant: a passport or travel document in force, recognized as valid in Spain, valid for at least one year",
+      "evidence": ["principal.citizenships"],
+      "sources": ["rd-1155-2024-passport"]
+    },
+    {
+      "id": "medical-certificate",
+      "title": "Each applicant: a medical certificate showing none of the diseases with serious public health effects under the International Health Regulations of 2005",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["rd-1155-2024-medical-certificate"]
+    },
+    {
+      "id": "no-entry-ban-or-expulsion",
+      "title": "Each applicant: no entry ban, no expulsion order (the law has exceptions) or proceeding that may propose one, and no repeat of a refused application with nothing changed; else it is not admitted",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lo-4-2000-inadmission"]
+    },
+    {
+      "id": "application-at-own-consulate",
+      "title": "Each applicant applies at the Spanish consular office of the district they live in, in person or, if the rules allow, by a service provider, a representative or online, and collects the visa in person",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["rd-1155-2024-application-place"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["rd-1155-2024-partner"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner, registered or stable and duly proven (a continuous year of living together, or children in common with proven stable cohabitation): possible, as the case records only when the couple began",
+      "path": ["partner"],
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["rd-1155-2024-partner"]
+    },
+    {
+      "id": "children",
+      "title": "Children: unmarried and under 18; a married minor, or an adult who needs support for a disability or cannot provide for themselves for health reasons, is shown as possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["rd-1155-2024-children", "codigo-civil"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children: unmarried and under 18; a married minor, or an adult who needs support for a disability or cannot provide for themselves for health reasons, is shown as possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "lt",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "not",
+                "operand": {
+                  "op": "fact",
+                  "key": "person.hasSpouse"
+                }
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["rd-1155-2024-children", "codigo-civil"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's children, on the terms of the principal's own children: shown as possible, since the partner is",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["rd-1155-2024-children", "rd-1155-2024-partner"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "visa-fee",
+      "title": "Fee for processing the principal's national long-stay visa application; another amount may apply by reciprocity with the applicant's country, which is not checked",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 9000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["orden-auc-891-2024", "lo-4-2000-fees", "lo-4-2000-reciprocity"]
+    },
+    {
+      "id": "visa-fee-dependents",
+      "title": "Fee for processing each family member's national long-stay visa application; another amount may apply by reciprocity with the applicant's country, which is not checked",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 9000,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["orden-auc-891-2024", "lo-4-2000-fees", "lo-4-2000-reciprocity"]
+    },
+    {
+      "id": "permit-fee",
+      "title": "Fee for processing the principal's initial non-lucrative temporary residence permit",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1094,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["orden-pjc-617-2025-permit", "lo-4-2000-fees"]
+    },
+    {
+      "id": "permit-fee-dependents",
+      "title": "Fee for processing each family member's initial non-lucrative temporary residence permit",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1094,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["orden-pjc-617-2025-permit", "lo-4-2000-fees"]
+    },
+    {
+      "id": "identity-card-fee",
+      "title": "Fee for the principal's foreigner identity card (TIE), applied for in person within one month of entering Spain",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1608,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["orden-pjc-617-2025-card", "rd-1155-2024-identity-card", "lo-4-2000-fees"]
+    },
+    {
+      "id": "identity-card-fee-dependents",
+      "title": "Fee for each family member's foreigner identity card (TIE), applied for in person within one month of entering Spain",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 1608,
+        "currency": "EUR"
+      },
+      "appliesTo": "each_dependent",
+      "sources": ["orden-pjc-617-2025-card", "rd-1155-2024-identity-card", "lo-4-2000-fees"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "permit-decision",
+      "title": "Decision on the residence permit, counted from the receipt of the consulate's communication; with no answer within one month the application is taken as refused",
+      "min": "P0D",
+      "max": "P1M",
+      "sources": ["rd-1155-2024-permit-decision"]
+    },
+    {
+      "id": "visa-issue",
+      "title": "Decision and issue of the visa by the consulate, counted from its receipt of the favourable decision on the permit",
+      "min": "P0D",
+      "max": "P1M",
+      "sources": ["rd-1155-2024-visa-issue"]
+    },
+    {
+      "id": "visa-collection",
+      "title": "Collecting the visa, counted from the notification that it was granted; an applicant who does not collect it in time is taken to have given it up",
+      "min": "P0D",
+      "max": "P1M",
+      "sources": ["rd-1155-2024-visa-collection"]
+    },
+    {
+      "id": "identity-card-application",
+      "title": "Application in person for the foreigner identity card (TIE), counted from the entry into Spain",
+      "min": "P0D",
+      "max": "P1M",
+      "sources": ["rd-1155-2024-identity-card"]
+    },
+    {
+      "id": "initial-permit",
+      "title": "Initial non-lucrative temporary residence permit",
+      "min": "P1Y",
+      "max": "P1Y",
+      "sources": ["rd-1155-2024-permit-length"]
+    },
+    {
+      "id": "renewed-permit",
+      "title": "Each renewed permit, unless a long-term residence permit is due",
+      "min": "P2Y",
+      "max": "P2Y",
+      "sources": ["rd-1155-2024-renewal"]
+    }
+  ]
+}
