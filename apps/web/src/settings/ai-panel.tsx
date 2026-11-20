@@ -219,7 +219,7 @@ function KeyCard({
           </div>
         </form>
       )}
-      <div className="mt-auto flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         {!formOpen && (
           <div className="flex flex-wrap gap-3">
             <Button variant="secondary" disabled={working || state.state === 'none'} onClick={test}>
