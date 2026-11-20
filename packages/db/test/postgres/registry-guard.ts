@@ -230,9 +230,14 @@ function entryProblems(entry: RegistryEntry, catalog: Catalog, registry: Registr
       problems.push(`${table}.${column} has type ${type}, which the export cannot carry`);
     }
   }
+  const ownerless = entry.strategy === 'retain' && entry.ownerless !== undefined;
   for (const column of ownerColumns) {
+    const nullable = columns.get(column)?.notNull === false;
     // A row with no owner belongs to nobody, so no erasure would ever reach it.
-    if (columns.get(column)?.notNull === false) problems.push(`${table}.${column} can be null`);
+    if (nullable && !ownerless) problems.push(`${table}.${column} can be null`);
+    if (!nullable && ownerless && columns.has(column)) {
+      problems.push(`${table} says a row may have no owner, but ${column} cannot be null`);
+    }
   }
   const inAuth = schemaOf(table) === 'auth';
   if (inAuth && !(entry.strategy === 'delete' && entry.pool === 'app_auth')) {

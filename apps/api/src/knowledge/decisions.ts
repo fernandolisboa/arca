@@ -125,6 +125,7 @@ function basisCounts(row: DecisionRow, history: AdminHistory): boolean {
     case 'grant':
       return (
         row.adminGrantId !== null &&
+        row.authorAccountId !== null &&
         history.inForce(row.adminGrantId, row.authorAccountId, BigInt(row.decidedMicros))
       );
     case null:
@@ -207,7 +208,7 @@ function decisionEvent(kind: DecisionKind, decided: DecidedVersion, decisionId: 
     : { code: 'comparison_rejected' as const, details: { decisionId, comparisonId, number } };
 }
 
-/** What a step-up row copied from its step-up; undefined on a `session` row. */
+/** What a step-up row copied from its step-up; undefined on a `session` or `session_review` row. */
 interface StoredStepUp {
   readonly assertion: StoredAssertion;
   readonly publicKey: Uint8Array<ArrayBuffer>;
@@ -219,6 +220,7 @@ function storedStepUp(row: DecisionRow): StoredStepUp | undefined {
   const { publicKey, actionNonce } = row;
   if (
     row.proof === 'session' ||
+    row.proof === 'session_review' ||
     credentialId === null ||
     serverNonce === null ||
     authenticatorData === null ||
@@ -289,7 +291,12 @@ export function createKnowledgeDecisions({
   /** An ADR-0022 row needs its author on the owner list; an ADR-0031 row needs its basis. */
   const assertionVerifies = async (row: DecisionRow, decided: DecidedVersion) => {
     const stored = storedStepUp(row);
-    if (stored === undefined || (row.proof === 'step_up' && !role.isOwner(row.authorAccountId))) {
+    const { authorAccountId } = row;
+    if (
+      stored === undefined ||
+      authorAccountId === null ||
+      (row.proof === 'step_up' && !role.isOwner(authorAccountId))
+    ) {
       return false;
     }
     return reverifyStepUp(stored.assertion, {
@@ -310,7 +317,9 @@ export function createKnowledgeDecisions({
    * app_auth stored it, keeps counting after its author leaves the list, and losing the role never
    * revives a version its author rejected. A `step_up` row is re-verified as ADR-0022 says; an
    * `admin_step_up` row is re-verified and its basis must count. A rejection counts even when it
-   * does not verify.
+   * does not verify. A `session_review` row (ADR-0032) counts as stored: the database lets only a
+   * migration write one, only to activate a route version, and `changedSinceDecided` refuses it
+   * once its version hashes otherwise.
    */
   const check = async (
     row: DecisionRow,
@@ -318,6 +327,11 @@ export function createKnowledgeDecisions({
   ): Promise<CheckedDecision | undefined> => {
     const decided = rowVersion(row);
     if (decided === undefined) return undefined;
+    if (row.proof === 'session_review') {
+      return row.kind === 'activate' && decided.subject === 'route'
+        ? { ...decided, kind: row.kind, verified: true }
+        : undefined;
+    }
     if (row.proof === 'session')
       return basisCounts(row, history) ? { ...decided, kind: row.kind, verified: true } : undefined;
     const verified =
@@ -369,14 +383,17 @@ export function createKnowledgeDecisions({
   };
 
   /**
-   * The versions an `admin_step_up` row names by ID and number whose stored rules now hash
-   * otherwise, content or cases: such a row was changed in place, so it is refused, as rejected,
-   * instead of reading as a new proposed version (ADR-0031). Older rows were stored when every
-   * version passed a reviewed pull request, and are left as they count.
+   * The versions an `admin_step_up` or `session_review` row names by ID and number whose stored
+   * rules now hash otherwise, content or cases: such a row was changed in place, so it is refused,
+   * as rejected, instead of reading as a new proposed version (ADR-0031, ADR-0032). Older rows were
+   * stored when every version passed a reviewed pull request, and are left as they count.
    */
   const changedSinceDecided = async (rows: readonly DecisionRow[]) => {
     const decided = rows.flatMap((row) => {
-      const version = row.proof === 'admin_step_up' ? rowVersion(row) : undefined;
+      const version =
+        row.proof === 'admin_step_up' || row.proof === 'session_review'
+          ? rowVersion(row)
+          : undefined;
       return version === undefined ? [] : [{ row, version }];
     });
     if (decided.length === 0) return [];

@@ -19,7 +19,8 @@
     "./bundled": {
       "types": "./dist/bundled.d.ts",
       "default": "./dist/bundled.js"
-    }
+    },
+    "./session-review": "./scripts/session-review.ts"
   },
   "scripts": {
     "catalog": "node scripts/build.ts",

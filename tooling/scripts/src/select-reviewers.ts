@@ -101,6 +101,14 @@ const rules: readonly Rule[] = [
     ),
     reviewers: withCore('data-access', 'auth-crypto'),
   },
+  // A session review's versions, evidence and checks: a merge puts them into use (ADR-0032).
+  {
+    match: anyOf(
+      /^packages\/knowledge\/(reviews\/|(scripts|test)\/session-review\.)/,
+      /^apps\/api\/test\/(postgres\/)?session-review/,
+    ),
+    reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),
+  },
   { match: /^apps\/web\/(src\/main\.tsx|index\.html)$/, reviewers: withCore('supply-chain') },
   {
     match: anyOf(
@@ -193,10 +201,11 @@ const rules: readonly Rule[] = [
     reviewers: withCore('supply-chain'),
   },
   // Agent and review configuration, wherever an agent would load it (threat model S4), and the
-  // rule audit runbook, which tells an authoring session how to read official sources.
+  // rule audit and session rule review runbooks, which tell an authoring session how to read
+  // official sources and, for a session review, how to put a rule into use (ADR-0032).
   {
     match:
-      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/rule-audit\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
+      /(^|\/)((CLAUDE|AGENTS|GEMINI)(\.local)?\.md|\.claude\/|\.mcp\.json$)|^(docs\/agents\/|docs\/REVIEW\.md$|docs\/runbooks\/(rule-audit|session-rule-review)\.md$|tooling\/scripts\/src\/select-reviewers\.ts$)/i,
     reviewers: withCore('supply-chain'),
   },
 ];

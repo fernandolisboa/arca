@@ -42,6 +42,10 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 
 `scripts/rule-import.ts` (`pnpm --filter @arca/knowledge import:sql`) writes the migration `packages/db/migrations/<timestamp>_knowledge_rule_import/migration.sql` from `data`: every route version (with its cases file), country set and official-domain list, each with the hash the build computed, inserted with `ON CONFLICT DO NOTHING` after a check that aborts if a stored row has another hash ([ADR-0031](../../docs/adr/0031-rule-updates-on-request.md)). It ran once with the migrations; the migration journal never runs it again, and it is never edited. `test/rule-rows.test.ts` generates it again and compares it with the committed file, so any change to a route version, country set or official-domain list in `data` fails the tests: rules now change through update requests in the app, never here.
 
+## Session reviews
+
+`reviews/<review>/` holds the route versions a session review wrote ([ADR-0032](../../docs/adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../docs/runbooks/session-rule-review.md)): for each, the version, its cases with inline snapshots, and the official passages every item rests on. `scripts/session-review.ts` lists the reviews and checks each version as the app checks an update request's proposal; its evidence goes through the app's quote check. `test/session-review.test.ts` writes the review's migration (`vitest -u`) and compares it in CI; `apps/api/test/session-review-quotes.test.ts`, run by the `review-quotes` CI job and by the session with `ARCA_REVIEW_QUOTES=<review>`, finds every quote on its official page.
+
 An official-domain list pins nothing, so its hash is the same `{ version, pinned }` form with no pins. `src/rule-rows.ts` reads rows back as the build read the files: each row parses by its schema, names the ID and number it is stored under and hashes, over everything it pins, to its stored hash; a row that does not, or that pins one that does not, is refused.
 
 ## Countries

@@ -1,6 +1,7 @@
 # ADR-0031: Rule updates on request, in two rounds, with rules in the database
 
 - Status: Accepted
+- Amended by: [ADR-0032](0032-session-reviews-activate-through-a-reviewed-pull-request.md) (session reviews store and activate a version through a reviewed pull request, with no passkey)
 - Date: 2026-11-16
 - Spec: [#455](https://github.com/fernandolisboa/arca/issues/455)
 - Supersedes: [ADR-0029](0029-correction-requests-and-the-corrector-session.md) (the corrector run, its key and its trigger; the correction request becomes the update request)

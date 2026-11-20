@@ -17,11 +17,19 @@ env:
 
 jobs:
   check:
+    # Required on `main`, so it carries the result of review-quotes, which the ruleset does not
+    # name: it runs even when that job failed, and its first step fails with it (ADR-0032).
+    needs: review-quotes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
     steps:
+      - name: The session review quotes were found on their official pages, or none changed
+        env:
+          QUOTES: ${{ needs.review-quotes.result }}
+        run: test "$QUOTES" = success || test "$QUOTES" = skipped
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -124,6 +132,45 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Migrations, canaries, guards, the runtime client and the heartbeat against Postgres 18
         run: pnpm test:db
+
+  # A session review's quotes, each found on the official page its item cites by the app's own
+  # reader and quote check (ADR-0032). It reads those pages over the network, so it runs only for
+  # a pull request that changes a review, and names the reviews by their folders.
+  review-quotes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The merge commit and its parents: the first parent is the base branch.
+          fetch-depth: 2
+      - name: The reviews this pull request changes
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          folders=$(git diff --name-only HEAD^1 HEAD -- packages/knowledge/reviews/ | cut -d/ -f4 | sort -u)
+          # A folder the job cannot name must fail it, never leave its review unread.
+          if printf '%s' "$folders" | grep -qvE '^[0-9a-z-]+$'; then
+            echo 'A changed review folder has a name outside [0-9a-z-]' >&2
+            exit 1
+          fi
+          echo "reviews=$(printf '%s' "$folders" | paste -sd, -)" >> "$GITHUB_OUTPUT"
+      - if: steps.changed.outputs.reviews != ''
+        uses: ./.github/actions/setup-pnpm
+      - if: steps.changed.outputs.reviews != ''
+        run: pnpm install --frozen-lockfile
+      - if: steps.changed.outputs.reviews != ''
+        name: Every quote on its official page
+        env:
+          ARCA_REVIEW_QUOTES: ${{ steps.changed.outputs.reviews }}
+        run: |
+          pnpm turbo run build --filter='@arca/api^...'
+          pnpm --filter @arca/api exec vitest run test/session-review-quotes.test.ts
 
   sbom:
     runs-on: ubuntu-24.04

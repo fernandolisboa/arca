@@ -457,6 +457,71 @@ describe('decisions stored under ADR-0022', () => {
   });
 });
 
+/**
+ * A decision as a session review's migration writes it, with no author. Stored past the roles, as
+ * the server's admin: the migrator's own policy is tested with the access matrix.
+ */
+function reviewed({
+  kind = 'activate',
+  casesHash = 'd'.repeat(64),
+  author = null,
+}: { kind?: string; casesHash?: string | null; author?: string | null } = {}) {
+  return testDatabase.asAdmin((client) =>
+    client.query(
+      `INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number,
+         content_hash, cases_hash, approver_account_id, proof)
+       VALUES ($1, 'route', $2, $3, $4, $5, $6, 'session_review')`,
+      [kind, version.routeId, version.number, version.hash, casesHash, author],
+    ),
+  );
+}
+
+describe('activations a session review stores (ADR-0032)', () => {
+  it('count with no author and no step-up, and an admin still rejects the version', async () => {
+    await reviewed();
+    expect(await rows()).toMatchObject([
+      {
+        kind: 'activate',
+        proof: 'session_review',
+        approver_account_id: null,
+        cases_hash: 'd'.repeat(64),
+        step_up_id: null,
+      },
+    ]);
+    expect(await decisions().states()).toEqual(new Map([[identityKey, 'active']]));
+    expect(await decisions([]).states()).toEqual(new Map([[identityKey, 'active']]));
+    await decide('reject');
+    expect(await decisions().states()).toEqual(new Map([[identityKey, 'rejected']]));
+    expect(errors).toEqual([]);
+  });
+
+  it('are refused, as rejected, once the version reads under other content or cases', async () => {
+    await reviewed();
+    casesHashes.set(version.hash, 'e'.repeat(64));
+    expect(await decisions().states()).toEqual(new Map([[identityKey, 'rejected']]));
+    expect(errors).toEqual(['KnowledgeDecidedVersionChanged']);
+  });
+
+  it('only activate a route version, with its cases and no author, and no service stores one', async () => {
+    await expect(reviewed({ kind: 'reject' })).rejects.toThrow(/decision_proof/);
+    await expect(reviewed({ casesHash: null })).rejects.toThrow(/decision_proof/);
+    await expect(reviewed({ author: admin.signedIn.accountId })).rejects.toThrow(/decision_author/);
+    const insert = sql`
+      INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number, content_hash,
+        cases_hash, proof)
+      VALUES ('activate', 'route', 'qm-sample', 1, ${version.hash}, ${'d'.repeat(64)},
+        'session_review')`;
+    await expect(testDatabase.apiDb.execute(insert)).rejects.toThrow();
+    await expect(testDatabase.authDb.execute(insert)).rejects.toThrow();
+    await expect(
+      withIdentity(testDatabase.authDb, { accountId: admin.signedIn.accountId }, (tx) =>
+        tx.execute(insert),
+      ),
+    ).rejects.toThrow();
+    expect(await rows()).toEqual([]);
+  });
+});
+
 describe('who may store and change decisions (ADR-0031)', () => {
   it('lets app_auth insert only an admin_step_up row naming its own spent step-up', async () => {
     const author = admin.signedIn.accountId;

@@ -27,12 +27,16 @@ import {
  * signed-in admin with no step-up, so it has none of those fields and instead records why its
  * author was an admin: the owner list, or the admin grant in force, which it names. An
  * `admin_step_up` row (ADR-0031) has both: the copied assertion, public key and spent step-up, and
- * the admin basis; a route row also names the hash of the cases the admin approved. A database
- * check keeps the proof and those fields consistent, and no foreign key leaves this schema.
+ * the admin basis; a route row also names the hash of the cases the admin approved. A
+ * `session_review` row (ADR-0032) activates a route version a session review wrote: it has no
+ * author and no assertion, only the content and cases hashes, and only a reviewed migration writes
+ * one. A database check keeps the proof and those fields consistent, and no foreign key leaves this
+ * schema.
  *
  * Insert-only, as the audit log: `app_auth` inserts only `admin_step_up` rows, by the transaction's
  * own account, copying a `knowledge_decision` step-up that account spent, with the time the
- * database sets; rows of the older proofs stay and count as they say. `app_api` reads them all,
+ * database sets; `app_migrator` inserts only `session_review` rows, in a review's migration; rows
+ * of the older proofs stay and count as they say. `app_api` reads them all,
  * since every evaluation needs the states. With no update or delete policy under forced row-level
  * security nobody updates or deletes. Kept for good, as the record of which rule and comparison
  * versions are in use.
@@ -40,10 +44,11 @@ import {
 export const knowledge = pgSchema('knowledge');
 
 /**
- * How a decision proves a person made it: a step-up (ADR-0022), an admin's session (ADR-0027), or
- * an admin's step-up (ADR-0031), the only one stored now.
+ * What a decision rests on: a step-up (ADR-0022), an admin's session (ADR-0027), an admin's step-up
+ * (ADR-0031), or a session review merged as a reviewed pull request (ADR-0032). Only the last two
+ * are stored now.
  */
-export const decisionProofs = ['step_up', 'session', 'admin_step_up'] as const;
+export const decisionProofs = ['step_up', 'session', 'admin_step_up', 'session_review'] as const;
 /**
  * Why an admin was one when they acted (ADR-0027): the owner list in the repository, or the admin
  * grant in force, which the row names.
@@ -150,7 +155,8 @@ export const decision = knowledge.table(
     listId: text('list_id'),
     versionNumber: integer('version_number').notNull(),
     contentHash: text('content_hash').notNull(),
-    authorAccountId: uuid('approver_account_id').notNull(),
+    /** The admin who decided; null on a `session_review` row, which no account wrote. */
+    authorAccountId: uuid('approver_account_id'),
     proof: text('proof', { enum: decisionProofs }).notNull(),
     /** Why the author was an admin; null on a `step_up` row. */
     adminBasis: text('admin_basis', { enum: adminBases }),
@@ -213,12 +219,29 @@ export const decision = knowledge.table(
           AND ${table.authenticatorData} IS NOT NULL AND ${table.clientDataJson} IS NOT NULL
           AND ${table.signature} IS NOT NULL AND ${table.stepUpId} IS NOT NULL
           AND (${table.casesHash} IS NOT NULL) = (${table.subjectKind} = 'route')
+        WHEN 'session_review' THEN ${table.kind} = 'activate' AND ${table.subjectKind} = 'route'
+          AND ${table.adminBasis} IS NULL AND ${table.adminGrantId} IS NULL
+          AND ${table.credentialId} IS NULL AND ${table.publicKey} IS NULL
+          AND ${table.actionNonce} IS NULL AND ${table.serverNonce} IS NULL
+          AND ${table.authenticatorData} IS NULL AND ${table.clientDataJson} IS NULL
+          AND ${table.signature} IS NULL AND ${table.stepUpId} IS NULL
+          AND ${table.casesHash} IS NOT NULL
         ELSE false END`,
     ),
     check(
       'decision_cases_hash',
-      sql`${table.casesHash} IS NULL OR (${table.proof} = 'admin_step_up' AND ${contentHashFormat(table.casesHash)})`,
+      sql`${table.casesHash} IS NULL OR (${table.proof} IN ('admin_step_up', 'session_review') AND ${contentHashFormat(table.casesHash)})`,
     ),
+    check(
+      'decision_author',
+      sql`(${table.authorAccountId} IS NULL) = (${table.proof} = 'session_review')`,
+    ),
+    // A session review's migration stores its activations, and nothing else (ADR-0032).
+    pgPolicy('decision_insert_session_review', {
+      for: 'insert',
+      to: 'app_migrator',
+      withCheck: sql`${table.proof} = 'session_review'`,
+    }),
     // The row copies the step-up its author spent for this purpose, field by field (ADR-0031).
     pgPolicy('decision_insert_with_step_up', {
       for: 'insert',

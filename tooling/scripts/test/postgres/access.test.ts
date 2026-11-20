@@ -1016,6 +1016,43 @@ describe('the knowledge schema access matrix (spec 0007, R7)', () => {
     });
   });
 
+  it('lets the migrator, which owns the table, store only a session review activation (ADR-0032)', async () => {
+    expect(await decisionPrivileges('app_migrator')).toEqual({
+      usage: true,
+      create: true,
+      columns: onEvery(decisionColumns, ['SELECT', 'INSERT']),
+      table: [],
+    });
+    const insert = (proof: string, extra = { columns: '', values: '' }) =>
+      `INSERT INTO knowledge.decision (kind, subject_kind, route_id, version_number, content_hash,
+         proof${extra.columns})
+       VALUES ('activate', 'route', 'qm-sample', 1, '${'a'.repeat(64)}', '${proof}'${extra.values})`;
+    await withClient(migratorTarget(database), async (client) => {
+      await expect(
+        client.query(
+          insert('session', {
+            columns: ', approver_account_id, admin_basis',
+            values: `, '00000000-5eed-4000-8000-000000000001', 'owner_list'`,
+          }),
+        ),
+      ).rejects.toThrow(/row-level security/);
+      await client.query('BEGIN');
+      await expect(
+        client.query(
+          insert('session_review', { columns: ', cases_hash', values: `, '${'d'.repeat(64)}'` }),
+        ),
+      ).resolves.toMatchObject({ rowCount: 1 });
+      await client.query('ROLLBACK');
+      for (const change of [
+        'UPDATE knowledge.decision SET kind = kind',
+        'DELETE FROM knowledge.decision',
+        'TRUNCATE knowledge.decision',
+      ]) {
+        await expect(client.query(change)).rejects.toThrow(/permission denied/);
+      }
+    });
+  });
+
   it('lets app_api only read', async () => {
     expect(await decisionPrivileges('app_api')).toEqual({
       usage: true,

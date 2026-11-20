@@ -6,12 +6,15 @@ import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
 import { createKnowledgeVersions } from '../../src/knowledge/versions.js';
 import { authTestDatabase, type AuthTestDatabase, silentLogger } from './auth-database.js';
 
-// The rules the API reads from the database (ADR-0031), on the real migrations, whose import
-// wrote the repository's rules: the same versions, hashes and views as the bundle held.
+// The rules the API reads from the database (ADR-0031), on the real migrations up to the first
+// session review (ADR-0032), which adds versions the bundle never held: the import wrote the
+// repository's rules, the same versions, hashes and views as the bundle held.
 let testDatabase: AuthTestDatabase;
 
 beforeAll(async () => {
-  testDatabase = await authTestDatabase();
+  testDatabase = await authTestDatabase({
+    stopBefore: '20261120021314_knowledge_session_review_2026_11_us',
+  });
 }, 60_000);
 
 afterAll(async () => {

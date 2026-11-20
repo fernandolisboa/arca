@@ -40,7 +40,7 @@ import {
 import type { Logger } from '@arca/telemetry';
 import { type ModelReply, loggedModelCall } from '../../ai/model-call.js';
 import { type SourceFetcher, textDigest } from '../pages/fetcher.js';
-import { readOfficialPage } from './official-page.js';
+import { hostsByUrl, readOfficialPage } from './official-page.js';
 import {
   type NewRouteSubject,
   type ResearchReply,
@@ -315,17 +315,7 @@ export function createRuleUpdate({
     items: readonly CheckItem[],
     hostsOf: (pins: CheckItem['officialDomains']) => readonly string[] | undefined,
   ) => {
-    const hosts = new Map<string, string[]>();
-    for (const item of items) {
-      const allowed = hostsOf(item.officialDomains) ?? [];
-      for (const url of item.urls) {
-        const before = hosts.get(url);
-        hosts.set(
-          url,
-          before === undefined ? [...allowed] : before.filter((h) => allowed.includes(h)),
-        );
-      }
-    }
+    const hosts = hostsByUrl(items, hostsOf);
     const addresses = machineReadableUrls(entry);
     const pages = new Map<string, ReadPage>();
     const log: ValidationOutput['pages'] = [];

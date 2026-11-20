@@ -1,0 +1,180 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "adb6e8a0-a27e-4bc8-9451-51d723482b44",
+  "prevIds": [
+    "6c474978-ba9a-482e-bb50-3e7b4eb0cf87"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "knowledge",
+        "decision",
+        "approver_account_id"
+      ],
+      "writes": [
+        "s|colprop|knowledge.decision.approver_account_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.approver_account_id"
+      ],
+      "sqlHash": "b1bb166cd3dcc7de"
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_author",
+        "n|ck|knowledge.decision.decision_author",
+        "e|ck|knowledge.decision.decision_author",
+        "n|con|knowledge.decision.decision_author"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.approver_account_id",
+        "n|col|knowledge.decision.proof"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_proof"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.proof",
+        "n|col|knowledge.decision.admin_basis",
+        "n|col|knowledge.decision.admin_grant_id",
+        "n|col|knowledge.decision.credential_id",
+        "n|col|knowledge.decision.public_key",
+        "n|col|knowledge.decision.action_nonce",
+        "n|col|knowledge.decision.server_nonce",
+        "n|col|knowledge.decision.authenticator_data",
+        "n|col|knowledge.decision.client_data_json",
+        "n|col|knowledge.decision.signature",
+        "n|col|knowledge.decision.step_up_id",
+        "n|col|knowledge.decision.cases_hash",
+        "n|col|knowledge.decision.subject_kind",
+        "n|col|knowledge.decision.kind",
+        "e|col|knowledge.decision.proof",
+        "e|col|knowledge.decision.admin_basis",
+        "e|col|knowledge.decision.admin_grant_id",
+        "e|col|knowledge.decision.credential_id",
+        "e|col|knowledge.decision.public_key",
+        "e|col|knowledge.decision.action_nonce",
+        "e|col|knowledge.decision.server_nonce",
+        "e|col|knowledge.decision.authenticator_data",
+        "e|col|knowledge.decision.client_data_json",
+        "e|col|knowledge.decision.signature",
+        "e|col|knowledge.decision.step_up_id",
+        "e|col|knowledge.decision.cases_hash",
+        "e|col|knowledge.decision.subject_kind"
+      ],
+      "sqlHash": "7e1bcaaaa4694236"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|ck|knowledge.decision.decision_cases_hash"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|col|knowledge.decision.cases_hash",
+        "n|col|knowledge.decision.proof",
+        "e|col|knowledge.decision.cases_hash",
+        "e|col|knowledge.decision.proof"
+      ],
+      "sqlHash": "833656bb13414442"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "knowledge",
+        "decision"
+      ],
+      "writes": [
+        "s|pol|knowledge.decision.decision_insert_session_review",
+        "n|pol|knowledge.decision.decision_insert_session_review",
+        "e|pol|knowledge.decision.decision_insert_session_review"
+      ],
+      "reads": [
+        "n|tbl|knowledge.decision",
+        "n|sch|knowledge",
+        "n|role|app_migrator",
+        "e|rls|knowledge.decision"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_author",
+        "value": "(\"approver_account_id\" IS NULL) = (\"proof\" = 'session_review')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "knowledge",
+        "table": "decision",
+        "name": "decision_insert_session_review",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_migrator"
+        ],
+        "using": null,
+        "withCheck": "\"knowledge\".\"decision\".\"proof\" = 'session_review'",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"knowledge\",\"decision\",\"approver_account_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"decision\",\"decision_proof\"]",
+      "set": {
+        "value": "CASE \"proof\"\n        WHEN 'step_up' THEN \"admin_basis\" IS NULL AND \"admin_grant_id\" IS NULL\n          AND \"credential_id\" IS NOT NULL AND \"public_key\" IS NOT NULL\n          AND \"action_nonce\" IS NOT NULL AND \"server_nonce\" IS NOT NULL\n          AND \"authenticator_data\" IS NOT NULL AND \"client_data_json\" IS NOT NULL\n          AND \"signature\" IS NOT NULL AND \"step_up_id\" IS NOT NULL\n        WHEN 'session' THEN CASE \"admin_basis\" WHEN 'owner_list' THEN \"admin_grant_id\" IS NULL\n        WHEN 'grant' THEN \"admin_grant_id\" IS NOT NULL ELSE false END\n          AND \"credential_id\" IS NULL AND \"public_key\" IS NULL\n          AND \"action_nonce\" IS NULL AND \"server_nonce\" IS NULL\n          AND \"authenticator_data\" IS NULL AND \"client_data_json\" IS NULL\n          AND \"signature\" IS NULL AND \"step_up_id\" IS NULL\n        WHEN 'admin_step_up' THEN CASE \"admin_basis\" WHEN 'owner_list' THEN \"admin_grant_id\" IS NULL\n        WHEN 'grant' THEN \"admin_grant_id\" IS NOT NULL ELSE false END\n          AND \"credential_id\" IS NOT NULL AND \"public_key\" IS NOT NULL\n          AND \"action_nonce\" IS NOT NULL AND \"server_nonce\" IS NOT NULL\n          AND \"authenticator_data\" IS NOT NULL AND \"client_data_json\" IS NOT NULL\n          AND \"signature\" IS NOT NULL AND \"step_up_id\" IS NOT NULL\n          AND (\"cases_hash\" IS NOT NULL) = (\"subject_kind\" = 'route')\n        WHEN 'session_review' THEN \"kind\" = 'activate' AND \"subject_kind\" = 'route'\n          AND \"admin_basis\" IS NULL AND \"admin_grant_id\" IS NULL\n          AND \"credential_id\" IS NULL AND \"public_key\" IS NULL\n          AND \"action_nonce\" IS NULL AND \"server_nonce\" IS NULL\n          AND \"authenticator_data\" IS NULL AND \"client_data_json\" IS NULL\n          AND \"signature\" IS NULL AND \"step_up_id\" IS NULL\n          AND \"cases_hash\" IS NOT NULL\n        ELSE false END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"knowledge\",\"decision\",\"decision_cases_hash\"]",
+      "set": {
+        "value": "\"cases_hash\" IS NULL OR (\"proof\" IN ('admin_step_up', 'session_review') AND \"cases_hash\" ~ '^[0-9a-f]{64}$')"
+      }
+    }
+  ]
+}
