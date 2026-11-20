@@ -19,7 +19,10 @@ export interface CountryFieldProps {
   readonly onChange: (value: string) => void;
   /** Shown in the field while nothing is chosen. */
   readonly placeholder: string;
-  /** With it, the picker's first option, which clears the choice, such as "all countries". */
+  /**
+   * The name of the picker's first option, which clears the choice, such as "all countries".
+   * Without it, that option shows only while something is chosen, under a general name.
+   */
   readonly clearLabel?: string;
   readonly groups: readonly CountryOptionGroup[];
 }
@@ -53,8 +56,10 @@ export function CountryField({
   const [search, setSearch] = useState('');
   const chosen = groups.flatMap(({ options }) => options).find((option) => option.value === value);
   const found = groups
-    .map((group) => ({
+    .map((group, position) => ({
       ...group,
+      // Its place among the groups given, which a search never changes, as its key.
+      id: String(position),
       options: group.options.filter((option) => matchesSearch(option.label, search)),
     }))
     .filter(({ options }) => options.length > 0);
@@ -111,93 +116,95 @@ export function CountryField({
       <dialog
         ref={dialogRef}
         aria-labelledby={labelId}
-        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none flex-col gap-3 rounded-t-card border border-line bg-surface p-4 text-ink backdrop:bg-ink/40 open:flex sm:top-[10vh] sm:bottom-auto sm:mx-auto sm:max-h-[75vh] sm:w-[min(44rem,calc(100vw-2rem))] sm:rounded-card"
+        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none flex-col rounded-t-card border border-line bg-surface p-0 text-ink backdrop:bg-ink/40 open:flex sm:top-[10vh] sm:bottom-auto sm:mx-auto sm:max-h-[75vh] sm:w-[min(44rem,calc(100vw-2rem))] sm:rounded-card"
         onClick={(event) => {
-          // A click on the dialog itself is one on its backdrop: its content fills the box.
+          // A click on the dialog itself is one on its backdrop: the panel inside fills the box.
           if (event.target === event.currentTarget) event.currentTarget.close();
         }}
       >
-        <div className="flex items-center gap-2">
-          <input
-            ref={searchRef}
-            type="search"
-            autoFocus
-            aria-label={t('countryPicker.search')}
-            placeholder={t('countryPicker.search')}
-            value={search}
-            className="min-h-touch min-w-0 flex-1 rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onChange={(event) => {
-              setSearch(event.currentTarget.value);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                optionButtons()[0]?.focus();
-              }
-              // Enter takes the first country found, and never submits a form around the field.
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                if (search.trim() !== '' && first !== undefined) pick(first.value);
-              }
-            }}
-          />
-          <button
-            type="button"
-            aria-label={t('countryPicker.close')}
-            className="grid size-11 shrink-0 place-items-center rounded-control text-muted hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            onClick={() => dialogRef.current?.close()}
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-        <div
-          ref={optionsRef}
-          role="presentation"
-          className="-mx-1 flex min-h-0 flex-col gap-3 overflow-y-auto px-1 pb-1"
-          onKeyDown={walk}
-        >
-          {clearLabel !== undefined && search.trim() === '' && (
+        <div className="flex min-h-0 flex-col gap-3 p-4">
+          <div className="flex items-center gap-2">
+            <input
+              ref={searchRef}
+              type="search"
+              autoFocus
+              aria-label={t('countryPicker.search')}
+              placeholder={t('countryPicker.search')}
+              value={search}
+              className="min-h-touch min-w-0 flex-1 rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              onChange={(event) => {
+                setSearch(event.currentTarget.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  optionButtons()[0]?.focus();
+                }
+                // Enter takes the first country found, and never submits a form around the field.
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  if (search.trim() !== '' && first !== undefined) pick(first.value);
+                }
+              }}
+            />
             <button
               type="button"
-              aria-pressed={value === ''}
-              className={optionClass}
-              onClick={() => {
-                pick('');
-              }}
+              aria-label={t('countryPicker.close')}
+              className="grid size-11 shrink-0 place-items-center rounded-control text-muted hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              onClick={() => dialogRef.current?.close()}
             >
-              {clearLabel}
+              <Icon name="close" size={20} />
             </button>
-          )}
-          {found.map((group) => (
-            <div
-              key={group.title ?? ''}
-              role="group"
-              aria-label={group.title ?? label}
-              className="flex flex-col gap-2"
-            >
-              {group.title !== undefined && (
-                <p className="text-small font-medium text-muted">{group.title}</p>
-              )}
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-                {group.options.map((option) => (
-                  <li key={option.value} className="flex">
-                    <button
-                      type="button"
-                      aria-pressed={option.value === value}
-                      className={optionClass}
-                      onClick={() => {
-                        pick(option.value);
-                      }}
-                    >
-                      <CountryFlag code={option.value} />
-                      <span className="min-w-0 flex-1 break-words">{option.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          {found.length === 0 && <p className="text-muted">{t('countryPicker.none')}</p>}
+          </div>
+          <div
+            ref={optionsRef}
+            role="presentation"
+            className="-mx-1 flex min-h-0 flex-col gap-3 overflow-y-auto px-1 pb-1"
+            onKeyDown={walk}
+          >
+            {(clearLabel !== undefined || value !== '') && search.trim() === '' && (
+              <button
+                type="button"
+                aria-pressed={value === ''}
+                className={optionClass}
+                onClick={() => {
+                  pick('');
+                }}
+              >
+                {clearLabel ?? t('countryPicker.clear')}
+              </button>
+            )}
+            {found.map((group) => (
+              <div
+                key={group.id}
+                role="group"
+                aria-label={group.title ?? label}
+                className="flex flex-col gap-2"
+              >
+                {group.title !== undefined && (
+                  <p className="text-small font-medium text-muted">{group.title}</p>
+                )}
+                <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                  {group.options.map((option) => (
+                    <li key={option.value} className="flex">
+                      <button
+                        type="button"
+                        aria-pressed={option.value === value}
+                        className={optionClass}
+                        onClick={() => {
+                          pick(option.value);
+                        }}
+                      >
+                        <CountryFlag code={option.value} />
+                        <span className="min-w-0 flex-1 break-words">{option.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            {found.length === 0 && <p className="text-muted">{t('countryPicker.none')}</p>}
+          </div>
         </div>
       </dialog>
     </div>

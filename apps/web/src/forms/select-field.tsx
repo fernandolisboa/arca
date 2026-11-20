@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId } from 'react';
 
 export interface SelectOption {
   readonly value: string;
@@ -13,8 +13,6 @@ export interface SelectFieldProps {
   readonly options: readonly SelectOption[];
   /** Shown first, with an empty value, while nothing is chosen. */
   readonly placeholder?: string;
-  /** Further groups of options, such as former states after the countries. */
-  readonly children?: ReactNode;
   readonly required?: boolean;
 }
 
@@ -29,7 +27,6 @@ export function SelectField({
   onChange,
   options,
   placeholder,
-  children,
   required,
 }: SelectFieldProps) {
   const id = useId();
@@ -55,7 +52,6 @@ export function SelectField({
             {option.label}
           </option>
         ))}
-        {children}
       </select>
       {hint !== undefined && (
         <p id={hintId} className="text-small text-muted">

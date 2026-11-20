@@ -16,7 +16,7 @@ export function CountryFlag({
   readonly className?: string;
 }) {
   const src = flagUrl(code);
-  // The file that failed, so a select that moves to another country tries that one afresh.
+  // The file that failed, by its address, so another country's flag still loads in its place.
   const [failed, setFailed] = useState<string | null>(null);
   if (src === undefined || failed === src) return null;
   return (

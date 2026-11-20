@@ -19,7 +19,7 @@ describe('the bundled flag files', () => {
   // The files are served from the app's origin, so a version bump must not bring active content.
   it('hold drawings only: no script, event handler, foreign content or outside address', () => {
     const active =
-      /<script|\son[a-z]+\s*=|<foreignObject|javascript:|(?:href|src)\s*=\s*["'](?!#)/i;
+      /<script|\son[a-z]+\s*=|<foreignObject|javascript:|@import|(?:href|src)\s*=\s*["'](?!#)|url\(\s*["']?(?!#)/i;
     const files = readdirSync(flagsDir).filter((file) => file.endsWith('.svg'));
     expect(files.length).toBeGreaterThan(200);
     expect(files.filter((file) => active.test(readFileSync(join(flagsDir, file), 'utf8')))).toEqual(

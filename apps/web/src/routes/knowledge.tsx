@@ -476,8 +476,12 @@ function CountryRows({
           <span className="font-medium">
             {named ? (
               <>
-                <span className="sr-only">{version.title} · </span>
-                {t('knowledge.review.versionNumber', { number: version.number })}
+                <span className="sr-only">
+                  {t('knowledge.versionTitle', { title: version.title, number: version.number })}
+                </span>
+                <span aria-hidden="true">
+                  {t('knowledge.review.versionNumber', { number: version.number })}
+                </span>
               </>
             ) : (
               t('knowledge.versionTitle', { title: version.title, number: version.number })

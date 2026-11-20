@@ -2127,16 +2127,17 @@ export const ptBR = {
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },
   },
-  /**
-   * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are
-   * named by Intl.DisplayNames, never here.
-   */
   /** The country picker: a search over the countries, each with its flag. */
   countryPicker: {
     search: 'Buscar país',
     none: 'Nenhum país com esse nome.',
+    clear: 'Limpar a escolha',
     close: 'Fechar',
   },
+  /**
+   * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are
+   * named by Intl.DisplayNames, never here.
+   */
   formerCountries: {
     AIDJ: 'Território Francês dos Afares e Issas',
     ANHH: 'Antilhas Holandesas',
