@@ -111,8 +111,8 @@ export function numbersIn(text: string): ReadonlySet<string> {
   return found;
 }
 
-/** A figure with a percent sign right after it, or after one space. */
-const percentage = /(\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*)[\s\u00a0\u2009\u202f]?[%\uff05\ufe6a]/gu;
+/** A percent sign right after a figure, or after one space: the two characters after it. */
+const percentSign = /^[\s\u00a0\u2009\u202f]?[%\uff05\ufe6a]/u;
 
 /** A canonical decimal divided by one hundred by moving its decimal mark, so nothing rounds it. */
 function hundredth(decimal: string): string {
@@ -128,7 +128,11 @@ function hundredth(decimal: string): string {
  */
 export function percentagesIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
-  for (const [, token = ''] of text.matchAll(percentage)) {
+  // Each figure is found once and the sign looked for after it, so a long text stays linear.
+  for (const match of text.matchAll(numberToken)) {
+    const [token] = match;
+    const end = match.index + token.length;
+    if (!percentSign.test(text.slice(end, end + 2))) continue;
     const whole = readings(token);
     const last =
       whole.length > 0 ? [] : readings(token.split(/[\s\u00a0\u2009\u202f]+/u).at(-1) ?? '');
