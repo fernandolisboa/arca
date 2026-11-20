@@ -5,9 +5,7 @@
       "id": "brazilian-native-adult",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -20,12 +18,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -44,9 +37,7 @@
       "id": "uruguayan-native-child",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -59,12 +50,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -83,9 +69,7 @@
       "id": "bolivian-native",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -98,12 +82,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -122,9 +101,7 @@
       "id": "brazilian-by-descent-from-birth",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -143,12 +120,7 @@
                 "basis": "descent"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -167,9 +139,7 @@
       "id": "brazilian-by-naturalization",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -188,12 +158,7 @@
                 "basis": "naturalization"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -212,9 +177,7 @@
       "id": "peruvian-native",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -227,12 +190,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -251,9 +209,7 @@
       "id": "venezuelan-native",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -266,12 +222,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -290,9 +241,7 @@
       "id": "chilean-only",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -305,12 +254,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -329,9 +273,7 @@
       "id": "brazilian-citizenship-lost",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
@@ -350,12 +292,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -374,19 +311,12 @@
       "id": "no-citizenship-recorded",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1"
-        ],
+        "members": ["p1"],
         "people": [
           {
             "id": "p1",
             "birthDate": "1985-04-12",
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [],
@@ -398,24 +328,14 @@
         "status": "missing_information",
         "dependents": [],
         "possibleDependents": [],
-        "missingFacts": [
-          "principal.citizenships@p1",
-          "principal.citizenshipsFromBirth@p1"
-        ]
+        "missingFacts": ["principal.citizenships@p1", "principal.citizenshipsFromBirth@p1"]
       }
     },
     {
       "id": "brazilian-with-spouse-children-stepchild-and-parent",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4",
-          "p5",
-          "p6"
-        ],
+        "members": ["p1", "p2", "p3", "p4", "p5", "p6"],
         "people": [
           {
             "id": "p1",
@@ -428,12 +348,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p2",
@@ -446,12 +361,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p3",
@@ -464,12 +374,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p4",
@@ -482,12 +387,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p5",
@@ -500,12 +400,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p6",
@@ -518,21 +413,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [
           {
             "kind": "spouse",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2010-01-01",
             "end": "none"
           },
@@ -573,14 +460,8 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3",
-          "p5"
-        ],
-        "possibleDependents": [
-          "p4"
-        ],
+        "dependents": ["p2", "p3", "p5"],
+        "possibleDependents": ["p4"],
         "missingFacts": []
       }
     },
@@ -588,12 +469,7 @@
       "id": "brazilian-with-a-partner-and-the-partners-child",
       "snapshot": {
         "recordedOn": "2026-10-01",
-        "members": [
-          "p1",
-          "p2",
-          "p3",
-          "p4"
-        ],
+        "members": ["p1", "p2", "p3", "p4"],
         "people": [
           {
             "id": "p1",
@@ -606,12 +482,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p2",
@@ -624,12 +495,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p3",
@@ -642,12 +508,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p4",
@@ -660,21 +521,13 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [
           {
             "kind": "partner",
-            "people": [
-              "p1",
-              "p2"
-            ],
+            "people": ["p1", "p2"],
             "start": "2025-03-01",
             "end": "none"
           },
@@ -697,13 +550,8 @@
       "rulesAsOf": "2026-10-01",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2",
-          "p3"
-        ],
-        "possibleDependents": [
-          "p4"
-        ],
+        "dependents": ["p2", "p3"],
+        "possibleDependents": ["p4"],
         "missingFacts": []
       }
     },
@@ -711,10 +559,7 @@
       "id": "child-born-on-a-leap-day-is-18-on-28-february",
       "snapshot": {
         "recordedOn": "2026-02-28",
-        "members": [
-          "p1",
-          "p2"
-        ],
+        "members": ["p1", "p2"],
         "people": [
           {
             "id": "p1",
@@ -727,12 +572,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p2",
@@ -745,12 +585,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [
@@ -768,9 +603,7 @@
       "expected": {
         "status": "needs_assessment",
         "dependents": [],
-        "possibleDependents": [
-          "p2"
-        ],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
@@ -778,10 +611,7 @@
       "id": "child-born-on-a-leap-day-is-17-on-27-february",
       "snapshot": {
         "recordedOn": "2026-02-27",
-        "members": [
-          "p1",
-          "p2"
-        ],
+        "members": ["p1", "p2"],
         "people": [
           {
             "id": "p1",
@@ -794,12 +624,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           },
           {
             "id": "p2",
@@ -812,12 +637,7 @@
                 "basis": "birth"
               }
             ],
-            "recordedInFull": [
-              "spouses",
-              "partners",
-              "children",
-              "parents"
-            ]
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
           }
         ],
         "relationships": [
@@ -834,9 +654,7 @@
       "rulesAsOf": "2026-02-27",
       "expected": {
         "status": "needs_assessment",
-        "dependents": [
-          "p2"
-        ],
+        "dependents": ["p2"],
         "possibleDependents": [],
         "missingFacts": []
       }
