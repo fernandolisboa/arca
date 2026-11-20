@@ -25,8 +25,9 @@ The proposal check and the quote check (`ARCA_REVIEW_QUOTES=2026-11-ge`) pass on
 1. **Property already owned.** The requirement reads the unit's liquid funds against USD 150,000, since no case fact records an asset's country or whether land is agricultural, and a requirement must be able to be false. An owner who already holds a qualifying Georgian property and has no cash reads not eligible ([OPEN-QUESTIONS](../../../../docs/OPEN-QUESTIONS.md)).
 2. **The spouse's children.** Version 3, like version 2, reads art. 15(j)'s "his/her … child/children" as the owner's own children; a child of the spouse alone stays out, since neither the law nor the Agency's page names one ([OPEN-QUESTIONS](../../../../docs/OPEN-QUESTIONS.md)). Whether Georgia recognizes a given marriage is not checked either.
 3. **Faster service may be refused.** The fee ordinance's amendment of 31 August 2026 lets the Agency refuse the 10- or 20-day service when objective circumstances make it impossible; the `decision` duration does not say so.
-4. **Residence card.** Art. 20(2): the card must be obtained within one month of the permit; not modeled, since it follows the grant.
-5. **"Public order".** The Georgian text of art. 18(1)(c) as Law No. 1803 left it says public order where the English publication cited says public safety; `security` follows the cited English text.
-6. **Version 1** (2026-03-01 to 2026-08-31) stays as the audit left it.
-7. **Other Georgian routes** (investment permit, art. 15(h); unlimited permit, art. 15(k); work and IT permits) are new routes, which go through the app.
-8. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
+4. **Ordinance No. 416 of 26 August 2026** (in force 2026-09-01) caps the review at 30 days from a full file (art. 13(3) of the Ordinance No. 520 rules) and exempts an extension from a new valuation while the owner keeps the property (art. 14(3)); the version's 30-day decision and art. 16(3) say the same, and the ordinance is not cited. The Agency's on-site check (art. 17(3¹)) and art. 18(1)(g1), which concerns a citizen's spouse, are not modeled.
+5. **Residence card.** Art. 20(2): the card must be obtained within one month of the permit; not modeled, since it follows the grant.
+6. **"Public order".** The Georgian text of art. 18(1)(c) as Law No. 1803 left it says public order where the English publication cited says public safety; `security` follows the cited English text.
+7. **Version 1** (2026-03-01 to 2026-08-31) stays as the audit left it.
+8. **Other Georgian routes** (investment permit, art. 15(h); unlimited permit, art. 15(k); work and IT permits) are new routes, which go through the app.
+9. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
