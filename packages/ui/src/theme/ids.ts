@@ -1,5 +1,5 @@
 /**
- * The ten appearance axes, their identifiers and built-in defaults (spec 0006, Defaults). This
+ * The twelve appearance axes, their identifiers and built-in defaults (spec 0006, Defaults). This
  * module imports nothing, so the boot script and the build config can use it without React or CSS.
  */
 export const axes = {
@@ -37,6 +37,12 @@ export const axes = {
     default: 'menu',
   },
   dockEdge: { attribute: 'data-dock-edge', values: ['bottom', 'left', 'right'], default: 'bottom' },
+  navCollapse: {
+    attribute: 'data-nav-collapse',
+    values: ['expanded', 'collapsed'],
+    default: 'expanded',
+  },
+  navAutoHide: { attribute: 'data-nav-auto-hide', values: ['off', 'on'], default: 'off' },
   textSize: {
     attribute: 'data-text-size',
     values: ['75', '90', '100', '112', '125', '150'],

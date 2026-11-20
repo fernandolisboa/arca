@@ -73,6 +73,12 @@ function AxisPanel({ section }: { readonly section: AxisSection }) {
     ),
   };
 
+  const descriptions: Partial<Record<AxisName, string>> = {
+    dockEdge: t('settings.appearance.dockEdge.description'),
+    navCollapse: t('settings.appearance.navCollapse.description'),
+    navAutoHide: t('settings.appearance.navAutoHide.description'),
+  };
+
   function group<A extends AxisName>(axis: A, values: readonly AxisValue<A>[]) {
     const fallback = axes[axis].default;
     const preview = previews[axis];
@@ -88,11 +94,9 @@ function AxisPanel({ section }: { readonly section: AxisSection }) {
       })),
     ];
     const description =
-      axis === 'dockEdge'
-        ? t('settings.appearance.dockEdge.description')
-        : axis === 'motion' && reducedMotion
-          ? t('settings.appearance.motion.reduced')
-          : undefined;
+      axis === 'motion' && reducedMotion
+        ? t('settings.appearance.motion.reduced')
+        : descriptions[axis];
     return (
       <ChoiceGroup<Answer<A>>
         key={axis}
@@ -111,12 +115,14 @@ function AxisPanel({ section }: { readonly section: AxisSection }) {
 
   const floatingDock =
     resolved.navNarrow === 'floating-dock' || resolved.navWide === 'floating-dock';
+  // The menu panel has nothing to collapse, so the size question waits for another layout.
+  const onlyMenu = resolved.navNarrow === 'menu' && resolved.navWide === 'menu';
+  const applies = (axis: AxisName) =>
+    (axis !== 'dockEdge' || floatingDock) && (axis !== 'navCollapse' || !onlyMenu);
   const shown: readonly AxisName[] = sectionAxes[section];
   return (
     <>
-      {shown
-        .filter((axis) => axis !== 'dockEdge' || floatingDock)
-        .map((axis) => group(axis, axes[axis].values))}
+      {shown.filter(applies).map((axis) => group(axis, axes[axis].values))}
       <div className="flex flex-col items-start gap-2">
         <Button
           variant="secondary"
