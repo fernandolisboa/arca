@@ -187,14 +187,22 @@ export function AppShell({
   const sideOpenOverPage = autoHide && layout.wide === 'side' && sideShown;
   useEffect(() => {
     if (!sideOpenOverPage) return;
-    const away = (event: globalThis.PointerEvent) => {
-      if (event.target instanceof Node && sideRef.current?.contains(event.target) !== true) {
-        setSideShown(false);
-      }
+    const outside = (event: globalThis.PointerEvent) =>
+      event.target instanceof Element &&
+      sideRef.current?.contains(event.target) !== true &&
+      event.target.closest('[data-side-edge]') === null;
+    const pressAway = (event: globalThis.PointerEvent) => {
+      if (outside(event)) setSideShown(false);
     };
-    document.addEventListener('pointerdown', away);
+    // A mouse sends it back once it moves over the page, wherever it entered from.
+    const moveAway = (event: globalThis.PointerEvent) => {
+      if (event.pointerType === 'mouse' && outside(event)) setSideShown(false);
+    };
+    document.addEventListener('pointerdown', pressAway);
+    document.addEventListener('pointermove', moveAway);
     return () => {
-      document.removeEventListener('pointerdown', away);
+      document.removeEventListener('pointerdown', pressAway);
+      document.removeEventListener('pointermove', moveAway);
     };
   }, [sideOpenOverPage]);
 
@@ -331,9 +339,6 @@ export function AppShell({
           aria-label={labels.navigation}
           inert={menuOpen}
           data-hidden={autoHide && !sideShown ? '' : undefined}
-          onPointerLeave={(event) => {
-            if (autoHide && event.pointerType === 'mouse') setSideShown(false);
-          }}
           className={`fixed inset-y-0 left-0 z-20 hidden ${collapsed ? 'w-[calc(72px+env(safe-area-inset-left))]' : 'w-[calc(216px+env(safe-area-inset-left))]'} flex-col gap-6 border-r border-line bg-surface pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] pl-[calc(0.75rem+env(safe-area-inset-left))] pr-3 md:flex ${slideClass} ${autoHide ? 'shadow-lg shadow-ink/15' : ''} ${autoHide && !sideShown ? '-translate-x-full has-[:focus-visible]:translate-x-0' : ''}`}
         >
           {collapsed ? (
