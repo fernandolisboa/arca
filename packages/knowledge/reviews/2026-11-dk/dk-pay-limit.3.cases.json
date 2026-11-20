@@ -760,7 +760,8 @@
                 "lost": "none",
                 "basis": "birth"
               }
-            ]
+            ],
+            "financiallyDependentOn": []
           }
         ],
         "relationships": [
@@ -990,6 +991,58 @@
         "status": "needs_assessment",
         "dependents": [],
         "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "adult-child-whose-dependence-is-unknown-possible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1975-04-04",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1975-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2003-02-02",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2003-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p2",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },

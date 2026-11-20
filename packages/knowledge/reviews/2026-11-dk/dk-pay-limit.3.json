@@ -287,7 +287,7 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse who was 18 or more at the wedding; married younger, both now 18 or more: possible, as a cohabiting partner after at least 1.5 to 2 years living together",
+      "title": "Spouse who was 18 or more at the wedding; married younger, with both now 18 or more: possible, since SIRI then assesses the couple as cohabiting partners",
       "path": ["spouse"],
       "condition": {
         "op": "any",

@@ -18,6 +18,7 @@ Two reviewers in round 1, one checking each item against its provision, the othe
 
 - **Round 1.** No amount, age, date or citation wrong. Proven and fixed: the fourth criterion of a recognised marriage (fundamental legal principles) missing; `family-permits-not-revoked` worded as past history where the act sets a condition of the permit; two titles shorter than their provisions; the family processing time, custody consent, the Danish employer and the passport limit missing. The second reviewer read every act and order on retsinformation numbered 766 to 1014 of 2026 and SIRI's news to 2026-11-20: nothing amends §§ 1, 2, 9 a, 9 h, 9 m or 19 for 2026; no 2027 pay limit or fee order is out.
 - **Round 2**, on the changes: no defect. No third round was needed.
+- **After round 2**, from the repository's reviewers: the spouse rule's title now says why a younger marriage reads as possible, the 28 February leap-day case records the child as depending on no one so it still tests the leap day, and a case shows an adult child whose dependence is unknown as possible.
 
 The proposal check and the quote check (`ARCA_REVIEW_QUOTES=2026-11-dk`) pass on the final files.
 
