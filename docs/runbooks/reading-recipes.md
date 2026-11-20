@@ -226,10 +226,10 @@ For each host:
 
 ## `pl`: Poland
 
-**`sejm.gov.pl`** (cited through `api.sejm.gov.pl`; last confirmed 2026-11-11)
+**`sejm.gov.pl`** (cited through `api.sejm.gov.pl`; last confirmed 2026-11-20)
 
 - **Read:** `curl` on the ELI API: `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>` (JSON, with `entryIntoForce` and references) and `/text.pdf`. Old acts are scans: read the PDF with the Read tool. `/text.html` answers empty for consolidated texts.
-- **Cite:** `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>/text.pdf`, the act as published in the Journal of Laws: the ISAP page a person would open is blocked (below), and the PDF is the official text.
+- **Cite:** `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>/text.pdf`, the act as published in the Journal of Laws: the ISAP page a person would open is blocked (below), and the PDF is the official text. A scan with no text layer cannot be cited, since the app's reader answers `pdf_no_text`: cite a later consolidated text (the 1962 citizenship act at `DU/2000/353`). The record itself, `https://api.sejm.gov.pl/eli/acts/DU/<yyyy>/<n>`, is cited, as a source's own address and never as the `machineReadableUrl` of an act's text, for a date in force that the act states only as a period after publication: the reader reads the JSON as its string values, without their labels.
 - **Amendments:** the original act's JSON lists amending acts ("Akty zmieniające", each with the date its change applies) and consolidated texts ("Inf. o tekście jednolitym"); a consolidated text's own record lists neither. `/eli/acts/search?title=<words>&publisher=DU&year=<yyyy>` finds acts by title.
 - Not readable: isap.sejm.gov.pl pages (403) and the sejm.gov.pl root.
 
@@ -238,9 +238,10 @@ For each host:
 - **Read:** `curl` on `/DU/<yyyy>/<n>`: the page carries the act's title and a link to the PDF, not the text; read the text from the ELI API's `/text.pdf`.
 - **Cite:** that page.
 
-**`uw.gov.pl`** and **`www.gov.pl`** (not cited yet; `www.gov.pl` last confirmed 2026-11-11)
+**`uw.gov.pl`** and **`www.gov.pl`** (`uw.gov.pl` not cited yet; `www.gov.pl` last confirmed 2026-11-20)
 
-- `uw.gov.pl` gave no answer on 2026-11-09. The `www.gov.pl` root answers 403 and guessed `/web/…` paths redirect to the home page, but a real page answers `curl`: `/web/<office>/<page>`, where the office is a voivode's (`uw-opolski`) or a country's consulates (`brazylia`).
+- `uw.gov.pl` gave no answer on 2026-11-09. The `www.gov.pl` root answers 403 and guessed `/web/…` paths redirect to the home page, but a real page answers `curl`: `/web/<office>/<page>`, where the office is a ministry (`mswia`), a voivode's (`uw-opolski`, `uw-pomorski`) or a country's consulates (`brazylia`).
+- **Cite:** that page; the app's reader reads it. A page speaks for its own office only.
 
 ## `pt`: Portugal
 
