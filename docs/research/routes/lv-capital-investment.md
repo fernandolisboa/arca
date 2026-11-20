@@ -1,8 +1,21 @@
 # lv-capital-investment
 
-Research notes for Latvia's temporary residence permit for an investment in a company's share capital, route `lv-capital-investment` in `packages/knowledge/data/routes`. The seed research is in [other-destinations.md](../other-destinations.md); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Latvia's temporary residence permit for an investment in a company's share capital, route `lv-capital-investment`, stored in the database's `knowledge` schema ([ADR-0031](../../adr/0031-rule-updates-on-request.md)): versions 1 to 4 were imported from `packages/knowledge/data/routes`, and later versions come from an update request or from `packages/knowledge/reviews`. The seed research is in [other-destinations.md](../other-destinations.md); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
+
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-lv/README.md](../../../packages/knowledge/reviews/2026-11-lv/README.md).
+
+- **Version audited:** 4 (effective 2026-09-15), the newest stored.
+- **Outcome:** correction, version 5, of version 4 from its own date, stored already active by the review's pull request. Every requirement, dependent rule and amount of version 4 matched its text and stays. New: sixteen assessments for the general conditions of any temporary residence permit (the call, means of subsistence, health insurance, the documents, three refusal grounds, the company's tax debt, where to file, the three-month decision), five costs for the call and the permit card (EUR 10 or EUR 17, EUR 10 a person, EUR 45 a card), and exact titles for the payment to the state budget, the renewal payment, the answer's time limit and the children of 18 or more. The permit's term moved from a duration to the title, since the quote check reads no Latvian number words.
+- **Sources re-read** on 2026-11-20, through the app's reader: the Immigration Law (id 370622), arts. 1, 2, 25, 27 to 30, 32 to 34 and transitional provision 3; the Civil Law (id 90223), arts. 219 to 221; the Law on the Protection of the Rights of the Child (id 49096), art. 3; Cabinet Regulations No. 731 of 2024 (id 356656), points 3, 5 and 7; No. 564 of 2010 (id 212441), points 7, 13, 15, 28, 29, 39 to 41, 65, 71 to 75; No. 225 of 2017 (id 290808); No. 656 of 2015 (id 278067), point 2; No. 591 of 2008 (id 179063), points 6, 7 and 9; No. 825 of 2006 (id 146484), point 2; No. 133 of 2012 (id 244579), point 4². Read in the session, not cited: the Immigration Law of 2002 (id 68522), art. 23, which the earlier regulations were written under.
+- **Amendments looked for**, up to 2026-11-20: the redactions and amending acts of each act on likumi.lv, and the acts issued under the new law. The Immigration Law: redactions of 2026-09-15 and, for art. 48, 2027-12-31; no amendment. No regulations under art. 28. Regulations No. 669 of 10 November 2026 (entry restrictions for Russian and Belarusian citizens) change no item. The Civil Law's redaction of 2026-11-11 did not touch arts. 219 to 221.
+- **Addresses:** `https://likumi.lv/ta/id/<id>` answers `curl` and the app's reader; an act's amendments and the acts issued under it are listed at `https://likumi.lv/ajax/saistitie.php?do=show&doc_id=<id>&type=468&version_date=<dd.mm.yyyy>&pants=0` (and `type=rev-933`). Some pages break words with soft hyphens, which a review file may not hold, so quotes stop before them.
+- **Watch next:**
+  - New Cabinet regulations under the new law, due by 1 December 2027, and the 2027 minimum monthly wage: each a new version from its date.
+  - Latvian number words in the quote check, to bring back the permit's two-year term as a duration.
 
 ### 2026-11-11
 
