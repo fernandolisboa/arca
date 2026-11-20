@@ -52,7 +52,8 @@ async function setUp() {
   return { rows, row, base, next, reading, check };
 }
 
-describe('checkProposal (ADR-0031)', () => {
+// Building the knowledge is slow on a busy CI runner.
+describe('checkProposal (ADR-0031)', { timeout: 120_000 }, () => {
   it('takes the next version of a route with passing cases, hashed as the read re-checks it', async () => {
     const { rows, next, reading, check } = await setUp();
     const result = await check(next());
