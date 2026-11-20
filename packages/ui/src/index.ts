@@ -10,6 +10,11 @@ export { formatCalendarDate, SourceLine, type SourceLineProps } from './patterns
 export { Icon, iconNames, type IconName, type IconProps } from './icon.js';
 export { Mark, type MarkProps } from './mark.js';
 export { cardClass } from './patterns/card.js';
+export {
+  LayoutToggle,
+  type LayoutOption,
+  type LayoutToggleProps,
+} from './patterns/layout-toggle.js';
 export { menuItemClass } from './patterns/menu-item.js';
 export { MenuToggle, type MenuToggleProps } from './menu-toggle.js';
 export { NextActionCard, type NextActionCardProps } from './patterns/next-action-card.js';

@@ -173,16 +173,22 @@ function TopicPassages({
  */
 function RouteRequestWizard({
   countries,
+  initialCountry,
   words,
   close,
 }: {
   readonly countries: RouteRequests['countries'];
+  /** A lower-case country code the wizard starts on; empty for none. */
+  readonly initialCountry: string;
   readonly words: KnowledgeWords;
   readonly close: (sent: boolean) => void;
 }) {
   const { t } = words;
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState<RouteRequestDraft>(emptyDraft);
+  const [draft, setDraft] = useState<RouteRequestDraft>({
+    ...emptyDraft,
+    countryCode: initialCountry,
+  });
   const [stepIndex, setStepIndex] = useState(0);
   const [state, setState] = useState<SendState>('open');
   const [fileRefused, setFileRefused] = useState(false);
@@ -491,9 +497,12 @@ function RouteRequestEntry({
  * opens the guide here, and any admin follows each request until its version is decided.
  */
 export function RouteRequestsSection({
+  country,
   words,
   onOpenVersion,
 }: {
+  /** Only this country's requests, and the wizard starts on it, when given. */
+  readonly country?: string;
   readonly words: KnowledgeWords;
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {
@@ -507,7 +516,10 @@ export function RouteRequestsSection({
   }
   if (requests.data === undefined) return null;
   const { canFile, countries } = requests.data;
-  const listed = requests.data.requests;
+  const listed = requests.data.requests.filter(
+    ({ countryCode }) => country === undefined || countryCode.toUpperCase() === country,
+  );
+  const initialCountry = country?.toLowerCase() ?? '';
   if (!canFile && listed.length === 0) return null;
   return (
     <section aria-label={title} className="flex flex-col gap-3">
@@ -536,6 +548,9 @@ export function RouteRequestsSection({
       {open && (
         <RouteRequestWizard
           countries={countries}
+          initialCountry={
+            countries.some(({ code }) => code === initialCountry) ? initialCountry : ''
+          }
           words={words}
           close={(done) => {
             setOpen(false);

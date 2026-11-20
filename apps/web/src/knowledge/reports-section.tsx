@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { api, ruleReportsQuery } from '../api.js';
 import { textLinkClass } from '../forms/text-link.js';
+import { countryOfRoute } from './review-order.js';
 import type { KnowledgeWords } from './words.js';
 
 type Report = RuleReports['reports'][number];
@@ -16,7 +17,8 @@ interface Reported {
   readonly reasons: readonly Report[];
 }
 
-function byRequirement(reports: readonly Report[]): Reported[] {
+/** The open reports grouped by requirement, as the section lists them. */
+export function byRequirement(reports: readonly Report[]): Reported[] {
   const grouped = new Map<string, Reported & { reasons: Report[] }>();
   for (const report of reports) {
     const key = `${report.routeId}:${String(report.versionNumber)}:${report.requirementId}`;
@@ -42,9 +44,12 @@ function byRequirement(reports: readonly Report[]): Reported[] {
  */
 export function ReportsSection({
   versions,
+  country,
   words,
 }: {
   readonly versions: readonly KnowledgeVersion[];
+  /** Only this country's reports, when given. */
+  readonly country?: string;
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
@@ -56,18 +61,19 @@ export function ReportsSection({
   const titleOf = (routeId: string, versionNumber: number) =>
     versions.find((version) => version.routeId === routeId && version.number === versionNumber)
       ?.title ?? routeId;
+  const listed = reports.data?.reports.filter(
+    ({ routeId }) => country === undefined || countryOfRoute(versions, routeId) === country,
+  );
   return (
     <section aria-label={title} className="flex flex-col gap-2">
       <h3 className="font-medium">{title}</h3>
       {reports.isError && <p>{t('knowledge.reports.loadFailure')}</p>}
-      {reports.data?.reports.length === 0 && (
-        <p className="text-muted">{t('knowledge.reports.none')}</p>
-      )}
-      {reports.data !== undefined && reports.data.reports.length > 0 && (
+      {listed?.length === 0 && <p className="text-muted">{t('knowledge.reports.none')}</p>}
+      {listed !== undefined && listed.length > 0 && (
         <>
           <p className="text-muted">{t('knowledge.reports.lead')}</p>
           <ul className="flex flex-col gap-3">
-            {byRequirement(reports.data.reports).map((reported, index) => (
+            {byRequirement(listed).map((reported, index) => (
               <li key={reported.key} className="flex flex-col gap-1">
                 <p id={`${baseId}-${String(index)}`} className="font-medium">
                   {t('knowledge.reports.item', {

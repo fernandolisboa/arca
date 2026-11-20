@@ -13,6 +13,7 @@ import {
   ChoiceGroup,
   Icon,
   iconButtonClass,
+  LayoutToggle,
   phoneBottomBarClass,
   StatusChip,
   tabPanelProps,
@@ -372,7 +373,16 @@ function FamilyCase({
           <h3 className="font-display text-lead">
             {t('family.peopleCount', { count: view.people.length })}
           </h3>
-          <LayoutToggle layout={layout} onChange={onLayoutChange} />
+          <LayoutToggle
+            label={t('family.layout.label')}
+            options={familyLayouts.map((option) => ({
+              value: option,
+              label: t(`family.layout.${option}`),
+              icon: option,
+            }))}
+            value={layout}
+            onChange={onLayoutChange}
+          />
         </div>
         <div className={`grid items-start gap-5 ${split ? 'lg:grid-cols-12' : ''}`}>
           <div className={`min-w-0 ${viewSpan} ${picked ? 'max-lg:hidden' : ''}`}>
@@ -602,40 +612,6 @@ function NextStep({ view }: { readonly view: CaseView }) {
         )}
       </div>
     </section>
-  );
-}
-
-/** Switches between the tree, the cards and the list (the page's top right). */
-function LayoutToggle({
-  layout,
-  onChange,
-}: {
-  readonly layout: FamilyLayout;
-  readonly onChange: (layout: FamilyLayout) => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div
-      role="group"
-      aria-label={t('family.layout.label')}
-      className="inline-flex shrink-0 gap-0.5 rounded-control border border-line bg-surface p-0.5"
-    >
-      {familyLayouts.map((option) => (
-        <button
-          key={option}
-          type="button"
-          aria-pressed={layout === option}
-          aria-label={t(`family.layout.${option}`)}
-          title={t(`family.layout.${option}`)}
-          className={`${iconButtonClass} ${layout === option ? 'bg-soft text-ink' : 'text-muted hover:text-ink'}`}
-          onClick={() => {
-            onChange(option);
-          }}
-        >
-          <Icon name={option} />
-        </button>
-      ))}
-    </div>
   );
 }
 
