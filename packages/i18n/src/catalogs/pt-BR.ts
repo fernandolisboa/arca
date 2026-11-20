@@ -1264,6 +1264,7 @@ export const ptBR = {
     /** The proposed versions grouped by country. */
     review: {
       versions: '{n, plural, one {# versão} other {# versões}}',
+      versionNumber: 'Versão {number}',
       comparisons: 'Comparar destinos',
       filter: {
         country: 'País',
@@ -2130,6 +2131,12 @@ export const ptBR = {
    * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are
    * named by Intl.DisplayNames, never here.
    */
+  /** The country picker: a search over the countries, each with its flag. */
+  countryPicker: {
+    search: 'Buscar país',
+    none: 'Nenhum país com esse nome.',
+    close: 'Fechar',
+  },
   formerCountries: {
     AIDJ: 'Território Francês dos Afares e Issas',
     ANHH: 'Antilhas Holandesas',

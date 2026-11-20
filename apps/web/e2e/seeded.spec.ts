@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, person, signedIn } from './case-accounts.js';
+import { pickCountry } from './country-picker.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearCorrectionRequests,
@@ -75,7 +76,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   // Every country starts folded; picking one in the filter shows it alone, open.
   const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
   await expect(usa).toHaveAttribute('aria-expanded', 'false');
-  await proposed.getByLabel('País').selectOption({ label: 'Estados Unidos' });
+  await pickCountry(proposed, 'País', 'Estados Unidos');
   await expect(usa).toHaveAttribute('aria-expanded', 'true');
   await expect(proposed.getByRole('button', { name: 'Portugal', exact: true })).toHaveCount(0);
   await proposed

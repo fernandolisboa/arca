@@ -37,8 +37,3 @@ export function CountryFlag({
 export function FlagLead({ code }: { readonly code: string }) {
   return <CountryFlag code={code} className="mr-[0.45em] align-[-0.06em]" />;
 }
-
-/** The flag a country select shows inside its field; none while no country, or one without a flag, is chosen. */
-export function selectFlag(code: string) {
-  return flagUrl(code) === undefined ? undefined : <CountryFlag code={code} />;
-}

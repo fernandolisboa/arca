@@ -3,7 +3,8 @@ import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type SubmitEvent } from 'react';
 import { api, routeRequestsQuery } from '../api.js';
-import { FlagLead, selectFlag } from '../country-flag.js';
+import { FlagLead } from '../country-flag.js';
+import { CountryField } from '../forms/country-field.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -279,14 +280,17 @@ function RouteRequestWizard({
       {step === 'route' && (
         <>
           <p className="text-small text-muted">{t('knowledge.routeRequests.routeLead')}</p>
-          <SelectField
+          <CountryField
             label={t('knowledge.routeRequests.country')}
             value={draft.countryCode}
-            lead={selectFlag(draft.countryCode)}
             placeholder={t('knowledge.routeRequests.pickCountry')}
-            options={countries
-              .map(({ code }) => ({ value: code, label: words.country(code.toUpperCase()) }))
-              .toSorted((left, right) => left.label.localeCompare(right.label, words.language))}
+            groups={[
+              {
+                options: countries
+                  .map(({ code }) => ({ value: code, label: words.country(code.toUpperCase()) }))
+                  .toSorted((left, right) => left.label.localeCompare(right.label, words.language)),
+              },
+            ]}
             onChange={(countryCode) => {
               setDraft((current) => ({ ...current, countryCode }));
             }}

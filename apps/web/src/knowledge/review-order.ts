@@ -22,3 +22,27 @@ export function reviewOrder<V extends Pick<KnowledgeVersion, 'country' | 'title'
     }))
     .toSorted((left, right) => name(left.country).localeCompare(name(right.country)));
 }
+
+/** One route's versions inside a country. */
+export interface RouteGroup<V> {
+  readonly routeId: string;
+  readonly title: string;
+  readonly versions: readonly V[];
+}
+
+/**
+ * A country's versions by route (one visa or way in), in the order the routes first appear, each
+ * named by its first version's title.
+ */
+export function byRoute<V extends Pick<KnowledgeVersion, 'routeId' | 'title'>>(
+  versions: readonly V[],
+): readonly RouteGroup<V>[] {
+  const routes = new Map<string, V[]>();
+  for (const version of versions) {
+    routes.set(version.routeId, [...(routes.get(version.routeId) ?? []), version]);
+  }
+  return [...routes].flatMap(([routeId, listed]) => {
+    const [first] = listed;
+    return first === undefined ? [] : [{ routeId, title: first.title, versions: listed }];
+  });
+}

@@ -14,16 +14,16 @@ import {
   sessionQuery,
   versionViewQuery,
 } from '../api.js';
-import { CountryFlag, FlagLead, selectFlag } from '../country-flag.js';
+import { CountryFlag, FlagLead } from '../country-flag.js';
+import { CountryField } from '../forms/country-field.js';
 import { textLinkClass } from '../forms/text-link.js';
-import { SelectField } from '../forms/select-field.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { ReportsSection } from '../knowledge/reports-section.js';
 import { MemberRequestsSection } from '../knowledge/member-requests.js';
 import { NewRouteRequestsSection } from '../knowledge/new-route-requests.js';
 import { RouteRequestsSection } from '../knowledge/route-requests.js';
-import { type CountryGroup, reviewOrder } from '../knowledge/review-order.js';
+import { type CountryGroup, byRoute, reviewOrder } from '../knowledge/review-order.js';
 import { stateTone } from '../knowledge/state-tone.js';
 import { VersionPanel } from '../knowledge/version-panel.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
@@ -150,15 +150,19 @@ function Knowledge() {
             filters={
               proposed.length > 0 && (
                 <div className="md:max-w-xs">
-                  <SelectField
+                  <CountryField
                     label={t('knowledge.review.filter.country')}
                     placeholder={t('knowledge.review.filter.allCountries')}
+                    clearLabel={t('knowledge.review.filter.allCountries')}
                     value={country ?? ''}
-                    lead={selectFlag(country ?? '')}
-                    options={ordered.map((group) => ({
-                      value: group.country,
-                      label: words.country(group.country),
-                    }))}
+                    groups={[
+                      {
+                        options: ordered.map((group) => ({
+                          value: group.country,
+                          label: words.country(group.country),
+                        })),
+                      },
+                    ]}
                     onChange={(next) => {
                       setPickedCountry(next === '' ? null : next);
                       if (next !== '') setOpenCountries((was) => new Set(was).add(next));
@@ -346,42 +350,7 @@ function ProposedVersions({
           }}
           words={words}
         >
-          {versions.map((version, position) => (
-            <li key={`${version.routeId}:${String(version.number)}`}>
-              <button
-                type="button"
-                className={rowButton}
-                onClick={() => {
-                  onPick({ subject: 'route', routeId: version.routeId, number: version.number });
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="grid size-7 shrink-0 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
-                >
-                  {position + 1}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-medium">
-                    {t('knowledge.versionTitle', {
-                      title: version.title,
-                      number: version.number,
-                    })}
-                  </span>
-                  <span className="text-small text-muted">
-                    <FlagLead code={version.country} />
-                    {t('knowledge.versionMeta', {
-                      country: words.country(version.country),
-                      date: words.date(version.effectiveFrom),
-                    })}
-                  </span>
-                </span>
-                <span aria-hidden="true" className="self-center text-muted">
-                  <Icon name="chevron" size={16} />
-                </span>
-              </button>
-            </li>
-          ))}
+          <CountryRows versions={versions} onPick={onPick} words={words} />
         </ProposedGroup>
       ))}
       {comparisons.length > 0 && (
@@ -469,6 +438,73 @@ function SupersededVersions({
       ))}
     </ProposedGroup>
   );
+}
+
+/**
+ * One country's proposed versions as numbered rows. A country with several routes (visas) puts
+ * each route's versions under the route's name, with no further fold; one route alone needs none.
+ */
+function CountryRows({
+  versions,
+  onPick,
+  words,
+}: {
+  readonly versions: readonly KnowledgeVersion[];
+  readonly onPick: (picked: Picked) => void;
+  readonly words: KnowledgeWords;
+}) {
+  const { t } = words;
+  const routes = byRoute(versions);
+  const named = routes.length > 1;
+  const ordered = routes.flatMap((route) => route.versions);
+  const row = (version: KnowledgeVersion) => (
+    <li key={`${version.routeId}:${String(version.number)}`}>
+      <button
+        type="button"
+        className={rowButton}
+        onClick={() => {
+          onPick({ subject: 'route', routeId: version.routeId, number: version.number });
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className="grid size-7 shrink-0 place-items-center rounded-full bg-soft text-small font-medium tabular-nums"
+        >
+          {ordered.indexOf(version) + 1}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="font-medium">
+            {named ? (
+              <>
+                <span className="sr-only">{version.title} · </span>
+                {t('knowledge.review.versionNumber', { number: version.number })}
+              </>
+            ) : (
+              t('knowledge.versionTitle', { title: version.title, number: version.number })
+            )}
+          </span>
+          <span className="text-small text-muted">
+            {t('knowledge.versionMeta', {
+              country: words.country(version.country),
+              date: words.date(version.effectiveFrom),
+            })}
+          </span>
+        </span>
+        <span aria-hidden="true" className="self-center text-muted">
+          <Icon name="chevron" size={16} />
+        </span>
+      </button>
+    </li>
+  );
+  if (!named) return ordered.map(row);
+  return routes.map((route) => (
+    <li key={route.routeId}>
+      <p className="bg-soft px-4 py-2 text-small font-medium">{route.title}</p>
+      <ol className="flex flex-col divide-y divide-line border-t border-line">
+        {route.versions.map(row)}
+      </ol>
+    </li>
+  ));
 }
 
 /** The open-state key of the comparisons' card, which no country code can take. */
