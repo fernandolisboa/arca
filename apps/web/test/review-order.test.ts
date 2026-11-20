@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { byRoute, countryTallies, reviewOrder, versionTab } from '../src/knowledge/review-order.js';
+import {
+  byRoute,
+  comparisonTabs,
+  countryTallies,
+  reviewOrder,
+  versionTab,
+} from '../src/knowledge/review-order.js';
 
 describe('reviewOrder', () => {
   const names: Record<string, string> = { LV: 'Letônia', PT: 'Portugal', US: 'Estados Unidos' };
@@ -60,6 +66,23 @@ describe('versionTab', () => {
     expect(versionTab({ state: 'active', superseded: true })).toBe('previous');
     expect(versionTab({ state: 'rejected', superseded: true })).toBe('previous');
     expect(versionTab({ state: 'rejected' })).toBe('previous');
+  });
+});
+
+describe('comparisonTabs', () => {
+  it('lists only the newest active version of a comparison as active', () => {
+    const versions = [
+      { comparisonId: 'destinations', number: 3, state: 'proposed' as const },
+      { comparisonId: 'destinations', number: 2, state: 'active' as const },
+      { comparisonId: 'destinations', number: 1, state: 'active' as const },
+      { comparisonId: 'other', number: 1, state: 'rejected' as const },
+    ];
+    expect([...comparisonTabs(versions).values()]).toEqual([
+      'proposed',
+      'active',
+      'previous',
+      'previous',
+    ]);
   });
 });
 

@@ -1,4 +1,4 @@
-export { AppShell, type AppShellLabels, type AppShellProps } from './app-shell.js';
+export { AppShell, wideQuery, type AppShellLabels, type AppShellProps } from './app-shell.js';
 export { Bar, type BarProps } from './patterns/bar.js';
 export { Button, buttonClass, iconButtonClass, type ButtonProps } from './button.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './choice-group.js';

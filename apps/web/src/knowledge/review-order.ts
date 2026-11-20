@@ -73,6 +73,36 @@ export function versionTab({
   return state === 'rejected' || superseded ? 'previous' : state;
 }
 
+/**
+ * The list of each comparison version: the comparison uses only its newest active version, so an
+ * older active one is previous, as a superseded route version is.
+ */
+export function comparisonTabs<
+  V extends {
+    readonly comparisonId: string;
+    readonly number: number;
+    readonly state: KnowledgeVersion['state'];
+  },
+>(versions: readonly V[]): ReadonlyMap<V, VersionTab> {
+  const newestActive = new Map<string, number>();
+  for (const { comparisonId, number, state } of versions) {
+    if (state === 'active' && number > (newestActive.get(comparisonId) ?? 0)) {
+      newestActive.set(comparisonId, number);
+    }
+  }
+  return new Map(
+    versions.map((version) => [
+      version,
+      versionTab({
+        state: version.state,
+        superseded:
+          version.state === 'active' &&
+          version.number < (newestActive.get(version.comparisonId) ?? 0),
+      }),
+    ]),
+  );
+}
+
 /** A request or report about a country, and whether it waits for an admin. */
 export interface CountryRequest {
   readonly country: string;

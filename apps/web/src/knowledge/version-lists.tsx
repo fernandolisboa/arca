@@ -5,7 +5,13 @@ import { CountryFlag } from '../country-flag.js';
 import { MemberRequestsSection } from './member-requests.js';
 import { NewRouteRequestsSection } from './new-route-requests.js';
 import { ReportsSection } from './reports-section.js';
-import { type VersionTab, byRoute, reviewOrder, versionTab } from './review-order.js';
+import {
+  type VersionTab,
+  byRoute,
+  comparisonTabs,
+  reviewOrder,
+  versionTab,
+} from './review-order.js';
 import { RouteRequestsSection } from './route-requests.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -33,9 +39,31 @@ export function listOf(
   versions: readonly KnowledgeVersion[],
   comparisons: readonly KnowledgeComparisonVersion[],
 ): TabLists {
+  const tabs = comparisonTabs(comparisons);
   return {
     versions: versions.filter((version) => versionTab(version) === tab),
-    comparisons: comparisons.filter((version) => versionTab(version) === tab),
+    comparisons: comparisons.filter((version) => tabs.get(version) === tab),
+  };
+}
+
+export function listsByTab(
+  versions: readonly KnowledgeVersion[],
+  comparisons: readonly KnowledgeComparisonVersion[],
+): Record<VersionTab, TabLists> {
+  return {
+    proposed: listOf('proposed', versions, comparisons),
+    active: listOf('active', versions, comparisons),
+    previous: listOf('previous', versions, comparisons),
+  };
+}
+
+export const countOf = (lists: TabLists) => lists.versions.length + lists.comparisons.length;
+
+export function countsByTab(lists: Record<VersionTab, TabLists>): Record<VersionTab, number> {
+  return {
+    proposed: countOf(lists.proposed),
+    active: countOf(lists.active),
+    previous: countOf(lists.previous),
   };
 }
 

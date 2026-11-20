@@ -3,7 +3,15 @@ import {
   type KnowledgeComparisonVersion,
   type KnowledgeVersion,
 } from '@arca/api-contract/client';
-import { Button, LayoutToggle, Tabs, cardClass, tabPanelProps, type LayoutOption } from '@arca/ui';
+import {
+  Button,
+  LayoutToggle,
+  Tabs,
+  cardClass,
+  tabPanelProps,
+  wideQuery,
+  type LayoutOption,
+} from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { type ReactNode, useCallback, useId, useState } from 'react';
@@ -40,7 +48,9 @@ import {
   RequestSections,
   RowsCard,
   comparisonsKey,
-  listOf,
+  countOf,
+  countsByTab,
+  listsByTab,
   pickedKey,
 } from '../knowledge/version-lists.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
@@ -50,7 +60,7 @@ import { useMediaQuery } from '../use-media-query.js';
 
 export const Route = createFileRoute('/knowledge')({ component: Knowledge });
 
-/** How a wide screen lays out the lists; a phone always shows the tabs with folded countries. */
+/** How a wide screen lays out the lists; a phone always gets the grid's tabs, countries folded. */
 const layouts = ['countries', 'grid', 'side'] as const;
 type Layout = (typeof layouts)[number];
 const storedLayout = storedChoice<Layout>('arca.knowledge-layout', layouts, 'countries');
@@ -198,12 +208,12 @@ function VersionLists({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const wide = useMediaQuery('(min-width: 48rem)');
-  const [chosen, setChosen] = useState(storedLayout.read);
-  const layout: Layout = wide ? chosen : 'grid';
+  const wide = useMediaQuery(wideQuery);
+  const [preferred, setPreferred] = useState(storedLayout.read);
+  const layout: Layout = wide ? preferred : 'grid';
   const { tab } = place;
-  // A card's fold differs from its default (open on a wide screen) once the admin toggles it.
-  const [toggled, setToggled] = useState<ReadonlySet<string>>(() => new Set());
+  // Cards start open on a wide screen and folded on a phone until the admin folds or opens one.
+  const [folds, setFolds] = useState<ReadonlyMap<string, boolean>>(() => new Map());
   const tabsId = useId();
   const requests = useCountryRequests(versions);
   const onOpenVersion = (routeId: string, number: number) => {
@@ -217,10 +227,10 @@ function VersionLists({
         label: t(`knowledge.layout.${value}`),
         icon: layoutIcons[value],
       }))}
-      value={chosen}
+      value={preferred}
       onChange={(next) => {
         storedLayout.write(next);
-        setChosen(next);
+        setPreferred(next);
       }}
     />
   );
@@ -243,10 +253,8 @@ function VersionLists({
   }
   const withRequests = layout === 'grid';
   const shown: Tab = !withRequests && tab === 'requests' ? 'proposed' : tab;
-  const lists = Object.fromEntries(
-    versionTabs.map((key) => [key, listOf(key, versions, comparisons)]),
-  ) as Record<VersionTab, ReturnType<typeof listOf>>;
-  const count = (key: VersionTab) => lists[key].versions.length + lists[key].comparisons.length;
+  const lists = listsByTab(versions, comparisons);
+  const count = (key: VersionTab) => countOf(lists[key]);
   const waiting = requests.filter((request) => request.waiting).length;
   const tabs = [
     ...versionTabs.map((key) => ({
@@ -271,14 +279,9 @@ function VersionLists({
         tab={shown}
         lists={lists[shown]}
         columns={withRequests ? wideGrid : narrowGrid}
-        isOpen={(key) => wide !== toggled.has(`${shown}:${key}`)}
-        onOpenChange={(key) => {
-          setToggled((was) => {
-            const next = new Set(was);
-            const at = `${shown}:${key}`;
-            if (!next.delete(at)) next.add(at);
-            return next;
-          });
+        isOpen={(key) => folds.get(`${shown}:${key}`) ?? wide}
+        onOpenChange={(key, open) => {
+          setFolds((was) => new Map(was).set(`${shown}:${key}`, open));
         }}
         onPick={onPick}
         words={words}
@@ -354,12 +357,10 @@ function CountryLayout({
   const comparisonTally: CountryTally = {
     country: comparisonsKey,
     waiting: 0,
-    ...(Object.fromEntries(
-      versionTabs.map((key) => [key, listOf(key, [], comparisons).comparisons.length]),
-    ) as Record<VersionTab, number>),
+    ...countsByTab(listsByTab([], comparisons)),
   };
   const entries = comparisons.length > 0 ? [...tallies, comparisonTally] : tallies;
-  const picked =
+  const shown =
     entries.find(({ country }) => country === chosen) ??
     entries.find(({ proposed }) => proposed > 0) ??
     entries[0];
@@ -374,12 +375,12 @@ function CountryLayout({
             <li key={entry.country}>
               <button
                 type="button"
-                aria-pressed={entry.country === picked?.country}
+                aria-pressed={entry.country === shown?.country}
                 aria-label={t('knowledge.lists.tally', {
                   ...entry,
                   country: nameOf(entry.country),
                 })}
-                className={`flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left hover:bg-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${entry.country === picked?.country ? 'bg-soft font-medium' : ''}`}
+                className={`flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left hover:bg-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${entry.country === shown?.country ? 'bg-soft font-medium' : ''}`}
                 onClick={() => {
                   onChoose(entry.country);
                 }}
@@ -392,15 +393,23 @@ function CountryLayout({
           ))}
         </ul>
       </nav>
-      {picked === undefined ? (
-        <div className="flex items-start justify-between gap-4">
-          <p className="text-muted">{t('knowledge.lists.empty.proposed')}</p>
-          {toggle}
+      {shown === undefined ? (
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-muted">{t('knowledge.lists.empty.proposed')}</p>
+            {toggle}
+          </div>
+          <RequestSections
+            versions={versions}
+            className="grid items-start gap-8 md:grid-cols-2"
+            words={words}
+            onOpenVersion={onOpenVersion}
+          />
         </div>
       ) : (
-        <PickedCountry
-          entry={picked.country}
-          name={nameOf(picked.country)}
+        <ShownCountry
+          country={shown.country}
+          name={nameOf(shown.country)}
           versions={versions}
           comparisons={comparisons}
           toggle={toggle}
@@ -438,8 +447,8 @@ function TallyMarks({ tally }: { readonly tally: CountryTally }) {
   );
 }
 
-function PickedCountry({
-  entry,
+function ShownCountry({
+  country,
   name,
   versions,
   comparisons,
@@ -448,7 +457,7 @@ function PickedCountry({
   onOpenVersion,
   words,
 }: {
-  readonly entry: string;
+  readonly country: string;
   readonly name: string;
   readonly versions: readonly KnowledgeVersion[];
   readonly comparisons: readonly KnowledgeComparisonVersion[];
@@ -458,22 +467,27 @@ function PickedCountry({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const isComparisons = entry === comparisonsKey;
-  const own = versions.filter(({ country }) => country === entry);
+  const isComparisons = country === comparisonsKey;
+  const lists = isComparisons
+    ? listsByTab([], comparisons)
+    : listsByTab(
+        versions.filter((version) => version.country === country),
+        [],
+      );
   const requestsTitle = t('knowledge.lists.requestsTitle');
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <h3 className="flex items-center gap-3 font-display text-lead">
-          {!isComparisons && <CountryFlag code={entry} />}
+          {!isComparisons && <CountryFlag code={country} />}
           {name}
         </h3>
         {toggle}
       </div>
       <div className="grid items-start gap-4 lg:grid-cols-3">
         {versionTabs.map((key) => {
-          const list = isComparisons ? listOf(key, [], comparisons) : listOf(key, own, []);
-          const count = list.versions.length + list.comparisons.length;
+          const list = lists[key];
+          const count = countOf(list);
           const label = t(`knowledge.lists.${key}`);
           return (
             <section key={key} aria-label={label} className="flex min-w-0 flex-col gap-2">
@@ -513,9 +527,9 @@ function PickedCountry({
         <section aria-label={requestsTitle} className="flex flex-col gap-4">
           <h4 className="font-medium">{requestsTitle}</h4>
           <RequestSections
-            key={entry}
+            key={country}
             versions={versions}
-            country={entry}
+            country={country}
             className="grid items-start gap-8 md:grid-cols-2"
             words={words}
             onOpenVersion={onOpenVersion}

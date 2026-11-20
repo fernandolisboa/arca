@@ -1279,7 +1279,8 @@ export const ptBR = {
         previous: 'Nenhuma versão anterior.',
       },
       from: 'A partir de {date}',
-      previousState: '{state, select, rejected {Recusada} other {Substituída}}',
+      previousState:
+        '{state, select, rejected {Recusada} proposed {Substituída, sem decisão} other {Substituída}}',
       countries: 'Países',
       tally:
         '{country}: {proposed, plural, one {# proposta} other {# propostas}}, {active, plural, one {# ativa} other {# ativas}}, {previous, plural, one {# anterior} other {# anteriores}}, {waiting, plural, =0 {nenhum pedido esperando} one {# pedido esperando} other {# pedidos esperando}}',
