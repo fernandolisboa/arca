@@ -1,0 +1,36 @@
+# Session review 2026-11-py
+
+Paraguay has one stored route, `py-mercosur-temporary`: the Mercosur temporary residence for nationals of the states the migration directorate lists (Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Peru and Uruguay), under the Mercosur Residence Agreement approved by Ley N.º 3578/2008. Its newest version, 3, effective 2026-07-01, was read on 2026-11-20 against Ley N.º 3578/2008, Ley N.º 6984/2022 (migration law), Ley N.º 7371/2025 (Civil Code, art. 36) on www.bacn.gov.py, and the directorate's Mercosur residence page, fee table and Ecuadorian reciprocity page on migraciones.gov.py ([ADR-0032](../../../../docs/adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../../../docs/runbooks/session-rule-review.md)).
+
+Version 3 matched the law on who qualifies (natives of the eight listed states, naturalized nationals after five years), the family of Ley 6984, art. 4.10, and of the agreement's art. 9.2, the principal's fee (20 jornales of PYG 117,077, PYG 2,341,540 in cash, from the fee table in force since 2026-07-01; two jornales for an Ecuadorian) and the two years, not extendable. Version 4 corrects it.
+
+## Version 4, correcting version 3 from 2026-07-01
+
+- **Family members' fee.** Every applicant pays the residence fee (Ley 6984, art. 99), and the fee table has one Mercosur line and no exemption for minors, so each family member native of a listed state other than Ecuador now pays 20 jornales (`residence-fee-family`) and each Ecuadorian two (`residence-fee-family-ecuadorian`). For anyone else (naturalized in, or of no, listed state) the table names no fee: 20 jornales, the Mercosur line, show as possible, and the title names the general temporary residence line's 25 (`residence-fee-family-other`).
+- **Criminal records.** `no-criminal-record` now names the sworn statement on international records (agreement, art. 4.1, d)), Paraguay's police certificate for foreigners, and the directorate's age, 14, with the exemptions of Resolución DNM N.º 858/2024 for the certificates from abroad.
+- **New assessments:** `documents` (identity document, birth certificate, civil status papers where they apply, notarized copies; foreign papers legalized or apostilled and in Spanish, save Brazil's in Portuguese); `in-person-in-paraguay` (the application is personal and in person, with proof of entry or presence; the agreement's consular path, art. 3.1 and 9.2, is not modeled); `minor-applicants` (both parents sign and hold residence, or one applies with the child; with one parent, the other's notarized consent or a court ruling; with a third person, both parents' consent approved by a court, or a ruling).
+- **The duration** names cancellation after more than a year of unjustified absence (Ley 6984, art. 55, 2).
+- Children and the spouse's children also cite the directorate's observation on applicants under 18, since the quote check does not read Spanish number words on a Paraguayan page (leftover 5).
+
+## Rounds
+
+Two reviewers in round 1, one checking each item against its provision, the other looking for anything official that makes the route out of date; the first again in rounds 2 and 3, on the changes.
+
+- **Round 1.** Proven and fixed: dependents not native of a listed state paid nothing for certain (now a possible fee); the minors' title said one parent must hold residence where both must unless one applies with the child, and left out the third-person case; the criminal-record title missed the exemptions and gave the sworn statement an age; the civil status papers apply only where they exist; the consular path for family members who need a visa has a waiver; the absence must be unjustified; the spouse's children cited the minors' section, which speaks of parents. The second reviewer found nothing that makes the version out of date: the directorate's pages and requirement PDFs of 2026-07-01 are unchanged, its posts since then concern the border transit document, permanent residence solvency (Resolución DNM N.º 407/2026) and a backlog plan, and no law amends Ley 6984 or Ley 3578 or approves a new accession.
+- **Round 2**, on those changes. Proven and fixed: the documents' title dropped the Brazilian Portuguese exception its own page states; the exemptions of Resolución DNM N.º 858/2024 reach only the certificates from abroad, not Paraguay's, and now have a quote; the other family members' fee names the general line's 25 jornales too.
+- **Round 3**, on those changes: no defect; the 25 jornales now have their own quote.
+
+The proposal check and the quote check, which reads the official pages through the app's reader (`ARCA_REVIEW_QUOTES=2026-11-py`), pass on the final files.
+
+## Leftover
+
+1. **Family members without a listed nationality.** The agreement gives them a residence of the same term (art. 9.2), but no text read says which fee they pay; version 4 shows 20 jornales as possible.
+2. **The consular path.** Applying at a Paraguayan consulate before entry (agreement, art. 3.1), and for family members who need a visa (art. 9.2), is not modeled; nor is a consulate's fee.
+3. **Resolución DNM N.º 376/2026** (2026-05-13), listed on the directorate's resolutions page, regulates the cancellation after more than a year abroad and asks leave a month before; it agrees with the duration's title but is a scan with no text layer, so the app's reader cannot quote it.
+4. **Ley N.º 3565/2008**, the agreement among the Mercosur states parties alone, which the directorate also names as a legal basis, is not cited; Ley 3578 covers the same states plus Bolivia and Chile.
+5. **Numbers in Spanish words.** The quote check reads a page in its country's likely language from the CLDR data, which for Paraguay is Guarani, so the Civil Code's "dieciocho" cannot prove the age 18; the version quotes the directorate's "menores de 18 años" ([OPEN-QUESTIONS](../../../../docs/OPEN-QUESTIONS.md)).
+6. **Facts no route records:** how long a naturalization has been held; an adult child's disability; whether a minor applies with both parents, one, or a third person; who holds residence among the parents; and each family member's own criminal-record papers and documents, so the assessments show principal-level facts as evidence.
+7. **The Portuguese exception.** The directorate's web page exempts Brazilian papers in Portuguese from translation, as `documents` says; its requirements PDF of 2026-07-01 and its minors' section do not.
+8. **Whether art. 9.2 binds Paraguay for principals from Peru, Colombia and Ecuador**, who acceded later: their family members still show as possible, as in version 3.
+9. **Leap day.** `unsettled`, as in version 3.
+10. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
