@@ -1,4 +1,10 @@
-import { AppShell, type DockEdge, type NavItem, type ShellLinkProps } from '@arca/ui';
+import {
+  AppShell,
+  type DockEdge,
+  type NavCollapse,
+  type NavItem,
+  type ShellLinkProps,
+} from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Outlet, createRootRoute, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +49,10 @@ function Root() {
     appearance.set('dockEdge', dockEdge);
   }
 
+  function onCollapseChange(collapse: NavCollapse) {
+    appearance.set('navCollapse', collapse);
+  }
+
   return (
     <>
       <AppShell
@@ -56,14 +66,23 @@ function Root() {
           href: settingsPage.to,
           current: pathname === settingsPage.to,
         }}
-        layout={{ wide: resolved.navWide, narrow: resolved.navNarrow, dockEdge: resolved.dockEdge }}
+        layout={{
+          wide: resolved.navWide,
+          narrow: resolved.navNarrow,
+          dockEdge: resolved.dockEdge,
+          collapse: resolved.navCollapse,
+          autoHide: resolved.navAutoHide,
+        }}
         onDockEdgeChange={onDockEdgeChange}
+        onCollapseChange={onCollapseChange}
         labels={{
           navigation: t('shell.navigation'),
           openMenu: t('shell.openMenu'),
           closeMenu: t('shell.closeMenu'),
           navigationGroup: t('shell.navigationGroup'),
           accountGroup: t('shell.accountGroup'),
+          collapseMenu: t('shell.collapseMenu'),
+          expandMenu: t('shell.expandMenu'),
         }}
         link={ShellLink}
       >

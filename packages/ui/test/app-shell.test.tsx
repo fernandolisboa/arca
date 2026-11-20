@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { AppShell, type AppShellProps } from '../src/app-shell.js';
+import { nextScrolledAway } from '../src/shell/auto-hide.js';
 import { nearestEdge } from '../src/shell/dock.js';
 import {
   navTargetIds,
@@ -34,6 +35,8 @@ const text = {
     closeMenu: 'Fechar menu',
     navigationGroup: 'Navegar',
     accountGroup: 'Sua conta',
+    collapseMenu: 'Recolher menu',
+    expandMenu: 'Expandir menu',
   },
 };
 
@@ -135,6 +138,68 @@ describe('AppShell', () => {
     expect(render({ narrow: 'floating-dock' }, { onDockEdgeChange: () => undefined })).toContain(
       'data-dock-grip',
     );
+  });
+});
+
+describe('collapsed navigation', () => {
+  const save = { onCollapseChange: () => undefined };
+
+  it('narrows the side column to icons, keeps every name readable and clears less of the page', () => {
+    const html = render({ wide: 'side', collapse: 'collapsed' });
+    const column = /<nav[^>]*class="[^"]*w-\[72px\][^]*?<\/nav>/.exec(html)?.[0] ?? '';
+    expect(column).toMatch(/href="\/"[^>]*title="Início"/);
+    expect(column).toContain('<span class="sr-only">Início</span>');
+    expect(html).toContain('md:pl-[72px]');
+    expect(html).not.toContain('md:pl-[216px]');
+  });
+
+  it('shows the names in the top bar until collapsed', () => {
+    expect(render({ wide: 'top' })).toContain('lg:not-sr-only');
+    expect(render({ wide: 'top', collapse: 'collapsed' })).not.toContain('lg:not-sr-only');
+  });
+
+  it('shrinks a collapsed dock to the touch target', () => {
+    expect(render({ narrow: 'fixed-dock', collapse: 'collapsed' })).toContain(
+      '[--spacing-dock-cell:var(--spacing-touch)]',
+    );
+    expect(render({ narrow: 'fixed-dock' })).not.toContain('--spacing-dock-cell:');
+  });
+
+  it('offers the collapse button in the top bar and the side column once the app saves it', () => {
+    expect(render({ wide: 'top' })).not.toContain('aria-pressed');
+    expect(render({ wide: 'top' }, save)).toMatch(/aria-pressed="false"[^>]*title="Recolher menu"/);
+    expect(render({ wide: 'side', collapse: 'collapsed' }, save)).toMatch(
+      /aria-pressed="true"[^>]*title="Expandir menu"/,
+    );
+    expect(render({ wide: 'menu' }, save)).not.toContain('aria-pressed');
+  });
+});
+
+describe('auto-hidden navigation', () => {
+  it('lays the side column over the page and leaves it waiting at the left edge', () => {
+    const html = render({ wide: 'side', autoHide: 'on' });
+    expect(html).toContain('data-side-edge');
+    expect(html).toMatch(
+      /<nav[^>]*data-hidden=""[^>]*-translate-x-full focus-within:translate-x-0/,
+    );
+    expect(html).not.toContain('md:pl-[216px]');
+  });
+
+  it('keeps everything in view with auto-hide off', () => {
+    const html = render({ wide: 'side', narrow: 'fixed-dock' });
+    expect(html).not.toContain('data-hidden');
+    expect(html).not.toContain('data-side-edge');
+  });
+
+  it.each([
+    [false, 100, 300, true],
+    [true, 300, 100, false],
+    [true, 300, 302, true],
+    [false, 300, 298, false],
+    [true, 200, 40, false],
+    [false, 0, 60, false],
+  ] as const)('from %s, scrolling %i → %i leaves the bars away: %s', (away, from, to, next) => {
+    expect(nextScrolledAway(away, from, to)).toBe(next);
   });
 });
 

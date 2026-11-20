@@ -6,6 +6,8 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   CircleHelp,
   Copy,
   Earth,
@@ -67,6 +69,8 @@ const icons = {
   addPerson: UserPlus,
   invite: Mail,
   look: Eye,
+  collapseNav: ChevronsLeft,
+  expandNav: ChevronsRight,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

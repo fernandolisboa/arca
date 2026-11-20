@@ -13,6 +13,8 @@ export const ptBR = {
     closeMenu: 'Fechar menu',
     navigationGroup: 'Navegar',
     accountGroup: 'Sua conta',
+    collapseMenu: 'Recolher menu',
+    expandMenu: 'Expandir menu',
     nav: {
       home: 'Início',
       family: 'Família',
@@ -248,6 +250,19 @@ export const ptBR = {
         bottom: 'Embaixo',
         left: 'Esquerda',
         right: 'Direita',
+      },
+      navCollapse: {
+        legend: 'Tamanho do menu',
+        description: 'Na barra do topo e na coluna lateral, o botão de setas troca na hora.',
+        expanded: 'Ícones e nomes',
+        collapsed: 'Só ícones',
+      },
+      navAutoHide: {
+        legend: 'Esconder o menu',
+        description:
+          'O menu sai da frente quando você rola a página para baixo e volta quando rola para cima. A coluna lateral fica escondida e aparece quando o mouse encosta na borda esquerda.',
+        off: 'Sempre à vista',
+        on: 'Esconder sozinho',
       },
       textSize: {
         legend: 'Tamanho do texto',

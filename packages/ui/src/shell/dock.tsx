@@ -12,6 +12,14 @@ const placement = {
   right: 'top-1/2 right-[calc(14px+env(safe-area-inset-right))] w-20 -translate-y-1/2',
 } as const;
 
+/** Where an auto-hidden dock waits: just past its edge, back in view while it holds the focus. */
+const hiddenAt = {
+  fixed: 'translate-y-[calc(100%+1px)] focus-within:translate-y-0',
+  bottom: 'translate-y-[calc(100%+14px+env(safe-area-inset-bottom))] focus-within:translate-y-0',
+  left: '-translate-x-[calc(100%+14px+env(safe-area-inset-left))] focus-within:translate-x-0',
+  right: 'translate-x-[calc(100%+14px+env(safe-area-inset-right))] focus-within:translate-x-0',
+} as const;
+
 /** How far, in px, the pointer moves before a press on the grip becomes a drag. */
 const dragThreshold = 10;
 
@@ -33,6 +41,10 @@ interface DockProps {
   readonly link: ShellLink;
   readonly className: string;
   readonly inert: boolean;
+  /** Icons only, with the labels read and shown as tooltips. */
+  readonly collapsed?: boolean;
+  /** Slid out past its edge while the page scrolls down (auto-hide). */
+  readonly hidden?: boolean;
   /** Present when the person may drag the floating dock to another edge. */
   readonly onEdgeChange?: (edge: DockEdge) => void;
 }
@@ -49,6 +61,8 @@ export function Dock({
   link,
   className,
   inert,
+  collapsed = false,
+  hidden = false,
   onEdgeChange,
 }: DockProps) {
   const vertical = kind === 'floating' && edge !== 'bottom';
@@ -87,13 +101,15 @@ export function Dock({
       ? // A shadow line instead of a border, so the dock is exactly the height content clears.
         'bg-surface shadow-[0_-1px_0_0_var(--arca-line)]'
       : 'rounded-dock bg-surface p-1 shadow-lg ring-1 shadow-ink/15 ring-line';
+  const where = kind === 'fixed' ? 'fixed' : edge;
   return (
     <nav
       aria-label={label}
       inert={inert}
       data-dock={kind}
       data-edge={kind === 'fixed' ? 'bottom' : edge}
-      className={`fixed z-20 flex ${vertical ? 'flex-col' : 'flex-row'} items-stretch ${shape} ${placement[kind === 'fixed' ? 'fixed' : edge]} ${className}`}
+      data-hidden={hidden ? '' : undefined}
+      className={`fixed z-20 flex ${vertical ? 'flex-col' : 'flex-row'} items-stretch ${shape} ${placement[where]} ${hidden ? hiddenAt[where] : ''} transition-[translate] duration-(--arca-duration-base) ease-out ${className}`}
       {...(offset === null
         ? {}
         : { style: { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px)` } })}
@@ -118,6 +134,7 @@ export function Dock({
           place={kind === 'fixed' ? 'dock' : 'floating-dock'}
           shape="cell"
           direction={vertical ? 'column' : 'row'}
+          hideLabel={collapsed}
         />
       </div>
     </nav>

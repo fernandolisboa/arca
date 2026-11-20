@@ -18,6 +18,7 @@ export interface ShellLinkProps {
   readonly className: string;
   readonly 'aria-current'?: 'page';
   readonly 'aria-label'?: string;
+  readonly title?: string;
   readonly onClick?: () => void;
   readonly children: ReactNode;
 }
@@ -29,9 +30,14 @@ export interface ShellLayout {
   readonly wide: AxisValue<'navWide'>;
   readonly narrow: AxisValue<'navNarrow'>;
   readonly dockEdge: AxisValue<'dockEdge'>;
+  /** Icons only in the bars, the side column and the docks; the menu panel is unchanged. */
+  readonly collapse: AxisValue<'navCollapse'>;
+  /** The bars and docks slide away while the page scrolls down; the side column waits at its edge. */
+  readonly autoHide: AxisValue<'navAutoHide'>;
 }
 
 export type DockEdge = ShellLayout['dockEdge'];
+export type NavCollapse = ShellLayout['collapse'];
 
 const focusRing =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
@@ -74,7 +80,14 @@ interface NavLinkProps {
   readonly iconOnly?: boolean;
   /** The label shows from 1024 px; narrower, it is read but not shown, so a full top bar fits. */
   readonly compact?: boolean;
+  /** The collapsed navigation: the shape stays, the label is read and shown as a tooltip only. */
+  readonly hideLabel?: boolean;
   readonly onNavigate?: () => void;
+}
+
+function labelClass(compact: boolean, hideLabel: boolean): string {
+  if (hideLabel) return 'sr-only';
+  return compact ? 'sr-only lg:not-sr-only lg:truncate' : 'max-w-full truncate';
 }
 
 export function NavLink({
@@ -84,6 +97,7 @@ export function NavLink({
   shape,
   iconOnly = false,
   compact = false,
+  hideLabel = false,
   onNavigate,
 }: NavLinkProps) {
   const tone = item.current ? 'bg-soft text-primary' : 'text-ink hover:bg-soft';
@@ -91,17 +105,14 @@ export function NavLink({
     <Link
       id={navLinkId(place, item.id)}
       href={item.href}
-      className={`${iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`} ${tone} transition-colors`}
+      className={`${iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`} ${hideLabel ? 'justify-center' : ''} ${tone} transition-colors`}
       {...(item.current ? { 'aria-current': 'page' as const } : {})}
       {...(iconOnly ? { 'aria-label': item.label } : {})}
+      {...(iconOnly || hideLabel ? { title: item.label } : {})}
       {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
     >
       <Icon name={item.icon} />
-      {!iconOnly && (
-        <span className={compact ? 'sr-only lg:not-sr-only lg:truncate' : 'max-w-full truncate'}>
-          {item.label}
-        </span>
-      )}
+      {!iconOnly && <span className={labelClass(compact, hideLabel)}>{item.label}</span>}
     </Link>
   );
 }
@@ -113,6 +124,7 @@ interface NavListProps {
   readonly shape: NavShape;
   readonly direction: 'row' | 'column';
   readonly compact?: boolean;
+  readonly hideLabel?: boolean;
   readonly onNavigate?: () => void;
 }
 
@@ -123,6 +135,7 @@ export function NavList({
   shape,
   direction,
   compact,
+  hideLabel,
   onNavigate,
 }: NavListProps) {
   return (
@@ -135,6 +148,7 @@ export function NavList({
             place={place}
             shape={shape}
             {...(compact === undefined ? {} : { compact })}
+            {...(hideLabel === undefined ? {} : { hideLabel })}
             {...(onNavigate === undefined ? {} : { onNavigate })}
           />
         </li>
