@@ -1236,11 +1236,11 @@
           },
           {
             "id": "p2",
-            "birthDate": "2009-06-02",
+            "birthDate": "2007-06-02",
             "citizenships": [
               {
                 "country": "CO",
-                "acquired": "2009-06-02",
+                "acquired": "2007-06-02",
                 "lost": "none",
                 "basis": "birth"
               }
