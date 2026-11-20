@@ -255,6 +255,10 @@ test.describe('auto-hidden navigation', () => {
     await expect.poll(right).toBeLessThanOrEqual(0);
     await page.mouse.move(2, 100);
     await expect.poll(right).toBeGreaterThan(100);
+    await page.mouse.move(100, 100);
+    await expect.poll(right).toBeGreaterThan(100);
+    await page.mouse.move(640, 400);
+    await expect.poll(right).toBeLessThanOrEqual(0);
   });
 });
 

@@ -183,7 +183,7 @@ export function AppShell({
     };
   }, [menuOpen, menuAtOneWidth]);
 
-  // A press anywhere outside the auto-hidden side column sends it back to its edge.
+  // A press anywhere outside the auto-hidden side column, or a mouse over the page, sends it back.
   const sideOpenOverPage = autoHide && layout.wide === 'side' && sideShown;
   useEffect(() => {
     if (!sideOpenOverPage) return;
