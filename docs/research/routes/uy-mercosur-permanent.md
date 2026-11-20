@@ -30,3 +30,10 @@ The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/is
 - **Check loop:** runs [43061828774](https://github.com/fernandolisboa/arca/actions/runs/43061828774) (3 of 8 items match), [43064316443](https://github.com/fernandolisboa/arca/actions/runs/43064316443) (3 of 8), [43065678291](https://github.com/fernandolisboa/arca/actions/runs/43065678291) (1 of 8) and, on the reviewed head, [43068431755](https://github.com/fernandolisboa/arca/actions/runs/43068431755) (3 of 8, none differs). The two assessments matched in every run but the third, on the same pages: the passage locator's run-to-run variance. Left over:
   - `checker-gap`: `dependent:spouse`, `dependent:children` and `dependent:parents`, whose restriction to principals from the agreement's parties joins its opening to article 9.2; `dependent:partner`, which joins article 1 of Ley N.º 18.246 (five years, written "cinco años") to article 16 of Decreto N.º 394/009, and whose value check refused the quote; `dependent:spouse-children`, possible only because article 10 does not name them, an absence no quote can show.
 - **Watch next:** the directorate's page, the only text with the fees and the list of states; whether the Uruguay and Paraguay agreement (Ley N.º 20.019) is in force; Decreto N.º 239/026, in force from 2027-01-24, which does not reach this route.
+
+### 2026-11-20
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), `2026-11-uy`: versions 4, 5 and 6, stored active by the review's pull request. What changed, the review rounds and the leftover list are in the [review's README](../../../packages/knowledge/reviews/2026-11-uy/README.md).
+
+- **Version reviewed:** 3.
+- **Outcome:** version 4 corrects 3 from 2023-02-17 with articles 45, C, and 46 of Ley N.º 18.250 as first worded; version 5, from 2024-01-01, follows their wording by Ley N.º 20.212; version 6, from 2024-12-06, shows a Panamanian principal as possible. All three add the papers, certificates, minors' consent, where to apply and the fees in indexed units as assessments.
