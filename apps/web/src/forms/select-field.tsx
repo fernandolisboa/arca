@@ -16,6 +16,8 @@ export interface SelectFieldProps {
   /** Further groups of options, such as former states after the countries. */
   readonly children?: ReactNode;
   readonly required?: boolean;
+  /** Shown inside the field before the chosen option, such as its flag; decoration only. */
+  readonly lead?: ReactNode;
 }
 
 export const selectClass =
@@ -31,32 +33,41 @@ export function SelectField({
   placeholder,
   children,
   required,
+  lead,
 }: SelectFieldProps) {
   const id = useId();
   const hintId = useId();
+  const hasLead = lead !== undefined;
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="font-medium">
         {label}
       </label>
-      <select
-        id={id}
-        className={selectClass}
-        value={value}
-        required={required}
-        aria-describedby={hint === undefined ? undefined : hintId}
-        onChange={(event) => {
-          onChange(event.currentTarget.value);
-        }}
-      >
-        {placeholder !== undefined && <option value="">{placeholder}</option>}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-        {children}
-      </select>
+      <div className="relative flex flex-col">
+        {hasLead && (
+          <span className="pointer-events-none absolute top-1/2 left-3 flex -translate-y-1/2 text-body">
+            {lead}
+          </span>
+        )}
+        <select
+          id={id}
+          className={`${selectClass} ${hasLead ? 'pl-10' : ''}`}
+          value={value}
+          required={required}
+          aria-describedby={hint === undefined ? undefined : hintId}
+          onChange={(event) => {
+            onChange(event.currentTarget.value);
+          }}
+        >
+          {placeholder !== undefined && <option value="">{placeholder}</option>}
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+          {children}
+        </select>
+      </div>
       {hint !== undefined && (
         <p id={hintId} className="text-small text-muted">
           {hint}

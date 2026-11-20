@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useId } from 'react';
 import { caseQuery, sessionQuery } from '../api.js';
+import { FlagLead } from '../country-flag.js';
 import { CountryCard } from '../compare/country-card.js';
 import { useComparison, type ComparisonEditor } from '../compare/use-comparison.js';
 import { WeightsPanel, weightsAnchor } from '../compare/weights-panel.js';
@@ -171,6 +172,7 @@ function Comparison({
                     className="flex flex-wrap items-center justify-between gap-x-4 py-1"
                   >
                     <span>
+                      <FlagLead code={country} />
                       {name}{' '}
                       <span className="text-small text-muted tabular-nums">
                         {total === null

@@ -8,6 +8,7 @@ import { Button } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { api, newRouteRequestsQuery } from '../api.js';
+import { selectFlag } from '../country-flag.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { commonFailure, reach } from '../requests.js';
@@ -85,6 +86,7 @@ function NewRouteForm({
         label={t('knowledge.newRoute.country')}
         placeholder={t('knowledge.newRoute.pickCountry')}
         value={country}
+        lead={selectFlag(country)}
         options={options}
         required
         onChange={(code) => {

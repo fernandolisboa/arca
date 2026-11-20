@@ -2,6 +2,7 @@ import { staleAfterDays, type DestinationComparison } from '@arca/api-contract/c
 import { Bar, StarRating, StatusChip, cardClass, formatCalendarDate } from '@arca/ui';
 import { Link } from '@tanstack/react-router';
 import { useId } from 'react';
+import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
@@ -54,6 +55,7 @@ export function CountryCard({
             {country.rank !== null && (
               <span className="sr-only">{t('compare.place', { rank: String(country.rank) })} </span>
             )}
+            <FlagLead code={country.country} />
             {name}
           </h4>
           {total === null ? (

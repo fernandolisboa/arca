@@ -10,6 +10,7 @@ import type { Messages } from '@arca/i18n';
 import { Button, ChoiceGroup } from '@arca/ui';
 import { useId, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { selectFlag } from '../country-flag.js';
 import { dangerLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
@@ -97,11 +98,16 @@ export function FieldEditor({
   const { t } = useTranslation();
   const names = useNames();
   const unknownOption = optional ? [{ value: unknownValue, label: t('questions.unknown') }] : [];
-  const pick = (options: readonly { value: string; label: string }[], children?: ReactNode) => (
+  const pick = (
+    options: readonly { value: string; label: string }[],
+    children?: ReactNode,
+    lead?: ReactNode,
+  ) => (
     <SelectField
       label={label}
       {...(hint === undefined ? {} : { hint })}
       placeholder={t('questions.pick')}
+      {...(lead === undefined ? {} : { lead })}
       value={value === null ? unknownValue : scalar(value)}
       options={[...options, ...unknownOption]}
       onChange={(chosen) => {
@@ -125,6 +131,7 @@ export function FieldEditor({
             ))}
           </optgroup>
         ),
+        selectFlag(typeof value === 'string' ? value : ''),
       );
     }
     case 'language':

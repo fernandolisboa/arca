@@ -14,6 +14,7 @@ import {
   sessionQuery,
   versionViewQuery,
 } from '../api.js';
+import { CountryFlag, FlagLead, selectFlag } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
@@ -151,6 +152,7 @@ function Knowledge() {
                     label={t('knowledge.review.filter.country')}
                     placeholder={t('knowledge.review.filter.allCountries')}
                     value={country ?? ''}
+                    lead={selectFlag(country ?? '')}
                     options={ordered.map((group) => ({
                       value: group.country,
                       label: words.country(group.country),
@@ -330,6 +332,7 @@ function ProposedVersions({
         <ProposedGroup
           key={country}
           title={words.country(country)}
+          lead={<CountryFlag code={country} />}
           count={versions.length}
           open={openCountries.has(country)}
           onOpenChange={(open) => {
@@ -360,6 +363,7 @@ function ProposedVersions({
                     })}
                   </span>
                   <span className="text-small text-muted">
+                    <FlagLead code={version.country} />
                     {t('knowledge.versionMeta', {
                       country: words.country(version.country),
                       date: words.date(version.effectiveFrom),
@@ -464,6 +468,7 @@ const comparisonsGroup = 'comparisons';
 /** One country's proposed versions, folded behind its name, as rows in one card. */
 function ProposedGroup({
   title,
+  lead,
   count,
   tally,
   open,
@@ -472,6 +477,7 @@ function ProposedGroup({
   children,
 }: {
   readonly title: string;
+  readonly lead?: ReactNode;
   readonly count: number;
   readonly tally?: ReactNode;
   readonly open: boolean;
@@ -482,6 +488,7 @@ function ProposedGroup({
   return (
     <Disclosure
       title={title}
+      lead={lead}
       level={4}
       open={open}
       onOpenChange={onOpenChange}

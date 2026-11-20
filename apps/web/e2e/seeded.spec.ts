@@ -132,8 +132,14 @@ test('the seed admin activates a version, reads and closes its reports, then rej
 
   // A hand edit whose page does not back it is refused with the reason, and nothing is stored.
   const proposal = page.getByRole('region', { name: 'Revisão da proposta' });
-  await expect(proposal).toContainText('Esta versão não veio de um pedido de atualização');
+  // With no lists to read, the review waits folded behind its title; editing an item opens it.
+  const proposalToggle = proposal.getByRole('button', { name: 'Revisão da proposta' });
+  await expect(proposalToggle).toHaveAttribute('aria-expanded', 'false');
   await proposal.getByRole('button', { name: 'Editar item' }).click();
+  await expect(proposalToggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(
+    proposal.getByText('Esta versão não veio de um pedido de atualização', { exact: false }),
+  ).toBeVisible();
   await proposal.getByLabel('Endereço da página oficial').fill('https://example.gov/not-cited');
   await proposal.getByLabel('Nome da página').fill('Página sintética');
   await proposal.getByLabel('Trecho da página que confirma o item').fill('Um trecho sintético.');
