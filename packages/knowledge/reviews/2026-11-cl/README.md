@@ -20,7 +20,7 @@ Two reviewers in round 1, one checking each item against its provision, the othe
 
 - **Round 1.** Proven and fixed: Bolivians shown as exempt from 2022, when the exemption came with the agreement of September 2023; the care statement read as if only a stepchild needed it; `decreto-177-treaty-permits` cited for a permit it does not govern. The second reviewer found no amendment of articles 70 or 74 of Ley N.º 21.325 (Leyes 21.589, 21.590, 21.610, 21.655, 21.730 and 21.816 touch other articles) and no change to the five countries.
 - **Round 2**, on the changes: the Bolivian line claimed USD 149 up to 2023 and gave a year no cited page stated; it now cites the service's news of 2023-09-20 and names both amounts.
-- **Round 3**, on that change: ROUND3.
+- **Round 3**, on that change: no defect. Left open: the news dates the agreement (signed the week before 2023-09-20), not the day the waiver started (leftover 2).
 
 The proposal check and the quote check (`ARCA_REVIEW_QUOTES=2026-11-cl`) pass on the final files.
 
