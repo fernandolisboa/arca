@@ -123,6 +123,7 @@ export type {
   AiProvider,
   AiSettings,
   AiStage,
+  AiStageState,
   CorrectionFileType,
   CorrectionSource,
   FileCorrectionRequest,

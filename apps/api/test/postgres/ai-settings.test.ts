@@ -395,10 +395,14 @@ describe('stage models (ADR-0031)', () => {
       isDefault: false,
     });
     expect(await auditCodes('ai_stage_set')).toHaveLength(1);
+    const other = { stage: 'correction', model: 'claude-fable-5-2', effort: 'high' };
+    expect((await byGrant.setStage(other)).status).toBe(200);
+    expect(await setup().settings.stage('correction')).toEqual({ ...other, isDefault: false });
     const refused = [
+      { stage: 'validation', model: 'claude-fable-5-2', effort: null },
       { stage: 'research', model: 'claude-sonnet-5-5', effort: 'high' },
       { stage: 'validation', model: 'jev-1.14.0', effort: 'high' },
-      { stage: 'correction', model: 'claude-opus-5-5', effort: null },
+      { stage: 'research', model: 'claude-opus-5-5', effort: null },
     ];
     for (const body of refused) {
       expect(await (await byGrant.setStage(body)).json()).toEqual({

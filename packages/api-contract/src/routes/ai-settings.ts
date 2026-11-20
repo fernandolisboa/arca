@@ -22,7 +22,10 @@ export type AiEffort = z.infer<typeof AiEffort>;
 /** What a stage may run on and what it runs on by default (ADR-0031). */
 export interface AiStageOptions {
   readonly provider: AiProvider;
-  /** A model joins its list only after the update request's evaluation cases pass on it (#465). */
+  /**
+   * A model joins its list only after the update request's evaluation cases pass on it (#465), or
+   * when the owner lists it himself, as he did Fable 5.2 on 2026-11-19 (ADR-0031).
+   */
   readonly models: readonly [string, ...string[]];
   /** Empty for a provider that takes no effort. */
   readonly efforts: readonly AiEffort[];
@@ -32,7 +35,7 @@ export interface AiStageOptions {
 
 const claudeStage = {
   provider: 'anthropic',
-  models: ['claude-opus-5-5'],
+  models: ['claude-opus-5-5', 'claude-fable-5-2'],
   efforts: aiEfforts,
   defaultModel: 'claude-opus-5-5',
   defaultEffort: 'high',
