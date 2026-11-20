@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { AppShell, type AppShellProps } from '../src/app-shell.js';
+import { nextScrolledAway } from '../src/shell/auto-hide.js';
 import { nearestEdge } from '../src/shell/dock.js';
 import {
   navTargetIds,
@@ -34,6 +35,8 @@ const text = {
     closeMenu: 'Fechar menu',
     navigationGroup: 'Navegar',
     accountGroup: 'Sua conta',
+    collapseMenu: 'Recolher menu',
+    expandMenu: 'Expandir menu',
   },
 };
 
@@ -86,7 +89,7 @@ describe('AppShell', () => {
 
   it('renders the side column with the Settings entry at its foot', () => {
     const html = render({ wide: 'side' });
-    const column = /<nav[^>]*class="[^"]*w-\[216px\][^]*?<\/nav>/.exec(html)?.[0] ?? '';
+    const column = /<nav[^>]*class="[^"]*w-\[calc\(216px[^]*?<\/nav>/.exec(html)?.[0] ?? '';
     expect(column.indexOf('href="/"')).toBeGreaterThan(-1);
     expect(column.lastIndexOf('href=')).toBe(column.indexOf('href="/configuracoes"'));
     expect(html).toContain('md:pl-[216px]');
@@ -135,6 +138,74 @@ describe('AppShell', () => {
     expect(render({ narrow: 'floating-dock' }, { onDockEdgeChange: () => undefined })).toContain(
       'data-dock-grip',
     );
+  });
+});
+
+describe('collapsed navigation', () => {
+  const save = { onCollapseChange: () => undefined };
+
+  it('narrows the side column to icons, keeps every name readable and clears less of the page', () => {
+    const html = render({ wide: 'side', collapse: 'collapsed' });
+    const column = /<nav[^>]*class="[^"]*w-\[calc\(72px[^]*?<\/nav>/.exec(html)?.[0] ?? '';
+    expect(column).toMatch(/href="\/"[^>]*title="Início"/);
+    expect(column).toContain('<span class="sr-only">Início</span>');
+    expect(html).toContain('md:pl-[72px]');
+    expect(html).not.toContain('md:pl-[216px]');
+  });
+
+  it('shows the names in the top bar until collapsed', () => {
+    expect(render({ wide: 'top' })).toContain('lg:not-sr-only');
+    expect(render({ wide: 'top', collapse: 'collapsed' })).not.toContain('lg:not-sr-only');
+  });
+
+  it('shrinks a collapsed dock to the touch target', () => {
+    expect(render({ narrow: 'fixed-dock', collapse: 'collapsed' })).toContain(
+      '[--spacing-dock-cell:var(--spacing-touch)]',
+    );
+    expect(render({ narrow: 'fixed-dock' })).not.toContain('--spacing-dock-cell:');
+  });
+
+  it('offers the collapse button in the top bar and the side column once the app saves it', () => {
+    expect(render({ wide: 'top' })).not.toContain('title="Recolher menu"');
+    expect(render({ wide: 'top' }, save)).toContain('title="Recolher menu"');
+    expect(render({ wide: 'side', collapse: 'collapsed' }, save)).toContain(
+      'title="Expandir menu"',
+    );
+    expect(render({ wide: 'menu' }, save)).not.toContain('title="Recolher menu"');
+  });
+});
+
+describe('auto-hidden navigation', () => {
+  it('lays the side column over the page and leaves it waiting at the left edge', () => {
+    const html = render({ wide: 'side', autoHide: 'on' });
+    expect(html).toContain('data-side-edge');
+    expect(html).toMatch(
+      /<nav[^>]*data-hidden=""[^>]*-translate-x-full has-\[:focus-visible\]:translate-x-0/,
+    );
+    expect(html).not.toContain('md:pl-[216px]');
+  });
+
+  it('keeps everything in view with auto-hide off', () => {
+    const html = render({ wide: 'side', narrow: 'fixed-dock' });
+    expect(html).not.toContain('data-hidden');
+    expect(html).not.toContain('data-side-edge');
+  });
+
+  it('gives touch screens a handle as large as a touch target to bring the side column back', () => {
+    expect(render({ wide: 'side', autoHide: 'on' })).toMatch(
+      /pointer-coarse:md:block"><button[^>]*aria-label="Abrir menu"[^>]*min-h-touch/,
+    );
+  });
+
+  it.each([
+    [100, 300, true],
+    [300, 100, false],
+    [300, 304, null],
+    [300, 296, null],
+    [200, 40, false],
+    [0, 60, false],
+  ] as const)('scrolling %i → %i leaves the bars away: %s', (from, to, next) => {
+    expect(nextScrolledAway(from, to)).toBe(next);
   });
 });
 

@@ -27,7 +27,7 @@ export const sectionIcons = {
 /** Each appearance axis lives in exactly one category; the test checks none is left out. */
 export const sectionAxes = {
   appearance: ['theme', 'mode', 'font', 'corners'],
-  navigation: ['navNarrow', 'navWide', 'dockEdge'],
+  navigation: ['navNarrow', 'navWide', 'dockEdge', 'navCollapse', 'navAutoHide'],
   accessibility: ['textSize', 'contrast', 'motion'],
 } as const satisfies Partial<Record<SettingsSection, readonly AxisName[]>>;
 

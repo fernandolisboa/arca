@@ -44,9 +44,11 @@ const gutter = 16;
 function findTarget(ids: readonly string[]): HTMLElement | null {
   for (const id of ids) {
     const element = document.getElementById(id);
-    // A hidden layout's copy has no box, so a zero size means it is not on screen.
+    // A hidden layout's copy has no box, so a zero size means it is not on screen; an auto-hidden
+    // bar or column keeps its box off screen and says so with `data-hidden`.
     const rect = element?.getBoundingClientRect();
-    if (element === null || rect === undefined) continue;
+    if (element === null || rect === undefined || element.closest('[data-hidden]') !== null)
+      continue;
     if (rect.width > 0 && rect.height > 0) return element;
   }
   return null;

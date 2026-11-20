@@ -45,7 +45,10 @@ test('splits the settings into categories and labels every control', async ({ pa
 
   const sections = [
     ['Aparência', ['Cores', 'Claro ou escuro', 'Fontes', 'Cantos']],
-    ['Navegação', ['Navegação no celular', 'Navegação em telas grandes']],
+    [
+      'Navegação',
+      ['Navegação no celular', 'Navegação em telas grandes', 'Tamanho do menu', 'Esconder o menu'],
+    ],
     ['Acessibilidade', ['Tamanho do texto', 'Contraste', 'Animações']],
   ] as const;
   let total = 0;
