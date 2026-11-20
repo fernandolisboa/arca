@@ -1,8 +1,17 @@
 # es-non-lucrative
 
-Research notes for Spain's non-lucrative residence visa, route `es-non-lucrative` in `packages/knowledge/data/routes`. The seed research is in [other-destinations.md](../other-destinations.md#spain); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Spain's non-lucrative residence visa, the stored route `es-non-lucrative`. The seed research is in [other-destinations.md](../other-destinations.md#spain); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
+
+### 2026-11-20, session review
+
+The [session review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 3.
+
+- **Version audited:** 3
+- **Outcome:** correction, version 4, from version 3's date, 2025-06-16, stored active by the review's pull request. What changed, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-es/README.md).
+- **Amendments looked for:** the later references of each cited act, the BOE's search by title and the daily summaries up to 2026-11-20. Nothing newer than Real Decreto 316/2026 and the Supreme Court judgments of July 2026 touches Real Decreto 1155/2024, and none of them its articles 26 to 39 or 60 to 64. Real Decreto-ley 38/2026 (BOE of 2026-11-18) sets no IPREM and no fee. No budget law for 2027 is published.
+- **Watch next:** a text that states the budget's extension for 2027 or a new IPREM, and any budget law that raises the fees (Orden PJC/617/2025, article 1.2). Either is version 5 from its date.
 
 ### 2026-11-11
 
