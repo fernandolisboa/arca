@@ -176,7 +176,7 @@ export const ptBR = {
       },
       stageNotices: {
         saved: 'Salvo.',
-        failure: 'Não deu certo. Nada mudou.',
+        failure: 'Não deu para salvar tudo. Confira e tente de novo.',
         tooMany: 'Muitas mudanças hoje. Tente amanhã.',
       },
     },

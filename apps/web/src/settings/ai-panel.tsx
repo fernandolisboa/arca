@@ -6,6 +6,7 @@ import {
   setAiKeyAction,
   type AiKeyState,
   type AiKeyTestResult,
+  type AiProvider,
   type AiStage,
   type AiStageState,
 } from '@arca/api-contract/client';
@@ -19,6 +20,7 @@ import { TextField } from '../forms/text-field.js';
 import { passkeys } from '../platform.js';
 import { commonFailure, reach } from '../requests.js';
 import { stepUpFor } from '../step-up.js';
+import { stageChanges, type StageChoice } from './stage-changes.js';
 
 const keyTones = {
   set: 'ok',
@@ -45,8 +47,6 @@ type KeyNotice =
       readonly code: 'saved' | 'removed' | 'invalid' | 'failure' | 'tooMany' | 'keysOff';
     }
   | { readonly kind: 'tested'; readonly code: AiKeyTestResult['result'] | 'failure' | 'tooMany' };
-
-type StageChoice = Pick<AiStageState, 'model' | 'effort'>;
 
 const sha256Hex = async (value: string) =>
   Array.from(
@@ -79,6 +79,58 @@ function Group({
   );
 }
 
+/**
+ * The field that takes a key. The key lives in this form's state only: it is cleared once sent,
+ * whatever the outcome, and is gone when the form closes.
+ */
+function KeyForm({
+  provider,
+  working,
+  onSave,
+  onCancel,
+}: {
+  readonly provider: AiProvider;
+  readonly working: boolean;
+  readonly onSave: (key: string) => void;
+  readonly onCancel?: () => void;
+}) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState('');
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const key = draft.trim();
+        setDraft('');
+        onSave(key);
+      }}
+    >
+      <TextField
+        label={t('settings.ai.keyLabel')}
+        hint={t(`settings.ai.providers.${provider}.hint`)}
+        type="text"
+        masked
+        {...keptOutOfPasswordManagers}
+        value={draft}
+        onChange={(event) => {
+          setDraft(event.currentTarget.value);
+        }}
+      />
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" disabled={working || draft.trim() === ''}>
+          {t('settings.ai.save')}
+        </Button>
+        {onCancel !== undefined && (
+          <Button variant="secondary" disabled={working} onClick={onCancel}>
+            {t('settings.ai.cancel')}
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 /** One provider's key: its state, a test that spends no tokens, and a field to set it on demand. */
 function KeyCard({
   keyState: state,
@@ -90,8 +142,6 @@ function KeyCard({
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { provider } = state;
-  // The key lives in this field's state only and is cleared once sent, whatever the outcome.
-  const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
   const [working, setWorking] = useState(false);
   const [notice, setNotice] = useState<KeyNotice>();
@@ -120,10 +170,7 @@ function KeyCard({
       });
   };
 
-  const save = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const key = draft.trim();
-    setDraft('');
+  const save = (key: string) => {
     if (!aiKeyPatterns[provider].test(key)) {
       setNotice({ kind: 'notices', code: 'invalid' });
       return;
@@ -170,7 +217,7 @@ function KeyCard({
           new Date(state.setAt),
         );
   const title = t(`settings.ai.providers.${provider}.name`);
-  const formOpen = canManage && (editing || state.keyId === null);
+  const formOpen = canManage && (editing || state.state === 'none');
   return (
     <section aria-label={title} className={`${cardClass} flex flex-col gap-4 p-4`}>
       <div className="flex flex-col gap-1">
@@ -188,36 +235,18 @@ function KeyCard({
       )}
       {state.state === 'unreadable' && <p>{t('settings.ai.unreadable')}</p>}
       {formOpen && (
-        <form className="flex flex-col gap-3" onSubmit={save}>
-          <TextField
-            label={t('settings.ai.keyLabel')}
-            hint={t(`settings.ai.providers.${provider}.hint`)}
-            type="text"
-            masked
-            {...keptOutOfPasswordManagers}
-            value={draft}
-            onChange={(event) => {
-              setDraft(event.currentTarget.value);
-            }}
-          />
-          <div className="flex flex-wrap gap-3">
-            <Button type="submit" disabled={working || draft.trim() === ''}>
-              {t('settings.ai.save')}
-            </Button>
-            {state.keyId !== null && (
-              <Button
-                variant="secondary"
-                disabled={working}
-                onClick={() => {
-                  setDraft('');
+        <KeyForm
+          provider={provider}
+          working={working}
+          onSave={save}
+          {...(state.state === 'none'
+            ? {}
+            : {
+                onCancel: () => {
                   setEditing(false);
-                }}
-              >
-                {t('settings.ai.cancel')}
-              </Button>
-            )}
-          </div>
-        </form>
+                },
+              })}
+        />
       )}
       <div className="flex flex-col gap-3">
         {!formOpen && (
@@ -250,7 +279,7 @@ function KeyCard({
             )}
           </div>
         )}
-        <p role="status" className="text-small empty:hidden">
+        <p role="status" className="text-small empty:-mt-3">
           {notice === undefined
             ? ''
             : notice.kind === 'tested'
@@ -329,13 +358,7 @@ function StagesCard({ stages }: { readonly stages: readonly AiStageState[] }) {
   const [choices, setChoices] = useState<Partial<Record<AiStage, StageChoice>>>({});
   const [working, setWorking] = useState(false);
   const [notice, setNotice] = useState<'saved' | 'failure' | 'tooMany'>();
-  const changed = stages.flatMap((stored) => {
-    const choice = choices[stored.stage];
-    return choice === undefined ||
-      (choice.model === stored.model && choice.effort === stored.effort)
-      ? []
-      : [{ stage: stored.stage, ...choice }];
-  });
+  const changed = stageChanges(stages, choices);
 
   const save = () => {
     setNotice(undefined);
@@ -365,7 +388,7 @@ function StagesCard({ stages }: { readonly stages: readonly AiStageState[] }) {
           <StageRow
             key={stored.stage}
             stage={stored.stage}
-            choice={choices[stored.stage] ?? stored}
+            choice={choices[stored.stage] ?? { model: stored.model, effort: stored.effort }}
             isDefault={stored.isDefault}
             onChange={(choice) => {
               setNotice(undefined);
