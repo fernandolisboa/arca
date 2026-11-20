@@ -1,0 +1,39 @@
+import { useState } from 'react';
+import { flagUrl } from './flags.js';
+
+const flagClass =
+  'inline-block h-[0.85em] w-[1.14em] shrink-0 rounded-[2px] object-cover ring-1 ring-ink/20';
+
+/**
+ * A country's flag at the size of the text beside it. Decoration only: the country's name always
+ * sits next to it, so it has no name of its own and leaves no gap when it cannot load.
+ */
+export function CountryFlag({
+  code,
+  className = '',
+}: {
+  readonly code: string;
+  readonly className?: string;
+}) {
+  const src = flagUrl(code);
+  // The file that failed, by its address, so another country's flag still loads in its place.
+  const [failed, setFailed] = useState<string | null>(null);
+  if (src === undefined || failed === src) return null;
+  return (
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      className={`${flagClass} ${className}`}
+      onError={() => {
+        setFailed(src);
+      }}
+    />
+  );
+}
+
+/** A country's flag before a line of text that starts with its name. */
+export function FlagLead({ code }: { readonly code: string }) {
+  return <CountryFlag code={code} className="mr-[0.45em] align-[-0.06em]" />;
+}

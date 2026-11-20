@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reviewOrder } from '../src/knowledge/review-order.js';
+import { byRoute, reviewOrder } from '../src/knowledge/review-order.js';
 
 describe('reviewOrder', () => {
   const names: Record<string, string> = { LV: 'Letônia', PT: 'Portugal', US: 'Estados Unidos' };
@@ -25,5 +25,25 @@ describe('reviewOrder', () => {
 
   it('answers nothing for no versions', () => {
     expect(reviewOrder([], name)).toEqual([]);
+  });
+});
+
+describe('byRoute', () => {
+  it('keeps each route together, in the order the routes first appear', () => {
+    const routes = byRoute([
+      { routeId: 'pt-d7', title: 'D7', number: 6 },
+      { routeId: 'pt-d8', title: 'D8', number: 6 },
+      { routeId: 'pt-d7', title: 'D7', number: 5 },
+    ]);
+    expect(routes.map(({ routeId, title, versions }) => [routeId, title, versions.length])).toEqual(
+      [
+        ['pt-d7', 'D7', 2],
+        ['pt-d8', 'D8', 1],
+      ],
+    );
+  });
+
+  it('answers nothing for no versions', () => {
+    expect(byRoute([])).toEqual([]);
   });
 });

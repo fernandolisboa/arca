@@ -1264,6 +1264,7 @@ export const ptBR = {
     /** The proposed versions grouped by country. */
     review: {
       versions: '{n, plural, one {# versão} other {# versões}}',
+      versionNumber: 'Versão {number}',
       comparisons: 'Comparar destinos',
       filter: {
         country: 'País',
@@ -2125,6 +2126,13 @@ export const ptBR = {
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
     },
+  },
+  /** The country picker: a search over the countries, each with its flag. */
+  countryPicker: {
+    search: 'Buscar país',
+    none: 'Nenhum país com esse nome.',
+    clear: 'Limpar a escolha',
+    close: 'Fechar',
   },
   /**
    * Former states (ISO 3166-3), which Intl.DisplayNames does not name. Current countries are

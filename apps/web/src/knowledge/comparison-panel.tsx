@@ -1,6 +1,7 @@
 import type { ComparisonVersionView } from '@arca/api-contract/client';
 import { StatusChip } from '@arca/ui';
 import { useId, type ReactNode } from 'react';
+import { FlagLead } from '../country-flag.js';
 import { Decision, decideComparison } from './decision.js';
 import { ChangeList, ContentHash, card, changeLines } from './review-parts.js';
 import { stateTone } from './state-tone.js';
@@ -151,6 +152,7 @@ function IndicatorCard({
             {indicator.values.map((row) => (
               <tr key={row.country} className="border-t border-line">
                 <th scope="row" className="py-1 pr-3 font-normal">
+                  <FlagLead code={row.country} />
                   {words.country(row.country)}
                 </th>
                 <td className="py-1 pr-3">

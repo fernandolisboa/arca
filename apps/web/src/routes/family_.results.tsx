@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, useLocation } from '@tanstack/react-router';
 import { type ReactNode, useEffect, useId } from 'react';
 import { caseEvaluationsQuery, caseQuery, sessionQuery } from '../api.js';
+import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page, PageColumns } from '../page.js';
@@ -167,7 +168,10 @@ function Evaluated({
             aria-label={heading}
             className="flex scroll-mt-20 flex-col gap-3"
           >
-            <h3 className="font-display text-lead">{heading}</h3>
+            <h3 className="font-display text-lead">
+              {country !== null && <FlagLead code={country} />}
+              {heading}
+            </h3>
             <div className="grid items-start gap-3 xl:grid-cols-2">
               {routes.map((group) => {
                 const routeTitle =

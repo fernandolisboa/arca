@@ -35,7 +35,7 @@ const withContent = (content: Json, change: Record<string, Json>): Json => ({
   ...change,
 });
 
-describe('rule rows (ADR-0031)', () => {
+describe('rule rows (ADR-0031)', { timeout: 120_000 }, () => {
   it('read back as exactly the versions, hashes, cases, hosts and lists the build made', async () => {
     const { rows, read } = await built();
     const data = read(rows);

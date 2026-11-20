@@ -302,6 +302,9 @@ catalogs:
     fast-check:
       specifier: 4.10.2
       version: 4.10.2
+    flag-icons:
+      specifier: 7.6.0
+      version: 7.6.0
     hono:
       specifier: 4.13.16
       version: 4.13.16
@@ -556,6 +559,9 @@ importers:
       '@vercel/blob':
         specifier: 'catalog:'
         version: 2.8.2
+      flag-icons:
+        specifier: 'catalog:'
+        version: 7.6.0
       react:
         specifier: 'catalog:'
         version: 19.3.1
@@ -3456,6 +3462,9 @@ packages:
   find-up@7.0.0:
     resolution: {integrity: sha512-YyZM99iHrqLKjmt4LJDj58KI+fYyufRLBSYcqycxf//KpBk9FoewoGX0450m9nB44qrZnovzC2oeP5hUibxc/g==}
     engines: {node: '>=18'}
+
+  flag-icons@7.6.0:
+    resolution: {integrity: sha512-hir/PsXwr0EESyizKrXJzmkzpLIMf+1vlNKLqAfvdh+bsU94a7LYWTiubkHKqptGoCPzOUGcm6c4PfC9/BaGSQ==}
 
   flat-cache@6.1.23:
     resolution: {integrity: sha512-f++BY9pTk+983xK1FLzlLpmM0i0z+jHmx3QESGkURMXujQZz1k5wzwX6hjnQ8goaD0B+sYnDK1yZ6MTyZfUaqA==}
@@ -7020,6 +7029,8 @@ snapshots:
       locate-path: 7.2.0
       path-exists: 5.0.0
       unicorn-magic: 0.1.0
+
+  flag-icons@7.6.0: {}
 
   flat-cache@6.1.23:
     dependencies:

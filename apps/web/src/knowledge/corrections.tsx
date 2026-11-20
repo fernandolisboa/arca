@@ -638,12 +638,15 @@ export function SourceList({
 export function RequestCard({
   request,
   heading,
+  headingLead,
   answer,
   reload,
   words,
 }: {
   readonly request: Pick<ListedRequest, 'id' | 'state' | 'createdAt' | 'note' | 'sources'>;
   readonly heading: string;
+  /** Shown before the heading, such as a country's flag; decoration only. */
+  readonly headingLead?: ReactNode;
   readonly answer: ReactNode;
   readonly reload: QueryKey;
   readonly words: KnowledgeWords;
@@ -660,6 +663,7 @@ export function RequestCard({
           label={t('knowledge.corrections.state', { state: request.state })}
         />
         <p id={headingId} className="font-medium">
+          {headingLead}
           {heading}
         </p>
       </div>

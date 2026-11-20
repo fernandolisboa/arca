@@ -86,6 +86,7 @@ catalog:
   '@fontsource/instrument-serif': 5.3.0
   '@fontsource/opendyslexic': 5.3.0
   '@fontsource/young-serif': 5.3.0
+  flag-icons: 7.6.0
   '@hono/zod-openapi': 1.6.3
   '@playwright/test': 1.64.1
   '@block65/webcrypto-web-push': 2.0.0

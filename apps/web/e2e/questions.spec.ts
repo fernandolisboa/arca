@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { family, signedIn } from './case-accounts.js';
+import { pickCountry } from './country-picker.js';
 import { resetRateLimits } from './postgres/accounts.js';
 import { watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
@@ -34,9 +35,9 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await expect(step(page, 'Dados básicos')).toBeVisible();
   await born.getByLabel('Ano').fill('1985');
   await radio(basics, 'Quais cidadanias Ana tem ou já teve?', 'Sim');
-  await basics.getByLabel('País', { exact: true }).selectOption({ label: 'Brasil' });
+  await pickCountry(basics, 'País', 'Brasil');
   await basics.getByLabel('Como conseguiu').selectOption({ label: 'Nascimento' });
-  await basics.getByLabel('Em que país Ana mora hoje?').selectOption({ label: 'Brasil' });
+  await pickCountry(basics, 'Em que país Ana mora hoje?', 'Brasil');
   await basics.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const studies = step(page, 'Estudos e idiomas');
@@ -66,7 +67,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await finances
     .getByLabel('Tipo')
     .selectOption({ label: 'De trabalho, como salário ou serviços' });
-  await finances.getByLabel('País de onde vem').selectOption({ label: 'Brasil' });
+  await pickCountry(finances, 'País de onde vem', 'Brasil');
   await radio(finances, 'Ana depende do dinheiro de alguém do caso?', 'Não depende de ninguém');
   await radio(finances, 'Quais bens Ana tem?', 'Nenhum');
   await radio(finances, 'Esses são todos os bens de Ana?', 'Sim, são todos');

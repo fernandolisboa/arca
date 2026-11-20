@@ -80,6 +80,21 @@ describe('Disclosure', () => {
     expect(html).not.toContain('hidden=""');
   });
 
+  it('puts a lead before the title inside the toggle, outside the name of the region', () => {
+    const html = renderToStaticMarkup(
+      <Disclosure
+        title={words.title}
+        level={4}
+        lead={<img src="/flag.svg" alt="" />}
+        defaultOpen
+        className="surface"
+      >
+        <p>{words.body}</p>
+      </Disclosure>,
+    );
+    expect(html).toMatch(/<button[^>]*><img src="\/flag.svg" alt=""\/><span id="[^"]+"/);
+  });
+
   it('keeps the footer outside the body, so it shows while folded', () => {
     expect(render(false)).toMatch(/<\/p><\/div><p>A IA pode errar.<\/p><\/section>$/);
   });
