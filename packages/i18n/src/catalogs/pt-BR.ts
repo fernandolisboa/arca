@@ -1276,26 +1276,44 @@ export const ptBR = {
       intro: 'Você aprova as versões de rota que o Arca usa nas avaliações.',
       open: 'Abrir a tela de ativação',
     },
-    proposed: 'Versões propostas',
-    /** The proposed versions grouped by country. */
+    /** The versions split into lists, each grouped by country. */
+    lists: {
+      label: 'Listas de versões',
+      proposed: 'Propostas',
+      active: 'Ativas',
+      previous: 'Anteriores',
+      requests: 'Pedidos',
+      lead: {
+        proposed: 'Esperam sua decisão. Abra uma para ativar ou recusar.',
+        active: 'O que o Arca usa hoje e o que já tem data para começar.',
+        previous: 'Trocadas por uma versão mais nova ou recusadas. Ficam aqui como histórico.',
+        requests: 'Avisos de erro, pedidos dos participantes e pedidos de regra nova.',
+      },
+      empty: {
+        proposed: 'Nenhuma versão esperando decisão.',
+        active: 'Nenhuma versão ativa.',
+        previous: 'Nenhuma versão anterior.',
+      },
+      from: 'A partir de {date}',
+      previousState:
+        '{state, select, rejected {Recusada} proposed {Substituída, sem decisão} other {Substituída}}',
+      countries: 'Países',
+      tally:
+        '{country}: {proposed, plural, one {# proposta} other {# propostas}}, {active, plural, one {# ativa} other {# ativas}}, {previous, plural, one {# anterior} other {# anteriores}}, {waiting, plural, =0 {nenhum pedido esperando} one {# pedido esperando} other {# pedidos esperando}}',
+      requestsTitle: 'Pedidos e avisos',
+    },
+    /** How the activation screen lays out its lists, remembered on this device. */
+    layout: {
+      label: 'Forma de ver',
+      countries: 'Por país',
+      grid: 'Grade de países',
+      side: 'Pedidos ao lado',
+    },
     review: {
       versions: '{n, plural, one {# versão} other {# versões}}',
       versionNumber: 'Versão {number}',
       comparisons: 'Comparar destinos',
-      filter: {
-        country: 'País',
-        allCountries: 'Todos os países',
-        empty: 'Nenhuma versão proposta neste país.',
-        clear: 'Mostrar todos os países',
-      },
     },
-    noneProposed: 'Nenhuma versão proposta agora.',
-    /** Proposed versions no date from today on would use (CONTEXT: superseded version). */
-    superseded: {
-      title: 'Substituídas, não precisam de decisão',
-      lead: 'Uma correção ou uma versão mais nova já ocupa o lugar destas. Enquanto a versão que entrou no lugar delas não for recusada, o Arca não usa nenhuma.',
-    },
-    others: 'Outras versões',
     versionTitle: '{title} · versão {number}',
     versionMeta: '{country} · em vigor a partir de {date}',
     state:
