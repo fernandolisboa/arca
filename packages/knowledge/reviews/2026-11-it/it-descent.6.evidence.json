@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:citizen-line",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art1",
+      "quote": "È cittadino per nascita: a) il figlio di padre o di madre cittadini;"
+    },
+    {
+      "key": "requirement:citizen-line",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art3bis",
+      "quote": "è considerato non avere mai acquistato la cittadinanza italiana chi è nato all'estero anche prima della data di entrata in vigore del presente articolo ed è in possesso di altra cittadinanza, salvo che ricorra una delle seguenti condizioni:"
+    },
+    {
+      "key": "requirement:citizen-line",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art3bis",
+      "quote": "c) ((un ascendente di primo o di secondo grado possiede, o possedeva al momento della morte, esclusivamente la cittadinanza italiana)) ; d) ((un genitore o adottante è stato residente in Italia per almeno due anni continuativi successivamente all'acquisto della cittadinanza italiana e prima della data di nascita o di adozione del figlio))"
+    },
+    {
+      "key": "requirement:citizen-line",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555~art1!vig=1992-08-15",
+      "quote": "La Corte Costituzionale con sentenza del 28 gennaio - 9 febbraio 1983, n. 30 (in G.U. 1a s.s. 9/02/1983, n. 39) ha dichiarato \"l'illegittimità costituzionale: a) dell'art. 1, n. 1, della legge 13 giugno 1912, n. 555, nella parte in cui non prevede che sia cittadino per nascita anche il figlio di madre cittadina;"
+    },
+    {
+      "key": "requirement:citizen-line",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=1947-12-27&atto.codiceRedazionale=047U0001&atto.articolo.numero=18&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "La presente Costituzione è promulgata dal Capo provvisorio dello Stato entro cinque giorni dalla sua approvazione da parte dell'Assemblea Costituente, ed entra in vigore il 1° gennaio 1948."
+    },
+    {
+      "key": "assessment:link-through-a-mother-before-1948",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555~art1!vig=1992-08-15",
+      "quote": "È cittadino per nascita: 1° il figlio di padre cittadino;"
+    },
+    {
+      "key": "assessment:link-through-a-mother-before-1948",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=1947-12-27&atto.codiceRedazionale=047U0001&atto.articolo.numero=18&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "La presente Costituzione è promulgata dal Capo provvisorio dello Stato entro cinque giorni dalla sua approvazione da parte dell'Assemblea Costituente, ed entra in vigore il 1° gennaio 1948."
+    },
+    {
+      "key": "assessment:no-own-loss",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1912-06-13;555~art8!vig=1992-08-15",
+      "quote": "Perde la cittadinanza: 1° chi spontaneamente acquista una cittadinanza straniera e stabilisce o ha stabilito all'estero la propria residenza; 2° chi, avendo acquistata senza concorso di volontà propria una cittadinanza straniera, dichiari di rinunziare alla cittadinanza italiana, e stabilisca o abbia stabilito all'estero la propria residenza."
+    },
+    {
+      "key": "assessment:no-own-loss",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:1992-02-05;91~art11",
+      "quote": "Il cittadino che possiede, acquista o riacquista una cittadinanza straniera conserva quella italiana, ma può ad essa rinunciare qualora risieda o stabilisca la residenza all'estero."
+    },
+    {
+      "key": "assessment:minor-at-consulate",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "quote": "((può riconoscere il possesso della cittadinanza italiana nei confronti di minorenni residenti nella circoscrizione, figli di cittadini previamente riconosciuti come tali;))"
+    },
+    {
+      "key": "assessment:minor-at-consulate",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=2011-05-13&atto.codiceRedazionale=011G0109&atto.articolo.numero=1&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "\"Art. 7-bis. - Diritti da riscuotere per il trattamento della domanda di riconoscimento della cittadinanza italiana di persona maggiorenne: euro 300,00\""
+    },
+    {
+      "key": "assessment:minor-at-consulate",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=2011-05-13&atto.codiceRedazionale=011G0109&atto.articolo.numero=1&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "La L. 30 dicembre 2024, n. 207, ha disposto (con l'art. 1, comma 639) che \"All'articolo 7-bis della sezione I della tabella dei diritti consolari da riscuotersi dagli uffici diplomatici e consolari, allegata al decreto legislativo 3 febbraio 2011, n. 71, le parole: «euro 300,00» sono sostituite dalle seguenti: «euro 600,00»"
+    },
+    {
+      "key": "assessment:court-venue",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2017-02-17;13~art4",
+      "quote": "((Quando l'attore risiede all'estero le controversie di accertamento dello stato di cittadinanza italiana sono assegnate avendo riguardo al comune di nascita del padre, della madre o dell'avo cittadini italiani))"
+    },
+    {
+      "key": "assessment:consulate-yearly-limit",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "quote": "((I commi 2, 3 e 4 si applicano a decorrere dal 1° gennaio del terzo anno solare successivo a quello in corso alla data di entrata in vigore della presente disposizione."
+    },
+    {
+      "key": "assessment:consulate-yearly-limit",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "quote": "((Gli uffici consolari trattano le domande ricevute prima della data di cui al comma 5, primo periodo. Fino alla medesima data, ciascun ufficio consolare riceve un numero annuo di domande di riconoscimento della cittadinanza di persone maggiorenni non superiore al numero dei procedimenti di riconoscimento della cittadinanza conclusi tra il 1° gennaio e il 31 dicembre dell'anno precedente a quello in cui la presente disposizione entra in vigore. Il numero massimo di cui al secondo periodo non è in ogni caso inferiore a cento.))"
+    },
+    {
+      "key": "assessment:minor-at-consulate",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "quote": "Fino alla medesima data, ciascun ufficio consolare riceve un numero annuo di domande di riconoscimento della cittadinanza di persone maggiorenni"
+    },
+    {
+      "key": "assessment:court-proof",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-09-01;150~art19bis",
+      "quote": "((Salvi i casi espressamente previsti dalla legge, nelle controversie in materia di accertamento della cittadinanza italiana non sono ammessi il giuramento e la prova testimoniale.)) 2-ter. ((Nelle controversie in materia di accertamento della cittadinanza italiana chi chiede l'accertamento della cittadinanza è tenuto ad allegare e provare l'insussistenza delle cause di mancato acquisto o di perdita della cittadinanza previste dalla legge.))"
+    },
+    {
+      "key": "cost:recognition-fee",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=2011-05-13&atto.codiceRedazionale=011G0109&atto.articolo.numero=1&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "\"Art. 7-bis. - Diritti da riscuotere per il trattamento della domanda di riconoscimento della cittadinanza italiana di persona maggiorenne: euro 300,00\""
+    },
+    {
+      "key": "cost:recognition-fee",
+      "url": "https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=2011-05-13&atto.codiceRedazionale=011G0109&atto.articolo.numero=1&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1",
+      "quote": "La L. 30 dicembre 2024, n. 207, ha disposto (con l'art. 1, comma 639) che \"All'articolo 7-bis della sezione I della tabella dei diritti consolari da riscuotersi dagli uffici diplomatici e consolari, allegata al decreto legislativo 3 febbraio 2011, n. 71, le parole: «euro 300,00» sono sostituite dalle seguenti: «euro 600,00»"
+    },
+    {
+      "key": "cost:recognition-fee",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2002-05-30;115~art13",
+      "quote": "((Per le controversie in materia di accertamento della cittadinanza italiana il contributo dovuto è pari a 600 euro. Il contributo è dovuto per ciascuna parte ricorrente, anche se la domanda è proposta congiuntamente nel medesimo giudizio))"
+    },
+    {
+      "key": "duration:recognition-decision",
+      "url": "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2011-02-03;71~art10",
+      "quote": "((Il termine per la conclusione dei procedimenti di cui ai commi 2 e 6 è fissato in trentasei mesi))"
+    }
+  ]
+}
