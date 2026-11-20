@@ -4,6 +4,15 @@ Research notes for Argentina's temporary residence by nationality for natives of
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-ar/README.md](../../../packages/knowledge/reviews/2026-11-ar/README.md).
+
+- **Version audited:** 3 (effective 2025-05-29), the newest stored.
+- **Outcome:** two new versions, stored already active by the review's pull request: version 4 corrects version 3 from 2025-05-29 (art. 29's definitions of conviction and record as DNU 366/2025 wrote them, the absolute bar for crimes against life, sexual integrity or the constitutional order, the other bars, entry and papers, health cover, the partner's age and marriage, cancellation after six months abroad, the criminal record certificate as a possible cost) and version 5 from 2026-07-31 adds art. 29, m) (Decreto 681/2026). Who qualifies, the family of art. 23, ñ), the fees and the two years matched.
+- **Sources re-read** on 2026-11-20 with `curl` and the app's reader, all on www.argentina.gob.ar.
+- **Amendments looked for**, up to 2026-11-20: the norms modifying Ley 25.871 (newest Resolución 1087/2026 of 2026-10-22), Decreto 616/2010 (newest 2024), Decreto 584/2024 (three 2024 dispositions, none on the unit's value) and Disposición DNM 1637/2022 (none); Disposiciones DNM 1547/2026 and 34/2026 change nothing here.
+
 ### 2026-11-11
 
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes.
