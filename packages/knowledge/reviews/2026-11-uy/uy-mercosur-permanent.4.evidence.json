@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/33",
+      "quote": "Los nacionales de los Estados Partes del Mercosur y Estados Asociados que acrediten dicha nacionalidad."
+    },
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.gub.uy/tramites/residencia-legal",
+      "quote": "Dirigida a personas extranjeras de nacionalidad de los países parte y asociados del Mercosur. (Argentina, Brasil, Chile, Bolivia, Paraguay, Perú, Ecuador, Colombia, Venezuela, Surinam y Guyana)."
+    },
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
+      "quote": "calidad de nacional de Estado Parte o Asociado del MERCOSUR acreditada mediante pasaporte o documento de identidad vigente y en buen estado"
+    },
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.impo.com.uy/bases/leyes/20075-2022/169",
+      "quote": "Este artículo regirá a partir de los ciento veinte días de la fecha de promulgación de la presente ley."
+    },
+    {
+      "key": "assessment:no-denial-ground",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
+      "quote": "deberán realizar declaración jurada de ausencia de antecedentes internacionales penales o policiales, donde se manifieste que el interesado no se encuentra comprendido en lo dispuesto por los literales B, C, y D de los artículos 45 y 46 de la Ley N° 18.250"
+    },
+    {
+      "key": "assessment:criminal-record-certificates",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
+      "quote": "presentación de los correspondientes antecedentes penales del o los países donde haya residido los últimos cinco (5) años por un período superior a seis (6) meses"
+    },
+    {
+      "key": "assessment:criminal-record-certificates",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "A nivel nacional del país de donde residió los últimos 5 años (por más de 6 meses)."
+    },
+    {
+      "key": "assessment:criminal-record-certificates",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Además de cumplir con los requisitos generales (excepto antecedentes penales) deberá presentar la siguiente documentación sobre identidad:"
+    },
+    {
+      "key": "assessment:vaccination-certificate",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
+      "quote": "acreditar Certificado Esquema de Vacunación uruguayo"
+    },
+    {
+      "key": "assessment:vaccination-certificate",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "expedido por un vacunatorio en Uruguay, que acredite que el extranjero cumple con el esquema de vacunación uruguayo."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Siempre se deberá presentar la documentación original y vigente."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "En el caso de matrimonios, deberán acreditar el vinculo mediante la presentación de la correspondiente partida de matrimonio, legalizada o apostillada y de ser necesario traducida, la cual no podrá tener mas de un año de expedida."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Los documentos que sean emitidos electrónicamente y que permitan su verificación no requerirán de apostilla ni legalización."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "El resto de documentos extranjeros deberán estar apostillados (en los casos de países que suscribieron el acuerdo de Apostilla) o legalizados (de acuerdo a lo dispuesto en la Ley N° 15.441) y traducidos en caso de corresponder por Traductor Público Uruguayo, con la excepción de los emitidos por Brasil (Ley Nº 18.134)."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
+      "quote": "acreditada mediante pasaporte o documento de identidad vigente y en buen estado"
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Debidamente legalizada o apostillada, y en caso de corresponder traducida o testimonio uruguayo."
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Expresa, de los padres que ejercen la patria potestad del menor para radicarse en el país."
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "En caso que la autorización de uno o ambos padres, no sea dada en forma presencial el día de la audiencia, si proviene del extranjero mediante un poder, la misma deberá previamente ser protocolizada por un escribano uruguayo. La cual tendrá una vigencia de 180 días."
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
+      "quote": "Se fija la mayor edad en los dieciocho años cumplidos."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/33",
+      "quote": "La solicitud de trámite de residencia podrá ser presentada ante el Ministerio del Interior o ante las Oficinas Consulares de la República."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/33",
+      "quote": "El Ministerio del Interior deberá expedirse sobre el otorgamiento de la residencia solicitada en un plazo no mayor a noventa días hábiles"
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/4",
+      "quote": "el mismo contará con el plazo de treinta (30) días hábiles para presentarse ante la Dirección Nacional de Migración a completar la documentación exigida para la realización de su trámite de residencia permanente."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "El día y hora agendado se debe comparecer en forma personal, con la documentación requerida y se dará comienzo al trámite de residencia correspondiente."
+    },
+    {
+      "key": "assessment:fees-in-indexed-units",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Certificado migratorio 55,70 UI dirigido a la DNIC para la obtención del Documento de Identidad."
+    },
+    {
+      "key": "assessment:fees-in-indexed-units",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "por lo cual las residencias definitivas de Paraguay y Brasil se encuentran exentas de costo."
+    },
+    {
+      "key": "assessment:fees-in-indexed-units",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "El monto de la residencia y del certificado está basado en Unidades Indexadas, cuyo valor se reajustará semestralmente."
+    },
+    {
+      "key": "assessment:fees-in-indexed-units",
+      "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
+      "quote": "Una vez iniciado el trámite y hasta el momento que se conceda la residencia deberá abonar un Permiso de reingreso cada vez que salga del país, siendo su costo 225,60 U.I."
+    },
+    {
+      "key": "assessment:fees-in-indexed-units",
+      "url": "https://www.impo.com.uy/bases/decretos/45-2023/8",
+      "quote": "se regirán por el Acuerdo de Reciprocidad entre Uruguay y el Estado del cual el solicitante sea nacional."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Parte, se les expedirá una residencia de idéntica vigencia que de la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República de Paraguay y la República Oriental del Uruguay, Estados Partes del Mercado Común del Sur (MERCOSUR), la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
+      "quote": "reunificación familiar con padres, cónyuges, concubinos, hijos solteros menores o mayores con discapacidad"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Parte, se les expedirá una residencia de idéntica vigencia que de la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República de Paraguay y la República Oriental del Uruguay, Estados Partes del Mercado Común del Sur (MERCOSUR), la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
+      "quote": "reunificación familiar con padres, cónyuges, concubinos, hijos solteros menores o mayores con discapacidad"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
+      "quote": "reunificación familiar con padres, cónyuges, concubinos, hijos solteros menores o mayores con discapacidad"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.impo.com.uy/bases/leyes/18246-2007/1",
+      "quote": "La convivencia ininterrumpida de al menos cinco años en unión concubinaria genera los derechos y obligaciones que se establecen en la presente ley"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.impo.com.uy/bases/decretos/394-2009/16",
+      "quote": "la calidad de concubino deberá acreditarse mediante el reconocimiento judicial inscripto de la unión concubinaria."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Parte, se les expedirá una residencia de idéntica vigencia que de la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República de Paraguay y la República Oriental del Uruguay, Estados Partes del Mercado Común del Sur (MERCOSUR), la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
+      "quote": "reunificación familiar con padres, cónyuges, concubinos, hijos solteros menores o mayores con discapacidad"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
+      "quote": "Se fija la mayor edad en los dieciocho años cumplidos."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.impo.com.uy/bases/leyes-internacional/17927-2005",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Parte, se les expedirá una residencia de idéntica vigencia que de la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.impo.com.uy/bases/leyes/18250-2008/10",
+      "quote": "reunificación familiar con padres, cónyuges, concubinos, hijos solteros menores o mayores con discapacidad"
+    },
+    {
+      "key": "assessment:no-denial-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/46",
+      "quote": "Haber sido procesadas o condenadas por delitos comunes de carácter doloso cometidos en el país o fuera de él, que merezcan según las leyes de la República la aplicación de penas privativas de libertad mayores a los dos años."
+    },
+    {
+      "key": "assessment:no-denial-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/46",
+      "quote": "Registrar una conducta reiterante en la comisión de delitos."
+    },
+    {
+      "key": "assessment:no-denial-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/46",
+      "quote": "deberá haber transcurrido un término de cinco años sin haber cometido nuevo delito computado a partir de la condena."
+    },
+    {
+      "key": "assessment:no-entry-refusal-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/45",
+      "quote": "que constituyan genocidio, crímenes de guerra o delitos de lesa humanidad"
+    },
+    {
+      "key": "assessment:no-entry-refusal-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/45",
+      "quote": "Haber sido objeto de medidas de expulsión o de prohibición de reingreso al país y la medida no haya sido revocada."
+    },
+    {
+      "key": "assessment:no-entry-refusal-ground",
+      "url": "https://www.impo.com.uy/bases/leyes-originales/18250-2008/45",
+      "quote": "Haber sido objeto de condena por delitos relacionados al tráfico y trata de personas, lavado de activos, tráfico de estupefacientes y tráfico de armas en el país o fuera de él."
+    }
+  ]
+}
