@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_1",
+      "quote": "(2) Cizincem se rozumí fyzická osoba, která není státním občanem České republiky1a), včetně občana Evropské unie1b)."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_1",
+      "quote": "(3) Ustanovení tohoto zákona vztahující se na občana Evropské unie se použijí i na občana státu, který je vázán mezinárodní smlouvou sjednanou s Evropskou unií1c), z níž mu vyplývá právo na volný pohyb rovnocenné takovému právu občanů Evropské unie, nebo občana státu, který je vázán Dohodou o Evropském hospodářském prostoru1d)."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
+      "quote": "who, under agreements between the Union and the Member States on the one hand, and third countries on the other, as nationals of those third countries, enjoy rights of free movement equivalent to those of Union citizens."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://e-sbirka.gov.cz/sb/2004/435",
+      "quote": "(2) Státní příslušník jiného členského státu Evropské unie (dále jen „občan Evropské unie“) a jeho rodinný příslušník7) mají stejné právní postavení v právních vztazích upravených tímto zákonem jako občan České republiky, pokud tento zákon nestanoví jinak."
+    },
+    {
+      "key": "assessment:highly-qualified-job",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "bude zaměstnán na pracovní pozici vyžadující vysokou kvalifikaci, která podle zvláštního právního předpisu8e) může být obsazena cizincem, který není občanem Evropské unie"
+    },
+    {
+      "key": "assessment:highly-qualified-job",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "b) údaje k pracovní pozici vedené podle zákona o zaměstnanosti v centrální evidenci volných pracovních míst obsaditelných držiteli modré karty, na kterou žádá o vydání modré karty,"
+    },
+    {
+      "key": "assessment:contract",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "b) pracovní smlouvu nebo smlouvou o smlouvě budoucí pro výkon zaměstnání vyžadujícího vysokou kvalifikaci sjednanou na dobu nejméně 6 měsíců na zákonem stanovenou týdenní pracovní dobu"
+    },
+    {
+      "key": "assessment:pay",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "která dále obsahuje výši sjednané hrubé měsíční nebo roční mzdy odpovídající alespoň výši 1,5násobku průměrné hrubé roční mzdy vyhlášené sdělením Ministerstva práce a sociálních věcí,"
+    },
+    {
+      "key": "assessment:pay",
+      "url": "https://e-sbirka.gov.cz/sb/2026/44",
+      "quote": "sděluje, že na základě průměrné hrubé měsíční mzdy v České republice v roce 2025 ve výši 49 215 Kč činí pro období od 1. května 2026 do 30. dubna 2027 průměrná hrubá roční mzda v České republice 590 580 Kč."
+    },
+    {
+      "key": "assessment:high-qualification",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "(2) Za vysokou kvalifikaci podle odstavce 1 se považuje řádně ukončené vysokoškolské vzdělání nebo vyšší odborné vzdělání, pokud studium trvalo aspoň 3 roky, nebo dosažení vyšší odborné dovednosti;"
+    },
+    {
+      "key": "assessment:professional-skill",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "quote": "Pro dosažení vyšší odborné dovednosti podle § 42i odst. 2 zákona se požaduje odborná praxe v délce alespoň 3 let, kterou žadatel o modrou kartu získal v období 7 let bezprostředně předcházejících podání žádosti."
+    },
+    {
+      "key": "assessment:professional-skill",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "quote": "a) 133 řídící pracovníci v oblasti služeb informačních a komunikačních technologií,"
+    },
+    {
+      "key": "assessment:professional-skill",
+      "url": "https://e-sbirka.gov.cz/sb/2023/205",
+      "quote": "b) 25 specialisté v oblasti informačních a komunikačních technologií."
+    },
+    {
+      "key": "assessment:professional-skill",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "vyšší odbornou dovedností se rozumí znalosti, dovednosti a kompetence doložené odbornou praxí srovnatelnou s vysokoškolským vzděláním"
+    },
+    {
+      "key": "assessment:regulated-profession",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "(5) Jde-li o výkon zaměstnání vyžadujícího vysokou kvalifikaci a jedná se o regulované povolání, ministerstvo rozhodne o vydání modré karty po vyjádření příslušného uznávacího orgánu35)."
+    },
+    {
+      "key": "assessment:regulated-profession",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "d) jde-li o výkon regulovaného povolání, doklad o splnění podmínek pro výkon takového povolání,"
+    },
+    {
+      "key": "assessment:family-income",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "d) doklad prokazující, že úhrnný měsíční příjem rodiny po sloučení nebude nižší než součet"
+    },
+    {
+      "key": "assessment:family-income",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "1. částek životních minim9d) členů rodiny a"
+    },
+    {
+      "key": "assessment:family-income",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "2. částek nejvyššího normativního nájemného a energetického paušálu, stanovených pro účely složky na bydlení dávky státní sociální pomoci nebo částky, kterou cizinec prokáže jako částku skutečných odůvodněných nákladů vynakládaných na bydlení rodiny;"
+    },
+    {
+      "key": "assessment:accommodation",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_31",
+      "quote": "d) doklad o zajištění ubytování po dobu pobytu na území,"
+    },
+    {
+      "key": "assessment:accommodation",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "a) náležitosti podle § 31 odst. 1 písm. a), d), e) a g),"
+    },
+    {
+      "key": "assessment:accommodation",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "a) náležitosti uvedené v § 31 odst. 1 písm. a), d), e) a g),"
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_31",
+      "quote": "g) doklad obdobný výpisu z evidence Rejstříku trestů jako podklad k posouzení trestní zachovalosti vydaný státem, jehož je cizinec státním občanem, jde-li o cizince, který dosáhl věku 15 let;"
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "a) náležitosti podle § 31 odst. 1 písm. a), d), e) a g),"
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "a) náležitosti uvedené v § 31 odst. 1 písm. a), d), e) a g),"
+    },
+    {
+      "key": "assessment:travel-health-insurance",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42j",
+      "quote": "(2) Před vyznačením víza k pobytu nad 90 dnů za účelem převzetí modré karty je cizinec povinen předložit doklad o cestovním zdravotním pojištění, které odpovídá podmínkám uvedeným v § 180j, a to na dobu pobytu ode dne vstupu na území do doby, než se na něho bude vztahovat pojištění podle zvláštního právního předpisu33)"
+    },
+    {
+      "key": "assessment:travel-health-insurance",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "(5) Před vyznačením víza k pobytu nad 90 dnů za účelem převzetí povolení k dlouhodobému pobytu za účelem společného soužití rodiny je cizinec povinen předložit doklad o cestovním zdravotním pojištění po dobu pobytu na území, které odpovídá podmínkám uvedeným v § 180j."
+    },
+    {
+      "key": "assessment:travel-health-insurance",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180j",
+      "quote": "Výše sjednaného limitu pojistného plnění na jednu pojistnou událost činí nejméně 400 000 EUR, a to bez spoluúčasti pojištěného"
+    },
+    {
+      "key": "assessment:travel-health-insurance",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180j",
+      "quote": "(5) Vstupuje-li cizinec na území České republiky s dokladem o cestovním zdravotním pojištění podle odstavce 1, je povinen nejpozději do 90 dnů ode dne vstupu na území České republiky uzavřít cestovní zdravotní pojištění v rozsahu komplexní zdravotní péče podle odstavce 8"
+    },
+    {
+      "key": "assessment:not-excluded",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "a) žadatele o vydání povolení k dlouhodobému pobytu za účelem vědeckého výzkumu,"
+    },
+    {
+      "key": "assessment:not-excluded",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "b) rezidenta jiného členského státu Evropské unie, který na území pobývá na základě povolení k dlouhodobému pobytu podle § 42c za účelem zaměstnání nebo podnikání,"
+    },
+    {
+      "key": "assessment:not-excluded",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "c) cizince, který na území pobývá v souladu s mezinárodní smlouvou usnadňující vstup a dočasný pobyt některých kategorií fyzických osob v souvislosti s obchodem a investicemi, kterou je Česká republika vázána"
+    },
+    {
+      "key": "assessment:not-excluded",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "d) cizince, který je zaměstnancem zaměstnavatele z jiného členského státu Evropské unie vyslaným k výkonu práce v rámci nadnárodního poskytování služeb na území34)."
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "b) doklad potvrzující příbuzenský vztah;"
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42b",
+      "quote": "c) souhlas rodičů, popřípadě jiných zákonných zástupců nebo poručníků, s pobytem dítěte na území; souhlas rodiče, zákonného zástupce nebo poručníka se nevyžaduje, jde-li o rodiče, zákonného zástupce nebo poručníka, který za dítě podal žádost nebo se kterým bude dítě společně pobývat na území,"
+    },
+    {
+      "key": "cost:appointment-order-fee",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "d) Zpracování objednávky k sjednání termínu osobního podání žádosti o vydání povolení k dlouhodobému nebo trvalému pobytu | Kč | 1 000"
+    },
+    {
+      "key": "assessment:travel-health-insurance",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180j",
+      "quote": "(4) Doklad o cestovním zdravotním pojištění podle odstavce 1 se od cizince nevyžaduje, je-li zdravotně pojištěn podle zvláštního právního předpisu33)"
+    },
+    {
+      "key": "cost:family-appointment-order-fee",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "d) Zpracování objednávky k sjednání termínu osobního podání žádosti o vydání povolení k dlouhodobému nebo trvalému pobytu | Kč | 1 000"
+    },
+    {
+      "key": "assessment:not-excluded",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "s výjimkou státních příslušníků třetích zemí, kteří jsou držiteli karty vnitropodnikově převedeného zaměstnance nebo karty vnitropodnikově převedeného zaměstnance jiného členského státu"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "a) manželem cizince s povoleným pobytem na území,"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "d) cizinec, se kterým má být umožněno společné soužití rodiny, je držitelem modré karty nebo držitelem povolení vydaného podle § 42f, 42k, 42m nebo 42n, nebo"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "b) nezletilým dítětem cizince s povoleným pobytem na území nebo takovým dítětem manžela cizince s povoleným pobytem na území,"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A minor child (under 18 years of age) or the spouse’s minor child (a stepchild)."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A financially dependent child of full age – applies to incapable of taking care of themselves for medical reasons."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "bez ohledu na věk cizincem, který se o sebe nedokáže ze zdravotních důvodů sám postarat, jde-li o sloučení rodiny s rodičem nebo dítětem s povoleným pobytem na území"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "b) nezletilým dítětem cizince s povoleným pobytem na území nebo takovým dítětem manžela cizince s povoleným pobytem na území,"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A minor child (under 18 years of age) or the spouse’s minor child (a stepchild)."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "d) osamělým cizincem starším 65 let nebo bez ohledu na věk cizincem, který se o sebe nedokáže ze zdravotních důvodů sám postarat, jde-li o sloučení rodiny s rodičem nebo dítětem s povoleným pobytem na území"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_178a",
+      "quote": "(1) Osamělým cizincem se pro účely tohoto zákona rozumí cizinec svobodný, ovdovělý nebo rozvedený."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A lone parent over 65 years of age (the citizen’s mother or father) – single, divorced or widowed."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A lone parent regardless of age (the citizen’s mother or father) who cannot take care of himself/herself for medical reasons – single, divorced or widowed."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180f",
+      "quote": "(1) Pokud je v tomto zákoně uveden pojem „manžel“, „manželství“ nebo „dítě manžela“, rozumí se tím i partner, partnerství, dítě jednoho z partnerů nebo dítě svěřené do péče partnera."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180f",
+      "quote": "(2) Za partnera se pro účely tohoto zákona považuje osoba, která prokáže, že vstoupila do úředně potvrzeného trvalého společenství dvou osob stejného pohlaví."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_180f",
+      "quote": "(1) Pokud je v tomto zákoně uveden pojem „manžel“, „manželství“ nebo „dítě manžela“, rozumí se tím i partner, partnerství, dítě jednoho z partnerů nebo dítě svěřené do péče partnera."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42a",
+      "quote": "b) nezletilým dítětem cizince s povoleným pobytem na území nebo takovým dítětem manžela cizince s povoleným pobytem na území,"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/long-term-residence-permit-for-the-purpose-of-family-reunification/",
+      "quote": "A minor child (under 18 years of age) or the spouse’s minor child (a stepchild)."
+    },
+    {
+      "key": "cost:blue-card-fee-embassy",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "c) Přijetí žádosti o vydání zaměstnanecké karty, modré karty, karty vnitropodnikově převedeného zaměstnance, karty vnitropodnikově převedeného zaměstnance jiného členského státu Evropské unie nebo povolení k dlouhodobému pobytu za účelem investování | Kč | 5 000"
+    },
+    {
+      "key": "cost:blue-card-fee-in-czechia",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_42i",
+      "quote": "Na území je oprávněn žádost o vydání modré karty podat ministerstvu azylant nebo osoba požívající doplňkové ochrany podle zákona o azylu nebo cizinec, který pobývá na území jako držitel modré karty vydané jiným členským státem Evropské unie, pokud žádost podá ve lhůtě do 1 měsíce ode dne vstupu na území"
+    },
+    {
+      "key": "cost:blue-card-fee-in-czechia",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "a) cizinci | Kč | 2 500"
+    },
+    {
+      "key": "cost:family-fee-embassy",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "a) Přijetí žádosti o vydání povolení k pobytu | Kč | 2 500"
+    },
+    {
+      "key": "cost:family-fee-in-czechia",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "a) cizinci | Kč | 2 500"
+    },
+    {
+      "key": "cost:family-fee-in-czechia",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "b) cizinci mladšímu 15 let | Kč | 1 000"
+    },
+    {
+      "key": "cost:family-fee-in-czechia-under-15",
+      "url": "https://e-sbirka.gov.cz/sb/2004/634",
+      "quote": "b) cizinci mladšímu 15 let | Kč | 1 000"
+    },
+    {
+      "key": "duration:decision",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_169t",
+      "quote": "e) ve lhůtě do 90 dnů ode dne podání žádosti o vydání modré karty; v případě, kdy jde o cizince, který před podáním žádosti o vydání modré karty na území pobýval jako držitel modré karty v jiném členském státě Evropské unie, vydá ministerstvo rozhodnutí do 30 dnů ode dne podání žádosti, ve zvlášť složitých případech ve lhůtě do 60 dnů ode dne podání žádosti,"
+    },
+    {
+      "key": "duration:family-decision",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_169t",
+      "quote": "4. ve lhůtě do 90 dnů ode dne podání žádosti o vydání povolení k dlouhodobému pobytu za účelem společného soužití rodiny s držitelem modré karty na území nebo s držitelem povolení k dlouhodobému pobytu za účelem investování; v případě, že byly žádost o vydání modré karty a žádost o sloučení rodiny s žadatelem podány souběžně, vydá ministerstvo obě rozhodnutí současně, nejpozději do 90 dnů ode dne podání žádosti,"
+    },
+    {
+      "key": "duration:family-decision",
+      "url": "https://e-sbirka.gov.cz/sb/1999/326/2026-06-12#par_169t",
+      "quote": "c) ve lhůtě do 30 dnů ode dne podání žádosti o vydání povolení k dlouhodobému pobytu za účelem společného soužití rodiny s držitelem modré karty vydané jiným členským státem Evropské unie, který požádal o vydání modré karty na území;"
+    },
+    {
+      "key": "duration:validity",
+      "url": "https://ipc.gov.cz/en/visa-and-residence-permit-types/third-country-nationals/long-term-residence-permits/blue-card/",
+      "quote": "A blue card is valid 3 months longer than the duration of the work contract, but for a maximum of 3 years."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    }
+  ]
+}

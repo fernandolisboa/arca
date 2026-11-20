@@ -4,6 +4,10 @@ Research notes for Czechia's EU Blue Card, route `cz-eu-blue-card` in `packages/
 
 ## Audits
 
+### 2026-11-20
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 5 corrects version 4 from 2026-05-01 and is stored active. What changed, the rounds and the leftover list are in [the review](../../../packages/knowledge/reviews/2026-11-cz/README.md). Nothing published up to 2026-11-20 changes the route; version 6, with the next average wage, is due by 2027-05-01.
+
 ### 2026-11-15
 
 A corrector run ([ADR-0029](../../adr/0029-correction-requests-and-the-corrector-session.md)), for version 4, which the independent check flagged. Pull request [#423](https://github.com/fernandolisboa/arca/pull/423) wrote version 4 as a correction of version 3 that only adds machine-readable addresses for the Aliens Act (`{0..3}`) and the Employment Act (`{0..1}`), and no audit record named version 4 before this one.
