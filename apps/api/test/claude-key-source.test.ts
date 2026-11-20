@@ -12,14 +12,14 @@ const call: StructuredCall = {
   timeoutMs: 5_000,
 };
 
-const reply = () =>
+const reply = (stopReason = 'end_turn') =>
   Response.json({
     id: 'msg_1',
     type: 'message',
     role: 'assistant',
     model: call.model,
     content: [{ type: 'text', text: '{"ok":true}' }],
-    stop_reason: 'end_turn',
+    stop_reason: stopReason,
     stop_sequence: null,
     usage: { input_tokens: 10, output_tokens: 5 },
   });
@@ -78,4 +78,15 @@ describe('a Claude key read on every call (ADR-0031)', () => {
     });
     expect(await kindOf(client.object(call))).toEqual({ kind: 'failed', message: 'failed' });
   });
+});
+
+describe('a reply Claude did not finish', () => {
+  it.each(['refusal', 'max_tokens'])(
+    'fails as a fixed kind on %s, though its text parses',
+    async (stopReason) => {
+      const fetch = (() => Promise.resolve(reply(stopReason))) as typeof globalThis.fetch;
+      const client = claudeClient({ apiKey: () => Promise.resolve('synthetic'), fetch });
+      expect(await kindOf(client.object(call))).toEqual({ kind: 'failed', message: 'failed' });
+    },
+  );
 });

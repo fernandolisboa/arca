@@ -3,7 +3,8 @@ import type { PriceTable } from '@arca/domain';
 
 /**
  * What each model an update request calls costs (ADR-0031), in millionths of a U.S. dollar per
- * million tokens, read on 2026-11-17 from https://platform.claude.com/docs/en/about-claude/pricing
+ * million tokens, read on 2026-11-17 (Fable 5.2 on 2026-11-19) from
+ * https://platform.claude.com/docs/en/about-claude/pricing
  * and https://docs.typesafe.ai/models.md (read 2026-11-16). The cache write price is the 5-minute one, the lifetime research
  * asks for; Jev charges input tokens only. A model settings offer with no row here shows its cost
  * as unknown.
@@ -13,6 +14,12 @@ export const updateModelPrices: PriceTable = new Map([
     aiStageOptions.research.defaultModel,
     {
       prices: { input: 4_000_000, cacheWrite: 5_000_000, cacheRead: 200_000, output: 20_000_000 },
+    },
+  ],
+  [
+    'claude-fable-5-2',
+    {
+      prices: { input: 8_000_000, cacheWrite: 10_000_000, cacheRead: 200_000, output: 40_000_000 },
     },
   ],
   [

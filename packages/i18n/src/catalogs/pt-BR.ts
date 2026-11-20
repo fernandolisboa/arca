@@ -121,13 +121,14 @@ export const ptBR = {
         none: 'Sem chave',
         unreadable: 'Não abre',
       },
-      lastFour: 'Termina em {lastFour}, salva em {since}.',
+      lastFour: 'Termina em {lastFour} · salva em {since}',
       unreadable:
         'A chave salva não abre mais, provavelmente porque a chave de criptografia mudou. Salve a chave de novo.',
       keyLabel: 'Chave de API',
-      replaceLabel: 'Trocar a chave',
+      replace: 'Trocar',
+      cancel: 'Cancelar',
       save: 'Salvar',
-      remove: 'Remover a chave',
+      remove: 'Remover',
       test: 'Testar',
       tested: {
         ok: 'A chave funciona.',
@@ -164,6 +165,8 @@ export const ptBR = {
       default: 'Padrão',
       model: 'Modelo',
       effort: 'Esforço',
+      noEffort: 'Não se aplica',
+      saveStages: 'Salvar mudanças',
       efforts: {
         low: 'Baixo',
         medium: 'Médio',
@@ -173,7 +176,7 @@ export const ptBR = {
       },
       stageNotices: {
         saved: 'Salvo.',
-        failure: 'Não deu certo. Nada mudou.',
+        failure: 'Não deu para salvar tudo. Confira e tente de novo.',
         tooMany: 'Muitas mudanças hoje. Tente amanhã.',
       },
     },
