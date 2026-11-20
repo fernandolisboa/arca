@@ -4,6 +4,15 @@ Research notes for Paraguay's Mercosur temporary residence, route `py-mercosur-t
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-py/README.md](../../../packages/knowledge/reviews/2026-11-py/README.md).
+
+- **Version audited:** 3 (effective 2026-07-01), the newest stored.
+- **Outcome:** version 4, stored already active by the review's pull request, corrects version 3 from 2026-07-01: the residence fee for each family member (20 jornales for a native of a listed state, two for an Ecuadorian, possible for anyone else), the criminal-record papers from age 14 and their exemptions, and new assessments for papers, the in-person application with proof of entry, and minors' applications; the duration names cancellation after more than a year of unjustified absence (Ley 6984, art. 55, 2). Who qualifies, the family of art. 4.10, the principal's fees and the two years matched.
+- **Sources re-read** on 2026-11-20 with the app's reader: Ley 3578/2008, Ley 6984/2022 and Ley 7371/2025 on www.bacn.gov.py; the directorate's Mercosur, fee-table and Ecuadorian pages on migraciones.gov.py (read with Node's `fetch`; `curl`'s TLS handshake is reset by the site).
+- **Amendments looked for**, up to 2026-11-20: the Congress library's search (residence, Mercosur, accession, Panama, 6984, 3578, jornal, minimum wage) and the directorate's posts and resolutions since 2026-06-15. No law amends Ley 6984 or Ley 3578 or approves a new accession; the fee table, still dated 2026-07-01, is unchanged.
+
 ### 2026-11-11
 
 The first audit by the runbook ([#358](https://github.com/fernandolisboa/arca/issues/358)), on demand, together with the other three Mercosur routes. The pull request carries the four Mercosur routes, as the [Argentine record](ar-mercosur-temporary.md) explains.
