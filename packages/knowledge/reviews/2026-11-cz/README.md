@@ -20,6 +20,7 @@ Two reviewers in round 1, one checking each item against its provision, the othe
 - **Round 1.** Proven and fixed: the health ground tied to financial dependence; the in-country fee's title naming too few who may file there, and the fee conditions that ignored them. Omissions fixed: the § 42i(1) exclusions, the family documents, the appointment-order fee, comprehensive cover for family members and the 30-day family decision. The second reviewer read the Collection of Laws to act No. 223 of 2026, the versions of the fees act to 2028, the Employment Act's version of 2027 and the portal's news since 2025-12-30: nothing changes the route.
 - **Round 2**, on the changes. Fixed: comprehensive cover limited to adult family members and waived for the publicly insured; the appointment-order fee also for each family member; `not-excluded` narrowed to posting by an EU employer and keeping intra-company transferees; subsidiary protection named in the in-country fee.
 - **Round 3**, on those fixes: no defect.
+- **After round 3**, from the repository's correctness reviewer: the embassy fees' titles now say that someone living anywhere in the EU, EEA or Switzerland reads as possible, as the condition does.
 
 The proposal check and the quote check (`ARCA_REVIEW_QUOTES=2026-11-cz`) pass on the final files.
 

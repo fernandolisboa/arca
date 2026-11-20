@@ -449,7 +449,7 @@
   "costs": [
     {
       "id": "blue-card-fee-embassy",
-      "title": "Fee for a Blue Card application filed at an embassy: CZK 5,000 for a principal living outside the EU, EEA and Switzerland; one living in Czechia or another EU state: possible",
+      "title": "Fee for a Blue Card application filed at an embassy: CZK 5,000 for a principal living outside the EU, EEA and Switzerland; one living in an EU or EEA state or Switzerland: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -514,7 +514,7 @@
     },
     {
       "id": "family-fee-embassy",
-      "title": "Fee for each family member's residence permit application filed at an embassy: CZK 2,500 for one living outside the EU, EEA and Switzerland; one living in Czechia or another EU state: possible",
+      "title": "Fee for each family member's residence permit application filed at an embassy: CZK 2,500 for one living outside the EU, EEA and Switzerland; one living in them: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
