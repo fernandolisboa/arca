@@ -36,7 +36,7 @@
     {
       "id": "ustawa-2009-art-6",
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
-      "title": "Ustawa o obywatelstwie polskim of 2009, art. 6: a change in who is established as a parent, or in a parent's established citizenship, counts within a year of the birth; a denial of paternity, later",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 6: changes in the established parent, or in a parent's established citizenship, count within a year of birth; a denial of paternity counts until adulthood",
       "kind": "official",
       "verifiedAt": "2026-11-20",
       "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
@@ -574,7 +574,7 @@
       "id": "parentage-settled-within-a-year",
       "evidence": ["principal.citizenships"],
       "sources": ["ustawa-2009-art-6"],
-      "title": "A change in the finding of who a parent is, or of a parent's citizenship, counts only within a year of the birth; a ruling denying paternity or its acknowledgment, until adulthood (from 16 by consent)"
+      "title": "A change in who is found to be a parent, or in a parent's citizenship, counts only within a year of birth; a ruling denying paternity or its acknowledgment counts until adulthood (from 16 by consent)"
     },
     {
       "id": "full-adoption-before-16",
