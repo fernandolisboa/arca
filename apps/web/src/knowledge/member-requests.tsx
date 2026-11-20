@@ -12,6 +12,7 @@ import { TextField } from '../forms/text-field.js';
 import { commonFailure, reach } from '../requests.js';
 import { memberStateTones } from '../results/update-request.js';
 import { MarkedText, SourceList } from './corrections.js';
+import { countryOfRoute } from './review-order.js';
 import { card } from './review-parts.js';
 import type { KnowledgeWords } from './words.js';
 
@@ -216,10 +217,13 @@ function MemberRequestEntry({
  */
 export function MemberRequestsSection({
   versions,
+  country,
   words,
   onOpenVersion,
 }: {
   readonly versions: readonly KnowledgeVersion[];
+  /** Only this country's requests, when given. */
+  readonly country?: string;
   readonly words: KnowledgeWords;
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {
@@ -231,7 +235,10 @@ export function MemberRequestsSection({
   }
   if (listed.data === undefined) return null;
   const titles = new Map(versions.map((version) => [version.routeId, version.title]));
-  const { requests, canDownload } = listed.data;
+  const { canDownload } = listed.data;
+  const requests = listed.data.requests.filter(
+    ({ routeId }) => country === undefined || countryOfRoute(versions, routeId) === country,
+  );
   return (
     <section aria-label={title} className="flex flex-col gap-3">
       <h3 className="font-medium">{title}</h3>

@@ -70,7 +70,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Country set | Grupo de países | A versioned, sourced list of countries a rule refers to, such as treaty countries |
 | Proposed version | Versão proposta | A route version in the knowledge catalog that is neither active nor rejected |
 | Decision state | Internal, no UI label | Per version identity (route, number, content hash; or comparison, number, content hash, under a key no route can take): active, rejected or proposed. A version with no counted decision is proposed |
-| Superseded version | Versão substituída | A version that selection does not pick: at a given date, because a correction or a later version takes it (spec 0002); on the activation screen, at every date from today on, while the versions that take its place are not rejected. A proposed one needs no decision, is not checked, and is folded apart |
+| Superseded version | Versão substituída | A version that selection does not pick: at a given date, because a correction or a later version takes it (spec 0002); on the activation screen, at every date from today on, while the versions that take its place are not rejected. A proposed one needs no decision; the activation screen lists superseded versions under Anteriores, with rejected ones |
 | Newer proposed version | Nova versão proposta | A version not yet active that selection would pick, at the evaluation date or later, instead of the version evaluated |
 | Correction | Correção | A route version that fixes a data error in an earlier one, named by its `corrects` field; once in effect, the version it fixes is no longer selected |
 | Official source | Fonte oficial | A source on a host the knowledge base lists as official for a country or an international body |
@@ -130,7 +130,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Former country | País extinto | A state that no longer exists, with an ISO 3166-3 code, allowed only in citizenship and ancestry facts |
 | Owner | Responsável | The founder, who owns the repository and is the first admin; "founder" in product docs means the same person |
 | Active version | Versão ativa | A route version with a counted activation and no rejection; the only kind the engine evaluates for a case |
-| Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good |
+| Rejected version | Versão recusada | A route version with a counted rejection; selection skips it for good. The activation screen lists it under Anteriores |
 | Version settings | Configurações da versão | The fields of a route version other than its items: dates, currency, leap-day rule (a convention, or unsettled when no official text settles it), reference dates, closure sources, tags and pins |
 | Tag | Etiqueta | A free label of a route version, such as `investment`, hashed and activated with it |
 | Pinned file | Arquivo fixado | A versioned data file a route version names by ID and number, such as a country list or an official-domain list |

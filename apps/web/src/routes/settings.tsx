@@ -3,7 +3,7 @@ import { Button, ChoiceGroup, Icon, menuItemClass, type Choice } from '@arca/ui'
 import { axes, type AxisName, type AxisValue } from '@arca/ui/theme/ids';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountDeletionSection, DeletionPendingNotice } from '../account-deletion.js';
 import { sessionQuery } from '../api.js';
@@ -21,6 +21,7 @@ import {
   type SettingsSection,
 } from '../settings/sections.js';
 import { useTourReady } from '../tour/guide.js';
+import { useMediaQuery } from '../use-media-query.js';
 import { seenTours } from '../tour/seen.js';
 import { appTour, screenHints } from '../tour/tours.js';
 
@@ -32,20 +33,6 @@ export const Route = createFileRoute('/settings')({
 /** Stands for "no choice": clears the axis, so it follows the default. */
 const noChoice = 'default';
 type Answer<A extends AxisName> = AxisValue<A> | typeof noChoice;
-
-function useMediaQuery(query: string): boolean {
-  const subscribe = useCallback(
-    (onChange: () => void) => {
-      const media = matchMedia(query);
-      media.addEventListener('change', onChange);
-      return () => {
-        media.removeEventListener('change', onChange);
-      };
-    },
-    [query],
-  );
-  return useSyncExternalStore(subscribe, () => matchMedia(query).matches);
-}
 
 const swatchColors = ['bg-bg', 'bg-primary', 'bg-second'] as const;
 

@@ -35,12 +35,14 @@ const linksTextLength = maxNewRouteLinks * 2001;
 
 function NewRouteForm({
   countries,
+  initialCountry,
   withLists,
   words,
   onStarted,
   onCancel,
 }: {
   readonly countries: readonly string[];
+  readonly initialCountry: string;
   readonly withLists: ReadonlySet<string>;
   readonly words: KnowledgeWords;
   readonly onStarted: () => void;
@@ -48,7 +50,7 @@ function NewRouteForm({
 }) {
   const { t } = words;
   const queryClient = useQueryClient();
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState(initialCountry);
   const [visa, setVisa] = useState('');
   const [linksText, setLinksText] = useState('');
   const links = parsedLinks(linksText);
@@ -212,9 +214,12 @@ function NewRouteEntry({
  * the catalog lacks, and follows each request until its proposal waits for review.
  */
 export function NewRouteRequestsSection({
+  country,
   words,
   onOpenVersion,
 }: {
+  /** Only this country's requests, and the form starts on it, when given. */
+  readonly country?: string;
   readonly words: KnowledgeWords;
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {
@@ -227,7 +232,10 @@ export function NewRouteRequestsSection({
     return <p className="text-small text-muted">{t('knowledge.newRoute.loadFailure')}</p>;
   }
   if (listed.data === undefined) return null;
-  const { requests, countries, countriesWithLists } = listed.data;
+  const { countries, countriesWithLists } = listed.data;
+  const requests = listed.data.requests.filter(
+    (request) => country === undefined || request.country.toUpperCase() === country,
+  );
   return (
     <section aria-label={title} className="flex flex-col gap-3">
       <h3 className="font-medium">{title}</h3>
@@ -236,6 +244,7 @@ export function NewRouteRequestsSection({
         <div className={card}>
           <NewRouteForm
             countries={countries}
+            initialCountry={country !== undefined && countries.includes(country) ? country : ''}
             withLists={new Set(countriesWithLists)}
             words={words}
             onStarted={() => {

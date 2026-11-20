@@ -1,23 +1,11 @@
+import { storedChoice } from './stored-choice.js';
+
 /** How the family area lays out its people, remembered on this device only. */
 export const familyLayouts = ['tree', 'cards', 'list'] as const;
 export type FamilyLayout = (typeof familyLayouts)[number];
 
-const storageKey = 'arca.family-layout';
+const stored = storedChoice<FamilyLayout>('arca.family-layout', familyLayouts, 'tree');
 
 /** The layout this device last used; the tree when none was stored or storage is unavailable. */
-export function readFamilyLayout(): FamilyLayout {
-  try {
-    const stored = localStorage.getItem(storageKey);
-    return familyLayouts.find((layout) => layout === stored) ?? 'tree';
-  } catch {
-    return 'tree';
-  }
-}
-
-export function writeFamilyLayout(layout: FamilyLayout): void {
-  try {
-    localStorage.setItem(storageKey, layout);
-  } catch {
-    // Without storage the page opens on the tree next time; nothing else depends on it.
-  }
-}
+export const readFamilyLayout = stored.read;
+export const writeFamilyLayout = stored.write;

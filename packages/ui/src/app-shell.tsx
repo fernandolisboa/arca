@@ -43,7 +43,7 @@ export interface AppShellProps {
 
 const mainId = 'main-content';
 /** Tailwind's `md` breakpoint, where the wide layouts start. */
-const wideQuery = '(min-width: 48rem)';
+export const wideQuery = '(min-width: 48rem)';
 
 const narrowMenuOf = (layout: ShellLayout) => layout.narrow === 'menu';
 const wideMenuOf = (layout: ShellLayout) => layout.wide === 'menu';
