@@ -16,8 +16,9 @@ export function CountryFlag({
   readonly className?: string;
 }) {
   const src = flagUrl(code);
-  const [failed, setFailed] = useState(false);
-  if (src === undefined || failed) return null;
+  // The file that failed, so a select that moves to another country tries that one afresh.
+  const [failed, setFailed] = useState<string | null>(null);
+  if (src === undefined || failed === src) return null;
   return (
     <img
       src={src}
@@ -26,7 +27,7 @@ export function CountryFlag({
       decoding="async"
       className={`${flagClass} ${className}`}
       onError={() => {
-        setFailed(true);
+        setFailed(src);
       }}
     />
   );

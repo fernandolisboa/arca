@@ -3,7 +3,7 @@ import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState, type SubmitEvent } from 'react';
 import { api, routeRequestsQuery } from '../api.js';
-import { selectFlag } from '../country-flag.js';
+import { FlagLead, selectFlag } from '../country-flag.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -456,6 +456,7 @@ function RouteRequestEntry({
     <RequestCard
       request={request}
       heading={words.country(request.countryCode.toUpperCase())}
+      headingLead={<FlagLead code={request.countryCode} />}
       answer={
         answer === null ? null : answer.kind === 'no_change' ? (
           <AnswerBox title={t('knowledge.routeRequests.answerNoRoute')}>

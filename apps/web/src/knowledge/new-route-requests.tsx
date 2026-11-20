@@ -8,7 +8,7 @@ import { Button } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { api, newRouteRequestsQuery } from '../api.js';
-import { selectFlag } from '../country-flag.js';
+import { FlagLead, selectFlag } from '../country-flag.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { commonFailure, reach } from '../requests.js';
@@ -162,6 +162,7 @@ function NewRouteEntry({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
             <h5 id={titleId} className="font-medium break-words">
+              <FlagLead code={request.country} />
               {t('knowledge.newRoute.requestTitle', {
                 visa: request.visa,
                 country: words.country(request.country),

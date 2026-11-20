@@ -107,7 +107,7 @@ export function FieldEditor({
       label={label}
       {...(hint === undefined ? {} : { hint })}
       placeholder={t('questions.pick')}
-      {...(lead === undefined ? {} : { lead })}
+      lead={lead}
       value={value === null ? unknownValue : scalar(value)}
       options={[...options, ...unknownOption]}
       onChange={(chosen) => {

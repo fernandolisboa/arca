@@ -12,6 +12,7 @@ import { Button, Disclosure, StatusChip } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { use, useId, useState } from 'react';
 import { api, knowledgeVersionsQuery, versionReviewQuery } from '../api.js';
+import { FlagLead } from '../country-flag.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -304,6 +305,7 @@ function DomainListReview({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <h5 id={titleId} className="font-medium">
+            <FlagLead code={country} />
             {t('knowledge.proposal.domainList.title', { country: countryName })}
           </h5>
           <p className="text-small text-muted">
@@ -423,7 +425,7 @@ export function ProposalReview({
   const { t } = words;
   const review = useQuery(versionReviewQuery(view.routeId, view.number));
   const [editing, setEditing] = useState<string | null>(null);
-  const [picked, setPicked] = useState<boolean | null>(null);
+  const [openByHand, setOpenByHand] = useState<boolean | null>(null);
   if (review.isError)
     return <p className="text-small text-muted">{t('knowledge.proposal.loadFailure')}</p>;
   if (review.data === undefined) return null;
@@ -436,8 +438,8 @@ export function ProposalReview({
     <Disclosure
       title={t('knowledge.proposal.title')}
       level={4}
-      open={picked ?? hasLists}
-      onOpenChange={setPicked}
+      open={openByHand ?? hasLists}
+      onOpenChange={setOpenByHand}
       aside={
         canEdit &&
         editing === null && (
@@ -445,19 +447,22 @@ export function ProposalReview({
             variant="secondary"
             onClick={() => {
               setEditing(data.editable[0]?.key ?? null);
-              setPicked(true);
+              setOpenByHand(true);
             }}
           >
             {t('knowledge.proposal.edit')}
           </Button>
         )
       }
-      className={card}
-    >
-      <div className="flex flex-col gap-5">
+      footer={
+        // Where the version came from shows while folded: it says whether lists back the version.
         <p className="text-small text-muted">
           {t('knowledge.proposal.origin', { origin: data.origin })}
         </p>
+      }
+      className={card}
+    >
+      <div className="flex flex-col gap-5">
         {data.domainList !== null && (
           <DomainListReview list={data.domainList} country={view.country} words={words} />
         )}

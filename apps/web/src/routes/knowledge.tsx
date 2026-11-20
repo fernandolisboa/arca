@@ -41,6 +41,8 @@ interface Listed {
   readonly picked: Picked;
   readonly title: string;
   readonly meta: string;
+  /** The country the meta line starts with, for its flag; none for a comparison. */
+  readonly country?: string;
   readonly state: KnowledgeVersion['state'];
 }
 
@@ -227,6 +229,7 @@ function routeItem(version: KnowledgeVersion, words: KnowledgeWords): Listed {
       country: words.country(version.country),
       date: words.date(version.effectiveFrom),
     }),
+    country: version.country,
     state: version.state,
   };
 }
@@ -269,7 +272,10 @@ function VersionList({
                   number: version.picked.number,
                 })}
               </span>
-              <span className="text-small text-muted">{version.meta}</span>
+              <span className="text-small text-muted">
+                {version.country !== undefined && <FlagLead code={version.country} />}
+                {version.meta}
+              </span>
               <StatusChip
                 tone={stateTone(version.state)}
                 label={words.t('knowledge.state', { state: version.state })}
@@ -422,7 +428,10 @@ function ListedRow({
               number: version.picked.number,
             })}
           </span>
-          <span className="text-small text-muted">{version.meta}</span>
+          <span className="text-small text-muted">
+            {version.country !== undefined && <FlagLead code={version.country} />}
+            {version.meta}
+          </span>
         </span>
         <span aria-hidden="true" className="self-center text-muted">
           <Icon name="chevron" size={16} />
