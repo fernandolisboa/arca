@@ -117,6 +117,11 @@ export const sessionReviews: readonly SessionReview[] = [
       { routeId: 'uy-mercosur-permanent', number: 6 },
     ],
   },
+  {
+    id: '2026-11-cl',
+    migration: 'knowledge_session_review_2026_11_cl',
+    versions: [{ routeId: 'cl-mercosur-temporary', number: 5 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

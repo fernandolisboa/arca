@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Se les otorgará Residencia Temporal en virtud del principio de reciprocidad internacional a ciudadanos/as de Argentina, Bolivia, Brasil, Paraguay y Uruguay"
+    },
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "“Nacionales de una Parte”: son las personas que poseen nacionalidad originaria de uno de los Estados Partes o nacionalidad adquirida por naturalización y ostentaran dicho beneficio desde hace 5 (cinco) años;"
+    },
+    {
+      "key": "assessment:means-for-dependents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Declaración Jurada emitida por el titular ante notario, en la cual conste que asumirá los costos derivados de su residencia en el país."
+    },
+    {
+      "key": "assessment:means-for-dependents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Acreditar que el titular posee los recursos económicos suficientes para solventar los gastos de mantención conforme a los indicadores estimados por el Ministerio de Desarrollo Social y Familia."
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Certificado de antecedentes penales o documento equivalente expedido por la autoridad competente de su país de origen o de aquel en el cual hayan residido en los últimos 5 años (mayores de edad)."
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "El certificado de antecedentes penales y/o judiciales del país de origen debe tener una vigencia no superior a 60 días desde su fecha de emisión."
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Aquellos emitidos por instituciones u organismos públicos deberán adjuntarse dentro de 60 días contados desde su fecha de emisión, salvo que en el propio documento se indique una vigencia distinta."
+    },
+    {
+      "key": "assessment:apply-from-abroad",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Esta solicitud de Residencia Temporal debe realizarse desde el extranjero, ingresando con la cuenta creada por el postulante para esos fines o con ClaveÚnica, en el Portal de Trámites Digitales del Servicio Nacional de Migraciones."
+    },
+    {
+      "key": "assessment:apply-from-abroad",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Al igual que la solicitud que realiza el titular de Residencia Temporal, la solicitud como dependiente la debes realizar en forma online desde el extranjero"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Pasaporte vigente para todas las nacionalidades, a excepción de Bolivia, que por convenio bilateral puede presentar DNI vigente."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "El pasaporte debe tener una vigencia no inferior a un año contado desde la fecha de solicitud (para solicitudes realizadas desde el exterior)."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Los documentos emitidos en un idioma distinto del español o del inglés deben acompañarse de su traducción oficial, autorizada por el organismo competente."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "Todo documento emitido en el exterior o por la respectiva representación consular en Chile, debe estar apostillado o debidamente legalizado"
+    },
+    {
+      "key": "assessment:family-papers",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Certificado de Matrimonio o documento que acredite convivencia. Si el vínculo fue contraído en el Extranjero, el documento debe presentarse apostillado o legalizado por el Consulado de Chile y el Ministerio de Relaciones Exteriores de Chile."
+    },
+    {
+      "key": "assessment:family-papers",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Certificado de Nacimiento debidamente apostillado o legalizado por el Consulado de Chile y el Ministerio de Relaciones Exteriores de Chile."
+    },
+    {
+      "key": "assessment:family-papers",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Declaración Jurada de cuidados emitida ante notario por el padre o madre del niño, niña o adolescente."
+    },
+    {
+      "key": "assessment:family-papers",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "(sólo en caso de que el titular sea el conviviente o cónyuge de la madre o padre de la persona solicitante)"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Podrás solicitar un permiso de Residencia Temporal en calidad de dependiente si acreditas el respectivo vínculo con el titular en alguna de las situaciones que comprende el artículo 74 de la ley N° 21.325, en sus numerales 1 y 2."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "quote": "El cónyuge o conviviente del residente temporal."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Podrás solicitar un permiso de Residencia Temporal en calidad de dependiente si acreditas el respectivo vínculo con el titular en alguna de las situaciones que comprende el artículo 74 de la ley N° 21.325, en sus numerales 1 y 2."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "quote": "El cónyuge o conviviente del residente temporal."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, menor de 18 años"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, entre 18 y 24 años de edad, que esté estudiando en un establecimiento reconocido por el Estado"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "quote": "siempre que sean menores de 18 años o se trate de personas con discapacidad"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, menor de 18 años"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, entre 18 y 24 años de edad, que esté estudiando en un establecimiento reconocido por el Estado"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "quote": "siempre que sean menores de 18 años o se trate de personas con discapacidad"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, menor de 18 años"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "quote": "Hijo/a del titular, conviviente o cónyuge, entre 18 y 24 años de edad, que esté estudiando en un establecimiento reconocido por el Estado"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
+      "quote": "siempre que sean menores de 18 años o se trate de personas con discapacidad"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "quote": "La vigencia de este permiso será de hasta 2 años."
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
+      "quote": "Se aplicarán estas reglas a las prescripciones, a las calificaciones de edad, y en general a cualesquiera plazos"
+    },
+    {
+      "key": "assessment:residence-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "ARGENTINA 250"
+    },
+    {
+      "key": "assessment:residence-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "BOLIVIA 149 401 169 BOSNIA V HERZEGOVINA 122 122 122 BOTSWANA 138 92 46 BRASIL 100"
+    },
+    {
+      "key": "assessment:residence-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "PARAGUAY 288"
+    },
+    {
+      "key": "assessment:residence-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "UGANDA 500 500 100 URUGUAY 65"
+    },
+    {
+      "key": "assessment:residence-fee",
+      "url": "https://serviciomigraciones.cl/chile-y-bolivia-acuerdo-migracion-regular/",
+      "quote": "se elimina el pago de 90 dólares que se cobraba a las y los ciudadanos bolivianos"
+    },
+    {
+      "key": "cost:dependent-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "aquellos beneficiarios de visaciones de residencia en condicion de dependientes y"
+    },
+    {
+      "key": "cost:dependent-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "el hijo de extranjeros transetIntes. pagaran un derecho equivalente a 15 Mares de"
+    },
+    {
+      "key": "cost:dependent-fee",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "quote": "estaran exentos del pago, en cualquier caso y"
+    },
+    {
+      "key": "cost:dependent-fee",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
+      "quote": "el que ha cumplido dieciocho años"
+    }
+  ]
+}
