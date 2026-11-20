@@ -82,6 +82,11 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_lv',
     versions: [{ routeId: 'lv-capital-investment', number: 5 }],
   },
+  {
+    id: '2026-11-au',
+    migration: 'knowledge_session_review_2026_11_au',
+    versions: [{ routeId: 'au-skilled-independent', number: 3 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

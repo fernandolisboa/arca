@@ -4,6 +4,15 @@ Research notes for Australia's Skilled Independent visa (subclass 189), points-t
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-au/README.md](../../../packages/knowledge/reviews/2026-11-au/README.md).
+
+- **Version audited:** 2 (effective 2026-07-01), the newest stored.
+- **Outcome:** correction, version 3, of version 2 from its own date, stored already active by the review's pull request. Every requirement, amount and duration of version 2 matched its text and stays. New: the public interest and special return criteria as the law lists them for each person (version 2 named only criteria 4001 to 4004), the health criterion, the 491 and 494 rule, where to apply and the section 48 bar, first entry; exact titles; the children of a spouse or partner aged 23 or more need recorded dependence.
+- **Sources re-read** on 2026-11-20, through the app's reader: the Migration Regulations 1994, compilation of 2026-11-03, documents 1 to 3; the Migration Act 1958, compilation of 2026-10-08, ss. 5F, 12 and 48; F2026L00874, read through its PDF, since the register's HTML splits "$6 135" into two numbers.
+- **Amendments looked for**, up to 2026-11-20: the register's versions of the regulations (F2026L01449, F2026L01500 and F2026L01503, not yet compiled, touch other visas) and of the Act (none waiting).
+
 ### 2026-11-11
 
 The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Irish and Japanese routes ([British record](gb-skilled-worker.md)).
