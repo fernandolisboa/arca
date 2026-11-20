@@ -195,7 +195,12 @@ const opensMarkup = (text: string) => /<|&#|\\u[0-9a-f]{4}/iu.test(text);
  * a server might, and as the reader renders it. One that cannot be decoded, or that holds markup
  * or an escape of its own, is taken as an echo whatever the quote.
  */
-function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValue[]) {
+function echoesAddress(
+  quote: string,
+  page: ReadPage,
+  values: readonly CheckValue[],
+  languages: readonly string[],
+) {
   const decoded = page.chain.map(addressTexts);
   if (decoded.includes(undefined)) return true;
   const addresses = decoded.flatMap((texts) => texts ?? []);
@@ -207,8 +212,28 @@ function echoesAddress(quote: string, page: ReadPage, values: readonly CheckValu
     texts.some(
       (text) =>
         queryValues(text).some((value) => lower.includes(value.toLowerCase())) ||
-        values.some((value) => statesValue(value, text)),
+        values.some((value) => echoesValue(value, text, quote, languages)),
     )
+  );
+}
+
+/**
+ * Whether an address states an item's value: as the value itself, or as the whole years a count
+ * of months makes when the quote relies on that reading, so a quote that states the months is not
+ * held to an address that happens to hold the years.
+ */
+function echoesValue(
+  value: CheckValue,
+  address: string,
+  quote: string,
+  languages: readonly string[],
+): boolean {
+  if (value.kind !== 'number' || value.wholeYears === undefined) return statesValue(value, address);
+  const months: CheckValue = { kind: 'number', value: value.value };
+  const years: CheckValue = { kind: 'number', value: value.wholeYears };
+  return (
+    statesValue(months, address) ||
+    (statesValue(years, address) && statesValue(years, quote, languages))
   );
 }
 
@@ -324,7 +349,9 @@ function checkQuote(
   const whole = wholeWords(normalizeWhitespace(page.text), quote, languages);
   if (whole === undefined) return { ok: false, reason: 'quote_not_on_page' };
   if (whole.length > maxQuoteLength) return { ok: false, reason: 'quote_length' };
-  if (echoesAddress(whole, page, item.values)) return { ok: false, reason: 'echoes_address' };
+  if (echoesAddress(whole, page, item.values, languages)) {
+    return { ok: false, reason: 'echoes_address' };
+  }
   return { ok: true, quote: { quote: whole, url }, page };
 }
 

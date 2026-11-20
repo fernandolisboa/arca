@@ -43,16 +43,26 @@ export const maxCheckItemKeyLength = 120;
  */
 const structuralIntegers = new Set([0, 1]);
 
-const numberValue = (decimal: string): CheckValue => ({
+const numberValue = (decimal: string): Extract<CheckValue, { kind: 'number' }> => ({
   kind: 'number',
   value: canonicalNumber(decimal),
 });
 
+const monthsPerYear = 12;
+
 function durationValues(duration: Duration): CheckValue[] {
   const { years, months, days } = durationParts(duration);
-  return [years, months, days]
-    .filter((part) => !structuralIntegers.has(part))
-    .map((part) => numberValue(String(part)));
+  const value = (part: number, wholeYears?: number): CheckValue =>
+    wholeYears === undefined
+      ? numberValue(String(part))
+      : { ...numberValue(String(part)), wholeYears: String(wholeYears) };
+  return [
+    ...(structuralIntegers.has(years) ? [] : [value(years)]),
+    ...(structuralIntegers.has(months)
+      ? []
+      : [value(months, months % monthsPerYear === 0 ? months / monthsPerYear : undefined)]),
+    ...(structuralIntegers.has(days) ? [] : [value(days)]),
+  ];
 }
 
 /** The values an expression states, without repeats, in the order they appear. */

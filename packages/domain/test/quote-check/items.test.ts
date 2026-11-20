@@ -120,6 +120,11 @@ describe('expressionValues', () => {
       ['2', '6'],
     ],
     [
+      'a duration in months that make whole years',
+      { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P60M' },
+      ['60'],
+    ],
+    [
       'no duration of one year',
       { op: 'since', date: { op: 'fact', key: 'person.birthDate' }, duration: 'P1Y' },
       [],

@@ -10,6 +10,11 @@ import {
 } from '../../src/quote-check/values.js';
 
 const number = (value: string): CheckValue => ({ kind: 'number', value });
+const inYears = (value: string, wholeYears: string): CheckValue => ({
+  kind: 'number',
+  value,
+  wholeYears,
+});
 const date = (value: string): CheckValue => ({ kind: 'date', value: value as CalendarDate });
 
 describe('canonicalNumber', () => {
@@ -146,5 +151,18 @@ describe('statesValue', () => {
     [date('2026-05-01'), 'o maior valor em 1 de junho de 2026', false],
   ])('%o in %s: %s', (value, text, expected) => {
     expect(statesValue(value, text)).toBe(expected);
+  });
+
+  it.each([
+    [inYears('60', '5'), 'a period of 5 years, 3 years, 1 year or 6 months', true],
+    [inYears('60', '5'), 'a period of 60 months', true],
+    [inYears('60', '5'), 'a period of 6 years', false],
+    [number('18'), 'a period of 1 year', false],
+  ])('%o in %s: %s', (value, text, expected) => {
+    expect(statesValue(value, text)).toBe(expected);
+  });
+
+  it('reads whole years of months in kanji', () => {
+    expect(statesValue(inYears('60', '5'), '五年、三年、一年又は六月', ['ja'])).toBe(true);
   });
 });

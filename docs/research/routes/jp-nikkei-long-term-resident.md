@@ -4,6 +4,15 @@ Research notes for Japan's long-term resident status (teijusha) for the third ge
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-jp/README.md](../../../packages/knowledge/reviews/2026-11-jp/README.md).
+
+- **Version audited:** 2 (effective 2022-04-01), the newest stored.
+- **Outcome:** two new versions, stored already active by the review's pull request: version 3 from 2026-10-01 (the new fee to change status or extend a stay; the papers of the Enforcement Ordinance's tables III and III-7; what the agency's guideline weighs at each extension) and version 4 from 2027-03-19 (the papers add yearly income, tax and social insurance records). Version 2's requirements, family rules and periods matched their texts and stay.
+- **Sources re-read** on 2026-11-20 through the app's reader: the notice (moj.go.jp now answers plain requests), the act, Civil Code, Age Act, Enforcement Ordinance and Order on the e-Gov API v2, the agency's fee leaflet and guideline.
+- **Amendments looked for**, up to 2026-11-20: `law_revisions` of each law (the act to 2029-03-31, the Civil Code to 2029-06-23, the ordinance to 2027-04-01, the Order to 2027-04-01) and the agency's pages.
+
 ### 2026-11-11
 
 The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Irish and Australian routes ([British record](gb-skilled-worker.md)).

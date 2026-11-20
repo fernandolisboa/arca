@@ -53,6 +53,43 @@ function verify(answer: Partial<CheckAnswer> | undefined, read: ReadPage | null 
 }
 
 describe('verifyAnswers', () => {
+  describe('a count of months that makes whole years', () => {
+    const decision: CheckItem = {
+      ...item,
+      key: 'duration:decision',
+      kind: 'duration',
+      values: [{ kind: 'number', value: '36', wholeYears: '3' }],
+    };
+    const dated = 'https://www.gov.example/act-2011-02-03';
+    const check = (text: string, chain = [law]) => {
+      const pages = new Map([[law, page({ text, chain })]]);
+      const [checked] = verifyAnswers(
+        [decision],
+        [{ key: decision.key, status: 'matches', ...on(text) }],
+        pages,
+      );
+      return checked;
+    };
+
+    it.each([
+      ['in months', 'The decision is taken within 36 months.'],
+      ['in years', 'The decision is taken within 3 years.'],
+      [
+        'in months, on an address that holds the years',
+        'The decision is taken within 36 months.',
+        [law, dated],
+      ],
+    ])('matches a quote that states it %s', (_, text, chain = [law]) => {
+      expect(check(text, chain)?.status).toBe('matches');
+    });
+
+    it('takes a quote that states only the years an address holds as an echo', () => {
+      expect(check('The decision is taken within 3 years.', [law, dated])?.reason).toBe(
+        'echoes_address',
+      );
+    });
+  });
+
   it('takes a match whose quote is on the page and states the value', () => {
     expect(verify(on(quote))).toEqual({
       key: item.key,

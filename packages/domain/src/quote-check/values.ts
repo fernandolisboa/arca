@@ -7,7 +7,12 @@ import { writesAnniversary, writesNumberInWords } from './number-words.js';
  * picks the passage; code compares the value.
  */
 export type CheckValue =
-  | { readonly kind: 'number'; readonly value: string }
+  | {
+      readonly kind: 'number';
+      readonly value: string;
+      /** A count of months that makes whole years, which law text may write in years instead. */
+      readonly wholeYears?: string;
+    }
   | { readonly kind: 'date'; readonly value: CalendarDate };
 
 /** A non-negative decimal written with digits and at most one dot, without needless zeros. */
@@ -311,12 +316,12 @@ export function statesValue(
 ): boolean {
   const numbers = numbersIn(text);
   if (value.kind === 'number') {
-    return (
-      numbers.has(value.value) ||
-      percentagesIn(text).has(value.value) ||
-      writesNumberInWords(text, value.value, languages) ||
-      writesAnniversary(text, value.value, languages)
-    );
+    const states = (number: string) =>
+      numbers.has(number) ||
+      percentagesIn(text).has(number) ||
+      writesNumberInWords(text, number, languages) ||
+      writesAnniversary(text, number, languages);
+    return states(value.value) || (value.wholeYears !== undefined && states(value.wholeYears));
   }
   if (text.includes(value.value)) return true;
   const [year = '', month = '', day = ''] = value.value.split('-').map(canonicalNumber);

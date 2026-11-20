@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者の実子（第一号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者でかつて日本国民として本邦に本籍を有したことがあるものの実子の実子（第一号、第三号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_7",
+      "quote": "定住者の項の下欄に掲げる地位については、法務大臣があらかじめ告示をもつて定めるものに限る。"
+    },
+    {
+      "key": "requirement:not-japanese-national",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_2",
+      "quote": "外国人 日本の国籍を有しない者をいう。"
+    },
+    {
+      "key": "assessment:good-conduct",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者の実子（第一号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "assessment:good-conduct",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_5",
+      "quote": "次の各号のいずれかに該当する外国人は、本邦に上陸することができない。"
+    },
+    {
+      "key": "assessment:family-conditions",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号又は前号に掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するもの（この号に該当する者として上陸の許可を受けた者で当該在留期間中に離婚をしたものを除く。）の配偶者であって素行が善良であるもの"
+    },
+    {
+      "key": "assessment:family-conditions",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "在留資格「定住者」については「出入国管理及び難民認定法第七条第一項第二号の規定に基づき同法別表第二の定住者の項の下欄に掲げる地位を定める件」（定住者告示）に該当するとして、上陸を許可され在留している場合は、原則として引き続き各告示に定める要件に該当することを要します 。"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "ただし、申請人の年齢や扶養を受けていること等の要件については、年齢を重ねたり、扶養を受ける状況が消滅する等、我が国入国後の事情の変更により、適合しなくなることがありますが、このことにより直ちに在留期間更新が不許可となるものではありません。"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "４ 素行が不良でないこと"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "申請人の生活状況として、日常生活において公共の負担となっておらず、かつ、その有する資産又は技能等から見て将来において安定した生活が見込まれること（世帯単位で認められれば足ります。）が求められますが、"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "また、長期間にわたる再入国許可による出国（みなし再入国許可による出国を含む。）がある場合についても、正当な理由があるときを除き、消極的な要素として評価されます。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "我が国で就労している（しようとする）場合には、アルバイトを含めその雇用・労働条件が、労働関係法規に適合していることが必要です。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "納税義務がある場合には、当該納税義務を履行していることが求められ、履行していない場合には消極的な要素として評価されます。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "また、国民健康保険料など、法令によって納付することとされているものについて、高額の未納や長期間の未納などが判明した場合も、悪質なものについては同様に取り扱います。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "８ 入管法に定める届出等の義務を履行していること"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号又は前号に掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するもの（この号に該当する者として上陸の許可を受けた者で当該在留期間中に離婚をしたものを除く。）の配偶者であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "次のいずれかに該当する者の扶養を受けて生活するこれらの者の六歳未満の養子（第一号から第四号まで、前号又は次号に該当する者を除く。）に係るもの"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "ハ一年以上の在留期間を指定されている定住者の在留資格をもって在留する者"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "dependent:spouse-adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "次のいずれかに該当する者の扶養を受けて生活するこれらの者の六歳未満の養子（第一号から第四号まで、前号又は次号に該当する者を除く。）に係るもの"
+    },
+    {
+      "key": "dependent:spouse-adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "ハ一年以上の在留期間を指定されている定住者の在留資格をもって在留する者"
+    },
+    {
+      "key": "duration:period-of-stay",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054",
+      "quote": "一 法第七条第一項第二号の告示で定める地位を認められる者にあつては、五年、三年、一年又は六月"
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://laws.e-gov.go.jp/law/135AC1000000050",
+      "quote": "年齢ハ出生ノ日ヨリ之ヲ起算ス 民法第百四十三条ノ規定ハ年齢ノ計算ニ之ヲ準用ス"
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_143",
+      "quote": "ただし、月又は年によって期間を定めた場合において、最後の月に応当する日がないときは、その月の末日に満了する。"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3月超6月以下 窓⼝ 18,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "1年 窓⼝ 33,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3年以上5年未満 窓⼝ 64,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "5年以上 窓⼝ 75,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "在留資格の変更や在留期間の更新などに必要な手数料が改定されます。"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3月超6月以下 窓⼝ 18,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "1年 窓⼝ 33,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3年以上5年未満 窓⼝ 64,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "5年以上 窓⼝ 75,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "在留資格の変更や在留期間の更新などに必要な手数料が改定されます。"
+    },
+    {
+      "key": "assessment:landing-documents",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書 二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。） 三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 五 本邦に居住する身元保証人の身元保証書"
+    },
+    {
+      "key": "assessment:extension-documents",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書 二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。） 三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 五 本邦に居住する身元保証人の身元保証書"
+    }
+  ]
+}
