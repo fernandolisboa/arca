@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:under-45",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "The applicant must not have turned 45 at the time of invitation to apply for the visa"
+    },
+    {
+      "key": "assessment:invitation",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "The applicant must have been invited, in writing, by the Minister to apply for a Subclass 189 (Skilled—Independent) visa"
+    },
+    {
+      "key": "assessment:invitation",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "The applicant must apply for that visa within the period stated in the invitation"
+    },
+    {
+      "key": "assessment:invitation",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "The applicant was invited, in writing, by the Minister to apply for the visa."
+    },
+    {
+      "key": "assessment:skills-assessment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(a) that is specified by the Minister, in an instrument under subitem (4C), as a skilled occupation at the time of invitation to apply for the visa; and"
+    },
+    {
+      "key": "assessment:skills-assessment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) that is specified in the invitation as the skilled occupation which the applicant may nominate; and"
+    },
+    {
+      "key": "assessment:skills-assessment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(a) the relevant assessing authority for the applicant’s nominated skilled occupation had assessed the applicant’s skills as suitable for that occupation; and (b) the assessment was not for a Subclass 485 (Temporary Graduate) visa; and"
+    },
+    {
+      "key": "assessment:skills-assessment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(c) if the assessment specified a period during which the assessment was valid, and the period did not end more than 3 years after the date of the assessment—the period had not ended; and (d) if paragraph (c) did not apply—not more than 3 years had passed since the date of the assessment."
+    },
+    {
+      "key": "assessment:registered-course",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(2) If the assessment was made on the basis of a qualification obtained in Australia while the applicant held a student visa, the qualification was obtained as a result of studying a registered course."
+    },
+    {
+      "key": "assessment:competent-english",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "At the time of invitation to apply for the visa, the applicant had competent English."
+    },
+    {
+      "key": "assessment:competent-english",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "the test was conducted in the 3 years immediately before the date of the invitation; and"
+    },
+    {
+      "key": "assessment:competent-english",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(2) A person also has competent English if the person holds a passport of a type specified by the Minister in an instrument in writing for this subregulation."
+    },
+    {
+      "key": "assessment:points-score",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "is not less than the score stated in the invitation to apply for the visa."
+    },
+    {
+      "key": "assessment:points-score",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "is not less than the qualifying score for that Subdivision."
+    },
+    {
+      "key": "assessment:points-score",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(3) The number of points prescribed for a qualification specified in an item in Schedule"
+    },
+    {
+      "key": "assessment:regional-provisional-visa",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(a) the applicant held a Subclass 491 (Skilled Work Regional (Provisional)) visa or a Subclass 494 (Skilled Employer Sponsored Regional (Provisional)) visa; or"
+    },
+    {
+      "key": "assessment:regional-provisional-visa",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "the applicant must have held that visa for at least 3 years at the time of application unless circumstances specified in an instrument under subclause (2) exist."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) An applicant may be in or outside Australia, but not in immigration clearance."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(c) An applicant in Australia must hold: (i) a substantive visa; or (ii) a Subclass 010 Bridging A visa; or (iii) a Subclass 020 Bridging B visa; or (iv) a Subclass 030 Bridging C visa."
+    },
+    {
+      "key": "assessment:where-to-apply",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "However, the application by the member of the family unit must be made before a decision is made in relation to the application by the primary Points‑tested applicant."
+    },
+    {
+      "key": "assessment:character",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "satisfies public interest criteria 4001, 4002, 4003, 4003B, 4004, 4020 and 4021."
+    },
+    {
+      "key": "assessment:character",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(3) Each person who is covered by subclause (4), (5) or (6) satisfies public interest criteria 4001, 4002, 4003, 4003B, 4004, 4010 and 4020."
+    },
+    {
+      "key": "assessment:character",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "satisfies public interest criteria 4001, 4002, 4003, 4003B and 4004."
+    },
+    {
+      "key": "assessment:character",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) the person satisfies the Minister that the person passes the character test; or"
+    },
+    {
+      "key": "assessment:character",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) a completed approved form 80."
+    },
+    {
+      "key": "assessment:security",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The applicant is not assessed by the Australian Security Intelligence Organisation to be directly or indirectly a risk to security"
+    },
+    {
+      "key": "assessment:security",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "to be a person whose presence in Australia is, or would be, contrary to Australia’s foreign policy interests; and"
+    },
+    {
+      "key": "assessment:security",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "for the purpose of preventing the person from travelling to, entering or remaining in Australia; or"
+    },
+    {
+      "key": "assessment:security",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The Minister has not determined that there is an unreasonable risk of an unwanted transfer of critical technology by the applicant."
+    },
+    {
+      "key": "assessment:security",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "satisfies public interest criteria 4001, 4002, 4003, 4003B and 4004."
+    },
+    {
+      "key": "assessment:commonwealth-debts",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The applicant does not have outstanding debts to the Commonwealth unless the Minister is satisfied that appropriate arrangements have been made for payment."
+    },
+    {
+      "key": "assessment:commonwealth-debts",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "satisfies public interest criteria 4001, 4002, 4003, 4003B and 4004."
+    },
+    {
+      "key": "assessment:no-false-information",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "a bogus document or information that is false or misleading in a material particular in relation to:"
+    },
+    {
+      "key": "assessment:no-false-information",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(2A) The applicant satisfies the Minister as to the applicant’s identity."
+    },
+    {
+      "key": "assessment:no-false-information",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) starting 3 years before the application was made; and"
+    },
+    {
+      "key": "assessment:no-false-information",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) starting 10 years before the application was made; and"
+    },
+    {
+      "key": "assessment:no-false-information",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(b) a visa that the applicant held in the period of 12 months before the application was made."
+    },
+    {
+      "key": "assessment:passport",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) the applicant holds a valid passport that: (i) was issued to the applicant by an official source; and"
+    },
+    {
+      "key": "assessment:passport",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(b) it would be unreasonable to require the applicant to hold a passport."
+    },
+    {
+      "key": "assessment:passport",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(1) The applicant satisfies public interest criteria 4001, 4002, 4003, 4003B, 4004, 4020 and 4021."
+    },
+    {
+      "key": "assessment:values-statement",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The applicant has signed a statement"
+    },
+    {
+      "key": "assessment:values-statement",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(2) However, if compelling circumstances exist, the Minister may decide that the applicant is not required to satisfy subclause (1)."
+    },
+    {
+      "key": "assessment:values-statement",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(2) If the applicant had turned 18 at the time of application, the applicant satisfies public interest criterion 4019."
+    },
+    {
+      "key": "assessment:values-statement",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "satisfies public interest criterion 4019."
+    },
+    {
+      "key": "assessment:health",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(1) The applicant satisfies public interest criteria 4005 and 4010."
+    },
+    {
+      "key": "assessment:health",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(3) Each member of the family unit of the applicant who is not an applicant for a Subclass 189 visa satisfies public interest criterion 4005, unless it would be unreasonable to require the member to undergo assessment in relation to the criterion."
+    },
+    {
+      "key": "assessment:health",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(ab) must comply with any request by a Medical Officer of the Commonwealth to undertake a medical assessment; and"
+    },
+    {
+      "key": "assessment:health",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) is free from tuberculosis; and"
+    },
+    {
+      "key": "assessment:establishment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "the applicant is likely to become established in Australia without undue personal difficulty and without imposing undue difficulties or costs on the Australian community."
+    },
+    {
+      "key": "assessment:establishment",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(1) The applicant satisfies public interest criteria 4005 and 4010."
+    },
+    {
+      "key": "assessment:minors",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(3) If the applicant has not turned 18, the applicant satisfies public interest criteria 4017 and 4018."
+    },
+    {
+      "key": "assessment:minors",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) the law of the applicant’s home country permits the removal of the applicant;"
+    },
+    {
+      "key": "assessment:minors",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(b) each person who can lawfully determine where the applicant is to live consents to the grant of the visa;"
+    },
+    {
+      "key": "assessment:minors",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(c) the grant of the visa would be consistent with any Australian child order in force in relation to the applicant."
+    },
+    {
+      "key": "assessment:minors",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The Minister is satisfied that there is no compelling reason to believe that the grant of the visa would not be in the best interests of the applicant."
+    },
+    {
+      "key": "assessment:special-return",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(1) The applicant satisfies special return criteria 5001 and 5002."
+    },
+    {
+      "key": "assessment:special-return",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) a person who left Australia while the subject of a deportation order under:"
+    },
+    {
+      "key": "assessment:special-return",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "If the applicant is a person who has been removed from Australia under section"
+    },
+    {
+      "key": "assessment:special-return",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(a) the application is made more than 12 months after the removal; or"
+    },
+    {
+      "key": "assessment:special-return",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "(b) the applicant is the holder of a student visa granted to the applicant who is provided financial support by the government of a foreign country;"
+    },
+    {
+      "key": "assessment:first-entry",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(a) first entry must be made before the date specified by the Minister; and"
+    },
+    {
+      "key": "assessment:first-entry",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) if the applicant satisfies the secondary criteria for the grant of the visa, condition 8515 may be imposed."
+    },
+    {
+      "key": "assessment:first-entry",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/3",
+      "quote": "The holder of the visa must not marry or enter into a de facto relationship before entering Australia."
+    },
+    {
+      "key": "assessment:section-48",
+      "url": "https://www.legislation.gov.au/C1958A00062/latest/text",
+      "quote": "(a) does not hold a substantive visa; and"
+    },
+    {
+      "key": "assessment:section-48",
+      "url": "https://www.legislation.gov.au/C1958A00062/latest/text",
+      "quote": "may, subject to the regulations, apply for a visa of a class prescribed for the purposes of this section or have an application for such a visa made on his or her behalf, but not for a visa of any other class."
+    },
+    {
+      "key": "assessment:section-48",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "of the Act the following classes of visas are prescribed:"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.legislation.gov.au/C1958A00062/latest/text",
+      "quote": "(a) they are married to each other under a marriage that is valid for the purposes of this Act; and (b) they have a mutual commitment to a shared life as a married couple to the exclusion of all others; and (c) the relationship between them is genuine and continuing; and"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.legislation.gov.au/C1958A00062/latest/text",
+      "quote": "(i) live together; or (ii) do not live separately and apart on a permanent basis."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.legislation.gov.au/C1958A00062/latest/text",
+      "quote": "For the purpose of deciding whether a marriage is to be recognised as valid for the purposes of this Act, Part VA of the Marriage Act 1961 applies as if section"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(a) is a spouse or de facto partner of the family head; or"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) made a combined application with the primary applicant."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(a) is a spouse or de facto partner of the family head; or"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(a) the applicant is at least 18; and"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) the person with whom the applicant claims to be in a de facto relationship is at least 18."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "the Minister must be satisfied that the applicant has been in the de facto relationship for at least the period of 12 months ending immediately before the date of the application."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) made a combined application with the primary applicant."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) is a child or step‑child of the family head or of a spouse or de facto partner of the family head (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner) and: (i) has not turned 18; or (ii) has turned 18, but has not turned 23, and is dependent on the family head or on the spouse or de facto partner of the family head; or"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "wholly or substantially reliant on the other person for financial support to meet the first person’s basic needs for food, clothing and shelter; and"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) made a combined application with the primary applicant."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) is a child or step‑child of the family head or of a spouse or de facto partner of the family head (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner) and: (i) has not turned 18; or (ii) has turned 18, but has not turned 23, and is dependent on the family head or on the spouse or de facto partner of the family head; or"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "wholly or substantially reliant on the other person for financial support to meet the first person’s basic needs for food, clothing and shelter; and"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) made a combined application with the primary applicant."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(b) is a child or step‑child of the family head or of a spouse or de facto partner of the family head (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner) and: (i) has not turned 18; or (ii) has turned 18, but has not turned 23, and is dependent on the family head or on the spouse or de facto partner of the family head; or"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "wholly or substantially reliant on the other person for financial support to meet the first person’s basic needs for food, clothing and shelter; and"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "(b) made a combined application with the primary applicant."
+    },
+    {
+      "key": "dependent:grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(c) is a dependent child of a person who meets the conditions in paragraph (b)."
+    },
+    {
+      "key": "dependent:grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "dependent child, of a person, means the child or step‑child of the person (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner), being a child or step‑child who: (a) has not turned 18; or (b) has turned 18 and: (i) is dependent on that person; or (ii) is incapacitated for work"
+    },
+    {
+      "key": "dependent:spouse-grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(c) is a dependent child of a person who meets the conditions in paragraph (b)."
+    },
+    {
+      "key": "dependent:spouse-grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "dependent child, of a person, means the child or step‑child of the person (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner), being a child or step‑child who: (a) has not turned 18; or (b) has turned 18 and: (i) is dependent on that person; or (ii) is incapacitated for work"
+    },
+    {
+      "key": "dependent:partner-grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(c) is a dependent child of a person who meets the conditions in paragraph (b)."
+    },
+    {
+      "key": "dependent:partner-grandchildren",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "dependent child, of a person, means the child or step‑child of the person (other than a child or step‑child who is engaged to be married or has a spouse or de facto partner), being a child or step‑child who: (a) has not turned 18; or (b) has turned 18 and: (i) is dependent on that person; or (ii) is incapacitated for work"
+    },
+    {
+      "key": "cost:base-charge",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Base application charge $6 135"
+    },
+    {
+      "key": "cost:base-charge-pacific",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Base application charge $5 030"
+    },
+    {
+      "key": "cost:base-charge-pacific",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "who holds a valid passport issued by a Pacific‑regional country; or"
+    },
+    {
+      "key": "cost:additional-adult",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Additional applicant charge for an applicant who is at least 18 $3 070"
+    },
+    {
+      "key": "cost:additional-minor",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Additional applicant charge for an applicant who is less than 18 $1 540"
+    },
+    {
+      "key": "cost:additional-adult-pacific",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Additional applicant charge for an applicant who is at least 18 $2 515"
+    },
+    {
+      "key": "cost:additional-adult-pacific",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(ii) whose application is combined, or sought to be combined, with an application made by that person:"
+    },
+    {
+      "key": "cost:additional-minor-pacific",
+      "url": "https://www.legislation.gov.au/F2026L00874/latest/text",
+      "quote": "Additional applicant charge for an applicant who is less than 18 $1 260"
+    },
+    {
+      "key": "cost:additional-minor-pacific",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(ii) whose application is combined, or sought to be combined, with an application made by that person:"
+    },
+    {
+      "key": "cost:second-instalment-adult",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "(a) was at least 18 at the time of application; and (b) is assessed as not having functional English; and"
+    },
+    {
+      "key": "cost:second-instalment-adult",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "does not apply $4,885"
+    },
+    {
+      "key": "duration:travel-facility",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text/2",
+      "quote": "Permanent visa permitting the holder to travel to and enter Australia for 5 years from the date of grant."
+    },
+    {
+      "key": "countrySet:au-pacific-regional/1",
+      "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
+      "quote": "Pacific‑regional country means each of the following: (a) Federated States of Micronesia; (b) Fiji; (c) Kiribati; (d) Nauru; (e) Palau; (f) Papua New Guinea; (g) Republic of the Marshall Islands; (h) Samoa; (i) Solomon Islands; (j) Timor‑Leste; (k) Tonga; (l) Tuvalu; (m) Vanuatu."
+    }
+  ]
+}
