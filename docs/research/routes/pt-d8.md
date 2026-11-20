@@ -4,6 +4,12 @@ Research notes for Portugal's D8 residence visa for remote work for employers or
 
 ## Audits
 
+### 2026-11-20, session review
+
+- **Version audited:** 6
+- **Outcome:** correction, version 7, from version 6's date, 2026-01-01, in the same session review as [`pt-d7`](pt-d7.md#2026-11-20-session-review) version 7, where the entry is. What changed, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-pt/README.md).
+- **Watch next:** as in the `pt-d7` record. The 2027 version is version 8, from 2027-01-01.
+
 ### 2026-11-12, gazette PDFs
 
 - **Version audited:** 5

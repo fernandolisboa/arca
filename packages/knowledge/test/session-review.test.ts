@@ -153,19 +153,23 @@ describe('the evidence of a reviewed version', () => {
     ]);
   });
 
-  it('reads the echo rule on the address the app requests for a page', async () => {
-    // pt-d7 cites a republication under `/lei/18-2022-…` and reads it through its gazette PDF.
-    const review = sessionReviews.find(({ id }) => id === '2026-11-pt');
-    if (review === undefined) throw new Error('No such review');
-    const [routed] = await reviewedVersions(dirs, review);
-    if (routed === undefined) throw new Error('No reviewed version');
-    const quoted = await readEvidence(dirs.reviewsDir, review, routed.routeId, routed.number);
-    const addresses = machineReadableUrls(routed.entry);
-    expect(evidenceProblems(routed.entry, quoted, quotedPages(quoted, addresses))).toEqual([]);
-    expect(evidenceProblems(routed.entry, quoted, quotedPages(quoted))).toContain(
-      'dependent:spouse: echoes_address',
-    );
-  });
+  it(
+    'reads the echo rule on the address the app requests for a page',
+    async () => {
+      // pt-d7 cites a republication under `/lei/18-2022-…` and reads it through its gazette PDF.
+      const review = sessionReviews.find(({ id }) => id === '2026-11-pt');
+      if (review === undefined) throw new Error('No such review');
+      const [routed] = await reviewedVersions(dirs, review);
+      if (routed === undefined) throw new Error('No reviewed version');
+      const quoted = await readEvidence(dirs.reviewsDir, review, routed.routeId, routed.number);
+      const addresses = machineReadableUrls(routed.entry);
+      expect(evidenceProblems(routed.entry, quoted, quotedPages(quoted, addresses))).toEqual([]);
+      expect(evidenceProblems(routed.entry, quoted, quotedPages(quoted))).toContain(
+        'dependent:spouse: echoes_address',
+      );
+    },
+    buildTimeout,
+  );
 
   it('refuses a quote the page read does not hold, and a page that was cut', () => {
     const pages = quotedPages(evidence);
