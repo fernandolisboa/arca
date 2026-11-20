@@ -174,7 +174,9 @@ export async function reviewedVersions(
     })),
   };
   let reviewed: ReviewedVersion[] = [];
-  for (const each of sessionReviews.slice(0, sessionReviews.indexOf(review) + 1)) {
+  const position = sessionReviews.indexOf(review);
+  if (position === -1) throw new Error(`Review ${review.id} is not listed`);
+  for (const each of sessionReviews.slice(0, position + 1)) {
     reviewed = [];
     for (const { routeId, number } of each.versions) {
       const path = fileOf(dirs.reviewsDir, each, routeId, number);

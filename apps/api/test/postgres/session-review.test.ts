@@ -36,7 +36,9 @@ describe('session review activations (ADR-0032)', () => {
           )
         ).rows,
     );
-    expect(activations.map((row) => `${row.route_id}/${String(row.version_number)}`)).toEqual(
+    expect(
+      activations.map((row) => `${row.route_id}/${String(row.version_number)}`).sort(),
+    ).toEqual(
       sessionReviews
         .flatMap(({ versions }) => versions)
         .map(({ routeId, number }) => `${routeId}/${String(number)}`)

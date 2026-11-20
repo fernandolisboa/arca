@@ -342,6 +342,15 @@ describe('personal-data registry (spec 0004, R7)', () => {
     ).toEqual(['auth.step_up.account_id can be null']);
   });
 
+  it('fails on a retained entry that says a row may have no owner where every row has one', async () => {
+    const needless = registry.entries.map((entry) =>
+      entry.table === 'knowledge.admin_grant' ? { ...entry, ownerless: 'test' } : entry,
+    );
+    expect(await problemsAfter('SELECT 1', { ...registry, entries: needless })).toEqual([
+      'knowledge.admin_grant says a row may have no owner, but grantee_account_id cannot be null',
+    ]);
+  });
+
   it('fails on a table kept until expiry with no expiry column', async () => {
     expect(await problemsAfter('ALTER TABLE auth.outbox DROP COLUMN expires_at')).toEqual([
       'auth.outbox has no column expires_at',

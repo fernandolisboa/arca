@@ -66,6 +66,11 @@ export interface RetainedEntry extends Exported {
   readonly reason: string;
   /** An ISO 8601 period, such as `P5Y`, or `forever`. */
   readonly period: `P${number}Y` | 'forever';
+  /**
+   * Why a row may name no owner: such a row records nothing about a person, so neither erasure
+   * nor export has to reach it. Without it, the owner column must not be null.
+   */
+  readonly ownerless?: string;
 }
 
 export type RegistryEntry = DeletedEntry | RetainedEntry;
@@ -509,6 +514,8 @@ export const registry: Registry = {
       reason:
         'The record of which rule and comparison versions are in use and who decided, with its proof (for decisions made before ADR-0027, the step-up assertion); it holds no other personal data (spec 0007, R7; ADR-0026, ADR-0027).',
       period: 'forever',
+      ownerless:
+        'A session review activation is stored by a migration and names no account, assertion or key: the decision_author check ties a missing approver to the session_review proof (ADR-0032).',
       export: ['decided_at', 'kind', 'subject_kind', 'route_id', 'comparison_id', 'version_number'],
       label: 'dataExport.tables.knowledgeDecisions',
     },

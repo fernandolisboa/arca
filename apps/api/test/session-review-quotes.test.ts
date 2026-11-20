@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type ReadPage, checkItems, machineReadableUrls } from '@arca/domain';
+import { type ReadPage, checkItems, hostMatches, machineReadableUrls } from '@arca/domain';
 import {
   type ReviewDirs,
   evidenceProblems,
@@ -32,14 +32,15 @@ const wanted = new Set((process.env['ARCA_REVIEW_QUOTES'] ?? '').split(',').filt
 /**
  * A session's sandbox reaches the network only through its proxy, which the guarded fetcher
  * never uses, so there the page comes through `fetch` and is read as the app reads an answer.
- * The job in CI, the one that counts, uses the guarded fetcher itself.
+ * It is asked for by name, ARCA_REVIEW_QUOTES_PROXY=1, and refused in CI: the job there, the one
+ * that counts, uses the guarded fetcher itself.
  */
 const throughProxy: SourceFetcher = {
   async fetch(url, hosts) {
     const chain = [url];
     const host = hostOf(url);
-    const allowed = hosts.some((name) => host === name || host?.endsWith(`.${name}`) === true);
-    if (!allowed) return { ok: false, failure: 'refused_url', status: null, chain };
+    if (host === undefined || !hostMatches(host, hosts))
+      return { ok: false, failure: 'refused_url', status: null, chain };
     const signal = AbortSignal.timeout(fetchLimits.timeoutMs);
     const answer = await fetch(url, { redirect: 'error', signal });
     if (!answer.ok) return { ok: false, failure: 'http_status', status: answer.status, chain };
@@ -58,14 +59,23 @@ const throughProxy: SourceFetcher = {
       : { ok: false, failure: read.failure, status: answer.status, chain };
   },
 };
-const fetcher = process.env['HTTPS_PROXY'] === undefined ? httpsSourceFetcher() : throughProxy;
+const viaProxy = process.env['ARCA_REVIEW_QUOTES_PROXY'] === '1';
+const fetcher = viaProxy ? throughProxy : httpsSourceFetcher();
 
 // Reads official pages, so it runs only when asked: ARCA_REVIEW_QUOTES=<review>[,<review>].
 describe.skipIf(wanted.size === 0)('the evidence of a session review (ADR-0032)', () => {
+  it('reads listed reviews only, and in CI with the guarded fetcher', () => {
+    const listed = new Set(sessionReviews.map(({ id }) => id));
+    expect([...wanted].filter((id) => !listed.has(id))).toEqual([]);
+    expect(viaProxy && process.env['CI'] !== undefined).toBe(false);
+  });
+
   it.each(sessionReviews.filter(({ id }) => wanted.has(id)))(
     "$id: every item matches on the official pages it cites, by the app's quote check",
     async (review) => {
-      for (const version of await reviewedVersions(dirs, review)) {
+      const versions = await reviewedVersions(dirs, review);
+      expect(versions.length).toBeGreaterThan(0);
+      for (const version of versions) {
         const addresses = machineReadableUrls(version.entry);
         const pages = new Map<string, ReadPage>();
         const unread: string[] = [];

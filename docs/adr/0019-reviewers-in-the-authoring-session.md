@@ -1,6 +1,6 @@
 # ADR-0019: Reviewers run in the authoring session, not in CI
 
-- Status: Accepted, amended by [ADR-0024](0024-mattpocock-skills-flow.md) (the reviewers it runs)
+- Status: Accepted, amended by [ADR-0024](0024-mattpocock-skills-flow.md) (the reviewers it runs) and by [ADR-0032](0032-session-reviews-activate-through-a-reviewed-pull-request.md) (one CI job, `review-quotes`, reads official pages over the network)
 - Date: 2026-11-03
 - Supersedes: [ADR-0011](0011-reviewers-in-ci.md), [ADR-0013](0013-review-gate-canary-and-model-pins.md)
 - Amends: [ADR-0012](0012-automation-first-setup.md) (the review gate section), spec 0001 R10

@@ -17,11 +17,19 @@ env:
 
 jobs:
   check:
+    # Required on `main`, so it carries the result of review-quotes, which the ruleset does not
+    # name: it runs even when that job failed, and its first step fails with it (ADR-0032).
+    needs: review-quotes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
     steps:
+      - name: The session review quotes were found on their official pages, or none changed
+        env:
+          QUOTES: ${{ needs.review-quotes.result }}
+        run: test "$QUOTES" = success || test "$QUOTES" = skipped
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -142,10 +150,16 @@ jobs:
           fetch-depth: 2
       - name: The reviews this pull request changes
         id: changed
+        shell: bash
         run: |
-          reviews=$(git diff --name-only HEAD^1 HEAD -- packages/knowledge/reviews/ \
-            | cut -d/ -f4 | grep -E '^[0-9a-z-]+$' | sort -u | paste -sd, - || true)
-          echo "reviews=$reviews" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          folders=$(git diff --name-only HEAD^1 HEAD -- packages/knowledge/reviews/ | cut -d/ -f4 | sort -u)
+          # A folder the job cannot name must fail it, never leave its review unread.
+          if printf '%s' "$folders" | grep -qvE '^[0-9a-z-]+$'; then
+            echo 'A changed review folder has a name outside [0-9a-z-]' >&2
+            exit 1
+          fi
+          echo "reviews=$(printf '%s' "$folders" | paste -sd, -)" >> "$GITHUB_OUTPUT"
       - if: steps.changed.outputs.reviews != ''
         uses: ./.github/actions/setup-pnpm
       - if: steps.changed.outputs.reviews != ''

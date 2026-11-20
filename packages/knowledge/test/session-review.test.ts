@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type ReadPage, checkItems } from '@arca/domain';
+import { type ReadPage, checkItems, maxQuotes } from '@arca/domain';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   type Evidence,
@@ -41,21 +41,50 @@ describe.each(sessionReviews)('session review $id (ADR-0032)', (review) => {
   );
 });
 
-describe('migrations that store rule versions or decisions (ADR-0032)', () => {
+describe('migrations that touch the rule rows (ADR-0032)', () => {
   /** The migration that admitted the `session_review` proof: the scan starts after it. */
   const admitted = '20261120021312_knowledge_session_review_decisions_grants';
-  const writesRules =
-    /session_review|\b(insert\s+into|update|delete\s+from|truncate|copy)\s+(only\s+)?"?knowledge"?\s*\.\s*"?(decision|route_version)\b/iu;
+  /**
+   * A text scan, so it is wide: any mention of the `knowledge` schema or of the proof, and any DO
+   * block, whose dynamic SQL could hide one. The database tests hold what it cannot see: the
+   * stored activations are the listed reviews', and the migrator's rights on decisions are exact.
+   */
+  const touchesRules = /session_review|\bknowledge\b|\bdo\s*(\$|'|language\b)/iu;
+  /** Later migrations of the `knowledge` schema that store no version or decision, by name. */
+  const reviewedApart: readonly string[] = [];
 
-  it('are only the generated migrations of the listed reviews', async () => {
-    const reviews = new Set(sessionReviews.map(({ migration }) => migration));
+  it('are the generated migrations of the listed reviews, or named here', async () => {
+    const known = new Set([...sessionReviews.map(({ migration }) => migration), ...reviewedApart]);
     const later = (await readdir(migrationsDir)).filter((name) => name > admitted);
-    const writing: string[] = [];
+    const touching: string[] = [];
     for (const name of later) {
       const sql = await readFile(join(migrationsDir, name, 'migration.sql'), 'utf8');
-      if (writesRules.test(sql)) writing.push(name.replace(/^\d+_/u, ''));
+      if (touchesRules.test(sql)) touching.push(name.replace(/^\d+_/u, ''));
     }
-    expect(writing.filter((name) => !reviews.has(name))).toEqual([]);
+    expect(touching.filter((name) => !known.has(name))).toEqual([]);
+  });
+
+  it.each([
+    'INSERT INTO "knowledge"."decision" (proof) VALUES (\'session_review\')',
+    'TRUNCATE TABLE knowledge.decision',
+    'GRANT UPDATE ON knowledge.decision TO app_migrator',
+    'DROP POLICY decision_insert_by_migrator ON "knowledge" . "decision"',
+    "DO $$ BEGIN EXECUTE 'DELETE FROM ' || 'know' || 'ledge.decision'; END $$",
+    'DO LANGUAGE plpgsql $body$ BEGIN NULL; END $body$',
+  ])('sees %s', (sql) => {
+    expect(touchesRules.test(sql)).toBe(true);
+  });
+
+  it('lets a migration of another schema through', () => {
+    expect(
+      touchesRules.test('INSERT INTO "audit"."event" (code) VALUES (\'x\') ON CONFLICT DO NOTHING'),
+    ).toBe(false);
+  });
+});
+
+describe('the listed reviews', () => {
+  it('have IDs the review-quotes job can name', () => {
+    expect(sessionReviews.filter(({ id }) => !/^[0-9a-z-]+$/u.test(id))).toEqual([]);
   });
 });
 
@@ -108,7 +137,7 @@ describe('the evidence of a reviewed version', () => {
     const key = valued();
     const [first] = quotesOf(key);
     if (first === undefined) throw new Error('No quote');
-    const many = Array.from({ length: 6 }, () => first);
+    const many = Array.from({ length: maxQuotes + 1 }, () => first);
     expect(problemsOf({ ...evidence, quotes: [...without(key), ...many] })).toEqual([
       `${key}: quote_count`,
     ]);

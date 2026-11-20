@@ -23,7 +23,7 @@ Fix what is proven, then review again. **At most three rounds a route.** Whateve
 1. Add `packages/knowledge/reviews/<review>/<route>.<number>.json` (the next number, `corrects` or a later `effectiveFrom` as the version order requires), `.cases.json` with inline snapshots, and `.evidence.json` with one to five official passages for every item, each copied from a page the item cites and, together, stating every value the item gives.
 2. A fact the schema cannot hold (titles are capped at 200 characters; a requirement must be able to be false) is disclosed as far as the title allows and listed as a leftover. Do not bend an expression to pass the check.
 3. Set each source's `verifiedAt` to the São Paulo date its page was read.
-4. Add the review to `sessionReviews` in `packages/knowledge/scripts/session-review.ts`, and create its migration folder: `pnpm --filter @arca/db exec drizzle-kit generate --custom --name knowledge_session_review_<yyyy>_<mm>_<country>`.
+4. Add the review to `sessionReviews` in `packages/knowledge/scripts/session-review.ts`, and create its migration folder (a review ID holds only digits, lowercase letters and hyphens, or the `review-quotes` job fails): `pnpm --filter @arca/db exec drizzle-kit generate --custom --name knowledge_session_review_<yyyy>_<mm>_<country>`.
 5. Write `packages/knowledge/reviews/<review>/README.md`: what changed, the rounds, and the leftover list. Add a dated entry to the route's note in `docs/research/routes/` that points to it.
 
 ## 4. Check in code
@@ -32,15 +32,15 @@ Fix what is proven, then review again. **At most three rounds a route.** Whateve
 # In packages/knowledge: the proposal check and the evidence, then writes the migration.
 pnpm exec vitest run test/session-review.test.ts -u
 # In apps/api: every quote on its official page, by the app's reader and quote check.
-ARCA_REVIEW_QUOTES=<review> pnpm exec vitest run test/session-review-quotes.test.ts
+ARCA_REVIEW_QUOTES=<review> ARCA_REVIEW_QUOTES_PROXY=1 pnpm exec vitest run test/session-review-quotes.test.ts
 ```
 
-The first runs the app's proposal check (schema, order, pinned lists, cases, coverage) and its quote check on the evidence, and fails on any problem. The second needs the network; in a session it goes through the sandbox's proxy. Both must pass; never edit the migration by hand.
+The first runs the app's proposal check (schema, order, pinned lists, cases, coverage) and its quote check on the evidence, and fails on any problem. The second needs the network; in a session it goes through the sandbox's proxy, which `ARCA_REVIEW_QUOTES_PROXY=1` asks for and CI refuses. Both must pass; never edit the migration by hand.
 
 ## 5. Publish
 
 1. Open the pull request with the leftover list in its description. Run the reviewers `pnpm review:reviewers` names.
-2. Merge on green CI and passed must-pass reviewers. The `review-quotes` job must have run and passed: it reads the official pages again from GitHub, with the app's guarded fetcher, and is the check that counts. If it cannot reach a page, do not merge; say so to the owner.
+2. Merge on green CI and passed must-pass reviewers. The `review-quotes` job must have run and passed: it reads the official pages again from GitHub, with the app's guarded fetcher, and is the check that counts, so the required `check` job fails when it does. If it cannot reach a page, do not merge; say so to the owner.
 3. The migration runs in the production build. Confirm the deployment is `READY`: a version that fails its check fails the build and leaves production untouched.
 4. Tell the owner what was fixed, what was published and what is left over.
 

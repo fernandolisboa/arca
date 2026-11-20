@@ -168,9 +168,9 @@ export const rawCatalog = {
 export const apiRuntimeRules = {
   patterns: [
     {
-      regex: '^(?:@arca/knowledge/bundled|@arca/scripts(?:/.*)?)$',
+      regex: '^(?:@arca/knowledge/(?:bundled|session-review)|@arca/scripts(?:/.*)?)$',
       message:
-        'The API reads rules from the database; only tests import the bundled rules or the build tooling (ADR-0031).',
+        'The API reads rules from the database; only tests import the bundled rules, the session reviews or the build tooling (ADR-0031, ADR-0032).',
     },
   ],
 };
