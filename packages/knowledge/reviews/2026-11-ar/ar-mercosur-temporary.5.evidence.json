@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:mercosur-native-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "Nacionalidad: Ciudadanos nativos de Estados Parte del MERCOSUR, Chile y Bolivia"
+    },
+    {
+      "key": "requirement:mercosur-native-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "quote": "El detalle de países referidos en el artículo 23, inciso I) de la Ley Nº 25.871 es meramente enunciativo"
+    },
+    {
+      "key": "requirement:mercosur-native-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Los nacionales nativos de: URUGUAY - BRASIL - PARAGUAY - BOLIVIA -CHILE - PERÚ - ECUADOR - COLOMBIA - VENEZUELA - GUYANA-SURINAM."
+    },
+    {
+      "key": "requirement:mercosur-native-nationality",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Los nacionales naturalizados que ostenten dicho beneficio con una antigüedad de CINCO (5) años o más de: BRASIL - PARAGUAY - URUGUAY - BOLIVIA - CHILE - PERÚ - ECUADOR - COLOMBIA"
+    },
+    {
+      "key": "assessment:serious-crime",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "haber sido condenado o tener antecedentes, en la REPÚBLICA ARGENTINA o en el exterior, por delitos que para la legislación argentina merezcan pena privativa de la libertad igual o mayor a TRES (3) años"
+    },
+    {
+      "key": "assessment:serious-crime",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "se entenderá por condena a toda sentencia condenatoria, independientemente de si se encontrare firme o no, y se entenderá por antecedente al auto de procesamiento al cierre de la investigación penal preparatoria con requisitoria de citación a juicio, a la elevación a juicio o a cualquier acto procesal equiparable a estos"
+    },
+    {
+      "key": "assessment:serious-crime",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "La autoridad migratoria no podrá, en ningún caso, admitir en el país a un extranjero que hubiese sido condenado o tenga antecedentes por la comisión de un delito doloso contra la vida, la integridad sexual o los poderes públicos y el orden constitucional."
+    },
+    {
+      "key": "assessment:serious-crime",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "quote": "El antecedente o la condena que se registre en el exterior sólo serán computados cuando el hecho que los origina constituya delito para la ley argentina."
+    },
+    {
+      "key": "assessment:lesser-crime-conviction",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "haber sido condenado, en la REPÚBLICA ARGENTINA o en el exterior, por delitos que para la legislación argentina merezcan pena privativa de la libertad menor a TRES (3) años"
+    },
+    {
+      "key": "assessment:lesser-crime-conviction",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "la DIRECCIÓN NACIONAL DE MIGRACIONES podrá admitir en el país a los extranjeros comprendidos en los impedimentos previstos en el presente artículo"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "tener prohibido el ingreso, en virtud de una prohibición dictada, hasta tanto esa medida haya sido revocada o se hubiese cumplido el plazo impuesto al efecto"
+    },
+    {
+      "key": "assessment:other-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "la presentación ante la autoridad de documentación nacional o extranjera material o ideológicamente falsa o adulterada; o la omisión de informar sobre la existencia de antecedentes penales, condenas o requerimientos judiciales"
+    },
+    {
+      "key": "assessment:other-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "haber sido sorprendido en flagrancia por delito de acción pública"
+    },
+    {
+      "key": "assessment:other-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "haber ingresado o intentado ingresar en el territorio nacional eludiendo los controles migratorios"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acompañar certificado de antecedentes penales de la REPÚBLICA ARGENTINA emitido por el REGISTRO NACIONAL DE REINCIDENCIA, exigible a partir de los DIECISEIS (16) años de edad."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acompañar certificado de antecedentes penales emitido por el o los países donde hubiera residido por un plazo superior a UN (1) año, durante el transcurso de los últimos TRES (3) años, siempre que se tratare de extranjeros que hubiesen cumplido los DIECISEIS (16) años de edad."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acreditar domicilio en el ámbito de jurisdicción de la Sede Central o de la Delegación DNM interviniente"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "quote": "Acreditar Identidad mediante la presentación de Pasaporte válido y vigente"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "ser cónyuge, progenitor o hijo soltero menor a DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de un residente permanente o temporario"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "quote": "la DIRECCION NACIONAL DE MIGRACIONES otorgará residencia temporaria a quien acredite ser cónyuge, progenitor o hijo soltero menor de DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de inmigrante con residencia temporaria."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-287287/texto",
+      "quote": "a los extranjeros que acrediten unión convivencial, con nacional argentino o con ciudadano extranjero radicado permanente o temporario en el país, inscripta en el registro que corresponda a la jurisdicción local"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "mantengan la convivencia durante un período no inferior a dos años."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "ser cónyuge, progenitor o hijo soltero menor a DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de un residente permanente o temporario"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-616-2010-167004/texto",
+      "quote": "A los extranjeros con capacidades diferentes, cualquiera fuera su edad, les corresponderá igual categoría de residencia que la otorgada a sus padres, hijos o cónyuges."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "Menor de edad es la persona que no ha cumplido dieciocho años."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "ser cónyuge, progenitor o hijo soltero menor a DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de un residente permanente o temporario"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "Menor de edad es la persona que no ha cumplido dieciocho años."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "ser cónyuge, progenitor o hijo soltero menor a DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de un residente permanente o temporario"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "mantengan la convivencia durante un período no inferior a dos años."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "Menor de edad es la persona que no ha cumplido dieciocho años."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "ser cónyuge, progenitor o hijo soltero menor a DIECIOCHO (18) años no emancipado o mayor con capacidades diferentes, de un residente permanente o temporario"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "El Estado garantizará el derecho de reunificación familiar de los inmigrantes con sus padres, cónyuges, hijos solteros menores o hijos mayores con capacidades diferentes."
+    },
+    {
+      "key": "cost:residence-fee",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "quote": "Establécese en la suma de PESOS MIL ($1000) el valor de la UNIDAD DE MEDIDA DE SERVICIOS MIGRATORIOS (UMSM)."
+    },
+    {
+      "key": "cost:residence-fee",
+      "url": "https://www.argentina.gob.ar/migraciones/cuadro-tasas-migratorias",
+      "quote": "Residencia Permanente o Temporaria 50 UMSM 100 UMSM"
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "quote": "Establécese en la suma de PESOS MIL ($1000) el valor de la UNIDAD DE MEDIDA DE SERVICIOS MIGRATORIOS (UMSM)."
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://www.argentina.gob.ar/migraciones/cuadro-tasas-migratorias",
+      "quote": "Residencia Permanente o Temporaria 50 UMSM 100 UMSM"
+    },
+    {
+      "key": "cost:residence-fee-family-extra",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "quote": "Establécese en la suma de PESOS MIL ($1000) el valor de la UNIDAD DE MEDIDA DE SERVICIOS MIGRATORIOS (UMSM)."
+    },
+    {
+      "key": "cost:residence-fee-family-extra",
+      "url": "https://www.argentina.gob.ar/migraciones/cuadro-tasas-migratorias",
+      "quote": "Residencia Permanente o Temporaria 50 UMSM 100 UMSM"
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "quote": "los hijos solteros menores de DIECIOCHO (18) años que realicen juntamente el trámite con algunos de sus progenitores"
+    },
+    {
+      "key": "cost:residence-fee-family-extra",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-401218/texto",
+      "quote": "los hijos solteros menores de DIECIOCHO (18) años que realicen juntamente el trámite con algunos de sus progenitores"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "con autorización para permanecer en el país por dos (2) años, prorrogables con entradas y salidas múltiples"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "quote": "permite permanecer en el país por dos (2) años, prorrogables con entradas y salidas múltiples."
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "deberán presentar una declaración jurada en la que manifiesten el propósito de su ingreso, que cuentan con un seguro de salud para atender sus necesidades médicas"
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acreditar ingreso regular al Territorio Nacional."
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "quote": "Es necesario que te encuentres dentro del territorio de la República Argentina."
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "La solicitud de permiso de ingreso de un extranjero que se encuentre en el exterior podrá efectuarse"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Suscribir la Declaración Jurada de carencia de antecedentes penales internacionales."
+    },
+    {
+      "key": "assessment:barred-crimes",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "La autoridad migratoria no podrá, en ningún caso, admitir en el país a un extranjero que hubiese sido condenado o tenga antecedentes por la comisión de un delito doloso contra la vida, la integridad sexual o los poderes públicos y el orden constitucional."
+    },
+    {
+      "key": "assessment:health-cover",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "solo se brindará tratamiento médico o atención sanitaria habitual contra la presentación de un seguro de salud o la previa cancelación del servicio"
+    },
+    {
+      "key": "assessment:health-cover",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "Los extranjeros residentes permanentes podrán acceder al sistema de salud público en igualdad de condiciones que los ciudadanos argentinos."
+    },
+    {
+      "key": "assessment:serious-crime",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "cualquiera fuese la modalidad de cumplimiento"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "hubiese permanecido fuera del territorio nacional por un período igual o superior a UN (1) año, o SEIS (6) meses si se tratara de residencia temporaria"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
+      "quote": "Menor de edad es la persona que no ha cumplido dieciocho años."
+    },
+    {
+      "key": "cost:criminal-record-certificate",
+      "url": "https://www.argentina.gob.ar/justicia/reincidencia/antecedentespenales",
+      "quote": "recibir el certificado en 5 días (si lo hacés un día hábil entre las 8 y las 18 horas), que cuesta $1000."
+    },
+    {
+      "key": "cost:criminal-record-certificate",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acompañar certificado de antecedentes penales de la REPÚBLICA ARGENTINA emitido por el REGISTRO NACIONAL DE REINCIDENCIA, exigible a partir de los DIECISEIS (16) años de edad."
+    },
+    {
+      "key": "cost:criminal-record-certificate-family",
+      "url": "https://www.argentina.gob.ar/justicia/reincidencia/antecedentespenales",
+      "quote": "recibir el certificado en 5 días (si lo hacés un día hábil entre las 8 y las 18 horas), que cuesta $1000."
+    },
+    {
+      "key": "cost:criminal-record-certificate-family",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
+      "quote": "Acompañar certificado de antecedentes penales de la REPÚBLICA ARGENTINA emitido por el REGISTRO NACIONAL DE REINCIDENCIA, exigible a partir de los DIECISEIS (16) años de edad."
+    },
+    {
+      "key": "cost:criminal-record-certificate",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "quote": "Es este caso el Certificado de Antecedentes Penales Argentinos se tramita por fuera de RADEX"
+    },
+    {
+      "key": "cost:criminal-record-certificate-family",
+      "url": "https://www.argentina.gob.ar/servicio/obtener-una-residencia-temporaria-por-nacionalidad-mercosur",
+      "quote": "Es este caso el Certificado de Antecedentes Penales Argentinos se tramita por fuera de RADEX"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "la expulsión del territorio nacional lleva implícita, en los casos en que se sustente en la participación o en la comisión de un delito doloso, una prohibición de reingreso permanente"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "La prohibición de reingreso podrá ser dispensada por la DIRECCIÓN NACIONAL DE MIGRACIONES excepto el caso en el que el extranjero en cuestión hubiere sido condenado por la comisión de un delito doloso contra la vida, la integridad sexual o los poderes públicos y el orden constitucional."
+    },
+    {
+      "key": "assessment:health-cover",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "en los establecimientos que brinden atención sanitaria administrados por el ESTADO NACIONAL"
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "La declaración jurada a la que se hace referencia en el artículo 34 de la presente ley será exigible una vez reglamentada su implementación."
+    },
+    {
+      "key": "assessment:other-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "haber dirigido mensajes de odio en forma oral o escrita, o incitado a la violencia contra el pueblo argentino en su conjunto"
+    },
+    {
+      "key": "assessment:other-impediments",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "(Inciso incorporado por art. 1º del Decreto Nº 681/2026 B.O. 30/7/2026."
+    }
+  ]
+}
