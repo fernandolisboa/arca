@@ -1861,7 +1861,7 @@
       }
     },
     {
-      "id": "spouse-under-18",
+      "id": "spouse-under-18-is-possible",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2"],
@@ -1923,14 +1923,14 @@
       "principal": "p1",
       "rulesAsOf": "2026-10-01",
       "expected": {
-        "status": "needs_assessment",
+        "status": "missing_information",
         "dependents": [],
-        "possibleDependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },
     {
-      "id": "principal-under-18-with-adult-spouse",
+      "id": "principal-under-18-adult-spouse-is-possible",
       "snapshot": {
         "recordedOn": "2026-10-01",
         "members": ["p1", "p2"],
@@ -1992,9 +1992,9 @@
       "principal": "p1",
       "rulesAsOf": "2026-10-01",
       "expected": {
-        "status": "needs_assessment",
+        "status": "missing_information",
         "dependents": [],
-        "possibleDependents": [],
+        "possibleDependents": ["p2"],
         "missingFacts": []
       }
     },

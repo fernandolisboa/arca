@@ -88,8 +88,8 @@
     },
     {
       "key": "dependent:minor-children",
-      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "2 — O critério de determinação dos meios de subsistên- cia é efectuado por referência à retribuição mínima mensal garantida nos termos do n.º 1 do artigo 266.º do Código do Trabalho, adiante designada por RMMG, atenta a respec- tiva natureza e regularidade, líquida de quotizações para a segurança social com a seguinte valoração per capita em cada agregado familiar: a) Primeiro adulto 100 %; b) Segundo ou mais adultos 50 %; c) Crianças e jovens com idade inferior a 18 anos e filhos maiores a cargo 30 %."
     },
     {
       "key": "dependent:spouse-minor-children",
@@ -113,8 +113,8 @@
     },
     {
       "key": "dependent:spouse-minor-children",
-      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "2 — O critério de determinação dos meios de subsistên- cia é efectuado por referência à retribuição mínima mensal garantida nos termos do n.º 1 do artigo 266.º do Código do Trabalho, adiante designada por RMMG, atenta a respec- tiva natureza e regularidade, líquida de quotizações para a segurança social com a seguinte valoração per capita em cada agregado familiar: a) Primeiro adulto 100 %; b) Segundo ou mais adultos 50 %; c) Crianças e jovens com idade inferior a 18 anos e filhos maiores a cargo 30 %."
     },
     {
       "key": "dependent:adult-children",
@@ -133,8 +133,8 @@
     },
     {
       "key": "dependent:adult-children",
-      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "2 — O critério de determinação dos meios de subsistên- cia é efectuado por referência à retribuição mínima mensal garantida nos termos do n.º 1 do artigo 266.º do Código do Trabalho, adiante designada por RMMG, atenta a respec- tiva natureza e regularidade, líquida de quotizações para a segurança social com a seguinte valoração per capita em cada agregado familiar: a) Primeiro adulto 100 %; b) Segundo ou mais adultos 50 %; c) Crianças e jovens com idade inferior a 18 anos e filhos maiores a cargo 30 %."
     },
     {
       "key": "dependent:spouse-adult-children",
@@ -153,8 +153,8 @@
     },
     {
       "key": "dependent:spouse-adult-children",
-      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "2 — O critério de determinação dos meios de subsistên- cia é efectuado por referência à retribuição mínima mensal garantida nos termos do n.º 1 do artigo 266.º do Código do Trabalho, adiante designada por RMMG, atenta a respec- tiva natureza e regularidade, líquida de quotizações para a segurança social com a seguinte valoração per capita em cada agregado familiar: a) Primeiro adulto 100 %; b) Segundo ou mais adultos 50 %; c) Crianças e jovens com idade inferior a 18 anos e filhos maiores a cargo 30 %."
     },
     {
       "key": "dependent:parents",
@@ -190,6 +190,11 @@
       "key": "dependent:partner",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
       "quote": "2 — A união de facto é a situação jurídica de duas pes- soas que, independentemente do sexo, vivam em condições análogas às dos cônjuges há mais de dois anos."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
+      "quote": "Impedem a atribuição de direitos ou benefícios, em vida ou por morte, fundados na união de facto: a) Idade inferior a 18 anos à data da do reconhecimento da união de facto;"
     },
     {
       "key": "dependent:partner",
@@ -204,17 +209,17 @@
     {
       "key": "dependent:partner-children",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "1 — O reagrupamento familiar pode ser autorizado com: a) O parceiro que mantenha, em território nacional ou fora dele, com o cidadão estrangeiro residente uma união de facto, devidamente comprovada nos termos da lei;"
-    },
-    {
-      "key": "dependent:partner-children",
-      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
       "quote": "b) Os filhos solteiros menores ou incapazes, incluindo os filhos adotados do parceiro de facto, desde que estes lhe estejam legalmente confiados."
     },
     {
       "key": "dependent:partner-children",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
       "quote": "2 — A união de facto é a situação jurídica de duas pes- soas que, independentemente do sexo, vivam em condições análogas às dos cônjuges há mais de dois anos."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
+      "quote": "Impedem a atribuição de direitos ou benefícios, em vida ou por morte, fundados na união de facto: a) Idade inferior a 18 anos à data da do reconhecimento da união de facto;"
     },
     {
       "key": "dependent:partner-children",

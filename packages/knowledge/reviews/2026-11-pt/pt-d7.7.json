@@ -13,7 +13,7 @@
     {
       "id": "lei-23-2007",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "title": "Lei n.º 23/2007, articles 58.º, n.º 5, and 99.º, n.os 1, 4 and 5: the family that may apply with the principal, the other parent's consent for a child of one spouse, a minor is under 18",
+      "title": "Lei n.º 23/2007 (foreigners law), articles 58.º, n.º 5, and 99.º, n.os 1 and 4: the family members who may apply with the principal, and the other parent's consent for a child of only one spouse",
       "kind": "official",
       "verifiedAt": "2026-11-20",
       "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
@@ -141,7 +141,7 @@
     {
       "id": "lei-7-2001",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
-      "title": "Lei n.º 7/2001, article 1.º, n.º 2: a de facto union is two people living in conditions like those of spouses for more than two years",
+      "title": "Lei n.º 7/2001, articles 1.º, n.º 2, and 2.º, a): a de facto union is two people living as spouses do for more than two years; it grounds no right while either is under 18 when it is recognized",
       "kind": "official",
       "verifiedAt": "2026-11-20",
       "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2010/08/16800/0376403768.pdf"
@@ -339,32 +339,40 @@
   "dependents": [
     {
       "id": "spouse",
-      "title": "Spouse, both spouses aged 18 or over; the marriage must be valid and recognized under Portuguese law, which is not checked",
+      "title": "Spouse; possible if either spouse is under 18: reunification depends on both being 18 or over and on a marriage valid and recognized under Portuguese law, which is not checked and may reach this visa",
       "path": ["spouse"],
       "condition": {
-        "op": "all",
+        "op": "any",
         "operands": [
           {
-            "op": "gte",
-            "left": {
-              "op": "fact",
-              "key": "person.ageYears"
-            },
-            "right": {
-              "op": "int",
-              "value": 18
-            }
+            "op": "all",
+            "operands": [
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "person.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              },
+              {
+                "op": "gte",
+                "left": {
+                  "op": "fact",
+                  "key": "principal.ageYears"
+                },
+                "right": {
+                  "op": "int",
+                  "value": 18
+                }
+              }
+            ]
           },
           {
-            "op": "gte",
-            "left": {
-              "op": "fact",
-              "key": "principal.ageYears"
-            },
-            "right": {
-              "op": "int",
-              "value": 18
-            }
+            "op": "unmodeled"
           }
         ]
       },
@@ -372,7 +380,7 @@
     },
     {
       "id": "minor-children",
-      "title": "Children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "title": "Children under 18, taken to be in the couple's charge; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision: not checked",
       "path": ["child"],
       "condition": {
         "op": "lt",
@@ -385,11 +393,11 @@
           "value": 18
         }
       },
-      "sources": ["lei-23-2007"]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "spouse-minor-children",
-      "title": "The spouse's children under 18; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision, which are not checked",
+      "title": "The spouse's children under 18, taken to be in the couple's charge; an adoption must be recognized by Portugal and the other parent must consent or a custody decision must exist: not checked",
       "path": ["spouse", "child"],
       "condition": {
         "op": "lt",
@@ -402,7 +410,7 @@
           "value": 18
         }
       },
-      "sources": ["lei-23-2007"]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "adult-children",
@@ -431,7 +439,7 @@
           }
         ]
       },
-      "sources": ["lei-23-2007"]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "spouse-adult-children",
@@ -469,7 +477,7 @@
           }
         ]
       },
-      "sources": ["lei-23-2007"]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "parents",
