@@ -89,7 +89,7 @@ describe('AppShell', () => {
 
   it('renders the side column with the Settings entry at its foot', () => {
     const html = render({ wide: 'side' });
-    const column = /<nav[^>]*class="[^"]*w-\[216px\][^]*?<\/nav>/.exec(html)?.[0] ?? '';
+    const column = /<nav[^>]*class="[^"]*w-\[calc\(216px[^]*?<\/nav>/.exec(html)?.[0] ?? '';
     expect(column.indexOf('href="/"')).toBeGreaterThan(-1);
     expect(column.lastIndexOf('href=')).toBe(column.indexOf('href="/configuracoes"'));
     expect(html).toContain('md:pl-[216px]');
@@ -146,7 +146,7 @@ describe('collapsed navigation', () => {
 
   it('narrows the side column to icons, keeps every name readable and clears less of the page', () => {
     const html = render({ wide: 'side', collapse: 'collapsed' });
-    const column = /<nav[^>]*class="[^"]*w-\[72px\][^]*?<\/nav>/.exec(html)?.[0] ?? '';
+    const column = /<nav[^>]*class="[^"]*w-\[calc\(72px[^]*?<\/nav>/.exec(html)?.[0] ?? '';
     expect(column).toMatch(/href="\/"[^>]*title="Início"/);
     expect(column).toContain('<span class="sr-only">Início</span>');
     expect(html).toContain('md:pl-[72px]');
@@ -166,12 +166,12 @@ describe('collapsed navigation', () => {
   });
 
   it('offers the collapse button in the top bar and the side column once the app saves it', () => {
-    expect(render({ wide: 'top' })).not.toContain('aria-pressed');
-    expect(render({ wide: 'top' }, save)).toMatch(/aria-pressed="false"[^>]*title="Recolher menu"/);
-    expect(render({ wide: 'side', collapse: 'collapsed' }, save)).toMatch(
-      /aria-pressed="true"[^>]*title="Expandir menu"/,
+    expect(render({ wide: 'top' })).not.toContain('title="Recolher menu"');
+    expect(render({ wide: 'top' }, save)).toContain('title="Recolher menu"');
+    expect(render({ wide: 'side', collapse: 'collapsed' }, save)).toContain(
+      'title="Expandir menu"',
     );
-    expect(render({ wide: 'menu' }, save)).not.toContain('aria-pressed');
+    expect(render({ wide: 'menu' }, save)).not.toContain('title="Recolher menu"');
   });
 });
 
@@ -180,7 +180,7 @@ describe('auto-hidden navigation', () => {
     const html = render({ wide: 'side', autoHide: 'on' });
     expect(html).toContain('data-side-edge');
     expect(html).toMatch(
-      /<nav[^>]*data-hidden=""[^>]*-translate-x-full focus-within:translate-x-0/,
+      /<nav[^>]*data-hidden=""[^>]*-translate-x-full has-\[:focus-visible\]:translate-x-0/,
     );
     expect(html).not.toContain('md:pl-[216px]');
   });
@@ -191,15 +191,21 @@ describe('auto-hidden navigation', () => {
     expect(html).not.toContain('data-side-edge');
   });
 
+  it('gives touch screens a handle as large as a touch target to bring the side column back', () => {
+    expect(render({ wide: 'side', autoHide: 'on' })).toMatch(
+      /pointer-coarse:md:block"><button[^>]*aria-label="Abrir menu"[^>]*min-h-touch/,
+    );
+  });
+
   it.each([
-    [false, 100, 300, true],
-    [true, 300, 100, false],
-    [true, 300, 302, true],
-    [false, 300, 298, false],
-    [true, 200, 40, false],
-    [false, 0, 60, false],
-  ] as const)('from %s, scrolling %i → %i leaves the bars away: %s', (away, from, to, next) => {
-    expect(nextScrolledAway(away, from, to)).toBe(next);
+    [100, 300, true],
+    [300, 100, false],
+    [300, 304, null],
+    [300, 296, null],
+    [200, 40, false],
+    [0, 60, false],
+  ] as const)('scrolling %i → %i leaves the bars away: %s', (from, to, next) => {
+    expect(nextScrolledAway(from, to)).toBe(next);
   });
 });
 

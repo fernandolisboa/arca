@@ -39,12 +39,14 @@ export interface ShellLayout {
 export type DockEdge = ShellLayout['dockEdge'];
 export type NavCollapse = ShellLayout['collapse'];
 
-const focusRing =
+export const focusRing =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
+export const navRowClass = 'flex min-h-touch min-w-touch items-center gap-3 rounded-control px-3';
 
 const shapes = {
   /** A row in a bar, the side column or the menu: icon beside the label. */
-  row: 'flex min-h-touch min-w-touch items-center gap-3 rounded-control px-3',
+  row: navRowClass,
   /** A dock cell: icon over the label. */
   cell: 'flex min-h-dock-cell min-w-touch flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-caption',
 } as const;
@@ -105,7 +107,12 @@ export function NavLink({
     <Link
       id={navLinkId(place, item.id)}
       href={item.href}
-      className={`${iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`} ${hideLabel ? 'justify-center' : ''} ${tone} transition-colors`}
+      className={[
+        iconOnly ? iconButtonClass : `${shapes[shape]} ${focusRing}`,
+        hideLabel ? 'justify-center' : '',
+        tone,
+        'transition-colors',
+      ].join(' ')}
       {...(item.current ? { 'aria-current': 'page' as const } : {})}
       {...(iconOnly ? { 'aria-label': item.label } : {})}
       {...(iconOnly || hideLabel ? { title: item.label } : {})}

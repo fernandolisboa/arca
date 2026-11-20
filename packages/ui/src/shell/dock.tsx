@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from 'react';
+import { slideClass } from './auto-hide.js';
 import { NavList, type DockEdge, type NavItem, type ShellLink } from './nav.js';
 
 export type DockKind = 'fixed' | 'floating';
@@ -14,10 +15,12 @@ const placement = {
 
 /** Where an auto-hidden dock waits: just past its edge, back in view while it holds the focus. */
 const hiddenAt = {
-  fixed: 'translate-y-[calc(100%+1px)] focus-within:translate-y-0',
-  bottom: 'translate-y-[calc(100%+14px+env(safe-area-inset-bottom))] focus-within:translate-y-0',
-  left: '-translate-x-[calc(100%+14px+env(safe-area-inset-left))] focus-within:translate-x-0',
-  right: 'translate-x-[calc(100%+14px+env(safe-area-inset-right))] focus-within:translate-x-0',
+  fixed: 'translate-y-[calc(100%+1px)] has-[:focus-visible]:translate-y-0',
+  bottom:
+    'translate-y-[calc(100%+14px+env(safe-area-inset-bottom))] has-[:focus-visible]:translate-y-0',
+  left: '-translate-x-[calc(100%+14px+env(safe-area-inset-left))] has-[:focus-visible]:translate-x-0',
+  right:
+    'translate-x-[calc(100%+14px+env(safe-area-inset-right))] has-[:focus-visible]:translate-x-0',
 } as const;
 
 /** How far, in px, the pointer moves before a press on the grip becomes a drag. */
@@ -109,7 +112,7 @@ export function Dock({
       data-dock={kind}
       data-edge={kind === 'fixed' ? 'bottom' : edge}
       data-hidden={hidden ? '' : undefined}
-      className={`fixed z-20 flex ${vertical ? 'flex-col' : 'flex-row'} items-stretch ${shape} ${placement[where]} ${hidden ? hiddenAt[where] : ''} transition-[translate] duration-(--arca-duration-base) ease-out ${className}`}
+      className={`fixed z-20 flex ${vertical ? 'flex-col' : 'flex-row'} items-stretch ${shape} ${placement[where]} ${hidden ? hiddenAt[where] : ''} ${slideClass} ${className}`}
       {...(offset === null
         ? {}
         : { style: { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px)` } })}

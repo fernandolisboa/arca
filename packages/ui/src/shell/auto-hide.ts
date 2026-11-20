@@ -5,15 +5,17 @@ const jitter = 4;
 /** Near the top of the page the bars always show. */
 const topZone = 64;
 
+/** The bars and docks slide in and out with the theme's motion, so motion off moves them at once. */
+export const slideClass = 'transition-[translate] duration-(--arca-duration-base) ease-out';
+
 /**
- * Whether the bars stay out of the way after the page scrolled from `from` to `to`: down hides
- * them, up or near the top shows them again, and a tiny move keeps what was there.
+ * Whether the bars leave after the page scrolled from `from` to `to`, or `null` to keep them as
+ * they are: down hides them, up or near the top shows them, and a move within the jitter waits.
  */
-export function nextScrolledAway(away: boolean, from: number, to: number): boolean {
+export function nextScrolledAway(from: number, to: number): boolean | null {
   if (to <= topZone) return false;
-  if (to > from + jitter) return true;
-  if (to < from - jitter) return false;
-  return away;
+  if (Math.abs(to - from) <= jitter) return null;
+  return to > from;
 }
 
 /** True while the person is scrolling down the page with auto-hide on. */
@@ -24,14 +26,16 @@ export function useScrolledAway(enabled: boolean): boolean {
     let last = window.scrollY;
     const onScroll = () => {
       const now = window.scrollY;
-      // Small steps add up: the start point moves only once the page has moved past the jitter.
-      if (Math.abs(now - last) <= jitter && now > topZone) return;
-      setAway((previous) => nextScrolledAway(previous, last, now));
+      const next = nextScrolledAway(last, now);
+      // Small steps add up: the start point moves only once a step decides something.
+      if (next === null) return;
+      setAway(next);
       last = now;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
+      setAway(false);
     };
   }, [enabled]);
   return enabled && away;

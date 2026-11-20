@@ -4,12 +4,14 @@ import { iconButtonClass } from './button.js';
 import { Icon } from './icon.js';
 import { Mark } from './mark.js';
 import { MenuToggle } from './menu-toggle.js';
-import { useScrolledAway } from './shell/auto-hide.js';
+import { slideClass, useScrolledAway } from './shell/auto-hide.js';
 import { Dock } from './shell/dock.js';
 import { MenuPanel, type MenuGroup, type SignOut } from './shell/menu-panel.js';
 import {
   NavLink,
   NavList,
+  focusRing,
+  navRowClass,
   menuToggleId,
   type DockEdge,
   type NavCollapse,
@@ -117,8 +119,6 @@ function clearance(layout: ShellLayout): string {
 const collapsedDock =
   '[--spacing-dock-cell:var(--spacing-touch)] [--spacing-dock:calc(var(--spacing-touch)+0.5rem)]';
 
-const slide = 'transition-[translate] duration-(--arca-duration-base) ease-out';
-
 /** A flex element shown below 768 px, from 768 px, or at both widths. */
 function at(narrow: boolean, wide: boolean): string {
   if (narrow && wide) return 'flex';
@@ -157,6 +157,9 @@ export function AppShell({
   const autoHide = layout.autoHide === 'on';
   const collapsed = layout.collapse === 'collapsed';
   const barsAway = useScrolledAway(autoHide) && !menuOpen;
+  const leaveSide = useCallback(() => {
+    setSideShown(false);
+  }, []);
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
@@ -181,9 +184,9 @@ export function AppShell({
   }, [menuOpen, menuAtOneWidth]);
 
   // A press anywhere outside the auto-hidden side column sends it back to its edge.
-  const sideWaits = autoHide && layout.wide === 'side' && sideShown;
+  const sideOpenOverPage = autoHide && layout.wide === 'side' && sideShown;
   useEffect(() => {
-    if (!sideWaits) return;
+    if (!sideOpenOverPage) return;
     const away = (event: globalThis.PointerEvent) => {
       if (event.target instanceof Node && sideRef.current?.contains(event.target) !== true) {
         setSideShown(false);
@@ -193,7 +196,7 @@ export function AppShell({
     return () => {
       document.removeEventListener('pointerdown', away);
     };
-  }, [sideWaits]);
+  }, [sideOpenOverPage]);
 
   const withSettings = settings === undefined ? items : [...items, settings];
   const narrowMenu = narrowMenuOf(layout);
@@ -234,12 +237,11 @@ export function AppShell({
     onCollapseChange !== undefined && (
       <button
         type="button"
-        aria-pressed={collapsed}
         title={collapseLabel}
         onClick={() => {
           onCollapseChange(collapsed ? 'expanded' : 'collapsed');
         }}
-        className={`${withText ? 'flex min-h-touch min-w-touch items-center gap-3 rounded-control px-3 text-small focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' : iconButtonClass} ${collapsed ? 'justify-center' : ''} text-muted transition-colors hover:bg-soft hover:text-ink`}
+        className={`${withText ? `${navRowClass} ${focusRing} text-small` : iconButtonClass} ${collapsed ? 'justify-center' : ''} text-muted transition-colors hover:bg-soft hover:text-ink`}
       >
         <Icon name={collapsed ? 'expandNav' : 'collapseNav'} />
         <span className={withText && !collapsed ? '' : 'sr-only'}>{collapseLabel}</span>
@@ -266,7 +268,7 @@ export function AppShell({
 
       <header
         data-hidden={barsAway ? '' : undefined}
-        className={`sticky top-0 z-40 border-b border-line bg-surface pt-[env(safe-area-inset-top)] ${slide} ${barsAway ? '-translate-y-full focus-within:translate-y-0' : ''} ${side ? 'md:hidden' : ''}`}
+        className={`sticky top-0 z-40 border-b border-line bg-surface pt-[env(safe-area-inset-top)] ${slideClass} ${barsAway ? '-translate-y-full has-[:focus-visible]:translate-y-0' : ''} ${side ? 'md:hidden' : ''}`}
       >
         <div className="mx-auto flex h-bar w-full max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
           {brand}
@@ -308,6 +310,21 @@ export function AppShell({
           className="fixed inset-y-0 left-0 z-10 hidden w-3 md:block"
         />
       )}
+      {side && autoHide && !sideShown && (
+        <div className="fixed top-1/2 left-0 z-10 hidden -translate-y-1/2 pointer-coarse:md:block">
+          <button
+            type="button"
+            aria-label={labels.openMenu}
+            title={labels.openMenu}
+            onClick={() => {
+              setSideShown(true);
+            }}
+            className={`${iconButtonClass} rounded-l-none border border-l-0 border-line bg-surface text-muted shadow-md shadow-ink/10`}
+          >
+            <Icon name="expandNav" />
+          </button>
+        </div>
+      )}
       {side && (
         <nav
           ref={sideRef}
@@ -317,7 +334,7 @@ export function AppShell({
           onPointerLeave={(event) => {
             if (autoHide && event.pointerType === 'mouse') setSideShown(false);
           }}
-          className={`fixed inset-y-0 left-0 z-20 hidden ${collapsed ? 'w-[72px]' : 'w-[216px]'} flex-col gap-6 border-r border-line bg-surface pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] pl-[calc(0.75rem+env(safe-area-inset-left))] pr-3 md:flex ${slide} ${autoHide ? 'shadow-lg shadow-ink/15' : ''} ${autoHide && !sideShown ? '-translate-x-full focus-within:translate-x-0' : ''}`}
+          className={`fixed inset-y-0 left-0 z-20 hidden ${collapsed ? 'w-[calc(72px+env(safe-area-inset-left))]' : 'w-[calc(216px+env(safe-area-inset-left))]'} flex-col gap-6 border-r border-line bg-surface pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] pl-[calc(0.75rem+env(safe-area-inset-left))] pr-3 md:flex ${slideClass} ${autoHide ? 'shadow-lg shadow-ink/15' : ''} ${autoHide && !sideShown ? '-translate-x-full has-[:focus-visible]:translate-x-0' : ''}`}
         >
           {collapsed ? (
             <div className="flex justify-center">
@@ -335,17 +352,18 @@ export function AppShell({
               shape="row"
               direction="column"
               hideLabel={collapsed}
-              {...(autoHide
-                ? {
-                    onNavigate: () => {
-                      setSideShown(false);
-                    },
-                  }
-                : {})}
+              {...(autoHide ? { onNavigate: leaveSide } : {})}
             />
           </div>
           {settings !== undefined && (
-            <NavLink item={settings} link={link} place="side" shape="row" hideLabel={collapsed} />
+            <NavLink
+              item={settings}
+              link={link}
+              place="side"
+              shape="row"
+              hideLabel={collapsed}
+              {...(autoHide ? { onNavigate: leaveSide } : {})}
+            />
           )}
           {collapseToggle(true)}
         </nav>

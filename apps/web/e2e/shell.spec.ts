@@ -135,6 +135,125 @@ for (const [width, baseLayouts] of sizes) {
   });
 }
 
+test.describe('collapsed navigation', () => {
+  const cases = [
+    [390, { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' }],
+    [390, { narrow: 'floating-dock', wide: 'top', edge: 'left' }],
+    [1280, { narrow: 'menu', wide: 'top', edge: 'bottom' }],
+    [1280, { narrow: 'menu', wide: 'side', edge: 'bottom' }],
+    [1280, { narrow: 'menu', wide: 'floating-dock', edge: 'bottom' }],
+  ] as const;
+  for (const [width, layout] of cases) {
+    test(`keeps targets and keyboard reach in ${layoutName(layout)} at ${String(width)} px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page, layout, { extra: { navCollapse: 'collapsed' } });
+      await tabTo(page, 'Início');
+      await tabTo(page, 'Configurações', 4);
+      expect(await smallestNavTarget(page)).toBeGreaterThanOrEqual(44);
+      expect(await horizontalOverflow(page)).toBe(0);
+    });
+  }
+
+  test('saves the choice from the button in the side column', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(page, { narrow: 'menu', wide: 'side', edge: 'bottom' });
+    await page.getByRole('button', { name: 'Recolher menu' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-nav-collapse', 'collapsed');
+    await page.getByRole('button', { name: 'Expandir menu' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-nav-collapse', 'expanded');
+  });
+});
+
+test.describe('auto-hidden navigation', () => {
+  const tall = (page: Page) =>
+    page.evaluate(() => {
+      document
+        .getElementById('main-content')
+        ?.append(Object.assign(document.createElement('div'), { style: 'height: 3000px' }));
+    });
+
+  test('slides the top bar away on scroll down and back on scroll up', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(
+      page,
+      { narrow: 'menu', wide: 'top', edge: 'bottom' },
+      { extra: { navAutoHide: 'on' } },
+    );
+    await tall(page);
+    const header = page.locator('header');
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, 600);
+    await expect(header).toHaveAttribute('data-hidden', '');
+    await page.mouse.wheel(0, -200);
+    await expect(header).not.toHaveAttribute('data-hidden');
+  });
+
+  test('slides a phone dock away and brings it back with the keyboard focus', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await open(
+      page,
+      { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' },
+      { extra: { navAutoHide: 'on' } },
+    );
+    await tall(page);
+    await page.evaluate(() => {
+      window.scrollTo(0, 200);
+      window.scrollTo(0, 900);
+    });
+    const dock = page.locator('nav[data-dock="fixed"]');
+    await expect(dock).toHaveAttribute('data-hidden', '');
+    await tabTo(page, 'Início', 20);
+    await expect
+      .poll(() => dock.evaluate((element) => element.getBoundingClientRect().bottom))
+      .toBeLessThanOrEqual(800);
+  });
+
+  test('lets a tapped dock link slide away with the dock', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await open(
+      page,
+      { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' },
+      { extra: { navAutoHide: 'on' } },
+    );
+    await page
+      .getByRole('navigation', { name: 'Navegação principal' })
+      .getByRole('link', { name: 'Configurações' })
+      .click();
+    await tall(page);
+    await page.evaluate(() => {
+      window.scrollTo(0, 200);
+      window.scrollTo(0, 900);
+    });
+    const dock = page.locator('nav[data-dock="fixed"]');
+    await expect
+      .poll(() => dock.evaluate((element) => element.getBoundingClientRect().top))
+      .toBeGreaterThanOrEqual(800);
+  });
+
+  test('keeps the side column at the edge until the keyboard or the pointer calls it', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await open(
+      page,
+      { narrow: 'menu', wide: 'side', edge: 'bottom' },
+      { extra: { navAutoHide: 'on' } },
+    );
+    const column = page.getByRole('navigation', { name: 'Navegação principal' });
+    const right = () => column.evaluate((element) => element.getBoundingClientRect().right);
+    await expect.poll(right).toBeLessThanOrEqual(0);
+    await tabTo(page, 'Início');
+    await expect.poll(right).toBeGreaterThan(100);
+    await page.keyboard.press('Escape');
+    await page.locator('#main-content').focus();
+    await expect.poll(right).toBeLessThanOrEqual(0);
+    await page.mouse.move(2, 100);
+    await expect.poll(right).toBeGreaterThan(100);
+  });
+});
+
 test.describe('floating dock', () => {
   test.use({ viewport: { width: 390, height: 800 } });
 

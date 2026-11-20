@@ -253,14 +253,15 @@ export const ptBR = {
       },
       navCollapse: {
         legend: 'Tamanho do menu',
-        description: 'Na barra do topo e na coluna lateral, o botão de setas troca na hora.',
+        description:
+          'Na barra do topo e na coluna lateral, o botão de setas troca o tamanho na hora.',
         expanded: 'Ícones e nomes',
         collapsed: 'Só ícones',
       },
       navAutoHide: {
         legend: 'Esconder o menu',
         description:
-          'O menu sai da frente quando você rola a página para baixo e volta quando rola para cima. A coluna lateral fica escondida e aparece quando o mouse encosta na borda esquerda.',
+          'O menu sai da frente quando você rola a página para baixo e volta quando rola para cima. A coluna lateral fica escondida e aparece quando o mouse encosta na borda esquerda ou pelo botão na borda, na tela de toque.',
         off: 'Sempre à vista',
         on: 'Esconder sozinho',
       },
