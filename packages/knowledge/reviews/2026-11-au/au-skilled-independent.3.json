@@ -70,7 +70,7 @@
     {
       "id": "regs-family-unit",
       "url": "https://www.legislation.gov.au/F1996B03551/latest/text",
-      "title": "Migration Regulations 1994, regulation 1.12(2): spouse or de facto partner; a child or step-child not engaged or partnered, under 18, or 18 to 22 and dependent, or older and incapacitated",
+      "title": "Migration Regulations 1994, regulation 1.12(2): spouse or de facto partner; a child or step-child not engaged or partnered, under 18, or 18 to 22 and dependent, or older and unable to work",
       "kind": "official",
       "verifiedAt": "2026-11-20",
       "machineReadableUrl": "https://www.legislation.gov.au/F1996B03551/2026-11-03/2026-11-03/text/original/epub/OEBPS/document_1/document_1.html"
@@ -279,7 +279,7 @@
     },
     {
       "id": "section-48",
-      "title": "Each person in Australia without a substantive visa, refused since last entry a visa applied for (not a bridging visa, not on character grounds) or with some visas cancelled: Class SI is closed there",
+      "title": "In Australia without a substantive visa after a refusal since last entry (not of a bridging visa or on character grounds) or some cancellations: subclass 189 cannot be applied for there (Act s 48)",
       "evidence": ["principal.visaRefusals"],
       "sources": ["act-section-48", "regs-section-48-classes"]
     },
@@ -344,7 +344,7 @@
     },
     {
       "id": "special-return",
-      "title": "Criteria 5001, 5002, 5010: no deportation; no character cancellation or refusal unless cleared as 5001 says; 12 months since a removal under s 198, 199 or 205 unless waived; student rules",
+      "title": "Criteria 5001, 5002, 5010: no deportation; no character cancellation or refusal unless cleared as 5001 says; 12 months since a removal under s 198, 199 or 205 unless waived; sponsored students' terms",
       "evidence": ["principal.visaRefusals"],
       "sources": ["regs-189-special-return", "regs-189-secondary", "regs-special-return"]
     },
