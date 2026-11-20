@@ -46,3 +46,94 @@ export function byRoute<V extends Pick<KnowledgeVersion, 'routeId' | 'title'>>(
     return first === undefined ? [] : [{ routeId, title: first.title, versions: listed }];
   });
 }
+
+/** The country of a route, from any of its versions. */
+export function countryOfRoute(
+  versions: readonly Pick<KnowledgeVersion, 'routeId' | 'country'>[],
+  routeId: string,
+): string | undefined {
+  return versions.find((version) => version.routeId === routeId)?.country;
+}
+
+/** The lists the activation screen splits versions into. */
+export const versionTabs = ['proposed', 'active', 'previous'] as const;
+export type VersionTab = (typeof versionTabs)[number];
+
+/**
+ * Where a version is listed: a proposed or active one while some date from today on uses it, any
+ * other (superseded or rejected) with the previous ones, as history.
+ */
+export function versionTab({
+  state,
+  superseded = false,
+}: {
+  readonly state: KnowledgeVersion['state'];
+  readonly superseded?: boolean;
+}): VersionTab {
+  return state === 'rejected' || superseded ? 'previous' : state;
+}
+
+/**
+ * The list of each comparison version: the comparison uses only its newest active version, so an
+ * older active one is previous, as a superseded route version is.
+ */
+export function comparisonTabs<
+  V extends {
+    readonly comparisonId: string;
+    readonly number: number;
+    readonly state: KnowledgeVersion['state'];
+  },
+>(versions: readonly V[]): ReadonlyMap<V, VersionTab> {
+  const newestActive = new Map<string, number>();
+  for (const { comparisonId, number, state } of versions) {
+    if (state === 'active' && number > (newestActive.get(comparisonId) ?? 0)) {
+      newestActive.set(comparisonId, number);
+    }
+  }
+  return new Map(
+    versions.map((version) => [
+      version,
+      versionTab({
+        state: version.state,
+        superseded:
+          version.state === 'active' &&
+          version.number < (newestActive.get(version.comparisonId) ?? 0),
+      }),
+    ]),
+  );
+}
+
+/** A request or report about a country, and whether it waits for an admin. */
+export interface CountryRequest {
+  readonly country: string;
+  readonly waiting: boolean;
+}
+
+/** How many versions of each list a country has, and how many of its requests wait. */
+export type CountryTally = { readonly country: string; readonly waiting: number } & Readonly<
+  Record<VersionTab, number>
+>;
+
+/** Every country with a version or a request, in name order, with its counts. */
+export function countryTallies(
+  versions: readonly Pick<KnowledgeVersion, 'country' | 'state' | 'superseded'>[],
+  requests: readonly CountryRequest[],
+  name: (country: string) => string,
+): readonly CountryTally[] {
+  const tallies = new Map<string, { -readonly [K in keyof CountryTally]: CountryTally[K] }>();
+  const tallyOf = (country: string) => {
+    const known = tallies.get(country);
+    if (known !== undefined) return known;
+    const fresh = { country, proposed: 0, active: 0, previous: 0, waiting: 0 };
+    tallies.set(country, fresh);
+    return fresh;
+  };
+  for (const version of versions) tallyOf(version.country)[versionTab(version)] += 1;
+  for (const request of requests) {
+    if (request.waiting) tallyOf(request.country).waiting += 1;
+    else tallyOf(request.country);
+  }
+  return [...tallies.values()].toSorted((left, right) =>
+    name(left.country).localeCompare(name(right.country)),
+  );
+}

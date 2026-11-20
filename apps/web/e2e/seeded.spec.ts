@@ -2,7 +2,6 @@ import AxeBuilder from '@axe-core/playwright';
 import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, person, signedIn } from './case-accounts.js';
-import { pickCountry } from './country-picker.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearCorrectionRequests,
@@ -72,13 +71,12 @@ test('the seed admin activates a version, reads and closes its reports, then rej
     .getByRole('link', { name: 'Base de conhecimento' })
     .click();
   await page.getByRole('link', { name: 'Abrir a tela de ativação' }).click();
-  const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  // Every country starts folded; picking one in the filter shows it alone, open.
-  const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
-  await expect(usa).toHaveAttribute('aria-expanded', 'false');
-  await pickCountry(proposed, 'País', 'Estados Unidos');
-  await expect(usa).toHaveAttribute('aria-expanded', 'true');
-  await expect(proposed.getByRole('button', { name: 'Portugal', exact: true })).toHaveCount(0);
+  // A wide screen opens on the countries down the side; the picked one's lists sit side by side.
+  const countries = page.getByRole('navigation', { name: 'Países' });
+  const usa = countries.getByRole('button', { name: /^Estados Unidos:/ });
+  await usa.click();
+  await expect(usa).toHaveAttribute('aria-pressed', 'true');
+  const proposed = page.getByRole('region', { name: 'Propostas', exact: true });
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
@@ -180,6 +178,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
 
   await memberReportsARequirement(browser);
   await page.reload();
+  await countries.getByRole('button', { name: /^Estados Unidos:/ }).click();
   const reports = page.getByRole('region', { name: 'Avisos de regra errada' });
   await expect(reports).toContainText(new RegExp(`EB-5 .* \\(versão ${version}\\), requisito`));
   await expect(reports).toContainText(/valor errado: \d+ avisos?/);
@@ -191,7 +190,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   }
   await expect(reports).toContainText('Nenhum aviso aberto.');
   await page
-    .getByRole('region', { name: 'Outras versões' })
+    .getByRole('region', { name: 'Ativas', exact: true })
     .getByRole('button', { name: /^EB-5 immigrant investor/ })
     .click();
 
@@ -237,8 +236,11 @@ test('the seed admin reviews, activates and rejects a comparison version (ADR-00
   await expect(page.getByText(`Você entrou como ${account.email}.`)).toBeVisible();
 
   await page.goto(`${databaseServer.origin}/knowledge`);
-  const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: 'Comparar destinos', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Países' })
+    .getByRole('button', { name: /^Comparar destinos:/ })
+    .click();
+  const proposed = page.getByRole('region', { name: 'Propostas', exact: true });
   await proposed.getByRole('button', { name: /^Destination comparison · versão 1\b/ }).click();
   await expect(
     page.getByRole('heading', { level: 3, name: 'Destination comparison · versão 1' }),
@@ -374,8 +376,11 @@ test('the seed admin points out an error on a version and closes the request (AD
   const { version } = await eb5InEffect(page);
 
   await page.goto(`${databaseServer.origin}/knowledge`);
-  const proposed = page.getByRole('region', { name: 'Versões propostas' });
-  await proposed.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Países' })
+    .getByRole('button', { name: /^Estados Unidos:/ })
+    .click();
+  const proposed = page.getByRole('region', { name: 'Propostas', exact: true });
   await proposed
     .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
