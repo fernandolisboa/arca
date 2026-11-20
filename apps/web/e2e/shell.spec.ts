@@ -221,6 +221,8 @@ test.describe('auto-hidden navigation', () => {
       .getByRole('navigation', { name: 'Navegação principal' })
       .getByRole('link', { name: 'Configurações' })
       .click();
+    await expect(page).toHaveURL(/\/settings/);
+    await expect(page.getByRole('heading', { level: 2, name: 'Configurações' })).toBeVisible();
     await tall(page);
     await page.evaluate(() => {
       window.scrollTo(0, 200);
@@ -241,6 +243,8 @@ test.describe('auto-hidden navigation', () => {
       { narrow: 'menu', wide: 'side', edge: 'bottom' },
       { extra: { navAutoHide: 'on' } },
     );
+    // Keep the pointer in the middle, so only the keyboard can call the column at first.
+    await page.mouse.move(640, 400);
     const column = page.getByRole('navigation', { name: 'Navegação principal' });
     const right = () => column.evaluate((element) => element.getBoundingClientRect().right);
     await expect.poll(right).toBeLessThanOrEqual(0);
