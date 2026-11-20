@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cl-mercosur-temporary",
+  "number": 5,
+  "title": "Chilean temporary residence for nationals of the Mercosur Residence Agreement states (Argentina, Bolivia, Brazil, Paraguay, Uruguay)",
+  "country": "CL",
+  "tags": ["regional-agreement", "temporary-residence"],
+  "effectiveFrom": "2022-05-14",
+  "status": "open",
+  "currency": "CLP",
+  "leapDayBirthday": "feb-28",
+  "leapDayBirthdaySources": ["codigo-civil"],
+  "sources": [
+    {
+      "id": "sermig-mercosur",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
+      "title": "Servicio Nacional de Migraciones: Mercosur temporary residence (subcategory 15) for citizens of Argentina, Bolivia, Brazil, Paraguay and Uruguay, up to two years, applied for from abroad",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "sermig-dependents",
+      "url": "https://serviciomigraciones.cl/residencia-temporal/calidad-de-dependiente/",
+      "title": "Servicio Nacional de Migraciones: dependents of a temporary resident, their documents, and the principal's means measured against the Social Development Ministry's indicators",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "codigo-civil",
+      "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
+      "title": "Civil Code: art. 26, of age at 18 (dieciocho años); art. 48, a period of years started on a day the end month lacks ends on its last day, which also applies to ages",
+      "kind": "official",
+      "verifiedAt": "2026-11-07",
+      "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=172986"
+    },
+    {
+      "id": "agreement-nationals",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Mercosur, Bolivia and Chile Residence Agreement, as approved by Paraguay's Ley N.º 3578/2008, article 2: nationals by origin, or by naturalization held for five years",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "agreement-residence",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Mercosur, Bolivia and Chile Residence Agreement, as approved by Paraguay's Ley N.º 3578/2008, article 4.1: a temporary residence of up to two years, on the documents listed",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "agreement-records",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "title": "Mercosur Residence Agreement (Paraguay's Ley N.º 3578/2008), article 4.1, c): no judicial, criminal or police records in the country of origin or where one lived in the 5 years before",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "sermig-fees",
+      "url": "https://serviciomigraciones.cl/aranceles-migratorios/",
+      "title": "Servicio Nacional de Migraciones: migration fees; temporary residence for foreigners in general by the fee table by nationality, and the dollar value used for the calculation",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "fee-table-by-nationality",
+      "url": "https://serviciomigraciones.cl/wp-content/uploads/2023/06/129194.pdf",
+      "title": "Ministry of the Interior, Resolución Exenta N.º 129194 of 2020-07-03 (linked by the service as its fee table by nationality): residence fees in US dollars, paid in pesos; temporary residence column",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "sermig-bolivia-agreement",
+      "url": "https://serviciomigraciones.cl/chile-y-bolivia-acuerdo-migracion-regular/",
+      "title": "Servicio Nacional de Migraciones, news of 2023-09-20: the Chile–Bolivia migration cooperation agreement removes the temporary residence fee (USD 90 charged to Bolivians)",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "cl",
+      "number": 1
+    },
+    {
+      "id": "py",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "mercosur-nationality",
+      "title": "National by origin of Argentina, Bolivia, Brazil, Paraguay or Uruguay, or naturalized there for five years or more",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "principal.citizenshipsFromBirth"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["AR", "BO", "BR", "PY", "UY"]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "intersects",
+                "list": {
+                  "op": "fact",
+                  "key": "principal.citizenships"
+                },
+                "set": {
+                  "op": "tokens",
+                  "values": ["AR", "BO", "BR", "PY", "UY"]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["sermig-mercosur", "agreement-nationals"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "means-for-dependents",
+      "title": "When family members apply as dependents, the principal signs a notarized sworn statement to bear their costs and shows enough means by the Social Development and Family Ministry's indicators",
+      "evidence": ["principal.monthlyActiveIncome", "principal.monthlyPassiveIncome"],
+      "sources": ["sermig-dependents"]
+    },
+    {
+      "id": "no-criminal-record",
+      "title": "Adults show a criminal record certificate from the country of origin or where they lived in the last 5 years, attached within 60 days of issue; the origin country's is valid 60 days at most",
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["sermig-mercosur", "agreement-records"]
+    },
+    {
+      "id": "residence-fee",
+      "title": "Fee in US dollars, paid in pesos at the official rate: Argentina 250, Brazil 100, Paraguay 288, Uruguay 65; Bolivia none since a 2023-09 agreement (before: 149 in the table, 90 charged); minors exempt",
+      "evidence": ["principal.citizenships", "principal.ageYears"],
+      "sources": [
+        "fee-table-by-nationality",
+        "sermig-fees",
+        "sermig-mercosur",
+        "sermig-bolivia-agreement"
+      ]
+    },
+    {
+      "id": "apply-from-abroad",
+      "title": "Applied for from abroad only, online on the migration service's digital procedures portal; family members apply as dependents the same way",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["sermig-mercosur", "sermig-dependents"]
+    },
+    {
+      "id": "documents",
+      "title": "Passport valid for a year or more from the application (a Bolivian may use a valid identity card); a recent photo; foreign papers apostilled or legalized, and translated unless in Spanish or English",
+      "evidence": ["principal.citizenships"],
+      "sources": ["sermig-mercosur", "sermig-dependents"]
+    },
+    {
+      "id": "family-papers",
+      "title": "Dependents prove the tie (marriage or cohabitation proof, birth certificate); a child under 18 also needs a parent's notarized care statement, and a stepchild the couple's union proof",
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["sermig-dependents"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse (cónyuge)",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["sermig-dependents"]
+    },
+    {
+      "id": "partner",
+      "title": "Partner (conviviente)",
+      "path": ["partner"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["sermig-dependents"]
+    },
+    {
+      "id": "children",
+      "title": "The principal's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "path": ["child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["sermig-dependents", "codigo-civil"]
+    },
+    {
+      "id": "spouse-children",
+      "title": "The spouse's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["sermig-dependents", "codigo-civil"]
+    },
+    {
+      "id": "partner-children",
+      "title": "The partner's children under 18; older children only with a disability, or between 18 and 24 and studying at an institution the State recognizes, neither of which is recorded: possible",
+      "path": ["partner", "child"],
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["sermig-dependents", "codigo-civil"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "dependent-fee",
+      "title": "USD 15 for each dependent of 18 or over, the fee table's flat fee for a dependent, paid in pesos at the official rate; minors exempt; possible for a Bolivian, whose fee a 2023 agreement waived",
+      "kind": "fee",
+      "amount": {
+        "op": "convert",
+        "operand": {
+          "op": "money",
+          "amount": 1500,
+          "currency": "USD"
+        },
+        "currency": "CLP"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["BO"]
+                  }
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["fee-table-by-nationality", "sermig-bolivia-agreement", "codigo-civil"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "temporary-residence",
+      "title": "Mercosur temporary residence: up to two years",
+      "min": "P0D",
+      "max": "P2Y",
+      "sources": ["sermig-mercosur", "agreement-residence"]
+    }
+  ],
+  "corrects": 4
+}
