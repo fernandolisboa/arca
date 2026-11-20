@@ -216,7 +216,7 @@
     },
     {
       "id": "residence-fee",
-      "title": "Fee by nationality, in US dollars paid in pesos at the official rate: Argentina 250, Brazil 100, Paraguay 288, Uruguay 65; Bolivians none since a 2023-09 agreement (before, 149 or 90); minors exempt",
+      "title": "Fee in US dollars, paid in pesos at the official rate: Argentina 250, Brazil 100, Paraguay 288, Uruguay 65; Bolivia none since a 2023-09 agreement (before: 149 in the table, 90 charged); minors exempt",
       "evidence": [
         "principal.citizenships",
         "principal.ageYears"
@@ -253,7 +253,7 @@
     },
     {
       "id": "family-papers",
-      "title": "Dependents prove the tie (marriage or cohabitation proof, birth certificate); a child under 18 adds a parent's notarized care statement, and a stepchild the couple's marriage or cohabitation proof",
+      "title": "Dependents prove the tie (marriage or cohabitation proof, birth certificate); a child under 18 also needs a parent's notarized care statement, and a stepchild the couple's union proof",
       "evidence": [
         "principal.hasSpouse"
       ],
