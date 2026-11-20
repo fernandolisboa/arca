@@ -37,10 +37,18 @@
     {
       "id": "lei-23-2007-entry-ban",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "title": "Lei n.º 23/2007, article 52.º, n.º 1, a) to c): no visa during an entry ban that follows a removal, or under an alert for return or for refusal of entry and stay",
+      "title": "Lei n.º 23/2007, article 52.º, n.º 1, a) and b): no visa during an entry ban that follows a removal, or under a Schengen Information System alert for return with an entry and stay ban",
       "kind": "official",
       "verifiedAt": "2026-11-20",
       "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2022/08/16400/0000200137.pdf"
+    },
+    {
+      "id": "lei-23-2007-entry-ban-alert",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/41-2023-213881448",
+      "title": "Decreto-Lei n.º 41/2023, article 28.º, rewording article 52.º, n.º 1, c), of Lei n.º 23/2007: no visa under an alert for refusal of entry and stay in Portugal's border system (SII UCFE), or for return",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://files.diariodarepublica.pt/1s/2023/06/10700/0002000106.pdf"
     },
     {
       "id": "lei-23-2007-conviction",
@@ -387,13 +395,13 @@
     },
     {
       "id": "no-entry-ban",
-      "title": "No entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
+      "title": "Each applicant: no entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
       "evidence": ["principal.visaRefusals"],
-      "sources": ["lei-23-2007-entry-ban"]
+      "sources": ["lei-23-2007-entry-ban", "lei-23-2007-entry-ban-alert"]
     },
     {
       "id": "criminal-record",
-      "title": "No conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
+      "title": "Each applicant: no conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
       "evidence": ["principal.visaRefusals"],
       "sources": ["lei-23-2007-conviction"]
     }

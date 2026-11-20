@@ -22,6 +22,11 @@
       "quote": "b) Comprovativo da disponibilidade de recursos estáveis e regulares, suficientes para as neces- sidades do requerente do visto de residência e dos familiares que o acompanhem, para o período de estada solicitado ou para o período de 12 meses, consoante o que seja inferior, determinado nos termos do n.º 2 do artigo 2.º da Portaria n.º 1563/2007, de 11 de dezembro."
     },
     {
+      "key": "requirement:household-income",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/1-2024-837022979",
+      "quote": "1 — Para os efeitos previstos na alínea f) do n.º 1 do artigo 12.º, devem ser tidos em considera- ção os meios provenientes de subvenções, bolsas de estudo, contrato ou promessa de contrato de trabalho, contrato de sociedade ou contrato ou proposta escrita de contrato de prestação de serviços."
+    },
+    {
       "key": "requirement:not-eu-eea-or-swiss-citizen",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
       "quote": "2 — Sem prejuízo da sua aplicação subsidiária e de referência expressa em contrário, a pre- sente lei não é aplicável a: a) Nacionais de um Estado membro da União Europeia, de um Estado parte no Espaço Eco- nómico Europeu ou de um Estado terceiro com o qual a União Europeia tenha concluído um acordo de livre circulação de pessoas;"
@@ -44,7 +49,12 @@
     {
       "key": "assessment:no-entry-ban",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "a) Não tenha sido sujeito a medida de afastamento e se encontre no período subsequente de interdição de entrada e de permanência em território nacional; b) Não esteja indicado, para efeitos de regresso, acompanhado de uma proibição de entrada e de permanência no SIS por qualquer Estado membro da União Europeia ou onde vigore a Con- venção de Aplicação; c) Não esteja indicado, para efeitos de recusa de entrada e de permanência, nos termos do artigo 33.º no Sistema Integrado de Informação do SEF, ou para efeitos de regresso;"
+      "quote": "a) Não tenha sido sujeito a medida de afastamento e se encontre no período subsequente de interdição de entrada e de permanência em território nacional; b) Não esteja indicado, para efeitos de regresso, acompanhado de uma proibição de entrada e de permanência no SIS por qualquer Estado membro da União Europeia ou onde vigore a Con- venção de Aplicação;"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/41-2023-213881448",
+      "quote": "c) Não esteja indicado, para efeitos de recusa de entrada e de permanência, nos termos do artigo 33.º no SII UCFE, ou para efeitos de regresso;"
     },
     {
       "key": "assessment:criminal-record",

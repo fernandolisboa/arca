@@ -69,7 +69,12 @@
     {
       "key": "assessment:no-entry-ban",
       "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
-      "quote": "a) Não tenha sido sujeito a medida de afastamento e se encontre no período subsequente de interdição de entrada e de permanência em território nacional; b) Não esteja indicado, para efeitos de regresso, acompanhado de uma proibição de entrada e de permanência no SIS por qualquer Estado membro da União Europeia ou onde vigore a Con- venção de Aplicação; c) Não esteja indicado, para efeitos de recusa de entrada e de permanência, nos termos do artigo 33.º no Sistema Integrado de Informação do SEF, ou para efeitos de regresso;"
+      "quote": "a) Não tenha sido sujeito a medida de afastamento e se encontre no período subsequente de interdição de entrada e de permanência em território nacional; b) Não esteja indicado, para efeitos de regresso, acompanhado de uma proibição de entrada e de permanência no SIS por qualquer Estado membro da União Europeia ou onde vigore a Con- venção de Aplicação;"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/41-2023-213881448",
+      "quote": "c) Não esteja indicado, para efeitos de recusa de entrada e de permanência, nos termos do artigo 33.º no SII UCFE, ou para efeitos de regresso;"
     },
     {
       "key": "assessment:criminal-record",

@@ -4870,6 +4870,220 @@
         "missingFacts": []
       },
       "factsAsOf": "2026-02-28"
+    },
+    {
+      "id": "couple-and-child-work-income-covering-the-rest-is-possible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [
+              {
+                "kind": "passive",
+                "monthly": {
+                  "amount": 147383,
+                  "currency": "EUR"
+                },
+                "sourceCountry": "BR"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1986-09-21",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1986-09-21",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [
+              {
+                "kind": "active",
+                "monthly": {
+                  "amount": 1,
+                  "currency": "EUR"
+                },
+                "sourceCountry": "BR"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-06-15",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-06-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [],
+            "financiallyDependentOn": ["p1", "p2"],
+            "studying": true,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2012-04-14",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": ["p2", "p3"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "couple-and-child-work-and-passive-income-a-cent-short",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [
+              {
+                "kind": "passive",
+                "monthly": {
+                  "amount": 100000,
+                  "currency": "EUR"
+                },
+                "sourceCountry": "BR"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1986-09-21",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1986-09-21",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [
+              {
+                "kind": "active",
+                "monthly": {
+                  "amount": 47383,
+                  "currency": "EUR"
+                },
+                "sourceCountry": "BR"
+              }
+            ],
+            "financiallyDependentOn": [],
+            "studying": false,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-06-15",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2015-06-15",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "residenceCountry": "BR",
+            "incomes": [],
+            "financiallyDependentOn": ["p1", "p2"],
+            "studying": true,
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "spouse",
+            "people": ["p1", "p2"],
+            "start": "2012-04-14",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p1",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": ["p2", "p3"],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
     }
   ]
 }
