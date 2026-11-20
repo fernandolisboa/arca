@@ -218,11 +218,6 @@
     },
     {
       "key": "assessment:entry-and-presence",
-      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "quote": "(Artículo sustituido por art. 9º del Decreto Nº 366/2025 B.O. 29/5/2025."
-    },
-    {
-      "key": "assessment:entry-and-presence",
       "url": "https://www.argentina.gob.ar/normativa/nacional/norma-369202/texto",
       "quote": "Acreditar ingreso regular al Territorio Nacional."
     },
@@ -315,6 +310,11 @@
       "key": "assessment:health-cover",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
       "quote": "en los establecimientos que brinden atención sanitaria administrados por el ESTADO NACIONAL"
+    },
+    {
+      "key": "assessment:entry-and-presence",
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
+      "quote": "La declaración jurada a la que se hace referencia en el artículo 34 de la presente ley será exigible una vez reglamentada su implementación."
     },
     {
       "key": "assessment:other-impediments",

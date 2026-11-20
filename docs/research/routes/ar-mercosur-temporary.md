@@ -1,6 +1,6 @@
 # ar-mercosur-temporary
 
-Research notes for Argentina's temporary residence by nationality for natives of the Mercosur states, route `ar-mercosur-temporary` in `packages/knowledge/data/routes`. The seed research is in [other-destinations.md](../other-destinations.md#argentina); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Argentina's temporary residence by nationality for natives of the Mercosur states, route `ar-mercosur-temporary`, stored in the database's `knowledge` schema ([ADR-0031](../../adr/0031-rule-updates-on-request.md)): versions 1 to 3 were imported from `packages/knowledge/data/routes`, and later versions come from an update request or from `packages/knowledge/reviews`. The seed research is in [other-destinations.md](../other-destinations.md#argentina); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
 

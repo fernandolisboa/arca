@@ -69,7 +69,7 @@
     {
       "id": "ley-25871-entry",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25871-92016/actualizacion",
-      "title": "Ley 25.871, article 34: entry only through the posts the directorate authorizes, with a sworn statement of the purpose of entry and of holding health insurance",
+      "title": "Ley 25.871, articles 34 and 123 bis: entry only through authorized posts; the sworn statement of purpose and health insurance applies once its implementation is regulated",
       "kind": "official",
       "verifiedAt": "2026-11-20"
     },
@@ -167,7 +167,7 @@
     {
       "id": "ccyc-unions",
       "url": "https://www.argentina.gob.ar/normativa/nacional/ley-26994-235975/actualizacion",
-      "title": "Civil and Commercial Code (Ley 26.994), articles 510, e), 511 and 512: a cohabiting union needs two years of living together; its registration serves only as proof",
+      "title": "Civil and Commercial Code (Ley 26.994), articles 510, 511 and 512: a cohabiting union needs two unmarried adults living together for two years; its registration serves only as proof",
       "kind": "official",
       "verifiedAt": "2026-11-20"
     },
@@ -295,7 +295,7 @@
     },
     {
       "id": "entry-and-presence",
-      "title": "In Argentina, apply online after a lawful entry through an authorized post, with the sworn statement of purpose and health insurance asked since 2025; from abroad, at a consulate (not modeled)",
+      "title": "In Argentina, apply online after a lawful entry through an authorized post (the sworn statement of purpose and health insurance applies once regulated); from abroad, at a consulate (not modeled)",
       "evidence": ["principal.residenceCountry"],
       "sources": ["ley-25871-entry", "disp-dnm-1637-2022-documents", "dnm-mercosur"]
     },

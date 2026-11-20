@@ -1053,6 +1053,238 @@
         "possibleDependents": [],
         "missingFacts": []
       }
+    },
+    {
+      "id": "brazilian-with-a-partner-under-18-leaves-the-partner-out",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1984-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2010-02-02",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "2010-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2025-04-04",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "2025-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "partner",
+            "people": ["p1", "p2"],
+            "start": "2023-03-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p3"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-whose-partner-is-married-leaves-the-partner-out",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3", "p4"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1984-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1984-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1986-02-02",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "1986-02-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2015-04-04",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "2015-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p4",
+            "birthDate": "1985-05-05",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "1985-05-05",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "partner",
+            "people": ["p1", "p2"],
+            "start": "2020-03-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "spouse",
+            "people": ["p2", "p4"],
+            "start": "2008-06-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p3"],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "brazilian-under-18-with-a-partner-leaves-the-partner-out",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "2009-01-01",
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "2009-01-01",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p2",
+            "birthDate": "2009-06-02",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "2009-06-02",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "2025-04-04",
+            "citizenships": [
+              {
+                "country": "CO",
+                "acquired": "2025-04-04",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "recordedInFull": ["spouses", "partners", "children", "parents"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "partner",
+            "people": ["p1", "p2"],
+            "start": "2023-03-01",
+            "end": "none"
+          },
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p3",
+            "parentKind": "biological"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
     }
   ]
 }
