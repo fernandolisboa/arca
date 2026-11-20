@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:household-income",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "2 — O critério de determinação dos meios de subsistên- cia é efectuado por referência à retribuição mínima mensal garantida nos termos do n.º 1 do artigo 266.º do Código do Trabalho, adiante designada por RMMG, atenta a respec- tiva natureza e regularidade, líquida de quotizações para a segurança social com a seguinte valoração per capita em cada agregado familiar: a) Primeiro adulto 100 %; b) Segundo ou mais adultos 50 %; c) Crianças e jovens com idade inferior a 18 anos e filhos maiores a cargo 30 %."
+    },
+    {
+      "key": "requirement:household-income",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "quote": "O valor da RMMG a que se refere o n.º 1 do artigo 273.º do Código do Trabalho, aprovado em anexo à Lei n.º 7/2009, de 12 de fevereiro, na sua redação atual, é de € 920,00."
+    },
+    {
+      "key": "requirement:household-income",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/110-2009-490249",
+      "quote": "A taxa contributiva global do regime geral corres- pondente ao elenco das eventualidades protegidas é de 34,75 %, cabendo 23,75 % à entidade empregadora e 11 % ao trabalhador"
+    },
+    {
+      "key": "requirement:household-income",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/4-2022-201699171",
+      "quote": "b) Comprovativo da disponibilidade de recursos estáveis e regulares, suficientes para as neces- sidades do requerente do visto de residência e dos familiares que o acompanhem, para o período de estada solicitado ou para o período de 12 meses, consoante o que seja inferior, determinado nos termos do n.º 2 do artigo 2.º da Portaria n.º 1563/2007, de 11 de dezembro."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "2 — Sem prejuízo da sua aplicação subsidiária e de referência expressa em contrário, a pre- sente lei não é aplicável a: a) Nacionais de um Estado membro da União Europeia, de um Estado parte no Espaço Eco- nómico Europeu ou de um Estado terceiro com o qual a União Europeia tenha concluído um acordo de livre circulação de pessoas;"
+    },
+    {
+      "key": "assessment:means-for-12-months",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "6 — Sem prejuízo do disposto nos números anteriores, o cidadão estrangeiro requerente de visto de residência deve dispor de meios de subsistência determinados nos termos do disposto nos n.os 1 e 2 do artigo 2.º, assegurados por período não inferior a 12 meses, a comprovar pelos seguintes meios:"
+    },
+    {
+      "key": "assessment:means-for-12-months",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "a) No caso de cidadão estrangeiro reformado, através de documento comprovativo do respectivo rendimento, bem como da garantia do seu recebimento ou disponibilidade de outros rendimentos em território nacional;"
+    },
+    {
+      "key": "assessment:means-for-12-months",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1563-2007-628798",
+      "quote": "b) No caso de cidadão estrangeiro que viva de rendimen- tos de bens móveis ou imóveis, da propriedade intelectual ou de aplicações financeiras, através de documento com- provativo da existência e montante de tais rendimentos, bem como da sua disponibilidade em Portugal."
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "a) Não tenha sido sujeito a medida de afastamento e se encontre no período subsequente de interdição de entrada e de permanência em território nacional; b) Não esteja indicado, para efeitos de regresso, acompanhado de uma proibição de entrada e de permanência no SIS por qualquer Estado membro da União Europeia ou onde vigore a Con- venção de Aplicação; c) Não esteja indicado, para efeitos de recusa de entrada e de permanência, nos termos do artigo 33.º no Sistema Integrado de Informação do SEF, ou para efeitos de regresso;"
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "3 — É recusado visto de residência ou de estada temporária ao nacional de Estado terceiro que tenha sido condenado por crime que, em Portugal, seja punível com pena privativa de liberdade de duração superior a um ano, ainda que esta não tenha sido cumprida ou a sua execução tenha sido suspensa."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — Para efeitos do disposto no artigo anterior, consideram-se membros da família do residente: a) O cônjuge;"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
+      "quote": "6 — O direito ao reagrupamento de cônjuge ou equiparado depende de o casamento ou a união de facto serem válidos e reconhecidos nos termos da lei portuguesa, e de o requerente do reagrupamento e o seu cônjuge ou equiparado terem uma idade mínima de 18 anos à data do pedido."
+    },
+    {
+      "key": "dependent:minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "b) Os filhos menores ou incapazes a cargo do casal ou de um dos cônjuges;"
+    },
+    {
+      "key": "dependent:minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "país reconheça aos adotados direitos e deveres idênticos aos da filiação natural e que a decisão seja reconhecida por Portugal;"
+    },
+    {
+      "key": "dependent:minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "4 — O reagrupamento familiar com filho menor ou incapaz de um dos cônjuges depende da autorização do outro progenitor ou de decisão de autoridade competente de acordo com a qual o filho lhe tenha sido confiado."
+    },
+    {
+      "key": "dependent:minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+    },
+    {
+      "key": "dependent:spouse-minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:spouse-minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "b) Os filhos menores ou incapazes a cargo do casal ou de um dos cônjuges;"
+    },
+    {
+      "key": "dependent:spouse-minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "país reconheça aos adotados direitos e deveres idênticos aos da filiação natural e que a decisão seja reconhecida por Portugal;"
+    },
+    {
+      "key": "dependent:spouse-minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "4 — O reagrupamento familiar com filho menor ou incapaz de um dos cônjuges depende da autorização do outro progenitor ou de decisão de autoridade competente de acordo com a qual o filho lhe tenha sido confiado."
+    },
+    {
+      "key": "dependent:spouse-minor-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+    },
+    {
+      "key": "dependent:adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "b) Os filhos menores ou incapazes a cargo do casal ou de um dos cônjuges;"
+    },
+    {
+      "key": "dependent:adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "d) Os filhos maiores, a cargo do casal ou de um dos cônjuges, que sejam solteiros e se encon- trem a estudar num estabelecimento de ensino em Portugal;"
+    },
+    {
+      "key": "dependent:adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+    },
+    {
+      "key": "dependent:spouse-adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:spouse-adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "b) Os filhos menores ou incapazes a cargo do casal ou de um dos cônjuges;"
+    },
+    {
+      "key": "dependent:spouse-adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "d) Os filhos maiores, a cargo do casal ou de um dos cônjuges, que sejam solteiros e se encon- trem a estudar num estabelecimento de ensino em Portugal;"
+    },
+    {
+      "key": "dependent:spouse-adult-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — Para efeitos do disposto no n.º 2 considera-se menor não acompanhado o nacional de um Estado terceiro ou apátrida, com idade inferior a 18 anos"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "f) Os ascendentes na linha reta e em 1.º grau do residente ou do seu cônjuge, desde que se encontrem a seu cargo;"
+    },
+    {
+      "key": "dependent:spouse-parents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "5 — O visto de residência tem ainda como finalidade o acompanhamento de membros da família do requerente de um visto de residência, na aceção do n.º 1 do artigo 99.º, podendo os pedidos ser suscitados em simultâneo."
+    },
+    {
+      "key": "dependent:spouse-parents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "f) Os ascendentes na linha reta e em 1.º grau do residente ou do seu cônjuge, desde que se encontrem a seu cargo;"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/4-2022-201699171",
+      "quote": "2 — Para efeitos do disposto no número anterior, consideram-se membros da família as pes- soas previstas no n.º 1 do artigo 99.º e no n.º 1 do artigo 100.º da Lei n.º 23/2007, de 4 de julho, na sua redação atual."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — O reagrupamento familiar pode ser autorizado com: a) O parceiro que mantenha, em território nacional ou fora dele, com o cidadão estrangeiro residente uma união de facto, devidamente comprovada nos termos da lei;"
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
+      "quote": "2 — A união de facto é a situação jurídica de duas pes- soas que, independentemente do sexo, vivam em condições análogas às dos cônjuges há mais de dois anos."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
+      "quote": "6 — O direito ao reagrupamento de cônjuge ou equiparado depende de o casamento ou a união de facto serem válidos e reconhecidos nos termos da lei portuguesa, e de o requerente do reagrupamento e o seu cônjuge ou equiparado terem uma idade mínima de 18 anos à data do pedido."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/4-2022-201699171",
+      "quote": "2 — Para efeitos do disposto no número anterior, consideram-se membros da família as pes- soas previstas no n.º 1 do artigo 99.º e no n.º 1 do artigo 100.º da Lei n.º 23/2007, de 4 de julho, na sua redação atual."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — O reagrupamento familiar pode ser autorizado com: a) O parceiro que mantenha, em território nacional ou fora dele, com o cidadão estrangeiro residente uma união de facto, devidamente comprovada nos termos da lei;"
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "b) Os filhos solteiros menores ou incapazes, incluindo os filhos adotados do parceiro de facto, desde que estes lhe estejam legalmente confiados."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/23-2010-343919",
+      "quote": "2 — A união de facto é a situação jurídica de duas pes- soas que, independentemente do sexo, vivam em condições análogas às dos cônjuges há mais de dois anos."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/61-2025-941547426",
+      "quote": "6 — O direito ao reagrupamento de cônjuge ou equiparado depende de o casamento ou a união de facto serem válidos e reconhecidos nos termos da lei portuguesa, e de o requerente do reagrupamento e o seu cônjuge ou equiparado terem uma idade mínima de 18 anos à data do pedido."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/91-2025-910130846",
+      "quote": "4 — Pelos custos administrativos do tratamento de pedidos de visto nacionais — 110 euros."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "quote": "1.2 — Podem ficar isentos do pagamento dos custos administrativos relativos ao tratamento de pedidos de vistos: a) As crianças a partir dos 6 anos e com menos de 18 anos;"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — As taxas a cobrar pela concessão de vistos pelos postos consulares são as que constam da tabela de emolumentos consulares."
+    },
+    {
+      "key": "cost:visa-fee-minor-principal",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/91-2025-910130846",
+      "quote": "4 — Pelos custos administrativos do tratamento de pedidos de visto nacionais — 110 euros."
+    },
+    {
+      "key": "cost:visa-fee-minor-principal",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "quote": "1.2 — Podem ficar isentos do pagamento dos custos administrativos relativos ao tratamento de pedidos de vistos: a) As crianças a partir dos 6 anos e com menos de 18 anos;"
+    },
+    {
+      "key": "cost:visa-fee-minor-principal",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — As taxas a cobrar pela concessão de vistos pelos postos consulares são as que constam da tabela de emolumentos consulares."
+    },
+    {
+      "key": "cost:visa-fee-adult-dependents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/91-2025-910130846",
+      "quote": "4 — Pelos custos administrativos do tratamento de pedidos de visto nacionais — 110 euros."
+    },
+    {
+      "key": "cost:visa-fee-adult-dependents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "quote": "1.2 — Podem ficar isentos do pagamento dos custos administrativos relativos ao tratamento de pedidos de vistos: a) As crianças a partir dos 6 anos e com menos de 18 anos;"
+    },
+    {
+      "key": "cost:visa-fee-adult-dependents",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — As taxas a cobrar pela concessão de vistos pelos postos consulares são as que constam da tabela de emolumentos consulares."
+    },
+    {
+      "key": "cost:visa-fee-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/91-2025-910130846",
+      "quote": "4 — Pelos custos administrativos do tratamento de pedidos de visto nacionais — 110 euros."
+    },
+    {
+      "key": "cost:visa-fee-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "quote": "1.2 — Podem ficar isentos do pagamento dos custos administrativos relativos ao tratamento de pedidos de vistos: a) As crianças a partir dos 6 anos e com menos de 18 anos;"
+    },
+    {
+      "key": "cost:visa-fee-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/434-2023-230006497",
+      "quote": "Estão isentos de taxas administrativas: 1 — Vistos: 1.1 — Os seguintes requerentes de visto: a) Crianças até aos 6 anos de idade;"
+    },
+    {
+      "key": "cost:visa-fee-children",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — As taxas a cobrar pela concessão de vistos pelos postos consulares são as que constam da tabela de emolumentos consulares."
+    },
+    {
+      "key": "duration:visa-decision",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "4 — Sem prejuízo de prazos mais curtos previstos nesta lei, o prazo para a decisão sobre o pedido de visto de residência é de 60 dias."
+    },
+    {
+      "key": "duration:visa-validity",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "2 — O visto de residência é válido para duas entradas em território português e habilita o seu titular a nele permanecer por um período de quatro meses."
+    },
+    {
+      "key": "duration:first-residence-permit",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/18-2022-200268064",
+      "quote": "1 — Sem prejuízo das disposições legais especiais aplicáveis, a autorização de residência temporária é válida pelo período de dois anos contados a partir da data da emissão do respetivo título e é renovável por períodos sucessivos de três anos."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    }
+  ]
+}

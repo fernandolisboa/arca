@@ -8,6 +8,7 @@ import {
   type ReadPage,
   asDataText,
   checkItems,
+  machineReadableUrls,
   maxKnowledgeJsonDepth,
   maxQuoteLength,
   minQuoteLength,
@@ -49,6 +50,14 @@ export const sessionReviews: readonly SessionReview[] = [
     id: '2026-11-us',
     migration: 'knowledge_session_review_2026_11_us',
     versions: [{ routeId: 'us-eb5', number: 9 }],
+  },
+  {
+    id: '2026-11-pt',
+    migration: 'knowledge_session_review_2026_11_pt',
+    versions: [
+      { routeId: 'pt-d7', number: 7 },
+      { routeId: 'pt-d8', number: 7 },
+    ],
   },
 ];
 
@@ -114,9 +123,14 @@ export function evidenceProblems(
 /**
  * Each cited page as its quotes alone, so the check runs with no network: it then proves the
  * quotes are well formed, cited and state the item's values, not that a page holds them. The
- * `review-quotes` job reads the pages themselves.
+ * `review-quotes` job reads the pages themselves. A page's chain is the address the app would
+ * request for it, its machine-readable address when `addresses` names one, since that is the
+ * address the echo rule reads.
  */
-export function quotedPages(evidence: Evidence): Map<string, ReadPage> {
+export function quotedPages(
+  evidence: Evidence,
+  addresses: ReadonlyMap<string, string> = new Map(),
+): Map<string, ReadPage> {
   const texts = new Map<string, string[]>();
   for (const { url, quote } of evidence.quotes) {
     texts.set(url, [...(texts.get(url) ?? []), asDataText(quote)]);
@@ -124,7 +138,7 @@ export function quotedPages(evidence: Evidence): Map<string, ReadPage> {
   return new Map(
     [...texts].map(([url, quotes]) => [
       url,
-      { url, text: quotes.join('\n'), cut: false, chain: [url] },
+      { url, text: quotes.join('\n'), cut: false, chain: [addresses.get(url) ?? url] },
     ]),
   );
 }
@@ -199,7 +213,11 @@ export async function reviewedVersions(
       if (!checked.ok) throw new Error(`${path}:\n${checked.problems.join('\n')}`);
       if (checked.entry.version.number !== number) throw new Error(`${path}: Its number`);
       const evidence = await readEvidence(dirs.reviewsDir, each, routeId, number);
-      const gaps = evidenceProblems(checked.entry, evidence, quotedPages(evidence));
+      const gaps = evidenceProblems(
+        checked.entry,
+        evidence,
+        quotedPages(evidence, machineReadableUrls(checked.entry)),
+      );
       if (gaps.length > 0) throw new Error(`${path}.evidence.json:\n${gaps.join('\n')}`);
       const row: ReviewedVersion = {
         routeId,

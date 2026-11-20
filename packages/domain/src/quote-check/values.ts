@@ -111,6 +111,32 @@ export function numbersIn(text: string): ReadonlySet<string> {
   return found;
 }
 
+/** A figure with a percent sign right after it, or after one space. */
+const percentage = /(\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*)[\s\u00a0\u2009\u202f]?[%\uff05\ufe6a]/gu;
+
+/** A canonical decimal divided by one hundred by moving its decimal mark, so nothing rounds it. */
+function hundredth(decimal: string): string {
+  const [whole = '', fraction = ''] = decimal.split('.');
+  const padded = whole.padStart(3, '0');
+  return canonicalNumber(`${padded.slice(0, -2)}.${padded.slice(-2)}${fraction}`);
+}
+
+/**
+ * Every share a text writes as a percentage, as the number it stands for: "50 %" reads 0.5 and
+ * "34,75 %" reads 0.3475, since a rule multiplies by the factor where the law writes the
+ * percentage. Only the figure the sign follows is read, with the readings `numbersIn` gives it.
+ */
+export function percentagesIn(text: string): ReadonlySet<string> {
+  const found = new Set<string>();
+  for (const [, token = ''] of text.matchAll(percentage)) {
+    const whole = readings(token);
+    const last =
+      whole.length > 0 ? [] : readings(token.split(/[\s\u00a0\u2009\u202f]+/u).at(-1) ?? '');
+    for (const read of [...whole, ...last]) found.add(hundredth(read));
+  }
+  return found;
+}
+
 /** A line break of any kind: a quote reads each as one space. */
 const lineBreak = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/u;
 
@@ -271,9 +297,9 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
 }
 
 /**
- * Whether a text states the value: a number among the numbers it writes, or a whole number written
- * in words of one of `languages`; a date in ISO form, in numbers that read one way only, or by its
- * year, its day and its month's name beside them.
+ * Whether a text states the value: a number among the numbers it writes, as a figure or as a
+ * percentage of one, or a whole number written in words of one of `languages`; a date in ISO form,
+ * in numbers that read one way only, or by its year, its day and its month's name beside them.
  */
 export function statesValue(
   value: CheckValue,
@@ -284,6 +310,7 @@ export function statesValue(
   if (value.kind === 'number') {
     return (
       numbers.has(value.value) ||
+      percentagesIn(text).has(value.value) ||
       writesNumberInWords(text, value.value, languages) ||
       writesAnniversary(text, value.value, languages)
     );
