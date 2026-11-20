@@ -1,8 +1,22 @@
 # it-descent
 
-Research notes for Italian citizenship by descent, route `it-descent` in `packages/knowledge/data/routes`. The seed research is in [ancestry.md](../ancestry.md#italy); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Italian citizenship by descent, route `it-descent`, stored in the database's `knowledge` schema (versions 1 to 5 were imported from `packages/knowledge/data/routes`; later ones come from `packages/knowledge/reviews`). The seed research is in [ancestry.md](../ancestry.md#italy); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
+
+### 2026-11-20, session review
+
+A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-it/README.md](../../../packages/knowledge/reviews/2026-11-it/README.md).
+
+- **Versions audited:** 4 (effective 2026-02-19) and 5 (effective 2029-01-01), the newest stored.
+- **Outcome:** correction, version 6, of version 4 from its own date, and correction, version 7, of version 5 from its own date; both stored already active by the review's pull request. The requirement now follows art. 3-bis as written (letter c without a same-line condition, a person with no other citizenship, a line never recognized below an ancestor who was Italian reads as possible); five new assessments (the person's own loss, a link through a mother before 1948, minors at consulates, proof and venue in court), and a sixth in version 7 (the central office's notices); the three alternative fees are one possible cost of EUR 600.
+- **Sources re-read** on 2026-11-20, through the app's reader, on `normattiva.it`: Legge 91/1992, arts. 1, 3-bis and 11; Decreto-legge 36/2025, art. 1; Legge 74/2025; Legge 555/1912, arts. 1, 7, 8 and 12, in the text in force until 15 August 1992 (`!vig=1992-08-15`); the Constitution's final provision XVIII; Legge 11/2026, art. 1; Decreto legislativo 71/2011, art. 10 and the annexed fee table; D.P.R. 115/2002, art. 13; Decreto legislativo 150/2011, art. 19-bis; Decreto-legge 13/2017, art. 4. Read in the session only, since the app's reader cannot reach them: Legge 207/2024, art. 1, commi 636, 637 and 639; Corte costituzionale, sentenze 30/1983 and 63/2026 (on the Court's site) and ordinanza 147/2026 (in the Court's open data); Cassazione, Sezioni Unite, 24045/2026.
+- **Amendments looked for**, up to 2026-11-20: each cited act's update list on Normattiva; the Gazzetta Ufficiale of 2026; the Constitutional Court's rulings of 2026 up to n. 206 and its register of referrals. Nothing changes a cited provision. Legge 199/2025, art. 1, comma 513, amended art. 4, comma 1-bis, and art. 9-bis of Legge 91/1992, which this route does not model.
+- **Addresses that work without a session cookie:** an annex, or a final provision of the Constitution, at `https://www.normattiva.it/atto/caricaDettaglioAtto?atto.dataPubblicazioneGazzetta=<date>&atto.codiceRedazionale=<code>&atto.articolo.numero=<n>&atto.articolo.sottoArticolo=1&atto.articolo.sottoArticolo1=10&atto.articolo.tipoArticolo=1`; a historic text with `!vig=<date>` after the article. The parts of a budget law's single article past comma 100 still need the cookie.
+- **Watch next:**
+  - The EU Court of Justice's answer to ordinanza 147/2026, the five referrals that wait at the Constitutional Court, and the referendum request on art. 3-bis announced in the Gazzetta Ufficiale n. 216 of 17 September 2026.
+  - The ministerial rules for the central office before 2029-01-01; version 7 is read again before it takes effect, and a version from 2031-01-01 drops its yearly limit.
+  - A new-route request for the minor's declaration (Legge 91/1992, art. 4, comma 1-bis; until 31 May 2029 for those who were minors on 24 May 2025), and an `it` official-domain list that includes `cortedicassazione.it`: both go through the app.
 
 ### 2026-11-15
 
