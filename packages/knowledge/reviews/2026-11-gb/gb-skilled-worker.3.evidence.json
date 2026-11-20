@@ -408,13 +408,13 @@
     },
     {
       "key": "dependent:children",
-      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-children",
-      "quote": "CHI 1A.1. The applicant must not be leading an independent life."
+      "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
+      "quote": "“Must not be leading an independent life” or “is not leading an independent life” means that the person: (a) does not have a partner; and"
     },
     {
       "key": "dependent:children",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-introduction",
-      "quote": "“Must not be leading an independent life” or “is not leading an independent life” means that the person: (a) does not have a partner; and"
+      "quote": "(c) unmarried partner, where the couple have been in a relationship similar to marriage or civil partnership for at least 2 years."
     }
   ]
 }

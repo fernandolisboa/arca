@@ -112,7 +112,7 @@
     {
       "id": "sw-dependant-funds",
       "url": "https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-skilled-worker",
-      "title": "Appendix Skilled Worker, SW 33.1, 33.3 and 33.5: £285 for a partner, £315 for the first child, £200 for any other, held for 28 days, unless applying inside the UK after 12 months there",
+      "title": "Appendix Skilled Worker, SW 33.1, 33.3 and 33.5: £285 for a partner, £315 for the first child, £200 for any other, held for 28 days, unless applying in the UK after 12 months there with permission",
       "kind": "official",
       "verifiedAt": "2026-11-20"
     },
@@ -379,7 +379,7 @@
     },
     {
       "id": "salary-health-education-or-earlier-worker",
-      "title": "Or, for a Table 3 health or education job, £25,000 and the going rate; for a Health and Care ASHE salary job, or a Skilled Worker since before 4 April 2024 until 4 April 2030, £25,000 to £31,300",
+      "title": "Or: Table 3 health or education job, £25,000 and going rate; Health and Care ASHE salary job, or unbroken Skilled Worker permission since before 4 April 2024 (until 4 April 2030), £25,000 to £31,300",
       "evidence": ["principal.monthlyActiveIncome"],
       "sources": ["sw-salary-health-education"]
     },
@@ -397,7 +397,7 @@
     },
     {
       "id": "funds-dependants",
-      "title": "Plus £285 for a partner, £315 for the first child and £200 for each other child, held for 28 days, unless the sponsor certifies it will maintain them or they apply inside the UK after 12 months there",
+      "title": "Plus £285 for a partner, £315 for the first child, £200 for each other child, held 28 days, unless the sponsor commits to maintain them or they apply in the UK after 12 months there on permission",
       "evidence": ["unit.liquidAssets"],
       "sources": ["sw-dependant-funds"]
     },
@@ -750,7 +750,7 @@
     },
     {
       "id": "health-surcharge-adult-dependant",
-      "title": "Health surcharge of each partner or child aged 18 or over, £1,035 a year for the 5 years of a five-year certificate (£5,175, or more for the 14 days after it); none on a Health and Care visa: possible",
+      "title": "Health surcharge of each partner or child 18 or over, £1,035 a year for 5 years of a five-year certificate (£5,175, or more for the 14 days after it); none on a Health and Care Worker visa: possible",
       "kind": "fee",
       "amount": {
         "op": "mul",
