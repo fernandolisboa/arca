@@ -1,0 +1,743 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pl-descent",
+  "number": 3,
+  "corrects": 2,
+  "title": "Confirmation of Polish citizenship held from birth through a line of Polish parents",
+  "country": "PL",
+  "tags": ["descent", "citizenship"],
+  "effectiveFrom": "2026-01-01",
+  "status": "open",
+  "currency": "PLN",
+  "sources": [
+    {
+      "id": "ustawa-2009-art-14",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim (Dz.U. 2025 poz. 1611), in force since 15 August 2012, art. 14 pkt 1: a minor with at least one Polish parent is Polish by birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-in-force",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2012/161",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "title": "Sejm's database of legal acts (ELI), record of the Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim (Dz.U. 2012 poz. 161): published on 14 February 2012, in force from 15 August 2012"
+    },
+    {
+      "id": "ustawa-2009-art-55",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 55: the voivode decides, on application, whether a person holds Polish citizenship",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-6",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 6: a change in who is established as a parent, or in a parent's established citizenship, counts within a year of the birth; a denial of paternity, later",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-7",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 7: consent for the parents to renounce Polish citizenship covers a minor under their parental authority",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-16",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 16: a minor foreigner fully adopted by a Polish citizen before the age of 16 acquires Polish citizenship, taken as held from birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-46",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 46: a Polish citizen who renounces Polish citizenship loses it once the President consents",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-1962-art-4",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2000/353/text.pdf",
+      "title": "Ustawa o obywatelstwie polskim of 1962, in force from 21 August 1962 (Dz.U. 2000 nr 28 poz. 353), art. 4: both parents Polish, or one and the other unknown, stateless or of undetermined citizenship",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1962-art-6",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2000/353/text.pdf",
+      "title": "Ustawa o obywatelstwie polskim of 1962 (Dz.U. 2000 nr 28 poz. 353), art. 6: with one foreign parent the child is Polish by birth, but the parents could choose the foreign citizenship within 3 months",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1951-art-6",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
+      "title": "Ustawa z 8 stycznia 1951 r. o obywatelstwie polskim, in force from 19 January 1951, art. 6: a child of two Polish parents, or of one with the other unknown or of unknown or undetermined citizenship",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1951-art-8",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
+      "title": "Ustawa o obywatelstwie polskim of 1951, art. 8: with one foreign parent, a child born in Poland is Polish unless the parents chose the foreign citizenship within a month of the birth",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1951-art-9",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1951/25/text.pdf",
+      "title": "Ustawa o obywatelstwie polskim of 1951, art. 9: art. 8 reaches a child born abroad only if the other parent's state applies the same rules to children born in Poland",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1920-art-5",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1920/44/text.pdf",
+      "title": "Ustawa z dnia 20 stycznia 1920 r. o obywatelstwie Państwa Polskiego, in force from 31 January 1920, art. 5: a child born in wedlock takes the father's citizenship, one born out of it the mother's",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1920-art-11",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1920/44/text.pdf",
+      "title": "Ustawa o obywatelstwie Państwa Polskiego of 1920, art. 11: lost by acquiring a foreign citizenship, or by foreign office or army service without consent; those bound to active service needed a permit",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-1920-art-13",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/1920/44/text.pdf",
+      "title": "Ustawa o obywatelstwie Państwa Polskiego of 1920, art. 13: a grant or loss reaches the wife and the children up to the age of 18, unless the Minister of Internal Affairs decides otherwise",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "id": "ustawa-2009-term",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 10 ust. 3a: a confirmation case is settled within 6 months of the day the application reaches the authority that decides",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-consul",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 57: the application goes to the voivode; a person living outside Poland may file it through the consul of their place of residence",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2025-921",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/921",
+      "title": "Ustawa z dnia 25 czerwca 2025 r. o zmianie ustawy o repatriacji (Dz.U. 2025 poz. 921), in force from 1 August 2025: art. 2 sets the stamp duty at PLN 277 and art. 3 adds the 6-month term",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/921/text.pdf"
+    },
+    {
+      "id": "oplata-skarbowa-item-27",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "title": "Ustawa z dnia 16 listopada 2006 r. o opłacie skarbowej (Dz.U. 2026 poz. 1395), annex, part I, item 27: PLN 277 for a decision on confirming that a person holds or lost Polish citizenship",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
+    },
+    {
+      "id": "oplata-skarbowa-art-3a",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "title": "Ustawa o opłacie skarbowej, art. 3a ust. 1: no stamp duty on an official act when a Polish consul passes the application on, or delivers the document confirming the act, against a consular fee",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
+    },
+    {
+      "id": "oplata-skarbowa-due",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "title": "Ustawa o opłacie skarbowej, art. 6 ust. 1 pkt 1 and ust. 2: the duty on an official act falls due, and is paid, when the application for it is filed",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf"
+    },
+    {
+      "id": "oplaty-konsularne-item-2-03",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "title": "Rozporządzenie Ministra Spraw Zagranicznych z dnia 18 grudnia 2015 r. w sprawie opłat konsularnych (Dz.U. 2026 poz. 1298), tariff from 1 January 2026, item 2.03: EUR 100",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf"
+    },
+    {
+      "id": "oplaty-konsularne-conversion",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "title": "Rozporządzenie w sprawie opłat konsularnych, § 3 ust. 1: the consul converts the fee into the currency it is charged in at the European Central Bank's reference rate, rounded up to a whole unit",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-12",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 12: applications and documents in a foreign language are filed with a Polish translation made or certified by a sworn translator or a consul",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-56",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 56: the application gives the data of the person and of their ascendants to the second degree, with the documents that prove it",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "wniosek-formularz",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2012/925/text.pdf",
+      "title": "Rozporządzenie Ministra Spraw Wewnętrznych z dnia 7 sierpnia 2012 r. w sprawie wzoru formularza wniosku o potwierdzenie posiadania lub utraty obywatelstwa polskiego (Dz.U. 2012 poz. 925): the form"
+    },
+    {
+      "id": "mswia-confirmation-page",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "title": "Ministerstwo Spraw Wewnętrznych i Administracji, \"Złóż wniosek do wojewody o potwierdzenie posiadania lub utraty obywatelstwa polskiego\": where to file, what it costs, how long it takes, how to appeal"
+    },
+    {
+      "id": "ustawa-2009-art-8",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 8: a minor aged 16 or more loses Polish citizenship through the parents' renunciation only with the minor's own consent",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "ustawa-2009-art-10-4",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "title": "Ustawa o obywatelstwie polskim of 2009, art. 10 ust. 4: in cases a voivode decides, the higher authority is the minister responsible for internal affairs",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1611/text.pdf"
+    },
+    {
+      "id": "oplaty-konsularne-translation",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf",
+      "title": "Rozporządzenie w sprawie opłat konsularnych, tariff from 1 January 2026, note to 2.03 and items 6.08 to 6.11: translating EUR 120 a page, checking EUR 60; EUR 60 and EUR 30 for repetitive documents"
+    },
+    {
+      "id": "konsulat-brazylia-page",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "title": "Polska w Brazylii (the Polish consular posts in Brazil), \"Potwierdzenie posiadania lub utraty obywatelstwa polskiego\": the documents to file through a consul and the form they must take"
+    },
+    {
+      "id": "oplaty-konsularne-item-5-01",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1298/text.pdf",
+      "title": "Rozporządzenie w sprawie opłat konsularnych, tariff from 1 January 2026, item 5.01: EUR 40 to deliver a document from an authority in Poland on an application a person abroad filed directly with it"
+    },
+    {
+      "id": "kpa-art-40",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1691",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2025/1691/text.pdf",
+      "title": "Kodeks postępowania administracyjnego (Dz.U. 2025 poz. 1691), art. 40 § 4 and § 5: who must name an attorney for service in Poland, and that otherwise letters are left in the file as delivered"
+    },
+    {
+      "id": "uw-pomorski-page",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "title": "Pomorski Urząd Wojewódzki w Gdańsku, \"Poświadczenia posiadania lub utraty obywatelstwa polskiego\": the documents to file with the voivode and how to send them"
+    },
+    {
+      "id": "oplata-skarbowa-art-7",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf",
+      "title": "Ustawa o opłacie skarbowej, art. 7 pkt 5: no stamp duty for a person who files with a certificate of receiving social assistance because of poverty"
+    },
+    {
+      "id": "oplata-skarbowa-part-iv",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "kind": "official",
+      "verifiedAt": "2026-11-20",
+      "machineReadableUrl": "https://api.sejm.gov.pl/eli/acts/DU/2026/1395/text.pdf",
+      "title": "Ustawa o opłacie skarbowej, annex, part IV: PLN 17 for each power of attorney filed; none when it is given to a spouse, an ascendant, a descendant or a sibling"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "pl",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "polish-line",
+      "title": "A Polish parent or earlier ancestor whose citizenship passed at each birth down the line (the law sets no limit of generations; four are read); only births since 15 August 2012 settle a link",
+      "expression": {
+        "op": "some",
+        "over": "principal.ancestors",
+        "generations": 4,
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "any",
+              "operands": [
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.edgeKind"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "biological"
+                      }
+                    },
+                    {
+                      "op": "intersects",
+                      "list": {
+                        "op": "fact",
+                        "key": "lineage.citizenshipsAtChildBirth"
+                      },
+                      "set": {
+                        "op": "tokens",
+                        "values": ["PL"]
+                      }
+                    },
+                    {
+                      "op": "gte",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.childBirthDate"
+                      },
+                      "right": {
+                        "op": "date",
+                        "value": "2012-08-15"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "lineage.edgeKind"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "biological"
+                      }
+                    },
+                    {
+                      "op": "intersects",
+                      "list": {
+                        "op": "fact",
+                        "key": "lineage.citizenshipsAtChildBirth"
+                      },
+                      "set": {
+                        "op": "tokens",
+                        "values": ["PL"]
+                      }
+                    },
+                    {
+                      "op": "unmodeled"
+                    }
+                  ]
+                },
+                {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      }
+                    },
+                    {
+                      "op": "unmodeled"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": "every",
+              "over": "lineage.links",
+              "where": {
+                "op": "any",
+                "operands": [
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "lineage.citizenshipsAtChildBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["PL"]
+                        }
+                      },
+                      {
+                        "op": "gte",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.childBirthDate"
+                        },
+                        "right": {
+                          "op": "date",
+                          "value": "2012-08-15"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "intersects",
+                        "list": {
+                          "op": "fact",
+                          "key": "lineage.citizenshipsAtChildBirth"
+                        },
+                        "set": {
+                          "op": "tokens",
+                          "values": ["PL"]
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "fact",
+                          "key": "lineage.edgeKind"
+                        },
+                        "right": {
+                          "op": "token",
+                          "value": "biological"
+                        }
+                      },
+                      {
+                        "op": "not",
+                        "operand": {
+                          "op": "intersects",
+                          "list": {
+                            "op": "fact",
+                            "key": "lineage.citizenshipsAtChildBirth"
+                          },
+                          "set": {
+                            "op": "tokens",
+                            "values": ["PL"]
+                          }
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "all",
+                    "operands": [
+                      {
+                        "op": "not",
+                        "operand": {
+                          "op": "eq",
+                          "left": {
+                            "op": "fact",
+                            "key": "lineage.edgeKind"
+                          },
+                          "right": {
+                            "op": "token",
+                            "value": "biological"
+                          }
+                        }
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "sources": [
+        "ustawa-2009-art-14",
+        "ustawa-2009-in-force",
+        "ustawa-2009-art-55",
+        "ustawa-1962-art-4",
+        "ustawa-1962-art-6",
+        "ustawa-1951-art-6",
+        "ustawa-1951-art-8",
+        "ustawa-1951-art-9",
+        "ustawa-1920-art-5",
+        "ustawa-1920-art-11",
+        "ustawa-1920-art-13"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "no-own-loss",
+      "evidence": ["principal.citizenships"],
+      "sources": [
+        "ustawa-2009-art-46",
+        "ustawa-2009-art-7",
+        "ustawa-2009-art-8",
+        "ustawa-1920-art-11"
+      ],
+      "title": "No loss of Polish citizenship: today only by renouncing it with the President's consent, which can cover the parents' minor child (from 16, if the child agrees); earlier acts had other ways"
+    },
+    {
+      "id": "parentage-settled-within-a-year",
+      "evidence": ["principal.citizenships"],
+      "sources": ["ustawa-2009-art-6"],
+      "title": "A change in the finding of who a parent is, or of a parent's citizenship, counts only within a year of the birth; a ruling denying paternity or its acknowledgment, until adulthood (from 16 by consent)"
+    },
+    {
+      "id": "full-adoption-before-16",
+      "evidence": ["principal.citizenships"],
+      "sources": ["ustawa-2009-art-16"],
+      "title": "Under the 2009 act, a foreign minor fully adopted by a Polish citizen before turning 16 is Polish as from birth; the requirement does not read adoption, so such a link shows as missing information"
+    },
+    {
+      "id": "application-and-proof",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-56", "wniosek-formularz"],
+      "title": "The application, whose form a regulation sets, gives the data of the person and of their parents and grandparents, with documents that prove it, unless getting them meets obstacles hard to overcome"
+    },
+    {
+      "id": "documents-in-polish",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-12", "wniosek-formularz", "oplaty-konsularne-translation"],
+      "title": "The application is filled in in Polish; documents in a foreign language go with a Polish translation made or certified by a sworn translator or a consul (for a fee), unless a treaty says otherwise"
+    },
+    {
+      "id": "documents-at-a-consul",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["konsulat-brazylia-page"],
+      "title": "At a consul, as the consulates in Brazil ask: ID shown; full birth record naming the parents if born abroad; civil status record; non-EU papers apostilled or legalized; copies certified by the consul"
+    },
+    {
+      "id": "documents-at-the-voivode",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["uw-pomorski-page"],
+      "title": "With the voivode, as the Pomeranian office asks: ID copy; proof of stamp duty paid; by post, copies certified by a notary or the lawyer acting; civil records made abroad may need Polish registration"
+    },
+    {
+      "id": "attorney-for-service",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["kpa-art-40", "wniosek-formularz"],
+      "title": "Living outside Poland, the EU, Switzerland and the EEA's EFTA states, not filing through a consul, with no representative in Poland: name someone there to receive letters, unless served electronically"
+    },
+    {
+      "id": "deciding-voivode",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-55"],
+      "title": "The voivode of the person's place of residence, or last place of residence, in Poland decides; with neither, the Mazovian voivode"
+    },
+    {
+      "id": "appeal-within-14-days",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["mswia-confirmation-page", "ustawa-2009-art-10-4"],
+      "title": "A decision can be appealed to the minister responsible for internal affairs, through the voivode who gave it, within 14 days of the day it is delivered"
+    },
+    {
+      "id": "own-application-for-each-minor",
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["mswia-confirmation-page"],
+      "title": "A parent's application does not cover minor children: each child needs an application of their own"
+    }
+  ],
+  "dependents": [],
+  "costs": [
+    {
+      "id": "stamp-duty",
+      "title": "Stamp duty on the voivode's decision on confirming Polish citizenship, paid on filing; none if a consul passes the application on or delivers the decision for a fee, or with a poverty aid certificate",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 27700,
+        "currency": "PLN"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "PL"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
+        "oplata-skarbowa-item-27",
+        "oplata-skarbowa-due",
+        "oplata-skarbowa-art-3a",
+        "oplaty-konsularne-item-5-01",
+        "oplata-skarbowa-art-7",
+        "ustawa-2025-921",
+        "mswia-confirmation-page"
+      ]
+    },
+    {
+      "id": "consular-fee",
+      "title": "Filing through a consul, open to a person living outside Poland: consular fee of EUR 100, charged in the consulate's currency, in place of the stamp duty; the place of filing is not recorded: possible",
+      "kind": "fee",
+      "amount": {
+        "op": "convert",
+        "operand": {
+          "op": "money",
+          "amount": 10000,
+          "currency": "EUR"
+        },
+        "currency": "PLN"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "PL"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": [
+        "oplaty-konsularne-item-2-03",
+        "oplaty-konsularne-conversion",
+        "ustawa-2009-consul",
+        "oplata-skarbowa-art-3a"
+      ]
+    },
+    {
+      "id": "power-of-attorney-duty",
+      "kind": "fee",
+      "title": "Stamp duty on a power of attorney filed in the case; none for a spouse, ascendant, descendant or sibling, or with a poverty aid certificate; whether a representative acts is not recorded: possible",
+      "amount": {
+        "op": "money",
+        "amount": 1700,
+        "currency": "PLN"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["oplata-skarbowa-part-iv", "oplata-skarbowa-art-7", "mswia-confirmation-page"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "confirmation-decision",
+      "title": "Decision on the application, from the day it reaches the deciding voivode; steps with legal time limits of their own, suspensions and delays not the office's fault do not count; extended if justified",
+      "min": "P0D",
+      "max": "P6M",
+      "sources": ["ustawa-2009-term", "ustawa-2025-921", "mswia-confirmation-page"]
+    }
+  ]
+}
