@@ -53,9 +53,12 @@ const defaultFontFiles = [defaultPair.display, defaultPair.body, defaultPair.num
 const isOptionalFont = (file: string) =>
   file.endsWith('.woff2') && !defaultFontFiles.some((prefix) => file.startsWith(prefix));
 
-/** Never precached: what the server does not publish, the worker itself and optional fonts. */
+/** Country flags load from the network when first shown; a screen shows a handful of some 270. */
+const isFlag = (file: string) => file.startsWith('assets/flags/');
+
+/** Never precached: what the server does not publish, the worker itself, optional fonts and flags. */
 const notPrecached = (file: string) =>
-  file === serviceWorkerFile || isUnpublishedFile(file) || isOptionalFont(file);
+  file === serviceWorkerFile || isUnpublishedFile(file) || isOptionalFont(file) || isFlag(file);
 
 async function precacheManifest(outDir: string) {
   const files = (await readdir(outDir, { recursive: true, withFileTypes: true }))
@@ -157,5 +160,14 @@ export default defineConfig({
     sourcemap: 'hidden',
     // `default-src 'self'` blocks data: fonts, so font files always stay files (spec 0006, R4).
     assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined),
+    rolldownOptions: {
+      output: {
+        // Flags get a folder of their own, which the precache list leaves out by name.
+        assetFileNames: ({ originalFileNames }) =>
+          originalFileNames.some((file) => file.includes('flag-icons/flags/'))
+            ? 'assets/flags/[name]-[hash][extname]'
+            : 'assets/[name]-[hash][extname]',
+      },
+    },
   },
 });

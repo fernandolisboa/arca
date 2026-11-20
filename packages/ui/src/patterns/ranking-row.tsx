@@ -5,7 +5,7 @@ export interface RankingRowProps {
   /** 1 for the first place. */
   readonly position: number;
   readonly name: string;
-  /** The country code, shown in a chip until the flag set exists (spec 0006, Flags). */
+  /** The country code, shown in a chip (spec 0006, Flags). */
   readonly code: string;
   readonly score: number;
   readonly maxScore: number;

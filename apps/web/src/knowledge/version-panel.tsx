@@ -2,6 +2,7 @@ import { type CorrectionItem, type VersionView, countrySetKey } from '@arca/api-
 import type { Messages } from '@arca/i18n';
 import { Button, Icon, StatusChip } from '@arca/ui';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { FlagLead } from '../country-flag.js';
 import { CorrectionFiling, CorrectionsSection, PointOutError } from './corrections.js';
 import { Decision, decideVersion } from './decision.js';
 import { ChangeList, ContentHash, card, changeLines, surface } from './review-parts.js';
@@ -439,6 +440,7 @@ export function VersionPanel({ view }: { readonly view: VersionView }) {
             </div>
           </div>
           <p className="text-small text-muted">
+            <FlagLead code={view.country} />
             {[
               t('knowledge.versionMeta', {
                 country: words.country(view.country),

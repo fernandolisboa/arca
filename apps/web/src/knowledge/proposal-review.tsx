@@ -8,10 +8,11 @@ import {
   maxItemJsonLength,
   routes,
 } from '@arca/api-contract/client';
-import { Button, StatusChip } from '@arca/ui';
+import { Button, Disclosure, StatusChip } from '@arca/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { use, useId, useState } from 'react';
 import { api, knowledgeVersionsQuery, versionReviewQuery } from '../api.js';
+import { FlagLead } from '../country-flag.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
 import { textLinkClass } from '../forms/text-link.js';
@@ -304,6 +305,7 @@ function DomainListReview({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <h5 id={titleId} className="font-medium">
+            <FlagLead code={country} />
             {t('knowledge.proposal.domainList.title', { country: countryName })}
           </h5>
           <p className="text-small text-muted">
@@ -421,59 +423,69 @@ export function ProposalReview({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const titleId = useId();
   const review = useQuery(versionReviewQuery(view.routeId, view.number));
   const [editing, setEditing] = useState<string | null>(null);
+  const [openByHand, setOpenByHand] = useState<boolean | null>(null);
   if (review.isError)
     return <p className="text-small text-muted">{t('knowledge.proposal.loadFailure')}</p>;
   if (review.data === undefined) return null;
   const data = review.data;
   const canEdit = view.state !== 'rejected' && data.editable.length > 0;
   const startEdit = canEdit ? setEditing : undefined;
+  // Lists to read before deciding start open; a history alone waits behind the title.
+  const hasLists = data.items.length > 0 || data.domainList !== null;
   return (
-    <section aria-labelledby={titleId} className={`${card} gap-5`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h4 id={titleId} className="font-medium">
-            {t('knowledge.proposal.title')}
-          </h4>
-          <p className="text-small text-muted">
-            {t('knowledge.proposal.origin', { origin: data.origin })}
-          </p>
-        </div>
-        {canEdit && editing === null && (
+    <Disclosure
+      title={t('knowledge.proposal.title')}
+      level={4}
+      open={openByHand ?? hasLists}
+      onOpenChange={setOpenByHand}
+      aside={
+        canEdit &&
+        editing === null && (
           <Button
             variant="secondary"
             onClick={() => {
               setEditing(data.editable[0]?.key ?? null);
+              setOpenByHand(true);
             }}
           >
             {t('knowledge.proposal.edit')}
           </Button>
+        )
+      }
+      footer={
+        // Where the version came from shows while folded: it says whether lists back the version.
+        <p className="text-small text-muted">
+          {t('knowledge.proposal.origin', { origin: data.origin })}
+        </p>
+      }
+      className={card}
+    >
+      <div className="flex flex-col gap-5">
+        {data.domainList !== null && (
+          <DomainListReview list={data.domainList} country={view.country} words={words} />
         )}
+        {data.items.length > 0 && (
+          <Lists
+            items={data.items}
+            editable={new Set(data.editable.map(({ key }) => key))}
+            onEdit={startEdit}
+            words={words}
+          />
+        )}
+        {editing !== null && canEdit && (
+          <EditItem
+            key={editing}
+            view={view}
+            review={data}
+            itemKey={editing}
+            onPick={setEditing}
+            words={words}
+          />
+        )}
+        <RouteHistory view={view} words={words} />
       </div>
-      {data.domainList !== null && (
-        <DomainListReview list={data.domainList} country={view.country} words={words} />
-      )}
-      {data.items.length > 0 && (
-        <Lists
-          items={data.items}
-          editable={new Set(data.editable.map(({ key }) => key))}
-          onEdit={startEdit}
-          words={words}
-        />
-      )}
-      {editing !== null && canEdit && (
-        <EditItem
-          key={editing}
-          view={view}
-          review={data}
-          itemKey={editing}
-          onPick={setEditing}
-          words={words}
-        />
-      )}
-      <RouteHistory view={view} words={words} />
-    </section>
+    </Disclosure>
   );
 }

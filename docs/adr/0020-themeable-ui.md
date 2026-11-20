@@ -1,6 +1,6 @@
 # ADR-0020: Themeable UI with self-hosted fonts, Lucide icons and CSS motion
 
-- Status: Accepted
+- Status: Accepted; country flags and the country picker live in `apps/web`, not `packages/ui`, by [ADR-0033](0033-country-flags-from-flag-icons.md)
 - Date: 2026-11-03
 - Amends: [ADR-0010](0010-stack-revised.md) (the UI row)
 - Spec: [0006](../specs/0006-design-system-and-theming.md)

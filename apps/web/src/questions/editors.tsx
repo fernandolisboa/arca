@@ -8,8 +8,9 @@ import {
 } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
 import { Button, ChoiceGroup } from '@arca/ui';
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CountryField } from '../forms/country-field.js';
 import { dangerLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
@@ -97,34 +98,39 @@ export function FieldEditor({
   const { t } = useTranslation();
   const names = useNames();
   const unknownOption = optional ? [{ value: unknownValue, label: t('questions.unknown') }] : [];
-  const pick = (options: readonly { value: string; label: string }[], children?: ReactNode) => (
+  const chosenValue = value === null ? unknownValue : scalar(value);
+  const choose = (chosen: string) => {
+    onChange(chosen === '' ? undefined : chosen === unknownValue ? null : chosen);
+  };
+  const pick = (options: readonly { value: string; label: string }[]) => (
     <SelectField
       label={label}
       {...(hint === undefined ? {} : { hint })}
       placeholder={t('questions.pick')}
-      value={value === null ? unknownValue : scalar(value)}
+      value={chosenValue}
       options={[...options, ...unknownOption]}
-      onChange={(chosen) => {
-        onChange(chosen === '' ? undefined : chosen === unknownValue ? null : chosen);
-      }}
-    >
-      {children}
-    </SelectField>
+      onChange={choose}
+    />
   );
   switch (input.kind) {
     case 'country': {
       const former = input.formerStates === true ? context.formerCountries : [];
-      return pick(
-        names.countryOptions(context.countries),
-        former.length === 0 ? undefined : (
-          <optgroup label={t('questions.formerCountries')}>
-            {former.map((code) => (
-              <option key={code} value={code}>
-                {names.country(code)}
-              </option>
-            ))}
-          </optgroup>
-        ),
+      return (
+        <CountryField
+          label={label}
+          {...(hint === undefined ? {} : { hint })}
+          placeholder={t('questions.pick')}
+          value={chosenValue}
+          groups={[
+            { options: names.countryOptions(context.countries) },
+            {
+              title: t('questions.formerCountries'),
+              options: former.map((code) => ({ value: code, label: names.country(code) })),
+            },
+            { options: unknownOption },
+          ]}
+          onChange={choose}
+        />
       );
     }
     case 'language':

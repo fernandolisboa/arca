@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { KnowledgeVersions, VersionView } from '@arca/api-contract/client';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { family, person, signedIn } from './case-accounts.js';
+import { pickCountry } from './country-picker.js';
 import { seededCredential, virtualAuthenticator, withoutAutofill } from './passkeys.js';
 import {
   clearCorrectionRequests,
@@ -75,7 +76,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   // Every country starts folded; picking one in the filter shows it alone, open.
   const usa = proposed.getByRole('button', { name: 'Estados Unidos', exact: true });
   await expect(usa).toHaveAttribute('aria-expanded', 'false');
-  await proposed.getByLabel('País').selectOption({ label: 'Estados Unidos' });
+  await pickCountry(proposed, 'País', 'Estados Unidos');
   await expect(usa).toHaveAttribute('aria-expanded', 'true');
   await expect(proposed.getByRole('button', { name: 'Portugal', exact: true })).toHaveCount(0);
   await proposed
@@ -132,8 +133,15 @@ test('the seed admin activates a version, reads and closes its reports, then rej
 
   // A hand edit whose page does not back it is refused with the reason, and nothing is stored.
   const proposal = page.getByRole('region', { name: 'Revisão da proposta' });
-  await expect(proposal).toContainText('Esta versão não veio de um pedido de atualização');
+  // With no lists to read, the review waits folded behind its title, still saying where the
+  // version came from; editing an item opens it.
+  const proposalToggle = proposal.getByRole('button', { name: 'Revisão da proposta' });
+  await expect(proposalToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(
+    proposal.getByText('Esta versão não veio de um pedido de atualização', { exact: false }),
+  ).toBeVisible();
   await proposal.getByRole('button', { name: 'Editar item' }).click();
+  await expect(proposalToggle).toHaveAttribute('aria-expanded', 'true');
   await proposal.getByLabel('Endereço da página oficial').fill('https://example.gov/not-cited');
   await proposal.getByLabel('Nome da página').fill('Página sintética');
   await proposal.getByLabel('Trecho da página que confirma o item').fill('Um trecho sintético.');
