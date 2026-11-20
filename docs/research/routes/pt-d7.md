@@ -4,6 +4,15 @@ Research notes for Portugal's D7 residence visa for retirees and people living o
 
 ## Audits
 
+### 2026-11-20, session review
+
+The [session rule review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 6 together with [`pt-d8`](pt-d8.md).
+
+- **Version audited:** 6
+- **Outcome:** correction, version 7, from version 6's date, 2026-01-01, stored active by the review's pull request. What changed, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-pt/README.md).
+- **Amendments looked for:** the gazette's search, read on 2026-11-20, for acts amending Lei n.º 23/2007, Decreto Regulamentar n.º 84/2007, Portaria n.º 1563/2007, the consular fee table and the minimum wage. Nothing newer than Lei n.º 62/2026, Decreto Regulamentar n.º 1/2024, Portaria n.º 91/2025/1 and Decreto-Lei n.º 139/2025.
+- **Watch next:** the 2027 minimum wage decree ([#220](https://github.com/fernandolisboa/arca/issues/220)) is now version 8 of both routes, from 2027-01-01.
+
 ### 2026-11-12, gazette PDFs
 
 The check loop again, now that the check reads PDFs ([#363](https://github.com/fernandolisboa/arca/issues/363)), on version 5 together with [`pt-d8`](pt-d8.md), which shares this entry.

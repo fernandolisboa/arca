@@ -26,6 +26,7 @@ export function canonicalNumber(decimal: string): string {
 /** Group separators a number may be written with besides the dot and the comma. */
 const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
+const spaceRun = /[\s\u00a0\u2009\u202f]+/u;
 
 const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
 const separator = (char: string | undefined) =>
@@ -104,9 +105,37 @@ export function numbersIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
   for (const [token] of text.matchAll(numberToken)) {
     const whole = readings(token);
-    const pieces =
-      whole.length > 0 ? [] : token.split(/[\s\u00a0\u2009\u202f]+/u).flatMap(readings);
+    const pieces = whole.length > 0 ? [] : token.split(spaceRun).flatMap(readings);
     for (const read of [...whole, ...pieces]) found.add(read);
+  }
+  return found;
+}
+
+/** A percent sign, `%` or its full-width or small form, right after a figure or after one space. */
+const percentSign = /^[\s\u00a0\u2009\u202f]?[%\uff05\ufe6a]/u;
+
+/** A canonical decimal divided by one hundred by moving its decimal mark, so nothing rounds it. */
+function dividedByHundred(decimal: string): string {
+  const [whole = '', fraction = ''] = decimal.split('.');
+  const padded = whole.padStart(3, '0');
+  return canonicalNumber(`${padded.slice(0, -2)}.${padded.slice(-2)}${fraction}`);
+}
+
+/**
+ * Every share a text writes as a percentage, as the number it stands for: "50 %" reads 0.5 and
+ * "34,75 %" reads 0.3475, since a rule multiplies by the factor where the law writes the
+ * percentage. Only the figure the sign follows is read, with the readings `numbersIn` gives it.
+ */
+export function percentagesIn(text: string): ReadonlySet<string> {
+  const found = new Set<string>();
+  // Each figure is found once and the sign looked for after it, so a long text stays linear.
+  for (const match of text.matchAll(numberToken)) {
+    const [token] = match;
+    const end = match.index + token.length;
+    if (!percentSign.test(text.slice(end, end + 2))) continue;
+    const whole = readings(token);
+    const lastPiece = whole.length > 0 ? [] : readings(token.split(spaceRun).at(-1) ?? '');
+    for (const read of [...whole, ...lastPiece]) found.add(dividedByHundred(read));
   }
   return found;
 }
@@ -271,9 +300,9 @@ function writesNumericDate(text: string, year: string, month: string, day: strin
 }
 
 /**
- * Whether a text states the value: a number among the numbers it writes, or a whole number written
- * in words of one of `languages`; a date in ISO form, in numbers that read one way only, or by its
- * year, its day and its month's name beside them.
+ * Whether a text states the value: a number among the numbers it writes, as a figure or as a
+ * percentage of one, or a whole number written in words of one of `languages`; a date in ISO form,
+ * in numbers that read one way only, or by its year, its day and its month's name beside them.
  */
 export function statesValue(
   value: CheckValue,
@@ -284,6 +313,7 @@ export function statesValue(
   if (value.kind === 'number') {
     return (
       numbers.has(value.value) ||
+      percentagesIn(text).has(value.value) ||
       writesNumberInWords(text, value.value, languages) ||
       writesAnniversary(text, value.value, languages)
     );

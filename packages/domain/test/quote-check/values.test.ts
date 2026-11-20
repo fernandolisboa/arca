@@ -5,6 +5,7 @@ import {
   canonicalNumber,
   digitsApart,
   numbersIn,
+  percentagesIn,
   statesValue,
 } from '../../src/quote-check/values.js';
 
@@ -85,9 +86,34 @@ describe('digitsApart', () => {
   });
 });
 
+describe('percentagesIn', () => {
+  it.each([
+    ['Segundo ou mais adultos 50 %', ['0.5']],
+    ['filhos maiores a cargo 30%', ['0.3']],
+    [
+      '34,75 %, cabendo 23,75 % à entidade empregadora e 11 % ao trabalhador',
+      ['0.3475', '0.2375', '0.11'],
+    ],
+    ['a rate of 7.5% a year', ['0.075']],
+    ['150\u00a0% of the wage', ['1.5']],
+    ['100 %', ['1']],
+    ['1 050 % and 1.050,5 %', ['10.5', '10.505']],
+    ['article 5 50 %', ['0.5']],
+    ['50 euros, 50 por cento, 50  %', []],
+    ['% 50', []],
+  ])('reads %s as %j', (text, shares) => {
+    expect([...percentagesIn(text)]).toEqual(shares);
+  });
+});
+
 describe('statesValue', () => {
   it.each([
     [number('800000'), 'invest at least $800,000 in a targeted area', true],
+    [number('0.5'), 'Segundo ou mais adultos 50 %', true],
+    [number('0.11'), 'cabendo 23,75 % à entidade empregadora e 11 % ao trabalhador', true],
+    [number('0.5'), 'um emolumento de 50 euros', false],
+    [number('0.5'), 'primeiro adulto 150 %', false],
+    [number('0.05'), 'Segundo ou mais adultos 50 %', false],
     [number('800000'), 'invest at least $1,050,000', false],
     [number('21'), 'unmarried and under 21 years of age', true],
     [number('21'), 'unmarried and under twenty-one', false],
