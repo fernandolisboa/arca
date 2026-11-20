@@ -5,10 +5,7 @@
   "corrects": 3,
   "title": "Critical Skills Employment Permit for Ireland: a 2-year job offer in a critical skills occupation paying at least €40,904 a year, or any eligible job paying €68,911",
   "country": "IE",
-  "tags": [
-    "work",
-    "temporary-residence"
-  ],
+  "tags": ["work", "temporary-residence"],
   "effectiveFrom": "2026-06-12",
   "status": "open",
   "currency": "EUR",
@@ -228,15 +225,11 @@
           }
         }
       },
-      "sources": [
-        "ep-act-foreign-national",
-        "ep-act-eu-treaty-rights",
-        "dete-who-needs-a-permit"
-      ]
+      "sources": ["ep-act-foreign-national", "ep-act-eu-treaty-rights", "dete-who-needs-a-permit"]
     },
     {
       "id": "not-british-citizen",
-      "title": "Not a citizen of the United Kingdom: exempt from the Aliens Act 1935, a British citizen is no non-national and needs no employment permit",
+      "title": "Not a citizen of the United Kingdom: exempt from the Aliens Act 1935, a British citizen is not a non-national and needs no employment permit",
       "expression": {
         "op": "not",
         "operand": {
@@ -247,9 +240,7 @@
           },
           "set": {
             "op": "tokens",
-            "values": [
-              "GB"
-            ]
+            "values": ["GB"]
           }
         }
       },
@@ -264,110 +255,63 @@
     {
       "id": "job-offer",
       "title": "A job offer of at least 2 years and at least 20 hours of work each week",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "ep-regs-csep",
-        "dete-csep"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["ep-regs-csep", "dete-csep"]
     },
     {
       "id": "employer-staff",
       "title": "A bona fide employer trading in Ireland and registered with the Revenue Commissioners, at least half of whose employees are EEA, Swiss or UK nationals, save the exceptions of the act",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "ep-act-csep",
-        "dete-csep"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["ep-act-csep", "dete-csep"]
     },
     {
       "id": "critical-skills-occupation",
       "title": "For the lower pay thresholds, a job in a critical skills occupation listed in Schedule 3 to the Employment Permits Regulations",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "csol-schedule-3-may-2026",
-        "csol-schedule-3-october-2026"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["csol-schedule-3-may-2026", "csol-schedule-3-october-2026"]
     },
     {
       "id": "pay",
       "title": "Pay of at least €40,904 a year and €20.17 an hour in a critical skills occupation, or €68,911 and €33.98 in any other eligible job; only basic salary and health insurance count, not bonuses",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "ep-regs-mar-2026",
-        "dete-csep"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["ep-regs-mar-2026", "dete-csep"]
     },
     {
       "id": "pay-recent-graduate",
       "title": "Critical skills occupation, not a nurse, midwife or radiographer: €36,848 a year and €18.17 an hour are enough with a degree at level 8 or higher, or equivalent, from the 12 months before applying",
-      "evidence": [
-        "principal.monthlyActiveIncome",
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "ep-regs-mar-2026"
-      ]
+      "evidence": ["principal.monthlyActiveIncome", "principal.educationLevel"],
+      "sources": ["ep-regs-mar-2026"]
     },
     {
       "id": "pay-public-sector-agreement",
       "title": "A critical skills job bound by a public sector pay agreement, or by a Workplace Relations Commission agreement linked to one, needs that agreement's pay instead of the €40,904 or €36,848 threshold",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "ep-regs-mar-2026",
-        "dete-csep"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["ep-regs-mar-2026", "dete-csep"]
     },
     {
       "id": "qualification",
       "title": "A relevant third level degree (a nurse, midwife or radiographer: a degree or diploma their registration board accepts); for a job paying €68,911 or more, a relevant degree or the experience",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "ep-regs-csep-qualification",
-        "ep-regs-mar-2026",
-        "dete-csep"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["ep-regs-csep-qualification", "ep-regs-mar-2026", "dete-csep"]
     },
     {
       "id": "dependent-adult-relatives",
       "title": "Dependent parent or adult child, after 2 years in Ireland: Irish gross income over €96,929 in each of the 3 prior years for one adult, €130,985 for two (2026); Stamp 0 first; private health insurance",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "frp-adult-relatives",
-        "isd-join-family"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["frp-adult-relatives", "isd-join-family"]
     },
     {
       "id": "family-housing",
       "title": "For the family to join: the principal not living in homeless, emergency or IPAS accommodation, or in social or local authority housing; social housing support such as HAP may also fail",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "frp-housing"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["frp-housing"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse or civil partner aged 18 or over; after a divorce from a spouse who joined the principal, a new spouse only 5 years after that first permission (not checked)",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "gte",
         "left": {
@@ -389,9 +333,7 @@
     {
       "id": "partner",
       "title": "De facto partner aged 18 or over, after 2 years together; a shorter relationship, which may be a civil partnership: possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -424,19 +366,12 @@
           }
         ]
       },
-      "sources": [
-        "frp-nuclear-family",
-        "frp-spouse",
-        "frp-de-facto-partner",
-        "isd-join-family"
-      ]
+      "sources": ["frp-nuclear-family", "frp-spouse", "frp-de-facto-partner", "isd-join-family"]
     },
     {
       "id": "children",
-      "title": "Children under 18 and unmarried (with a partner: possible), biological or adopted (Irish recognition not checked); a child over 18 dependent for a serious medical or psychological condition: possible",
-      "path": [
-        "child"
-      ],
+      "title": "Unmarried children under 18 (with a partner: possible), own or adopted (Irish recognition unchecked); a child over 18 dependent for a serious medical or psychological condition: possible after 2 years",
+      "path": ["child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -503,20 +438,12 @@
           }
         ]
       },
-      "sources": [
-        "frp-nuclear-family",
-        "frp-children",
-        "frp-adult-relatives",
-        "isd-join-family"
-      ]
+      "sources": ["frp-nuclear-family", "frp-children", "frp-adult-relatives", "isd-join-family"]
     },
     {
       "id": "spouse-children",
       "title": "The spouse or civil partner's children as stepchildren, on the same terms as the principal's children; living full time in the household is not checked",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -583,19 +510,12 @@
           }
         ]
       },
-      "sources": [
-        "frp-nuclear-family",
-        "frp-children",
-        "frp-adult-relatives"
-      ]
+      "sources": ["frp-nuclear-family", "frp-children", "frp-adult-relatives"]
     },
     {
       "id": "partner-children",
       "title": "The de facto partner's children, on the terms of the principal's children: possible, as stepchildren living full time in the household; the Policy does not say a partner's child is a stepchild",
-      "path": [
-        "partner",
-        "child"
-      ],
+      "path": ["partner", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -670,18 +590,12 @@
           }
         ]
       },
-      "sources": [
-        "frp-nuclear-family",
-        "frp-children",
-        "frp-adult-relatives"
-      ]
+      "sources": ["frp-nuclear-family", "frp-children", "frp-adult-relatives"]
     },
     {
       "id": "parents",
       "title": "Parents who depend on the principal, without independent means: possible once the principal has 2 years in Ireland and Irish income in each of the 3 prior years (assessment)",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "all",
         "operands": [
@@ -694,16 +608,13 @@
           }
         ]
       },
-      "sources": [
-        "frp-adult-relatives",
-        "isd-join-family"
-      ]
+      "sources": ["frp-adult-relatives", "isd-join-family"]
     }
   ],
   "costs": [
     {
       "id": "application-fee",
-      "title": "Permit fee, paid by the worker, the employer or another; an employer may not recover it from the worker; 90% back on refusal or withdrawal; not checked: charity and EEA, Swiss or UK spouse waivers",
+      "title": "Permit fee, paid by worker, employer or another; an employer who applies may not recover it from the worker; 90% back on refusal or withdrawal; charity and EEA, Swiss or UK spouse waivers unchecked",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -711,11 +622,7 @@
         "currency": "EUR"
       },
       "appliesTo": "principal",
-      "sources": [
-        "ep-regs-fees",
-        "dete-fees",
-        "dete-csep"
-      ]
+      "sources": ["ep-regs-fees", "dete-fees", "dete-csep"]
     },
     {
       "id": "registration-fee",
@@ -727,9 +634,7 @@
         "currency": "EUR"
       },
       "appliesTo": "principal",
-      "sources": [
-        "registration-fee"
-      ]
+      "sources": ["registration-fee"]
     },
     {
       "id": "registration-fee-adult-dependant",
@@ -752,9 +657,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "registration-fee"
-      ]
+      "sources": ["registration-fee"]
     }
   ],
   "durations": [
@@ -763,19 +666,14 @@
       "title": "Critical Skills Employment Permit of up to 24 months, for which the €1,000 fee is paid",
       "min": "P0D",
       "max": "P24M",
-      "sources": [
-        "dete-fees"
-      ]
+      "sources": ["dete-fees"]
     },
     {
       "id": "stamp-4",
       "title": "Stamp 4 permission, which may be applied for after 21 months of employment on the permit, to live and work without an employment permit: 2 years, then renewable",
       "min": "P2Y",
       "max": "P2Y",
-      "sources": [
-        "isd-stamp-4",
-        "dete-stamp-4"
-      ]
+      "sources": ["isd-stamp-4", "dete-stamp-4"]
     }
   ]
 }
