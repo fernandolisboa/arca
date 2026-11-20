@@ -4,6 +4,10 @@ Research notes for Georgia's short-term residence permit for owners of real esta
 
 ## Audits
 
+### 2026-11-20
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 3 corrects version 2 from 2026-09-01 and is stored active. What changed, the rounds and the leftover list are in [the review](../../../packages/knowledge/reviews/2026-11-ge/README.md). Children of any age now count as dependents, which settles the open question below, and the start date of 2026-09-01 is now read from Law No. 1803's own art. 3(2) on matsne, which answers `curl` again.
+
 ### 2026-11-11
 
 The first audit ([#360](https://github.com/fernandolisboa/arca/issues/360)), on demand, in one pull request with the Czech, Danish, Latvian and Icelandic routes ([Czech record](cz-eu-blue-card.md)).
