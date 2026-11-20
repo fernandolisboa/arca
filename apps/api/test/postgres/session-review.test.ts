@@ -1,10 +1,12 @@
 import { versionCasesHash } from '@arca/knowledge';
+import { sessionReviews } from '@arca/knowledge/session-review';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { postgresRuleStore } from '../../src/knowledge/rule-store.js';
 import { authTestDatabase, type AuthTestDatabase, silentLogger } from './auth-database.js';
 
-// Session reviews on the real migrations (ADR-0032): each activation a review's migration stored
-// names a version the API reads, under the content and cases hashes it reads now.
+// Session reviews on the real migrations (ADR-0032): the activations stored are those of the
+// listed reviews and no other, each naming a version the API reads, under the content and cases
+// hashes it reads now.
 let testDatabase: AuthTestDatabase;
 
 beforeAll(async () => {
@@ -16,7 +18,7 @@ afterAll(async () => {
 });
 
 describe('session review activations (ADR-0032)', () => {
-  it('name stored versions by the hashes the rule store reads', async () => {
+  it("are the listed reviews' versions, by the hashes the rule store reads", async () => {
     const store = postgresRuleStore(() => testDatabase.apiDb, silentLogger);
     const data = await store.data();
     const { catalog } = await store.engine();
@@ -34,8 +36,11 @@ describe('session review activations (ADR-0032)', () => {
           )
         ).rows,
     );
-    expect(activations.map((row) => `${row.route_id}/${String(row.version_number)}`)).toContain(
-      'us-eb5/9',
+    expect(activations.map((row) => `${row.route_id}/${String(row.version_number)}`)).toEqual(
+      sessionReviews
+        .flatMap(({ versions }) => versions)
+        .map(({ routeId, number }) => `${routeId}/${String(number)}`)
+        .sort(),
     );
     for (const row of activations) {
       const identity = catalog

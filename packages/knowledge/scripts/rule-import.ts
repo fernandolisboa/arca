@@ -5,6 +5,7 @@ import type { PinnedFileRow, RuleRows } from '../src/rule-rows.ts';
 import { buildKnowledge, formatIssue } from './build.ts';
 import type { CalendarDate } from '@arca/domain';
 import { parseCalendarDate } from '@arca/domain';
+import { json, literal } from './sql.ts';
 
 /** The migration that imports the repository's rules into the database once (ADR-0031). */
 export const importMigration = 'knowledge_rule_import';
@@ -14,9 +15,6 @@ export const importMigration = 'knowledge_rule_import';
  * committed migration can be generated again and compared.
  */
 export const importDate: CalendarDate = parseCalendarDate('2026-11-16');
-
-const literal = (value: string): string => `'${value.replaceAll("'", "''")}'`;
-const json = (value: unknown): string => `${literal(JSON.stringify(value))}::jsonb`;
 
 interface Table {
   readonly name: string;

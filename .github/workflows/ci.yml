@@ -125,6 +125,39 @@ jobs:
       - name: Migrations, canaries, guards, the runtime client and the heartbeat against Postgres 18
         run: pnpm test:db
 
+  # A session review's quotes, each found on the official page its item cites by the app's own
+  # reader and quote check (ADR-0032). It reads those pages over the network, so it runs only for
+  # a pull request that changes a review, and names the reviews by their folders.
+  review-quotes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The merge commit and its parents: the first parent is the base branch.
+          fetch-depth: 2
+      - name: The reviews this pull request changes
+        id: changed
+        run: |
+          reviews=$(git diff --name-only HEAD^1 HEAD -- packages/knowledge/reviews/ \
+            | cut -d/ -f4 | grep -E '^[0-9a-z-]+$' | sort -u | paste -sd, - || true)
+          echo "reviews=$reviews" >> "$GITHUB_OUTPUT"
+      - if: steps.changed.outputs.reviews != ''
+        uses: ./.github/actions/setup-pnpm
+      - if: steps.changed.outputs.reviews != ''
+        run: pnpm install --frozen-lockfile
+      - if: steps.changed.outputs.reviews != ''
+        name: Every quote on its official page
+        env:
+          ARCA_REVIEW_QUOTES: ${{ steps.changed.outputs.reviews }}
+        run: |
+          pnpm turbo run build --filter='@arca/api^...'
+          pnpm --filter @arca/api exec vitest run test/session-review-quotes.test.ts
+
   sbom:
     runs-on: ubuntu-24.04
     timeout-minutes: 10

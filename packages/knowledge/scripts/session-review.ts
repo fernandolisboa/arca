@@ -3,14 +3,17 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   type CatalogEntry,
+  type CheckAnswer,
+  type CheckItem,
+  type ReadPage,
+  asDataText,
   checkItems,
-  machineReadableUrls,
   maxKnowledgeJsonDepth,
   maxQuoteLength,
-  maxQuotes,
   minQuoteLength,
-  normalizeWhitespace,
+  pageLanguages,
   routeVersionSchema,
+  verifyAnswers,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { parseJsonSubset } from '@arca/scripts/json';
@@ -27,6 +30,7 @@ import { buildKnowledge, formatIssue } from './build.ts';
 import { inlinedRows } from './inline-cases.ts';
 import { readKnowledgeFile } from './load.ts';
 import { importDate } from './rule-import.ts';
+import { json, literal } from './sql.ts';
 
 /**
  * One session review (ADR-0032): the route versions a Claude Code session the owner asked for
@@ -53,6 +57,8 @@ export interface ReviewedVersion extends RouteVersionRow {
   readonly cases: Json;
   readonly casesHash: string;
   readonly entry: CatalogEntry;
+  /** The hosts of the official-domain lists an item pins, as the proposal check read them. */
+  readonly officialHosts: (pins: CheckItem['officialDomains']) => readonly string[] | undefined;
 }
 
 /** An official passage an item rests on, copied from a page the item cites. */
@@ -70,8 +76,6 @@ const evidenceSchema = z.strictObject({
 });
 export type Evidence = z.infer<typeof evidenceSchema>;
 
-const literal = (value: string): string => `'${value.replaceAll("'", "''")}'`;
-const json = (value: unknown): string => `${literal(JSON.stringify(value))}::jsonb`;
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
 
 const readJson = async (path: string): Promise<Json> =>
@@ -81,25 +85,48 @@ const fileOf = (reviewsDir: string, review: SessionReview, routeId: string, numb
   join(reviewsDir, review.id, `${routeId}.${String(number)}`);
 
 /**
- * Why a version's evidence does not cover it, one line per problem: every item the quote check
- * would read has one to `maxQuotes` quotes, and each quote is on a page its item cites.
+ * Why a version's evidence does not hold, one line per problem, by the app's own quote check
+ * (`verifyAnswers`, ADR-0031): every item matches on one to `maxQuotes` quotes, each on the text
+ * of a page the item cites, and its quotes state every value the item gives.
  */
-export function evidenceProblems(entry: CatalogEntry, evidence: Evidence): string[] {
-  const items = new Map(checkItems(entry).map((item) => [item.key, item]));
-  const problems: string[] = [];
-  for (const { key, url } of evidence.quotes) {
-    const item = items.get(key);
-    if (item === undefined) problems.push(`${key}: No such item`);
-    else if (!item.urls.includes(url)) problems.push(`${key}: ${url} is not a page it cites`);
+export function evidenceProblems(
+  entry: CatalogEntry,
+  evidence: Evidence,
+  pages: ReadonlyMap<string, ReadPage>,
+): string[] {
+  const items = checkItems(entry);
+  const keys = new Set(items.map((item) => item.key));
+  const answers: CheckAnswer[] = items.map(({ key }) => ({
+    key,
+    status: 'matches',
+    quotes: evidence.quotes
+      .filter((quote) => quote.key === key)
+      .map(({ url, quote }) => ({ url, quote: asDataText(quote) })),
+  }));
+  return [
+    ...evidence.quotes.filter(({ key }) => !keys.has(key)).map(({ key }) => `${key}: No such item`),
+    ...verifyAnswers(items, answers, pages, pageLanguages(entry.version.country))
+      .filter((checked) => checked.status !== 'matches')
+      .map((checked) => `${checked.key}: ${checked.reason ?? checked.status}`),
+  ];
+}
+
+/**
+ * Each cited page as its quotes alone, so the check runs with no network: it then proves the
+ * quotes are well formed, cited and state the item's values, not that a page holds them. The
+ * `review-quotes` job reads the pages themselves.
+ */
+export function quotedPages(evidence: Evidence): Map<string, ReadPage> {
+  const texts = new Map<string, string[]>();
+  for (const { url, quote } of evidence.quotes) {
+    texts.set(url, [...(texts.get(url) ?? []), asDataText(quote)]);
   }
-  const quoted = new Map<string, number>();
-  for (const { key } of evidence.quotes) quoted.set(key, (quoted.get(key) ?? 0) + 1);
-  for (const key of items.keys()) {
-    const count = quoted.get(key) ?? 0;
-    if (count === 0) problems.push(`${key}: No quote`);
-    if (count > maxQuotes) problems.push(`${key}: More than ${String(maxQuotes)} quotes`);
-  }
-  return problems;
+  return new Map(
+    [...texts].map(([url, quotes]) => [
+      url,
+      { url, text: quotes.join('\n'), cut: false, chain: [url] },
+    ]),
+  );
 }
 
 /** The evidence file of a reviewed version, parsed. */
@@ -146,9 +173,8 @@ export async function reviewedVersions(
       cases: inlined.get(`${row.routeId}/${String(row.number)}`) ?? row.cases,
     })),
   };
-  const index = sessionReviews.indexOf(review);
   let reviewed: ReviewedVersion[] = [];
-  for (const each of index === -1 ? [review] : sessionReviews.slice(0, index + 1)) {
+  for (const each of sessionReviews.slice(0, sessionReviews.indexOf(review) + 1)) {
     reviewed = [];
     for (const { routeId, number } of each.versions) {
       const path = fileOf(dirs.reviewsDir, each, routeId, number);
@@ -170,10 +196,8 @@ export async function reviewedVersions(
       );
       if (!checked.ok) throw new Error(`${path}:\n${checked.problems.join('\n')}`);
       if (checked.entry.version.number !== number) throw new Error(`${path}: Its number`);
-      const gaps = evidenceProblems(
-        checked.entry,
-        await readEvidence(dirs.reviewsDir, each, routeId, number),
-      );
+      const evidence = await readEvidence(dirs.reviewsDir, each, routeId, number);
+      const gaps = evidenceProblems(checked.entry, evidence, quotedPages(evidence));
       if (gaps.length > 0) throw new Error(`${path}.evidence.json:\n${gaps.join('\n')}`);
       const row: ReviewedVersion = {
         routeId,
@@ -183,6 +207,7 @@ export async function reviewedVersions(
         cases,
         casesHash: casesHashOf(cases, reading),
         entry: checked.entry,
+        officialHosts: checked.officialHosts,
       };
       reviewed.push(row);
       rows = { ...rows, routeVersions: [...rows.routeVersions, row] };
@@ -192,8 +217,8 @@ export async function reviewedVersions(
 }
 
 /**
- * A review as SQL: it aborts when a stored row under a reviewed ID and number has another hash,
- * stores each version, keeping a row already stored, and records its activation as a
+ * A review as SQL: it stores each version, which fails, and with it the whole migration, when the
+ * database already holds one under that ID and number, and records its activation as a
  * `session_review` decision bound to the content and cases hashes (ADR-0032).
  */
 export function reviewSql(review: SessionReview, versions: readonly ReviewedVersion[]): string {
@@ -201,23 +226,8 @@ export function reviewSql(review: SessionReview, versions: readonly ReviewedVers
     `-- Generated by packages/knowledge/scripts/session-review.ts from
 -- packages/knowledge/reviews/${review.id}. Do not edit. Route versions a session review wrote
 -- and checked against the official sources, stored and activated with no admin step (ADR-0032).
-DO $check$
-BEGIN
-  IF EXISTS (
-    SELECT FROM (VALUES
-${versions.map(({ routeId, number, contentHash }) => `      (${literal(routeId)}, ${String(number)}, ${literal(contentHash)})`).join(',\n')}
-    ) AS reviewed (route_id, number, content_hash)
-    JOIN "knowledge"."route_version" AS stored
-      ON stored.route_id = reviewed.route_id AND stored.number = reviewed.number
-    WHERE stored.content_hash <> reviewed.content_hash
-  ) THEN
-    RAISE EXCEPTION 'knowledge session review: a stored route version has another content hash';
-  END IF;
-END
-$check$;`,
-    `INSERT INTO "knowledge"."route_version" (route_id, number, content, content_hash, cases) VALUES
-${versions.map((row) => `  (${literal(row.routeId)}, ${String(row.number)}, ${json(row.content)}, ${literal(row.contentHash)}, ${json(row.cases)})`).join(',\n')}
-ON CONFLICT (route_id, number) DO NOTHING;`,
+INSERT INTO "knowledge"."route_version" (route_id, number, content, content_hash, cases) VALUES
+${versions.map((row) => `  (${literal(row.routeId)}, ${String(row.number)}, ${json(row.content)}, ${literal(row.contentHash)}, ${json(row.cases)})`).join(',\n')};`,
     `INSERT INTO "knowledge"."decision" (kind, subject_kind, route_id, version_number, content_hash, cases_hash, proof) VALUES
 ${versions.map((row) => `  ('activate', 'route', ${literal(row.routeId)}, ${String(row.number)}, ${literal(row.contentHash)}, ${literal(row.casesHash)}, 'session_review')`).join(',\n')};`,
   ]
@@ -235,57 +245,4 @@ export async function reviewMigrationFile(
   );
   if (folder === undefined) throw new Error(`No ${review.migration} migration folder`);
   return join(migrationsDir, folder, 'migration.sql');
-}
-
-const entities: Readonly<Record<string, string>> = {
-  amp: '&',
-  lt: '<',
-  gt: '>',
-  quot: '"',
-  apos: "'",
-  nbsp: ' ',
-  sect: '§',
-  mdash: '—',
-  ndash: '–',
-};
-
-/** A fetched page as plain text: markup dropped, common entities read, whitespace as one space. */
-export function pageText(html: string): string {
-  const text = html
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/giu, ' ')
-    .replace(/<[^>]*>/gu, ' ')
-    .replace(/&#(\d+);/gu, (_, code: string) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/giu, (_, code: string) => String.fromCodePoint(parseInt(code, 16)))
-    .replace(/&([a-z]+);/giu, (whole, name: string) => entities[name.toLowerCase()] ?? whole);
-  return normalizeWhitespace(text);
-}
-
-/**
- * Reads each cited page once, from its machine-readable address when the source gives one, and
- * names every quote that is not on its page. Needs the network, so a session runs it, not CI.
- */
-export async function quoteProblems(
-  version: ReviewedVersion,
-  evidence: Evidence,
-): Promise<string[]> {
-  const readable = machineReadableUrls(version.entry);
-  const pages = new Map<string, Promise<string>>();
-  const page = (url: string) => {
-    let known = pages.get(url);
-    if (known === undefined) {
-      known = fetch(readable.get(url) ?? url, { redirect: 'error' }).then(async (answer) => {
-        if (!answer.ok) throw new Error(`${url}: HTTP ${String(answer.status)}`);
-        return pageText(await answer.text());
-      });
-      pages.set(url, known);
-    }
-    return known;
-  };
-  const problems: string[] = [];
-  for (const { key, url, quote } of evidence.quotes) {
-    if (!(await page(url)).includes(normalizeWhitespace(quote))) {
-      problems.push(`${key}: The quote is not on ${url}`);
-    }
-  }
-  return problems;
 }

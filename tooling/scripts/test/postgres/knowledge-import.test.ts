@@ -16,6 +16,7 @@ import {
  */
 let database: string;
 let importSql: string;
+let reviewSqls: string[];
 beforeAll(async () => {
   database = await freshDatabase();
   const migrations = await realMigrations();
@@ -23,6 +24,9 @@ beforeAll(async () => {
   const found = migrations.find(({ name }) => name.endsWith('_knowledge_rule_import'));
   if (found === undefined) throw new Error('No import migration');
   importSql = found.sql;
+  reviewSqls = migrations
+    .filter(({ name }) => /_knowledge_session_review_\d{4}_/u.test(name))
+    .map(({ sql }) => sql);
 });
 afterAll(async () => {
   await dropDatabase(database);
@@ -38,16 +42,17 @@ const counts = () =>
     return rows[0];
   });
 
-/** Runs the import as the migrator does, in one transaction that is always rolled back. */
-const runImport = () =>
+/** Runs a migration as the migrator does, in one transaction that is always rolled back. */
+const run = (sql: string) =>
   withClient(migratorTarget(database), async (client) => {
     await client.query('BEGIN');
     try {
-      await client.query(importSql);
+      await client.query(sql);
     } finally {
       await client.query('ROLLBACK');
     }
   });
+const runImport = () => run(importSql);
 
 describe('the rule import (ADR-0031)', () => {
   it('stored every route version, country set and official-domain list with the migrations', async () => {
@@ -76,5 +81,14 @@ describe('the rule import (ADR-0031)', () => {
         ALTER TABLE knowledge.${table} ENABLE ROW LEVEL SECURITY;`),
     );
     await expect(runImport()).rejects.toThrow(`a stored ${what} has another content hash`);
+  });
+});
+
+describe("a session review's migration (ADR-0032)", () => {
+  it('fails when the database already holds a version under its ID and number', async () => {
+    expect(reviewSqls.length).toBeGreaterThan(0);
+    for (const sql of reviewSqls) {
+      await expect(run(sql)).rejects.toThrow(/duplicate key value violates unique constraint/u);
+    }
   });
 });

@@ -10,12 +10,10 @@ import type { RuleRows } from '../src/rule-rows.ts';
 import { buildKnowledge, formatIssue } from './build.ts';
 import { readKnowledgeFile } from './load.ts';
 import { importDate } from './rule-import.ts';
+import { json, literal } from './sql.ts';
 
 /** The migration that rewrites imported cases that pin a synthetic family as inline snapshots. */
 export const inlineCasesMigration = 'knowledge_inline_rule_cases';
-
-const literal = (value: string): string => `'${value.replaceAll("'", "''")}'`;
-const json = (value: unknown): string => `${literal(JSON.stringify(value))}::jsonb`;
 
 /** One imported row whose cases pin a family, with the cases it stores and the inline ones. */
 export interface InlinedRow {

@@ -4,6 +4,14 @@ Research notes for the U.S. EB-5 immigrant investor route, route `us-eb5` in `pa
 
 ## Audits
 
+### 2026-11-19, session review
+
+The [session rule review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 8.
+
+- **Version audited:** 8
+- **Outcome:** correction, version 9, from version 8's date, 2026-11-30, stored active by the review's pull request. What changed, the three rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-us/README.md).
+- **Watch next:** the 2027-01-01 amounts are now version 10 ([#219](https://github.com/fernandolisboa/arca/issues/219)); the State Department's 2026 pause on immigrant visas, whose state today could not be read.
+
 ### 2026-11-11, check loop
 
 The check loop of the [rule audit runbook](https://github.com/fernandolisboa/arca/blob/fc269c37e9f7dd1c179153c14eb72859dc685619/docs/runbooks/rule-audit.md#the-check-loop), run on version 7.

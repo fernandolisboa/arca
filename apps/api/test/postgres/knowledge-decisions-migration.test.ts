@@ -9,6 +9,7 @@ import { createKnowledgeDecisions } from '../../src/knowledge/decisions.js';
 import { authTestDatabase, silentLogger, type AuthTestDatabase } from './auth-database.js';
 import { decisionStepUp, routeAction } from './knowledge-decision-legacy.js';
 import { origin, person } from './step-up-people.js';
+import { sessionReviews } from '@arca/knowledge/session-review';
 
 // A decision stored by app_auth under ADR-0022, on the migrations before ADR-0027's, still counts
 // once they run. Synthetic data only.
@@ -86,8 +87,16 @@ describe('the session-decision migration (ADR-0027)', () => {
         },
       },
     });
-    // Later migrations store session review activations of their own (ADR-0032).
-    expect((await decisions.states()).get(`qm-sample/1/${version.hash}`)).toBe('active');
+    // Later migrations store the listed session reviews' activations (ADR-0032).
+    const reviewed = new Set(
+      sessionReviews.flatMap(({ versions }) =>
+        versions.map(({ routeId, number }) => `${routeId}/${String(number)}`),
+      ),
+    );
+    const states = [...(await decisions.states())].filter(
+      ([key]) => !reviewed.has(key.split('/').slice(0, 2).join('/')),
+    );
+    expect(states).toEqual([[`qm-sample/1/${version.hash}`, 'active']]);
     expect(errors).toEqual([]);
     const proofs = await testDatabase.asAdmin(
       async (client) =>
