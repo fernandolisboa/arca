@@ -6,7 +6,7 @@ Research notes for Chile's Mercosur temporary residence, route `cl-mercosur-temp
 
 ### 2026-11-20
 
-A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 5, correcting version 4 from 2022-05-14, active once its pull request merges. It adds the fees by nationality (in an assessment's title for the principal, a USD 15 cost for each adult dependent), the from-abroad, documents and family-papers assessments, the sworn statement of costs, "under 24" for studying children, and drops Decreto N.º 177, article 46, which governs another subcategory. Ley Chile was read through BCN's JSON service, so the `www.bcn.cl` sources carry 2026-11-20. Rounds and leftovers: [review README](../../../packages/knowledge/reviews/2026-11-cl/README.md).
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 5, correcting version 4 from 2022-05-14, active once its pull request merges. It adds the fees by nationality (in an assessment's title for the principal, a USD 15 cost for each adult dependent), the from-abroad, documents and family-papers assessments, the sworn statement of costs, "under 24" for studying children, and drops Decreto N.º 177, article 46, which governs another subcategory. Ley Chile was read through BCN's JSON service (a lead); `www.bcn.cl` refused GitHub's quote check for every norm but the Civil Code, so version 5 cites only the Civil Code there. Rounds and leftovers: [review README](../../../packages/knowledge/reviews/2026-11-cl/README.md).
 
 ### 2026-11-15
 

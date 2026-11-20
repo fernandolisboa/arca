@@ -17,30 +17,6 @@
   ],
   "sources": [
     {
-      "id": "ley-21325-treaty-residence",
-      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
-      "title": "Ley N.º 21.325 (migration law), published 2021-04-20, article 70: temporary residence subcategories, among them N.º 9, treaties, and N.º 13, reciprocity or other treaties",
-      "kind": "official",
-      "verifiedAt": "2026-11-20",
-      "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=1158549"
-    },
-    {
-      "id": "ley-21325-dependents",
-      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1158549",
-      "title": "Ley N.º 21.325, article 74: dependents (spouse or partner; children of the resident, spouse or partner under 18, disabled, or from 18 to under 24 and studying) and the principal's means",
-      "kind": "official",
-      "verifiedAt": "2026-11-20",
-      "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=1158549"
-    },
-    {
-      "id": "decreto-177-dependents",
-      "url": "https://www.bcn.cl/leychile/navegar?idNorma=1176043",
-      "title": "Decreto N.º 177/2022, articles 72 to 74: dependents' permits, proof of the tie, the principal's notarized sworn statement and means by the Social Development and Family Ministry's indicators",
-      "kind": "official",
-      "verifiedAt": "2026-11-20",
-      "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=1176043"
-    },
-    {
       "id": "sermig-mercosur",
       "url": "https://serviciomigraciones.cl/residencia-temporal/subcategorias/reciprocidad-internacional/",
       "title": "Servicio Nacional de Migraciones: Mercosur temporary residence (subcategory 15) for citizens of Argentina, Bolivia, Brazil, Paraguay and Uruguay, up to two years, applied for from abroad",
@@ -59,7 +35,7 @@
       "url": "https://www.bcn.cl/leychile/navegar?idNorma=172986",
       "title": "Civil Code: art. 26, of age at 18 (dieciocho años); art. 48, a period of years started on a day the end month lacks ends on its last day, which also applies to ages",
       "kind": "official",
-      "verifiedAt": "2026-11-20",
+      "verifiedAt": "2026-11-07",
       "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=172986"
     },
     {
@@ -103,14 +79,6 @@
       "title": "Servicio Nacional de Migraciones, news of 2023-09-20: the Chile–Bolivia migration cooperation agreement removes the temporary residence fee (USD 90 charged to Bolivians)",
       "kind": "official",
       "verifiedAt": "2026-11-20"
-    },
-    {
-      "id": "decreto-296-fees",
-      "url": "https://www.bcn.cl/leychile/navegar?idNorma=12066",
-      "title": "Decreto N.º 296 of 1995 (fees foreigners pay), article 2: fees equal the consular tariff, by reciprocity, in pesos; fifteen dollars for dependents (d); girls, boys and adolescents exempt",
-      "kind": "official",
-      "verifiedAt": "2026-11-20",
-      "machineReadableUrl": "https://www.bcn.cl/leychile/Consulta/obtxml?opt=7&idNorma=12066"
     }
   ],
   "countries": {
@@ -184,7 +152,6 @@
         ]
       },
       "sources": [
-        "ley-21325-treaty-residence",
         "sermig-mercosur",
         "agreement-nationals"
       ]
@@ -199,8 +166,7 @@
         "principal.monthlyPassiveIncome"
       ],
       "sources": [
-        "sermig-dependents",
-        "decreto-177-dependents"
+        "sermig-dependents"
       ]
     },
     {
@@ -225,8 +191,7 @@
         "fee-table-by-nationality",
         "sermig-fees",
         "sermig-mercosur",
-        "sermig-bolivia-agreement",
-        "decreto-296-fees"
+        "sermig-bolivia-agreement"
       ]
     },
     {
@@ -258,9 +223,7 @@
         "principal.hasSpouse"
       ],
       "sources": [
-        "sermig-dependents",
-        "decreto-177-dependents",
-        "ley-21325-dependents"
+        "sermig-dependents"
       ]
     }
   ],
@@ -276,8 +239,7 @@
         "value": true
       },
       "sources": [
-        "sermig-dependents",
-        "ley-21325-dependents"
+        "sermig-dependents"
       ]
     },
     {
@@ -291,8 +253,7 @@
         "value": true
       },
       "sources": [
-        "sermig-dependents",
-        "ley-21325-dependents"
+        "sermig-dependents"
       ]
     },
     {
@@ -322,7 +283,6 @@
       },
       "sources": [
         "sermig-dependents",
-        "ley-21325-dependents",
         "codigo-civil"
       ]
     },
@@ -354,7 +314,6 @@
       },
       "sources": [
         "sermig-dependents",
-        "ley-21325-dependents",
         "codigo-civil"
       ]
     },
@@ -386,7 +345,6 @@
       },
       "sources": [
         "sermig-dependents",
-        "ley-21325-dependents",
         "codigo-civil"
       ]
     }
@@ -394,7 +352,7 @@
   "costs": [
     {
       "id": "dependent-fee",
-      "title": "USD 15 for each dependent of 18 or over, the fee table's flat fee for residence as a dependent, paid in Chilean pesos at the official dollar rate; minors are exempt",
+      "title": "USD 15 for each dependent of 18 or over, the fee table's flat fee for a dependent, paid in pesos at the official rate; minors exempt; possible for a Bolivian, whose fee a 2023 agreement waived",
       "kind": "fee",
       "amount": {
         "op": "convert",
@@ -407,19 +365,47 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "gte",
-        "left": {
-          "op": "fact",
-          "key": "person.ageYears"
-        },
-        "right": {
-          "op": "int",
-          "value": 18
-        }
+        "op": "all",
+        "operands": [
+          {
+            "op": "gte",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "intersects",
+                  "list": {
+                    "op": "fact",
+                    "key": "person.citizenships"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": [
+                      "BO"
+                    ]
+                  }
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
       },
       "sources": [
         "fee-table-by-nationality",
-        "decreto-296-fees",
         "codigo-civil"
       ]
     }
