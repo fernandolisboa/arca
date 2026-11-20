@@ -137,6 +137,11 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_cz',
     versions: [{ routeId: 'cz-eu-blue-card', number: 5 }],
   },
+  {
+    id: '2026-11-gb',
+    migration: 'knowledge_session_review_2026_11_gb',
+    versions: [{ routeId: 'gb-skilled-worker', number: 3 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

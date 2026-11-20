@@ -4,6 +4,10 @@ Research notes for the United Kingdom's Skilled Worker visa, route `gb-skilled-w
 
 ## Audits
 
+### 2026-11-20
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 3 corrects version 2 from 2026-04-08 and is stored active. What changed, the rounds and the leftover list are in [the review](../../../packages/knowledge/reviews/2026-11-gb/README.md). Nothing published up to 2026-11-20 changes an amount or a rule version 2 models: no statement of changes after HC 584, no fees or health charge instrument since the 8 October 2026 table. Watch next: the Temporary Shortage List closes to certificates issued from 31 December 2026, and the fees table changes each April.
+
 ### 2026-11-11
 
 The first audit by the runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, together with the Irish, Australian and Japanese routes. The issue asked for one pull request per country; the four share one, as the four Mercosur routes did in [#385](https://github.com/fernandolisboa/arca/pull/385), so that one review round covers them.
