@@ -4,6 +4,10 @@ Research notes for Ireland's Critical Skills Employment Permit, route `ie-critic
 
 ## Audits
 
+### 2026-11-20, session review
+
+A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 4 corrects version 3 from 2026-06-12 and is stored active. What changed, the rounds and the leftover list are in [the review](../../../packages/knowledge/reviews/2026-11-ie/README.md). Nothing published up to 2026-11-20 changes an amount version 3 models: no Employment Permits instrument after S.I. No. 558 of 2026 (the 2026 index read to No. 588), no family reunification policy after 12 June 2026. Version 4 adds the family the Policy admits after 2 years (dependent parents and adult children, as possible), the de facto partner's children as possible, the dependent adult relatives' income test and the housing rule as assessments, and the Stamp 4's 21 months.
+
 ### 2026-11-11
 
 The second audit, the first by the full runbook ([#359](https://github.com/fernandolisboa/arca/issues/359)), on demand, in one pull request with the British, Australian and Japanese routes ([British record](gb-skilled-worker.md)). As the issue asked, it covers what the pilot left: the requirements, the family rules of the Family Reunification Policy, and later instruments.
