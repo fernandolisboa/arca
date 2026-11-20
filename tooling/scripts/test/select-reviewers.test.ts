@@ -240,6 +240,8 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['packages/api-contract/src/routes/index.ts', 'auth-crypto'],
   ['packages/db/src/rate-limit-schema.ts', 'auth-crypto'],
   ['packages/knowledge/scripts/content-hash.ts', 'auth-crypto'],
+  ['packages/knowledge/reviews/2026-11-us/us-eb5.9.json', 'data-access'],
+  ['packages/knowledge/scripts/session-review.ts', 'auth-crypto'],
   ['apps/web/src/case.ts', 'auth-crypto'],
   ['apps/web/src/main.tsx', 'supply-chain'],
   ['apps/web/e2e/servers.ts', 'data-access'],

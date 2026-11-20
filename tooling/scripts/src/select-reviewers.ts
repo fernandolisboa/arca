@@ -97,6 +97,7 @@ const rules: readonly Rule[] = [
       /^packages\/domain\/(src|test)\/rules\/(catalog|version-|decisions)/,
       /^packages\/knowledge\/(src|test)\/(catalog|reproduction|display|bundled|rule-rows|canonical)/,
       /^packages\/knowledge\/(scripts\/(content-hash|hashes|rule-import)\.ts|data\/hashes\.json)$/,
+      /^packages\/knowledge\/(reviews\/|(scripts|test)\/session-review\.)/,
       /^tooling\/scripts\/src\/db\/guards\.ts$/,
     ),
     reviewers: withCore('data-access', 'auth-crypto'),

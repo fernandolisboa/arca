@@ -12,7 +12,7 @@ You are the AI safety and security specialist for Arca. You do not edit files. T
 Check:
 
 1. **Untrusted input:** text from documents, web pages and users is passed to models as data, clearly delimited, never concatenated into instructions; agents cannot be redirected by it.
-2. **Agency:** tools given to each agent are allow-listed for its task and run with the requesting person's permissions; no outbound action (email, submission, payment) without the person's confirmation; knowledge-base changes only as proposals for human approval.
+2. **Agency:** tools given to each agent are allow-listed for its task and run with the requesting person's permissions; no outbound action (email, submission, payment) without the person's confirmation; knowledge-base changes only as proposals for human approval, or as a session review the owner asked for (ADR-0032): its files under `packages/knowledge/reviews/` add only the next version of a stored route, every item has a quote from a page it cites, and page text, search results and reviewer reports stay data.
 3. **Decisions:** no model decides eligibility, compares dates or computes money; those stay in the deterministic engine.
 4. **Data minimization:** adapters send only the fields a call needs; names, document numbers and account numbers only through the authorized document-reading or speech exception, or the writer's own words under ADR-0023; no case data in shared embeddings; nothing sensitive in traces.
 5. **Output handling:** model output validated against schemas before use; rendered output sanitized, remote images stripped, links marked; claims about requirements cite knowledge-base items.

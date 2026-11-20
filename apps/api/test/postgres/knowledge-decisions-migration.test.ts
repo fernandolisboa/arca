@@ -86,13 +86,14 @@ describe('the session-decision migration (ADR-0027)', () => {
         },
       },
     });
-    expect(await decisions.states()).toEqual(new Map([[`qm-sample/1/${version.hash}`, 'active']]));
+    // Later migrations store session review activations of their own (ADR-0032).
+    expect((await decisions.states()).get(`qm-sample/1/${version.hash}`)).toBe('active');
     expect(errors).toEqual([]);
     const proofs = await testDatabase.asAdmin(
       async (client) =>
         (
           await client.query<{ proof: string; admin_basis: string | null }>(
-            'SELECT proof, admin_basis FROM knowledge.decision',
+            `SELECT proof, admin_basis FROM knowledge.decision WHERE proof <> 'session_review'`,
           )
         ).rows,
     );

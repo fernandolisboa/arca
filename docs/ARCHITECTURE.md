@@ -31,7 +31,7 @@ flowchart LR
   VAULT --> PLAN
 ```
 
-No job changes a rule on its own: an update request proposes, a person approves with a passkey, and the engine re-evaluates routes in use; the source-change notice only tells admins ([ADR-0031](adr/0031-rule-updates-on-request.md)). Until the import moves them into insert-only database rows, route versions are JSON files in `packages/knowledge`, reviewed as pull requests and immutable once merged; a version stays proposed until an admin activates it in the app ([ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md), [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [spec 0002](specs/0002-rules-engine-and-knowledge-base.md)).
+No job changes a rule on its own: an update request proposes, a person approves with a passkey, and the engine re-evaluates routes in use; the source-change notice only tells admins ([ADR-0031](adr/0031-rule-updates-on-request.md)). The one other way in is a session review the owner asks for: a reviewed pull request whose generated migration stores the next version of a stored route, already active ([ADR-0032](adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)). Until the import moves them into insert-only database rows, route versions are JSON files in `packages/knowledge`, reviewed as pull requests and immutable once merged; a version stays proposed until an admin activates it in the app ([ADR-0027](adr/0027-admins-and-the-checked-batch-activation.md), [ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [spec 0002](specs/0002-rules-engine-and-knowledge-base.md)).
 
 ## Platforms and code layout
 
