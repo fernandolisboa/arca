@@ -115,6 +115,14 @@ function failureOf(error: unknown): ClaudeFailure {
 }
 
 /**
+ * A reply the model did not finish by itself is never read as its answer: a refusal or a cut-off
+ * reply may still hold text that parses.
+ */
+function refuseUnfinished(finishReason: string): void {
+  if (finishReason !== 'stop') throw new ClaudeCallError('failed');
+}
+
+/**
  * The instructions as the request's cached prefix. They are the only bytes two calls of one kind
  * share: what follows is a different rule, page or description each time, so the one breakpoint
  * sits here and nothing volatile may come before it. One hour, not the default five minutes: a
@@ -242,6 +250,7 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
     async object(call: StructuredCall): Promise<StructuredReply> {
       try {
         const result = await generateText(await request(call));
+        refuseUnfinished(result.finishReason);
         return replyOf(result.output, result.usage, result.finalStep.providerMetadata);
       } catch (error) {
         throw new ClaudeCallError(failureOf(error));
@@ -267,6 +276,7 @@ export function claudeClient({ apiKey, fetch }: ClaudeSettings) {
           },
         });
         for await (const partial of result.partialOutputStream) onPartial(partial);
+        refuseUnfinished(await result.finishReason);
         const [output, usage] = await Promise.all([result.output, result.usage]);
         return replyOf(output, usage);
       } catch (error) {
