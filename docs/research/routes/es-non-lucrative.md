@@ -1,12 +1,12 @@
 # es-non-lucrative
 
-Research notes for Spain's non-lucrative residence visa, route `es-non-lucrative` in `packages/knowledge/data/routes`. The seed research is in [other-destinations.md](../other-destinations.md#spain); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
+Research notes for Spain's non-lucrative residence visa, the stored route `es-non-lucrative`. The seed research is in [other-destinations.md](../other-destinations.md#spain); the audit procedure is in the [rule audit runbook](../../runbooks/rule-audit.md).
 
 ## Audits
 
 ### 2026-11-20, session review
 
-The [session rule review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 3.
+The [session review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 3.
 
 - **Version audited:** 3
 - **Outcome:** correction, version 4, from version 3's date, 2025-06-16, stored active by the review's pull request. What changed, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-es/README.md).
