@@ -13,11 +13,6 @@
     },
     {
       "key": "requirement:not-eu-eea-or-swiss-citizen",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
-      "quote": "who, under agreements between the Union and the Member States on the one hand, and third countries on the other, as nationals of those third countries, enjoy rights of free movement equivalent to those of Union citizens."
-    },
-    {
-      "key": "requirement:not-eu-eea-or-swiss-citizen",
       "url": "https://e-sbirka.gov.cz/sb/2004/435",
       "quote": "(2) Státní příslušník jiného členského státu Evropské unie (dále jen „občan Evropské unie“) a jeho rodinný příslušník7) mají stejné právní postavení v právních vztazích upravených tímto zákonem jako občan České republiky, pokud tento zákon nestanoví jinak."
     },

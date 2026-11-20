@@ -131,14 +131,6 @@
       "machineReadableUrl": "https://e-sbirka.gov.cz/sbr-cache/dokumenty-sbirky/%2Fsb%2F1999%2F326%2F2026-06-12/fragmenty?cisloStranky={0..3}"
     },
     {
-      "id": "blue-card-directive",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32021L1883",
-      "title": "Directive (EU) 2021/1883, arts. 2(1) and 3(2)(h): the Blue Card is for third-country nationals, not EU citizens, nor those with equal free movement rights by agreement",
-      "kind": "official",
-      "verifiedAt": "2026-11-20",
-      "machineReadableUrl": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32021L1883"
-    },
-    {
       "id": "employment-act-eu-citizens",
       "url": "https://e-sbirka.gov.cz/sb/2004/435",
       "title": "Employment Act (No. 435/2004 Sb.), § 3(2): EU citizens and their family members have the same legal position as Czech citizens in employment",
@@ -219,7 +211,7 @@
           }
         }
       },
-      "sources": ["aliens-act-eu-citizens", "blue-card-directive", "employment-act-eu-citizens"]
+      "sources": ["aliens-act-eu-citizens", "employment-act-eu-citizens"]
     }
   ],
   "assessments": [
