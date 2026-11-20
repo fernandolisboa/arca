@@ -124,12 +124,12 @@ export function evidenceProblems(
  * Each cited page as its quotes alone, so the check runs with no network: it then proves the
  * quotes are well formed, cited and state the item's values, not that a page holds them. The
  * `review-quotes` job reads the pages themselves. A page's chain is the address the app would
- * request for it, its machine-readable address when `addresses` names one, since that is the
+ * request for it, its machine-readable address when `machineReadable` names one, since that is the
  * address the echo rule reads.
  */
 export function quotedPages(
   evidence: Evidence,
-  addresses: ReadonlyMap<string, string> = new Map(),
+  machineReadable: ReadonlyMap<string, string> = new Map(),
 ): Map<string, ReadPage> {
   const texts = new Map<string, string[]>();
   for (const { url, quote } of evidence.quotes) {
@@ -138,7 +138,7 @@ export function quotedPages(
   return new Map(
     [...texts].map(([url, quotes]) => [
       url,
-      { url, text: quotes.join('\n'), cut: false, chain: [addresses.get(url) ?? url] },
+      { url, text: quotes.join('\n'), cut: false, chain: [machineReadable.get(url) ?? url] },
     ]),
   );
 }

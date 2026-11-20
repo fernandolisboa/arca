@@ -203,7 +203,7 @@
   "requirements": [
     {
       "id": "household-income",
-      "title": "Monthly income of the 2026 minimum wage net of the 11% social security contribution (EUR 818.80) for the principal, 50% more per other adult, 30% per child under 18; possible if it takes work income",
+      "title": "Monthly income of the 2026 minimum wage net of 11% social security (EUR 818.80) for the principal, plus 50% of it per other adult and 30% per child under 18; possible if it takes work income",
       "expression": {
         "op": "any",
         "operands": [

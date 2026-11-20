@@ -26,6 +26,7 @@ export function canonicalNumber(decimal: string): string {
 /** Group separators a number may be written with besides the dot and the comma. */
 const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
+const spaceRun = /[\s\u00a0\u2009\u202f]+/u;
 
 const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
 const separator = (char: string | undefined) =>
@@ -104,18 +105,17 @@ export function numbersIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
   for (const [token] of text.matchAll(numberToken)) {
     const whole = readings(token);
-    const pieces =
-      whole.length > 0 ? [] : token.split(/[\s\u00a0\u2009\u202f]+/u).flatMap(readings);
+    const pieces = whole.length > 0 ? [] : token.split(spaceRun).flatMap(readings);
     for (const read of [...whole, ...pieces]) found.add(read);
   }
   return found;
 }
 
-/** A percent sign right after a figure, or after one space: the two characters after it. */
+/** A percent sign, `%` or its full-width or small form, right after a figure or after one space. */
 const percentSign = /^[\s\u00a0\u2009\u202f]?[%\uff05\ufe6a]/u;
 
 /** A canonical decimal divided by one hundred by moving its decimal mark, so nothing rounds it. */
-function hundredth(decimal: string): string {
+function dividedByHundred(decimal: string): string {
   const [whole = '', fraction = ''] = decimal.split('.');
   const padded = whole.padStart(3, '0');
   return canonicalNumber(`${padded.slice(0, -2)}.${padded.slice(-2)}${fraction}`);
@@ -134,9 +134,8 @@ export function percentagesIn(text: string): ReadonlySet<string> {
     const end = match.index + token.length;
     if (!percentSign.test(text.slice(end, end + 2))) continue;
     const whole = readings(token);
-    const last =
-      whole.length > 0 ? [] : readings(token.split(/[\s\u00a0\u2009\u202f]+/u).at(-1) ?? '');
-    for (const read of [...whole, ...last]) found.add(hundredth(read));
+    const lastPiece = whole.length > 0 ? [] : readings(token.split(spaceRun).at(-1) ?? '');
+    for (const read of [...whole, ...lastPiece]) found.add(dividedByHundred(read));
   }
   return found;
 }
