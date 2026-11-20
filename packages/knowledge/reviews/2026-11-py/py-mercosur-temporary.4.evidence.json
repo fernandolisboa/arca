@@ -197,6 +197,16 @@
       "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
     },
     {
+      "key": "cost:residence-fee-family",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "Las personas extranjeras deberán abonar el arancel correspondiente por las solicitudes de Residencia Precaria, Temporal o Permanente"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "Las personas extranjeras deberán abonar el arancel correspondiente por las solicitudes de Residencia Precaria, Temporal o Permanente"
+    },
+    {
       "key": "cost:residence-fee-family-other",
       "url": "https://migraciones.gov.py/aranceles-migratorios/",
       "quote": "Residencia Temporaria por Ley 6984/2022 (Incluida Residencia Precaria y cambio de categoría) 25 | 117.077 | 2.926.925"
@@ -220,6 +230,16 @@
       "key": "duration:temporary-residence",
       "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
       "quote": "podrá otorgar una residencia temporaria de hasta 2 (dos) años"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "el solicitante deberá dar ingreso a dicho trámite a partir de los noventa (90) días previos al vencimiento de su Carnet de Admisión Temporaria MERCOSUR"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "por más de 1 (un) año si se tratara de un residente temporal, salvo casos en que mediara autorización de la Dirección Nacional de Migraciones"
     }
   ]
 }

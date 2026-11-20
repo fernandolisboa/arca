@@ -102,6 +102,13 @@
       "verifiedAt": "2026-11-20"
     },
     {
+      "id": "ley-6984-fees",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "title": "Ley N.º 6984/2022, article 99: foreigners pay the fee for each application for a precarious, temporary or permanent residence, and for the other procedures it lists",
+      "kind": "official",
+      "verifiedAt": "2026-11-20"
+    },
+    {
       "id": "ley-6984-cancellation",
       "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
       "title": "Ley N.º 6984/2022, article 55, 2: the directorate may cancel a temporary residence after more than one year of unjustified absence from the country, save its authorization",
@@ -175,7 +182,7 @@
     },
     {
       "id": "documents",
-      "title": "Papers: valid ID card or passport, birth certificate, marriage, divorce or death papers if any, notarized copies; foreign ones legalized or apostilled and in Spanish, save Brazil's in Portuguese",
+      "title": "Papers: valid ID or passport, birth certificate, any marriage, divorce, death or naturalization papers, notarized copies; foreign ones legalized or apostilled, in Spanish save Brazil's in Portuguese",
       "evidence": ["principal.citizenships"],
       "sources": ["ley-3578-residence", "dnm-mercosur-requirements"]
     },
@@ -450,7 +457,7 @@
     },
     {
       "id": "residence-fee-family",
-      "title": "The same fee for each family member who is a native of a listed state other than Ecuador, as every applicant pays it: 20 jornales, PYG 2,341,540 in cash from 2026-07-01",
+      "title": "The same fee for each family member native of a listed state, save Ecuadorians and Paraguayans, as every foreign applicant pays it: 20 jornales, PYG 2,341,540 in cash from 2026-07-01",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -461,6 +468,20 @@
       "condition": {
         "op": "all",
         "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["PY"]
+              }
+            }
+          },
           {
             "op": "not",
             "operand": {
@@ -488,11 +509,11 @@
           }
         ]
       },
-      "sources": ["dnm-fee-table", "dnm-mercosur-temporary"]
+      "sources": ["dnm-fee-table", "dnm-mercosur-temporary", "ley-6984-fees"]
     },
     {
       "id": "residence-fee-family-other",
-      "title": "Other non-Ecuadorian family members (naturalized in, or of no, listed state): a fee the table does not name; the Mercosur line's 20 jornales, PYG 2,341,540, or 25 on the general line: possible",
+      "title": "Other non-Ecuadorian foreign family members (naturalized in, or of no, listed state): a fee the table does not name; the Mercosur line's 20 jornales, PYG 2,341,540, or 25 on the general line: possible",
       "kind": "fee",
       "amount": {
         "op": "money",
@@ -503,6 +524,20 @@
       "condition": {
         "op": "all",
         "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["PY"]
+              }
+            }
+          },
           {
             "op": "not",
             "operand": {
@@ -536,11 +571,11 @@
           }
         ]
       },
-      "sources": ["dnm-fee-table", "dnm-mercosur-temporary", "ley-3578-family"]
+      "sources": ["dnm-fee-table", "dnm-mercosur-temporary", "ley-3578-family", "ley-6984-fees"]
     },
     {
       "id": "residence-fee-family-ecuadorian",
-      "title": "Residence fee of each Ecuadorian family member, by reciprocity: two jornales, at the jornal of PYG 117,077 in force from 2026-07-01",
+      "title": "Residence fee of each Ecuadorian family member who is not also Paraguayan, by reciprocity: two jornales, at the jornal of PYG 117,077 in force from 2026-07-01",
       "kind": "fee",
       "amount": {
         "op": "mul",
@@ -553,15 +588,34 @@
       },
       "appliesTo": "each_dependent",
       "condition": {
-        "op": "intersects",
-        "list": {
-          "op": "fact",
-          "key": "person.citizenships"
-        },
-        "set": {
-          "op": "tokens",
-          "values": ["EC"]
-        }
+        "op": "all",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "intersects",
+              "list": {
+                "op": "fact",
+                "key": "person.citizenships"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["PY"]
+              }
+            }
+          },
+          {
+            "op": "intersects",
+            "list": {
+              "op": "fact",
+              "key": "person.citizenships"
+            },
+            "set": {
+              "op": "tokens",
+              "values": ["EC"]
+            }
+          }
+        ]
       },
       "sources": ["dnm-ecuadorian-fees", "dnm-fee-table"]
     }
