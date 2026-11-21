@@ -1288,7 +1288,7 @@ export const ptBR = {
         proposed: 'Esperam sua decisão. Abra uma para ativar ou recusar.',
         active: 'O que o Arca usa hoje e o que já tem data para começar.',
         previous: 'Trocadas por uma versão mais nova ou recusadas. Ficam aqui como histórico.',
-        requests: 'Avisos de erro, pedidos dos participantes e pedidos de regra nova.',
+        requests: 'Avisos de regra errada, pedidos dos participantes e pedidos de regra nova.',
       },
       empty: {
         proposed: 'Nenhuma versão esperando decisão.',
@@ -1305,8 +1305,8 @@ export const ptBR = {
       requestCount: '{n, plural, =0 {Nada por enquanto} one {# item} other {# itens}}',
       /** What a folded card says about the versions under it. */
       summary: {
-        one: '{versions}, a partir de {date}',
-        range: '{versions}, de {from} a {to}',
+        one: '{versions}, com início em {date}',
+        range: '{versions}, com início entre {from} e {to}',
         superseded: '{n, plural, one {# substituída} other {# substituídas}}',
         rejected: '{n, plural, one {# recusada} other {# recusadas}}',
         outcomes: '{span}. {outcomes}.',

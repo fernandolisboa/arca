@@ -70,7 +70,13 @@ export function ReportsSection({
       id="reports"
       title={title}
       count={listed?.length}
-      summary={listed === undefined ? '' : t('knowledge.lists.requestCount', { n: listed.length })}
+      summary={
+        reports.isError
+          ? t('knowledge.reports.loadFailure')
+          : listed === undefined
+            ? ''
+            : t('knowledge.lists.requestCount', { n: listed.length })
+      }
     >
       {reports.isError && <p>{t('knowledge.reports.loadFailure')}</p>}
       {listed?.length === 0 && (

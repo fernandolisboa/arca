@@ -16,7 +16,7 @@ import {
 } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { use, useCallback, useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   comparisonViewQuery,
@@ -31,7 +31,7 @@ import {
 import { CountryFlag } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { ComparisonPanel } from '../knowledge/comparison-panel.js';
-import { Fold, FoldsContext, useFolds } from '../knowledge/folds.js';
+import { Fold, FoldsContext, useFolds, useFoldsContext } from '../knowledge/folds.js';
 import { OpenRouteVersionContext } from '../knowledge/corrections.js';
 import { byRequirement } from '../knowledge/reports-section.js';
 import {
@@ -52,10 +52,10 @@ import {
   comparisonsKey,
   countOf,
   countsByTab,
+  foldRowsClass,
   foldingCardClass,
   listsByTab,
   pickedKey,
-  rowsClass,
   spanSummary,
 } from '../knowledge/version-lists.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
@@ -211,7 +211,7 @@ function useCountryRequests(versions: readonly KnowledgeVersion[]): readonly Cou
 /** Two icon buttons that open or fold every card on the screen. */
 function FoldAll({ words }: { readonly words: KnowledgeWords }) {
   const { t } = words;
-  const folds = use(FoldsContext);
+  const folds = useFoldsContext();
   return (
     <div
       role="group"
@@ -228,7 +228,7 @@ function FoldAll({ words }: { readonly words: KnowledgeWords }) {
             title={label}
             className={`${iconButtonClass} text-muted hover:text-ink`}
             onClick={() => {
-              folds?.setAll(action === 'expandAll');
+              folds.setAll(action === 'expandAll');
             }}
           >
             <Icon name={action} />
@@ -327,12 +327,7 @@ function VersionLists({
         </div>
         <section aria-label={requestsTitle} className="flex min-w-0 flex-col gap-4">
           <h3 className="font-display text-lead">{requestsTitle}</h3>
-          <RequestSections
-            versions={versions}
-            columns=""
-            words={words}
-            onOpenVersion={onOpenVersion}
-          />
+          <RequestSections versions={versions} words={words} onOpenVersion={onOpenVersion} />
         </section>
       </div>
     );
@@ -567,7 +562,7 @@ function ShownCountry({
             {count === 0 ? (
               <p className="pb-4 text-small text-muted">{t(`knowledge.lists.empty.${key}`)}</p>
             ) : (
-              <ol className={`-mx-4 border-t border-line ${rowsClass}`}>
+              <ol className={foldRowsClass}>
                 {isComparisons ? (
                   <ComparisonRows
                     comparisons={list.comparisons}

@@ -1,7 +1,7 @@
 import type { KnowledgeComparisonVersion, KnowledgeVersion } from '@arca/api-contract/client';
 import { Icon, StatusChip, cardClass } from '@arca/ui';
 import { CountryFlag } from '../country-flag.js';
-import { Fold, foldCardClass } from './folds.js';
+import { Fold, masonryItemClass } from './folds.js';
 import { MemberRequestsSection } from './member-requests.js';
 import { NewRouteRequestsSection } from './new-route-requests.js';
 import { ReportsSection } from './reports-section.js';
@@ -204,7 +204,7 @@ export function CountryRows({
         summary={spanSummary(route.versions, tab, words)}
         className="bg-soft px-4 text-small [&_ol]:bg-surface"
       >
-        <ol className={`-mx-4 border-t border-line ${rowsClass}`}>{route.versions.map(row)}</ol>
+        <ol className={foldRowsClass}>{route.versions.map(row)}</ol>
       </Fold>
     </li>
   ));
@@ -251,8 +251,11 @@ export function ComparisonRows({
 
 export const rowsClass = 'flex flex-col divide-y divide-line';
 
+/** Rows that run edge to edge under a foldable card's title. */
+export const foldRowsClass = `-mx-4 border-t border-line ${rowsClass}`;
+
 /** The surface of a foldable card whose rows run edge to edge. */
-export const foldingCardClass = `overflow-hidden px-4 ${cardClass} ${foldCardClass}`;
+export const foldingCardClass = `overflow-hidden px-4 ${cardClass} ${masonryItemClass}`;
 
 /**
  * One list as a foldable card per country, in name order, the comparisons last, set in a masonry
@@ -291,7 +294,7 @@ export function CountryCards({
           summary={spanSummary(versions, tab, words)}
           className={foldingCardClass}
         >
-          <ol className={`-mx-4 border-t border-line ${rowsClass}`}>
+          <ol className={foldRowsClass}>
             <CountryRows
               versions={versions}
               tab={tab}
@@ -311,7 +314,7 @@ export function CountryCards({
           summary={t('knowledge.review.versions', { n: lists.comparisons.length })}
           className={foldingCardClass}
         >
-          <ol className={`-mx-4 border-t border-line ${rowsClass}`}>
+          <ol className={foldRowsClass}>
             <ComparisonRows
               comparisons={lists.comparisons}
               tab={tab}
@@ -333,13 +336,14 @@ export function CountryCards({
 export function RequestSections({
   versions,
   country,
-  columns,
+  columns = '',
   words,
   onOpenVersion,
 }: {
   readonly versions: readonly KnowledgeVersion[];
   readonly country?: string;
-  readonly columns: string;
+  /** Masonry columns; one column when left out. */
+  readonly columns?: string;
   readonly words: KnowledgeWords;
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {

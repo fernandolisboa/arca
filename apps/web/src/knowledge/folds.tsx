@@ -31,14 +31,14 @@ export function useFolds(): Folds {
 
 export const FoldsContext = createContext<Folds | null>(null);
 
-function useFoldsContext(): Folds {
+export function useFoldsContext(): Folds {
   const folds = use(FoldsContext);
   if (folds === null) throw new Error('Fold needs a FoldsContext');
   return folds;
 }
 
 /** The surface of a foldable card in a masonry of columns: it never splits across two. */
-export const foldCardClass = 'mb-3 break-inside-avoid';
+export const masonryItemClass = 'mb-3 break-inside-avoid';
 
 /**
  * A card that folds behind its title, keyed in the screen's folds. Folded, it shows `summary`
@@ -112,7 +112,7 @@ export function RequestFold({
       title={title}
       count={count}
       summary={summary}
-      className={`px-4 ${cardClass} ${foldCardClass}`}
+      className={`px-4 ${cardClass} ${masonryItemClass}`}
     >
       <div className="flex flex-col gap-3 pb-4">{children}</div>
     </Fold>
