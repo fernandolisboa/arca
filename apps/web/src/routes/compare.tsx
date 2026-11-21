@@ -115,8 +115,8 @@ function Comparison({
   );
   const filtered = filter.search.trim() !== '' || filter.score !== 'all';
   // Without a filter, an empty ranking means too few scores; with one, the filter left them out.
-  const noneRanked = ranked.length === 0 && !filtered && (
-    <p className="text-muted">{t('compare.noneRanked')}</p>
+  const noneRanked = ranked.length === 0 && (
+    <p className="text-muted">{t(filtered ? 'compare.noRankedMatch' : 'compare.noneRanked')}</p>
   );
   const card = (country: (typeof comparison.countries)[number], row: number) => (
     <CountryCard

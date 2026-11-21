@@ -1080,6 +1080,8 @@ export const ptBR = {
     scoreFilter: 'Mostrar',
     scoreFilterChoice: '{score, select, scored {Com nota} unscored {Sem nota} other {Todos}}',
     noMatch: 'Nenhum país bate com a busca ou o filtro.',
+    noRankedMatch:
+      'Nenhum país do ranking bate com a busca ou o filtro. Veja os de poucos dados abaixo.',
     tableCaption:
       'Países em ordem de nota, com a nota de cada critério e o peso que você deu a ele.',
     countryColumn: 'País',

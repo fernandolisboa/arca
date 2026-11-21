@@ -555,6 +555,10 @@ async function memberCompares(browser: Browser) {
   await expect(places).toHaveText([/^1º lugar Portugal/]);
   const hidden = page.getByRole('region', { name: 'Países ocultos' });
   await expect(hidden).toContainText('Uruguai');
+  // A hidden country stays reachable whatever the filter.
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('port');
+  await expect(hidden).toContainText('Uruguai');
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('');
 
   // The choices are the account's own and come back on the next visit.
   await page.reload();
