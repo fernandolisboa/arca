@@ -137,3 +137,29 @@ export function countryTallies(
     name(left.country).localeCompare(name(right.country)),
   );
 }
+
+/** What a folded group of versions says about them: how many, their dates and how they left use. */
+export interface VersionSpan {
+  readonly count: number;
+  /** The earliest and latest effective dates; null for none. */
+  readonly from: string | null;
+  readonly to: string | null;
+  readonly rejected: number;
+  readonly superseded: number;
+}
+
+export function versionSpan(
+  versions: readonly Pick<KnowledgeVersion, 'effectiveFrom' | 'state' | 'superseded'>[],
+): VersionSpan {
+  // Calendar dates are ISO strings, so text order is date order.
+  const dates = versions.map(({ effectiveFrom }) => effectiveFrom).toSorted();
+  const rejected = versions.filter(({ state }) => state === 'rejected').length;
+  return {
+    count: versions.length,
+    from: dates[0] ?? null,
+    to: dates.at(-1) ?? null,
+    rejected,
+    superseded: versions.filter(({ state, superseded }) => superseded && state !== 'rejected')
+      .length,
+  };
+}

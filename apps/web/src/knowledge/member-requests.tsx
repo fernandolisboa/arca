@@ -1,3 +1,4 @@
+import { RequestFold } from './folds.js';
 import {
   type ApiError,
   type KnowledgeVersion,
@@ -240,8 +241,12 @@ export function MemberRequestsSection({
     ({ routeId }) => country === undefined || countryOfRoute(versions, routeId) === country,
   );
   return (
-    <section aria-label={title} className="flex flex-col gap-3">
-      <h3 className="font-medium">{title}</h3>
+    <RequestFold
+      id="members"
+      title={title}
+      count={requests.length}
+      summary={t('knowledge.lists.requestCount', { n: requests.length })}
+    >
       <p className="text-small text-muted">{t('knowledge.memberRequests.lead')}</p>
       {requests.length === 0 ? (
         <p className="text-small text-muted">{t('knowledge.memberRequests.none')}</p>
@@ -259,6 +264,6 @@ export function MemberRequestsSection({
           ))}
         </ul>
       )}
-    </section>
+    </RequestFold>
   );
 }

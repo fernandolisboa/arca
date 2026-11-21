@@ -1,3 +1,4 @@
+import { RequestFold } from './folds.js';
 import {
   type ApiError,
   type NewRouteProgress,
@@ -237,8 +238,12 @@ export function NewRouteRequestsSection({
     (request) => country === undefined || request.country.toUpperCase() === country,
   );
   return (
-    <section aria-label={title} className="flex flex-col gap-3">
-      <h3 className="font-medium">{title}</h3>
+    <RequestFold
+      id="new-routes"
+      title={title}
+      count={requests.length}
+      summary={t('knowledge.lists.requestCount', { n: requests.length })}
+    >
       <p className="text-small text-muted">{t('knowledge.newRoute.lead')}</p>
       {open ? (
         <div className={card}>
@@ -276,7 +281,7 @@ export function NewRouteRequestsSection({
       )}
       {requests.length > 0 && (
         <>
-          <h4 className="font-medium">{t('knowledge.newRoute.recent')}</h4>
+          <h5 className="font-medium">{t('knowledge.newRoute.recent')}</h5>
           <ul className="flex flex-col gap-3">
             {requests.map((request) => (
               <NewRouteEntry
@@ -289,6 +294,6 @@ export function NewRouteRequestsSection({
           </ul>
         </>
       )}
-    </section>
+    </RequestFold>
   );
 }

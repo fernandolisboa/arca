@@ -8,6 +8,8 @@ interface DisclosureBase {
   readonly icon?: IconName;
   /** Shown before the title inside the toggle, such as a flag; decoration without a name. */
   readonly lead?: ReactNode;
+  /** Shown right after the title inside the toggle, such as a count. */
+  readonly badge?: ReactNode;
   /** Shown beside the title whether open or closed, such as a status chip. */
   readonly aside?: ReactNode;
   /** Shown under the body whether open or closed, such as a note that a model wrote it. */
@@ -43,6 +45,7 @@ export function Disclosure({
   level,
   icon,
   lead,
+  badge,
   aside,
   defaultOpen,
   open: controlled,
@@ -75,6 +78,7 @@ export function Disclosure({
             <span id={titleId} className="min-w-0 flex-1">
               {title}
             </span>
+            {badge}
             <span
               data-open={open || undefined}
               className="inline-flex shrink-0 text-muted transition-transform duration-(--arca-duration-base) ease-out data-open:rotate-90"

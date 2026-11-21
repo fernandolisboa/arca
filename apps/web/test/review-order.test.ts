@@ -1,9 +1,11 @@
+import type { KnowledgeVersion } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
 import {
   byRoute,
   comparisonTabs,
   countryTallies,
   reviewOrder,
+  versionSpan,
   versionTab,
 } from '../src/knowledge/review-order.js';
 
@@ -111,5 +113,31 @@ describe('countryTallies', () => {
       { country: 'LT', proposed: 0, active: 0, previous: 0, waiting: 0 },
       { country: 'PT', proposed: 0, active: 1, previous: 1, waiting: 0 },
     ]);
+  });
+});
+
+/** A calendar date as the contract types it. */
+const day = (iso: string) => iso as KnowledgeVersion['effectiveFrom'];
+
+describe('versionSpan', () => {
+  it('counts the versions, their date range and how they left use', () => {
+    expect(
+      versionSpan([
+        { effectiveFrom: day('2026-11-30'), state: 'proposed', superseded: true },
+        { effectiveFrom: day('2024-04-01'), state: 'rejected', superseded: true },
+        { effectiveFrom: day('2025-03-15'), state: 'active', superseded: true },
+        { effectiveFrom: day('2026-01-01'), state: 'active', superseded: false },
+      ]),
+    ).toEqual({ count: 4, from: '2024-04-01', to: '2026-11-30', rejected: 1, superseded: 2 });
+  });
+
+  it('answers no dates for no versions', () => {
+    expect(versionSpan([])).toEqual({
+      count: 0,
+      from: null,
+      to: null,
+      rejected: 0,
+      superseded: 0,
+    });
   });
 });

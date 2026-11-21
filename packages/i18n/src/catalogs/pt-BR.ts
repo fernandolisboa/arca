@@ -1282,12 +1282,13 @@ export const ptBR = {
       proposed: 'Propostas',
       active: 'Ativas',
       previous: 'Anteriores',
-      requests: 'Pedidos',
+      sections: 'Partes da tela de ativação',
+      rules: 'Regras',
       lead: {
         proposed: 'Esperam sua decisão. Abra uma para ativar ou recusar.',
         active: 'O que o Arca usa hoje e o que já tem data para começar.',
         previous: 'Trocadas por uma versão mais nova ou recusadas. Ficam aqui como histórico.',
-        requests: 'Avisos de erro, pedidos dos participantes e pedidos de regra nova.',
+        requests: 'Avisos de regra errada, pedidos dos participantes e pedidos de regra nova.',
       },
       empty: {
         proposed: 'Nenhuma versão esperando decisão.',
@@ -1301,6 +1302,18 @@ export const ptBR = {
       tally:
         '{country}: {proposed, plural, one {# proposta} other {# propostas}}, {active, plural, one {# ativa} other {# ativas}}, {previous, plural, one {# anterior} other {# anteriores}}, {waiting, plural, =0 {nenhum pedido esperando} one {# pedido esperando} other {# pedidos esperando}}',
       requestsTitle: 'Pedidos e avisos',
+      requestCount: '{n, plural, =0 {Nada por enquanto} one {# item} other {# itens}}',
+      /** What a folded card says about the versions under it. */
+      summary: {
+        one: '{versions}, com início em {date}',
+        range: '{versions}, com início entre {from} e {to}',
+        superseded: '{n, plural, one {# substituída} other {# substituídas}}',
+        rejected: '{n, plural, one {# recusada} other {# recusadas}}',
+        outcomes: '{span}. {outcomes}.',
+      },
+      folds: 'Expandir ou recolher os cartões',
+      expandAll: 'Expandir tudo',
+      collapseAll: 'Recolher tudo',
     },
     /** How the activation screen lays out its lists, remembered on this device. */
     layout: {
