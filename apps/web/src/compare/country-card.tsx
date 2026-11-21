@@ -7,7 +7,13 @@ import { textLinkClass } from '../forms/text-link.js';
 import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
 import type { Edit, Preferences } from './edits.js';
-import { measured, type CompareWords, type Criterion, type Reading } from './words.js';
+import {
+  measured,
+  type CompareWords,
+  type Criterion,
+  type Reading,
+  type Suggested,
+} from './words.js';
 
 type ComparedCountry = DestinationComparison['countries'][number];
 
@@ -152,10 +158,13 @@ function CriterionLine({
   const { t } = words;
   const label = words.label(criterion);
   const objective = measured(criterion);
+  const fromSuggestion = rating === undefined && score?.suggested !== undefined;
   const value =
     score?.score == null
       ? t(objective ? 'compare.noData' : 'compare.notRated')
-      : words.decimal(score.score);
+      : fromSuggestion
+        ? t('compare.suggested.scored', { score: words.decimal(score.score) })
+        : words.decimal(score.score);
   return (
     <li className="flex flex-col gap-1 py-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -187,6 +196,21 @@ function CriterionLine({
           }}
           starLabel={(n) => t('compare.star', { n })}
           clearLabel={t('compare.clearStars')}
+          suggested={score?.suggested?.stars}
+        />
+      )}
+      {!objective && score?.suggested !== undefined && (
+        <SuggestionLines
+          suggested={score.suggested}
+          rated={rating !== undefined}
+          confirmLabel={t('compare.suggested.confirmFor', {
+            criterion: label,
+            country: countryName,
+          })}
+          onConfirm={(stars) => {
+            change({ kind: 'rating', criterion: criterion.id, country, rating: stars });
+          }}
+          words={words}
         />
       )}
     </li>
@@ -219,5 +243,57 @@ export function ReadingLines({
         </p>
       )}
     </>
+  );
+}
+
+/**
+ * The stars Arca suggests (ADR-0035): how many, why, and the source as plain text. While the
+ * person has not rated the country they score it, and one tap keeps them as the person's own.
+ */
+export function SuggestionLines({
+  suggested,
+  rated,
+  confirmLabel,
+  onConfirm,
+  words,
+}: {
+  readonly suggested: Suggested;
+  /** The person already gave their own stars, which count instead. */
+  readonly rated: boolean;
+  readonly confirmLabel: string;
+  readonly onConfirm: (stars: number) => void;
+  readonly words: CompareWords;
+}) {
+  const { t } = words;
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-small">
+        <span className="font-medium">{t('compare.suggested.stars', { n: suggested.stars })}</span>{' '}
+        · {words.suggestionReason(suggested)}
+      </p>
+      <p className="text-caption break-all text-muted">
+        {t('compare.source', {
+          url: suggested.source.url,
+          date: formatCalendarDate(suggested.source.verifiedAt, words.language),
+        })}
+      </p>
+      {suggested.stale && (
+        <p className="text-caption text-warn-ink">
+          {t('compare.stale', { days: String(staleAfterDays) })}
+        </p>
+      )}
+      {!rated && (
+        <button
+          type="button"
+          className={`${textLinkClass} self-start text-small`}
+          aria-label={confirmLabel}
+          onClick={() => {
+            onConfirm(suggested.stars);
+          }}
+        >
+          {t('compare.suggested.confirm')}
+        </button>
+      )}
+    </div>
   );
 }

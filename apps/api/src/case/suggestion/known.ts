@@ -7,7 +7,9 @@ const { compare } = resources['pt-BR'].translation;
  * suggestions, as the catalog words them. The only text a suggestion request sends; nothing a
  * person typed is in it.
  */
-export const knownCriterionNames: readonly string[] = [
-  ...Object.values(compare.criterion),
-  ...Object.values(compare.suggestion),
-];
+export const criterionNamesByKey: Readonly<Record<string, string>> = {
+  ...compare.criterion,
+  ...compare.suggestion,
+};
+
+export const knownCriterionNames: readonly string[] = Object.values(criterionNamesByKey);

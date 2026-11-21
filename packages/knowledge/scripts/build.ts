@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -6,6 +6,7 @@ import {
   maxKnowledgeJsonDepth,
   parseCalendarDate,
   sourceUrls,
+  suggestedRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { parseJsonSubset } from '@arca/scripts/json';
@@ -36,6 +37,8 @@ export interface CatalogParts {
   readonly countryFiles: Readonly<Record<string, Json>>;
   /** The rows the import writes to the database (ADR-0031). */
   readonly rows: RuleRows;
+  /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
+  readonly suggestedRatings?: Json | null;
 }
 
 export interface KnowledgeBuild extends CatalogParts {
@@ -183,6 +186,7 @@ export function runtimeModule({
   countries = { countries: [], formerCountries: [] },
   countryFiles = {},
   comparisons = [],
+  suggestedRatings = null,
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
     indicators.flatMap((indicator) => indicator.sources.flatMap(sourceUrls)),
@@ -193,8 +197,37 @@ export function runtimeModule({
     exportedJson('countryFileData', countryFiles),
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
+    exportedJson('suggestedRatingData', suggestedRatings),
     '',
   ].join('\n');
+}
+
+/**
+ * The highest-numbered suggested ratings file in `dir` (ADR-0035), named `<number>.json`, checked
+ * against its schema and its own number; null when the directory holds none.
+ */
+export async function readSuggestedRatings(dir: string): Promise<Json | null> {
+  const names = await readdir(dir).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
+  });
+  const numbers = names
+    .flatMap((name) => /^([1-9][0-9]*)\.json$/.exec(name)?.[1] ?? [])
+    .map(Number)
+    .sort((a, b) => b - a);
+  const [latest] = numbers;
+  if (latest === undefined) return null;
+  const json = parseJsonSubset(
+    await readKnowledgeFile(join(dir, `${String(latest)}.json`)),
+    maxKnowledgeJsonDepth,
+  );
+  const parsed = suggestedRatingsSchema.parse(json);
+  if (parsed.number !== latest) {
+    throw new Error(
+      `suggested-ratings/${String(latest)}.json carries number ${String(parsed.number)}`,
+    );
+  }
+  return json;
 }
 
 export function formatIssue(issue: Issue): string {
@@ -224,7 +257,8 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  await writeFile(targets.runtime, runtimeModule(parts));
+  const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
+  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings }));
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );

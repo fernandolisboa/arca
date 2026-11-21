@@ -1,0 +1,2054 @@
+{
+  "schemaVersion": 1,
+  "number": 1,
+  "sources": [
+    {
+      "id": "cckp",
+      "url": "https://climateknowledgeportal.worldbank.org/",
+      "title": "World Bank Climate Change Knowledge Portal: mean annual temperature, 1991-2020 (ERA5)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "factbook",
+      "url": "https://www.cia.gov/the-world-factbook/field/languages/",
+      "title": "CIA World Factbook: Languages",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pisa",
+      "url": "https://www.oecd.org/en/publications/pisa-2022-results-volume-i_53f23881-en.html",
+      "title": "OECD, PISA 2022 Results (Volume I): mean scores in mathematics, reading and science",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "wdi-unemployment",
+      "url": "https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS",
+      "title": "World Bank, World Development Indicators: Unemployment, total (% of total labor force) (modeled ILO estimate) (SL.UEM.TOTL.ZS)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-ar",
+      "url": "https://taxsummaries.pwc.com/argentina/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Argentina, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-au",
+      "url": "https://taxsummaries.pwc.com/australia/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Australia, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-cl",
+      "url": "https://taxsummaries.pwc.com/chile/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Chile, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-cz",
+      "url": "https://taxsummaries.pwc.com/czech-republic/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Czech Republic, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-dk",
+      "url": "https://taxsummaries.pwc.com/denmark/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Denmark, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-es",
+      "url": "https://taxsummaries.pwc.com/spain/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Spain, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-gb",
+      "url": "https://taxsummaries.pwc.com/united-kingdom/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: United Kingdom, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-ge",
+      "url": "https://taxsummaries.pwc.com/georgia/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Georgia, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-ie",
+      "url": "https://taxsummaries.pwc.com/ireland/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Ireland, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-is",
+      "url": "https://taxsummaries.pwc.com/iceland/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Iceland, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-it",
+      "url": "https://taxsummaries.pwc.com/italy/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Italy, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-jp",
+      "url": "https://taxsummaries.pwc.com/japan/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Japan, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-lv",
+      "url": "https://taxsummaries.pwc.com/latvia/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Latvia, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-pl",
+      "url": "https://taxsummaries.pwc.com/poland/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Poland, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-pt",
+      "url": "https://taxsummaries.pwc.com/portugal/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Portugal, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-py",
+      "url": "https://taxsummaries.pwc.com/paraguay/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Paraguay, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-us",
+      "url": "https://taxsummaries.pwc.com/united-states/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: United States, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "pwc-uy",
+      "url": "https://taxsummaries.pwc.com/uruguay/individual/taxes-on-personal-income",
+      "title": "PwC Worldwide Tax Summaries: Uruguay, taxes on personal income",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "wb-countries",
+      "url": "https://api.worldbank.org/v2/country?format=json&per_page=300",
+      "title": "World Bank country API: capital city coordinates",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "undesa-ims",
+      "url": "https://www.un.org/development/desa/pd/content/international-migrant-stock",
+      "title": "UN DESA, International Migrant Stock 2024: migrants born in Brazil, by country of destination",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "icp-housing",
+      "url": "https://www.worldbank.org/en/programs/icp",
+      "title": "World Bank, International Comparison Program 2021: price level index of housing, water, electricity, gas and other fuels (world = 100)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "mipex",
+      "url": "https://www.mipex.eu/",
+      "title": "Migrant Integration Policy Index (MIPEX) 2020: overall score",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "wgi",
+      "url": "https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+      "title": "World Bank, Worldwide Governance Indicators: Political Stability and Absence of Violence, score 0-100 (GOV_WGI_PV.SC)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "anac",
+      "url": "https://www.gov.br/anac/pt-br/assuntos/dados-e-estatisticas",
+      "title": "ANAC: dados e estatísticas do transporte aéreo",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "iana-tz",
+      "url": "https://www.iana.org/time-zones",
+      "title": "IANA Time Zone Database",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "sdg-11-2-1",
+      "url": "https://unstats.un.org/sdgs/dataportal/database",
+      "title": "UN SDG Global Database, indicator 11.2.1: share of the urban population with convenient access to public transport (UN-Habitat), mean of the cities reported",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "findex",
+      "url": "https://data.worldbank.org/indicator/FX.OWN.TOTL.ZS",
+      "title": "World Bank, Global Findex: account ownership at a financial institution or mobile-money provider (% of people 15+) (FX.OWN.TOTL.ZS)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    },
+    {
+      "id": "wdi-protected",
+      "url": "https://data.worldbank.org/indicator/ER.LND.PTLD.ZS",
+      "title": "World Bank, World Development Indicators: Terrestrial protected areas (% of total land area) (ER.LND.PTLD.ZS)",
+      "kind": "official",
+      "verifiedAt": "2026-11-21"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "climate",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "14.7",
+          "source": "cckp"
+        },
+        {
+          "country": "AU",
+          "stars": 5,
+          "value": "22.1",
+          "source": "cckp"
+        },
+        {
+          "country": "CL",
+          "stars": 2,
+          "value": "9.0",
+          "source": "cckp"
+        },
+        {
+          "country": "CZ",
+          "stars": 2,
+          "value": "8.6",
+          "source": "cckp"
+        },
+        {
+          "country": "DK",
+          "stars": 2,
+          "value": "8.9",
+          "source": "cckp"
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "14.2",
+          "source": "cckp"
+        },
+        {
+          "country": "GB",
+          "stars": 2,
+          "value": "9.5",
+          "source": "cckp"
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "8.1",
+          "source": "cckp"
+        },
+        {
+          "country": "IE",
+          "stars": 2,
+          "value": "9.9",
+          "source": "cckp"
+        },
+        {
+          "country": "IS",
+          "stars": 1,
+          "value": "1.9",
+          "source": "cckp"
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "13.1",
+          "source": "cckp"
+        },
+        {
+          "country": "JP",
+          "stars": 3,
+          "value": "12.1",
+          "source": "cckp"
+        },
+        {
+          "country": "LV",
+          "stars": 1,
+          "value": "6.8",
+          "source": "cckp"
+        },
+        {
+          "country": "PL",
+          "stars": 2,
+          "value": "8.8",
+          "source": "cckp"
+        },
+        {
+          "country": "PT",
+          "stars": 4,
+          "value": "15.3",
+          "source": "cckp"
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "23.9",
+          "source": "cckp"
+        },
+        {
+          "country": "US",
+          "stars": 2,
+          "value": "9.7",
+          "source": "cckp"
+        },
+        {
+          "country": "UY",
+          "stars": 4,
+          "value": "17.5",
+          "source": "cckp"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 4,
+          "value": "es",
+          "source": "factbook"
+        },
+        {
+          "country": "AU",
+          "stars": 3,
+          "value": "en",
+          "source": "factbook"
+        },
+        {
+          "country": "CL",
+          "stars": 4,
+          "value": "es",
+          "source": "factbook"
+        },
+        {
+          "country": "CZ",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "DK",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "ES",
+          "stars": 4,
+          "value": "es",
+          "source": "factbook"
+        },
+        {
+          "country": "GB",
+          "stars": 3,
+          "value": "en",
+          "source": "factbook"
+        },
+        {
+          "country": "GE",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "IE",
+          "stars": 3,
+          "value": "en",
+          "source": "factbook"
+        },
+        {
+          "country": "IS",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "IT",
+          "stars": 4,
+          "value": "it",
+          "source": "factbook"
+        },
+        {
+          "country": "JP",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "LV",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "PL",
+          "stars": 1,
+          "value": "other",
+          "source": "factbook"
+        },
+        {
+          "country": "PT",
+          "stars": 5,
+          "value": "pt",
+          "source": "factbook"
+        },
+        {
+          "country": "PY",
+          "stars": 4,
+          "value": "es",
+          "source": "factbook"
+        },
+        {
+          "country": "US",
+          "stars": 3,
+          "value": "en",
+          "source": "factbook"
+        },
+        {
+          "country": "UY",
+          "stars": 4,
+          "value": "es",
+          "source": "factbook"
+        }
+      ]
+    },
+    {
+      "id": "schools",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 1,
+          "value": "395",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "497",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "CL",
+          "stars": 2,
+          "value": "435",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "491",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "DK",
+          "stars": 4,
+          "value": "491",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "477",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "GB",
+          "stars": 4,
+          "value": "494",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "GE",
+          "stars": 1,
+          "value": "383",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "IE",
+          "stars": 5,
+          "value": "504",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "IS",
+          "stars": 2,
+          "value": "447",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "477",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "533",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "LV",
+          "stars": 3,
+          "value": "484",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "PL",
+          "stars": 4,
+          "value": "492",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "PT",
+          "stars": 3,
+          "value": "478",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "PY",
+          "stars": 1,
+          "value": "360",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "US",
+          "stars": 4,
+          "value": "489",
+          "source": "pisa",
+          "year": 2022
+        },
+        {
+          "country": "UY",
+          "stars": 2,
+          "value": "425",
+          "source": "pisa",
+          "year": 2022
+        }
+      ]
+    },
+    {
+      "id": "jobs",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "7.1",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "4.1",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "CL",
+          "stars": 2,
+          "value": "9.0",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "CZ",
+          "stars": 5,
+          "value": "2.8",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "DK",
+          "stars": 4,
+          "value": "5.5",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "ES",
+          "stars": 2,
+          "value": "10.4",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "GB",
+          "stars": 4,
+          "value": "4.7",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "GE",
+          "stars": 1,
+          "value": "12.1",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "IE",
+          "stars": 4,
+          "value": "4.6",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "IS",
+          "stars": 5,
+          "value": "3.6",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "6.4",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "2.5",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "LV",
+          "stars": 3,
+          "value": "6.6",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "PL",
+          "stars": 5,
+          "value": "3.0",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "PT",
+          "stars": 3,
+          "value": "6.2",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "PY",
+          "stars": 4,
+          "value": "4.8",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "US",
+          "stars": 4,
+          "value": "4.2",
+          "source": "wdi-unemployment",
+          "year": 2025
+        },
+        {
+          "country": "UY",
+          "stars": 3,
+          "value": "7.5",
+          "source": "wdi-unemployment",
+          "year": 2025
+        }
+      ]
+    },
+    {
+      "id": "taxes",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "35",
+          "source": "pwc-ar",
+          "year": 2026
+        },
+        {
+          "country": "AU",
+          "stars": 2,
+          "value": "47",
+          "source": "pwc-au",
+          "year": 2026
+        },
+        {
+          "country": "CL",
+          "stars": 2,
+          "value": "40",
+          "source": "pwc-cl",
+          "year": 2026
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "23",
+          "source": "pwc-cz",
+          "year": 2026
+        },
+        {
+          "country": "DK",
+          "stars": 1,
+          "value": "60.5",
+          "source": "pwc-dk",
+          "year": 2026
+        },
+        {
+          "country": "ES",
+          "stars": 2,
+          "value": "47",
+          "source": "pwc-es",
+          "year": 2026
+        },
+        {
+          "country": "GB",
+          "stars": 2,
+          "value": "45",
+          "source": "pwc-gb",
+          "year": 2026
+        },
+        {
+          "country": "GE",
+          "stars": 4,
+          "value": "20",
+          "source": "pwc-ge",
+          "year": 2026
+        },
+        {
+          "country": "IE",
+          "stars": 1,
+          "value": "52",
+          "source": "pwc-ie",
+          "year": 2026
+        },
+        {
+          "country": "IS",
+          "stars": 2,
+          "value": "46.3",
+          "source": "pwc-is",
+          "year": 2026
+        },
+        {
+          "country": "IT",
+          "stars": 2,
+          "value": "47",
+          "source": "pwc-it",
+          "year": 2026
+        },
+        {
+          "country": "JP",
+          "stars": 1,
+          "value": "55",
+          "source": "pwc-jp",
+          "year": 2026
+        },
+        {
+          "country": "LV",
+          "stars": 3,
+          "value": "36",
+          "source": "pwc-lv",
+          "year": 2026
+        },
+        {
+          "country": "PL",
+          "stars": 3,
+          "value": "32",
+          "source": "pwc-pl",
+          "year": 2026
+        },
+        {
+          "country": "PT",
+          "stars": 2,
+          "value": "48",
+          "source": "pwc-pt",
+          "year": 2026
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "10",
+          "source": "pwc-py",
+          "year": 2026
+        },
+        {
+          "country": "US",
+          "stars": 3,
+          "value": "37",
+          "source": "pwc-us",
+          "year": 2026
+        },
+        {
+          "country": "UY",
+          "stars": 3,
+          "value": "36",
+          "source": "pwc-uy",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "id": "distance-to-brazil",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 5,
+          "value": "1700",
+          "source": "wb-countries"
+        },
+        {
+          "country": "AU",
+          "stars": 1,
+          "value": "13300",
+          "source": "wb-countries"
+        },
+        {
+          "country": "CL",
+          "stars": 5,
+          "value": "2600",
+          "source": "wb-countries"
+        },
+        {
+          "country": "CZ",
+          "stars": 2,
+          "value": "10100",
+          "source": "wb-countries"
+        },
+        {
+          "country": "DK",
+          "stars": 2,
+          "value": "10400",
+          "source": "wb-countries"
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "8400",
+          "source": "wb-countries"
+        },
+        {
+          "country": "GB",
+          "stars": 3,
+          "value": "9500",
+          "source": "wb-countries"
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "11800",
+          "source": "wb-countries"
+        },
+        {
+          "country": "IE",
+          "stars": 3,
+          "value": "9400",
+          "source": "wb-countries"
+        },
+        {
+          "country": "IS",
+          "stars": 2,
+          "value": "10000",
+          "source": "wb-countries"
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "9500",
+          "source": "wb-countries"
+        },
+        {
+          "country": "JP",
+          "stars": 1,
+          "value": "18500",
+          "source": "wb-countries"
+        },
+        {
+          "country": "LV",
+          "stars": 2,
+          "value": "11100",
+          "source": "wb-countries"
+        },
+        {
+          "country": "PL",
+          "stars": 2,
+          "value": "10700",
+          "source": "wb-countries"
+        },
+        {
+          "country": "PT",
+          "stars": 3,
+          "value": "7900",
+          "source": "wb-countries"
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "1100",
+          "source": "wb-countries"
+        },
+        {
+          "country": "US",
+          "stars": 3,
+          "value": "7600",
+          "source": "wb-countries"
+        },
+        {
+          "country": "UY",
+          "stars": 5,
+          "value": "1600",
+          "source": "wb-countries"
+        }
+      ]
+    },
+    {
+      "id": "brazilian-community",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 4,
+          "value": "51527",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "70220",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "CL",
+          "stars": 3,
+          "value": "19238",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "CZ",
+          "stars": 2,
+          "value": "1483",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "DK",
+          "stars": 2,
+          "value": "6445",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "ES",
+          "stars": 5,
+          "value": "179946",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "IE",
+          "stars": 3,
+          "value": "48605",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "IS",
+          "stars": 1,
+          "value": "328",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "IT",
+          "stars": 4,
+          "value": "137935",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "207220",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "LV",
+          "stars": 1,
+          "value": "42",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "PL",
+          "stars": 1,
+          "value": "833",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "PT",
+          "stars": 5,
+          "value": "173266",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "PY",
+          "stars": 4,
+          "value": "85207",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "US",
+          "stars": 5,
+          "value": "738994",
+          "source": "undesa-ims",
+          "year": 2024
+        },
+        {
+          "country": "UY",
+          "stars": 3,
+          "value": "19034",
+          "source": "undesa-ims",
+          "year": 2024
+        }
+      ]
+    },
+    {
+      "id": "housing-cost",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 5,
+          "value": "38",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "AU",
+          "stars": 1,
+          "value": "258",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "CL",
+          "stars": 4,
+          "value": "95",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "108",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "DK",
+          "stars": 1,
+          "value": "258",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "148",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "GB",
+          "stars": 1,
+          "value": "241",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "GE",
+          "stars": 5,
+          "value": "34",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "IE",
+          "stars": 1,
+          "value": "279",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "IS",
+          "stars": 2,
+          "value": "220",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "143",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "JP",
+          "stars": 2,
+          "value": "177",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "LV",
+          "stars": 4,
+          "value": "94",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "PL",
+          "stars": 5,
+          "value": "55",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "PT",
+          "stars": 3,
+          "value": "117",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "55",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "US",
+          "stars": 2,
+          "value": "215",
+          "source": "icp-housing",
+          "year": 2021
+        },
+        {
+          "country": "UY",
+          "stars": 4,
+          "value": "102",
+          "source": "icp-housing",
+          "year": 2021
+        }
+      ]
+    },
+    {
+      "id": "welcome-to-immigrants",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "58",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "65",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "CL",
+          "stars": 2,
+          "value": "53",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "CZ",
+          "stars": 2,
+          "value": "50",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "DK",
+          "stars": 2,
+          "value": "49",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "60",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "GB",
+          "stars": 3,
+          "value": "56",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "IE",
+          "stars": 3,
+          "value": "64",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "IS",
+          "stars": 3,
+          "value": "56",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "58",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "JP",
+          "stars": 2,
+          "value": "47",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "LV",
+          "stars": 1,
+          "value": "37",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "PL",
+          "stars": 1,
+          "value": "40",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "PT",
+          "stars": 5,
+          "value": "81",
+          "source": "mipex",
+          "year": 2020
+        },
+        {
+          "country": "US",
+          "stars": 4,
+          "value": "73",
+          "source": "mipex",
+          "year": 2020
+        }
+      ]
+    },
+    {
+      "id": "stability",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "68.4",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "79.3",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "CL",
+          "stars": 3,
+          "value": "68.6",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "83.5",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "DK",
+          "stars": 4,
+          "value": "79.5",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "68.7",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "GB",
+          "stars": 3,
+          "value": "70.7",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "56.9",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "IE",
+          "stars": 4,
+          "value": "78.7",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "IS",
+          "stars": 5,
+          "value": "88.8",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "73.6",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "87.7",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "LV",
+          "stars": 4,
+          "value": "79.8",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "PL",
+          "stars": 4,
+          "value": "77.8",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "PT",
+          "stars": 4,
+          "value": "77.9",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "PY",
+          "stars": 3,
+          "value": "68.0",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "US",
+          "stars": 2,
+          "value": "60.3",
+          "source": "wgi",
+          "year": 2025
+        },
+        {
+          "country": "UY",
+          "stars": 5,
+          "value": "88.4",
+          "source": "wgi",
+          "year": 2025
+        }
+      ]
+    },
+    {
+      "id": "direct-flight",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "AU",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "CL",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "CZ",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "DK",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "ES",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "GB",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "IE",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "IS",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "IT",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "JP",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "LV",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "PL",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac"
+        },
+        {
+          "country": "PT",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "US",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        },
+        {
+          "country": "UY",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac"
+        }
+      ]
+    },
+    {
+      "id": "time-zone",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 5,
+          "value": "0",
+          "source": "iana-tz"
+        },
+        {
+          "country": "AU",
+          "stars": 1,
+          "value": "13",
+          "source": "iana-tz"
+        },
+        {
+          "country": "CL",
+          "stars": 5,
+          "value": "1",
+          "source": "iana-tz"
+        },
+        {
+          "country": "CZ",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "country": "DK",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "country": "ES",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "country": "GB",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "7",
+          "source": "iana-tz"
+        },
+        {
+          "country": "IE",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "country": "IS",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "country": "JP",
+          "stars": 1,
+          "value": "12",
+          "source": "iana-tz"
+        },
+        {
+          "country": "LV",
+          "stars": 3,
+          "value": "5",
+          "source": "iana-tz"
+        },
+        {
+          "country": "PL",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "country": "PT",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "country": "PY",
+          "stars": 5,
+          "value": "0",
+          "source": "iana-tz"
+        },
+        {
+          "country": "US",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "country": "UY",
+          "stars": 5,
+          "value": "0",
+          "source": "iana-tz"
+        }
+      ]
+    },
+    {
+      "id": "public-transport",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 2,
+          "value": "59.1",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "AU",
+          "stars": 3,
+          "value": "84.4",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "CL",
+          "stars": 4,
+          "value": "89.2",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "90.4",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "DK",
+          "stars": 5,
+          "value": "94.3",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "ES",
+          "stars": 5,
+          "value": "95.8",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "GB",
+          "stars": 5,
+          "value": "95.6",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "GE",
+          "stars": 5,
+          "value": "95.2",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "IE",
+          "stars": 4,
+          "value": "90.2",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "IS",
+          "stars": 4,
+          "value": "91.4",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "IT",
+          "stars": 5,
+          "value": "93.0",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "JP",
+          "stars": 3,
+          "value": "79.1",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "LV",
+          "stars": 4,
+          "value": "89.7",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "PL",
+          "stars": 4,
+          "value": "88.5",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "PT",
+          "stars": 5,
+          "value": "93.8",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "PY",
+          "stars": 1,
+          "value": "11.9",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "US",
+          "stars": 2,
+          "value": "56.7",
+          "source": "sdg-11-2-1"
+        },
+        {
+          "country": "UY",
+          "stars": 2,
+          "value": "60.0",
+          "source": "sdg-11-2-1"
+        }
+      ]
+    },
+    {
+      "id": "banking",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 3,
+          "value": "81.7",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "AU",
+          "stars": 5,
+          "value": "98.0",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "CL",
+          "stars": 3,
+          "value": "85.1",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "92.3",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "DK",
+          "stars": 5,
+          "value": "98.7",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "ES",
+          "stars": 5,
+          "value": "98.4",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "GB",
+          "stars": 5,
+          "value": "99.3",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "GE",
+          "stars": 2,
+          "value": "78.8",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "IE",
+          "stars": 5,
+          "value": "98.3",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "IS",
+          "stars": 5,
+          "value": "99.9",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "IT",
+          "stars": 3,
+          "value": "86.0",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "98.5",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "LV",
+          "stars": 4,
+          "value": "95.0",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "PL",
+          "stars": 3,
+          "value": "86.1",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "PT",
+          "stars": 4,
+          "value": "91.4",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "PY",
+          "stars": 1,
+          "value": "60.9",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "US",
+          "stars": 5,
+          "value": "97.0",
+          "source": "findex",
+          "year": 2024
+        },
+        {
+          "country": "UY",
+          "stars": 2,
+          "value": "73.7",
+          "source": "findex",
+          "year": 2024
+        }
+      ]
+    },
+    {
+      "id": "outdoors",
+      "ratings": [
+        {
+          "country": "AR",
+          "stars": 2,
+          "value": "8.8",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "AU",
+          "stars": 4,
+          "value": "22.0",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "CL",
+          "stars": 4,
+          "value": "21.6",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "CZ",
+          "stars": 4,
+          "value": "21.9",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "DK",
+          "stars": 3,
+          "value": "16.4",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "ES",
+          "stars": 5,
+          "value": "28.1",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "GB",
+          "stars": 5,
+          "value": "28.4",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "GE",
+          "stars": 4,
+          "value": "22.8",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "IE",
+          "stars": 2,
+          "value": "14.2",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "IS",
+          "stars": 3,
+          "value": "20.9",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "IT",
+          "stars": 4,
+          "value": "21.5",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "JP",
+          "stars": 5,
+          "value": "29.7",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "LV",
+          "stars": 3,
+          "value": "18.8",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "PL",
+          "stars": 5,
+          "value": "39.6",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "PT",
+          "stars": 4,
+          "value": "23.0",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "PY",
+          "stars": 2,
+          "value": "14.9",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "US",
+          "stars": 2,
+          "value": "12.9",
+          "source": "wdi-protected",
+          "year": 2025
+        },
+        {
+          "country": "UY",
+          "stars": 1,
+          "value": "3.1",
+          "source": "wdi-protected",
+          "year": 2025
+        }
+      ]
+    }
+  ]
+}

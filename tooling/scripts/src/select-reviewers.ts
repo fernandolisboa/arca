@@ -104,7 +104,7 @@ const rules: readonly Rule[] = [
   // A session review's versions, evidence and checks: a merge puts them into use (ADR-0032).
   {
     match: anyOf(
-      /^packages\/knowledge\/(reviews\/|(scripts|test)\/session-review\.)/,
+      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|(scripts|test)\/(session-review|suggested-ratings)\.?)/,
       /^apps\/api\/test\/(postgres\/)?session-review/,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),

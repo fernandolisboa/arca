@@ -1,5 +1,10 @@
 import { createI18n, type I18n } from '@arca/i18n';
-import { comparisonCatalog, pinnedCountries, versionCasesHash } from '@arca/knowledge';
+import {
+  comparisonCatalog,
+  pinnedCountries,
+  suggestedRatings,
+  versionCasesHash,
+} from '@arca/knowledge';
 import { useRuntimeConfig } from 'nitro/runtime-config';
 import { createDataExports } from './account/data-export.js';
 import { createAccountDeletion, type AccountDeletion } from './account/deletion.js';
@@ -10,6 +15,7 @@ import { createApp } from './app.js';
 import { auditLog, auditReader, type AuditLog } from './audit/log.js';
 import { createAuth, credentialStore } from './auth/auth.js';
 import { createCaseFiles } from './case/case-files.js';
+import { comparisonRatingSuggestions } from './case/rating-suggestions.js';
 import { createCaseIntake } from './case/intake.js';
 import { extractorFor } from './intake/environment.js';
 import { createDocuments } from './vault/documents.js';
@@ -555,6 +561,9 @@ const app = createApp({
     evaluation: {
       rules: rules.engine,
       comparisons: comparisonCatalog,
+      ...(suggestedRatings === null
+        ? {}
+        : { suggestions: comparisonRatingSuggestions(suggestedRatings) }),
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),
       engineCommit: readEngineCommit(),

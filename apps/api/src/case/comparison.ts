@@ -3,6 +3,7 @@ import {
   type ComparisonCatalog,
   type ComparisonPreferences,
   type DecisionStates,
+  type RatingSuggestions,
   type RouteStatus,
   bestRouteStatuses,
   compareDestinations,
@@ -21,6 +22,7 @@ export interface EvaluatedAsOf {
 
 export interface ComparisonSettings extends EvaluatedAsOf {
   readonly catalog: ComparisonCatalog;
+  readonly suggestions?: RatingSuggestions;
 }
 
 /**
@@ -34,7 +36,7 @@ export function destinationComparison(
   accountId: string,
   evaluated: CaseEvaluationsView,
   preferences: ComparisonPreferences,
-  { catalog, routeIds, states, today }: ComparisonSettings,
+  { catalog, routeIds, states, today, suggestions }: ComparisonSettings,
 ) {
   const { active, pendingNewer } = selectComparisonVersion(catalog.identities(), states);
   const entry = active === undefined ? undefined : catalog.activeEntry(active, states);
@@ -43,6 +45,7 @@ export function destinationComparison(
     preferences,
     countries: comparedCountries(routeIds),
     today,
+    ...(suggestions === undefined ? {} : { suggestions }),
   });
   const me = rows.people.find((person) => person.accountId === accountId)?.id;
   const statuses: ReadonlyMap<string, RouteStatus> =

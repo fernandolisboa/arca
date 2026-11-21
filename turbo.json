@@ -26,6 +26,7 @@
       "outputs": ["src/generated/**"],
       "inputs": [
         "data/**",
+        "suggested-ratings/**",
         "scripts/**",
         "package.json",
         "$TURBO_ROOT$/tooling/scripts/src/host.ts",

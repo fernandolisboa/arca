@@ -1121,7 +1121,7 @@ export const ptBR = {
     clearStarsFor: 'Tirar a nota de {criterion} em {country}',
     fewDataTitle: 'Poucos dados',
     fewDataLead:
-      'Menos da metade do seu peso tem nota nestes países. Dê estrelas a eles nos seus critérios para que entrem no ranking.',
+      'Menos da metade do seu peso tem nota nestes países. Dê estrelas a eles nos critérios sem sugestão do Arca para que entrem no ranking.',
     hiddenTitle: 'Países ocultos',
     hiddenLead: 'Eles continuam com nota, mas ficam fora do ranking.',
     show: 'Mostrar de novo',
@@ -1131,7 +1131,8 @@ export const ptBR = {
     measuredTitle: 'Medidos com dados',
     measuredLead: 'A nota vem de dados públicos de cada país.',
     personalTitle: 'Critérios pessoais e próprios',
-    personalLead: 'Você dá sua nota, de 1 a 5 estrelas, a cada país em “Ver as notas”.',
+    personalLead:
+      'Onde há dado público, o Arca já sugere uma nota de 1 a 5 estrelas, com a fonte. Confirme ou mude em “Ver as notas” ou “Ver as fontes”.',
     rename: 'Renomear',
     renameLabel: 'Renomear {name}',
     newName: 'Novo nome',
@@ -1196,6 +1197,34 @@ export const ptBR = {
       'price-level': 'Preços em {value}, com os EUA em 100',
       homicides: '{value} homicídios por 100 mil habitantes',
       'health-coverage': 'Cobertura de saúde em {value} de 100',
+    },
+    /** Stars Arca suggests from public data (ADR-0035), by suggestion key. */
+    suggested: {
+      stars: 'Sugestão do Arca: {n, plural, one {# estrela} other {# estrelas}}',
+      scored: '{score} (sugerida)',
+      confirm: 'Usar esta nota',
+      confirmFor: 'Usar a nota sugerida para {criterion} em {country}',
+      reason: {
+        climate: 'temperatura média anual do país: {value} °C',
+        language:
+          '{value, select, pt {lá se fala português} es {lá se fala espanhol, parecido com o português} it {lá se fala italiano, parecido com o português} en {lá se fala inglês} other {o idioma de lá é bem diferente do português}}',
+        schools: 'média de {value} pontos no PISA, a prova internacional de alunos de 15 anos',
+        jobs: 'desemprego de {value}%',
+        taxes: 'maior alíquota do imposto de renda: {value}%',
+        'distance-to-brazil': 'cerca de {value} km em linha reta de São Paulo até a capital',
+        'brazilian-community': '{value} pessoas nascidas no Brasil moram lá',
+        'housing-cost': 'preço de moradia e contas da casa: {value}, com a média do mundo em 100',
+        'welcome-to-immigrants':
+          'nota {value} de 100 no índice de integração de imigrantes (MIPEX)',
+        stability: 'nota {value} de 100 em estabilidade política no Banco Mundial',
+        'direct-flight':
+          '{value, select, direct {tem voo direto saindo do Brasil} other {só com conexão saindo do Brasil}}',
+        'time-zone':
+          '{n, plural, =0 {mesmo horário de Brasília} one {# hora de diferença de Brasília} other {# horas de diferença de Brasília}}',
+        'public-transport': '{value}% da população das cidades mora perto de transporte público',
+        banking: '{value}% dos adultos têm conta em banco',
+        outdoors: '{value}% do território é área protegida',
+      },
     },
     valueUnit: '{value} · {unit}',
     inYear: '{reading} ({year})',

@@ -1,6 +1,6 @@
 # ADR-0034: Suggested criteria on the comparison screen, ready-made and from a model
 
-- Status: Accepted
+- Status: Accepted; amended 2026-11-21 by [ADR-0035](0035-suggested-ratings.md): a ready suggestion can come with suggested stars per country
 - Date: 2026-11-21
 - Amends: [ADR-0026](0026-destination-comparison-data.md) (preferences keep turned-down suggestions; a new own criterion may start at a weight), [ADR-0004](0004-ai-providers-behind-ports.md) (a `CriterionSuggester` port)
 
