@@ -1,3 +1,4 @@
+import { RequestFold } from './folds.js';
 import { routes, type KnowledgeVersion, type RuleReports } from '@arca/api-contract/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
@@ -65,13 +66,17 @@ export function ReportsSection({
     ({ routeId }) => country === undefined || countryOfRoute(versions, routeId) === country,
   );
   return (
-    <section aria-label={title} className="flex flex-col gap-2">
-      <h3 className="font-medium">{title}</h3>
+    <RequestFold
+      id="reports"
+      title={title}
+      count={listed?.length}
+      summary={listed === undefined ? '' : t('knowledge.lists.requestCount', { n: listed.length })}
+    >
       {reports.isError && <p>{t('knowledge.reports.loadFailure')}</p>}
-      {listed?.length === 0 && <p className="text-muted">{t('knowledge.reports.none')}</p>}
+      {listed?.length === 0 && <p className="text-small text-muted">{t('knowledge.reports.none')}</p>}
       {listed !== undefined && listed.length > 0 && (
         <>
-          <p className="text-muted">{t('knowledge.reports.lead')}</p>
+          <p className="text-small text-muted">{t('knowledge.reports.lead')}</p>
           <ul className="flex flex-col gap-3">
             {byRequirement(listed).map((reported, index) => (
               <li key={reported.key} className="flex flex-col gap-1">
@@ -119,6 +124,6 @@ export function ReportsSection({
           </ul>
         </>
       )}
-    </section>
+    </RequestFold>
   );
 }

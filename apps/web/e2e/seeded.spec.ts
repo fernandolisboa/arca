@@ -179,6 +179,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await memberReportsARequirement(browser);
   await page.reload();
   await countries.getByRole('button', { name: /^Estados Unidos:/ }).click();
+  await page.getByRole('tab', { name: /^Pedidos e avisos/ }).click();
   const reports = page.getByRole('region', { name: 'Avisos de regra errada' });
   await expect(reports).toContainText(new RegExp(`EB-5 .* \\(versão ${version}\\), requisito`));
   await expect(reports).toContainText(/valor errado: \d+ avisos?/);
@@ -189,6 +190,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
     await close.click();
   }
   await expect(reports).toContainText('Nenhum aviso aberto.');
+  await page.getByRole('tab', { name: 'Regras' }).click();
   await page
     .getByRole('region', { name: 'Ativas', exact: true })
     .getByRole('button', { name: /^EB-5 immigrant investor/ })

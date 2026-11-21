@@ -1,7 +1,7 @@
 import type { KnowledgeComparisonVersion, KnowledgeVersion } from '@arca/api-contract/client';
-import { Disclosure, Icon, StatusChip, cardClass } from '@arca/ui';
-import type { ReactNode } from 'react';
+import { Icon, StatusChip, cardClass } from '@arca/ui';
 import { CountryFlag } from '../country-flag.js';
+import { Fold, foldCardClass } from './folds.js';
 import { MemberRequestsSection } from './member-requests.js';
 import { NewRouteRequestsSection } from './new-route-requests.js';
 import { ReportsSection } from './reports-section.js';
@@ -10,6 +10,7 @@ import {
   byRoute,
   comparisonTabs,
   reviewOrder,
+  versionSpan,
   versionTab,
 } from './review-order.js';
 import { RouteRequestsSection } from './route-requests.js';
@@ -88,27 +89,61 @@ function PreviousChip({
   readonly words: KnowledgeWords;
 }) {
   return (
-    <StatusChip
-      tone="unknown"
-      label={words.t('knowledge.lists.previousState', { state: version.state })}
-    />
+    <span className="self-start">
+      <StatusChip
+        tone="unknown"
+        label={words.t('knowledge.lists.previousState', { state: version.state })}
+      />
+    </span>
   );
+}
+
+/** What a folded group of route versions says: how many, from when, and how previous ones left. */
+export function spanSummary(
+  versions: readonly KnowledgeVersion[],
+  tab: VersionTab,
+  words: KnowledgeWords,
+): string {
+  const { t } = words;
+  const { count, from, to, rejected, superseded } = versionSpan(versions);
+  const counted = t('knowledge.review.versions', { n: count });
+  const span =
+    from === null || to === null
+      ? counted
+      : from === to
+        ? t('knowledge.lists.summary.one', { versions: counted, date: words.date(from) })
+        : t('knowledge.lists.summary.range', {
+            versions: counted,
+            from: words.date(from),
+            to: words.date(to),
+          });
+  if (tab !== 'previous') return span;
+  const outcomes = [
+    ...(superseded > 0 ? [t('knowledge.lists.summary.superseded', { n: superseded })] : []),
+    ...(rejected > 0 ? [t('knowledge.lists.summary.rejected', { n: rejected })] : []),
+  ];
+  return outcomes.length === 0
+    ? span
+    : t('knowledge.lists.summary.outcomes', { span, outcomes: words.list(outcomes) });
 }
 
 /**
  * One country's versions of a list as rows. A country with several routes (visas) puts each
- * route's versions under the route's name; one route alone needs none unless `named`, as in a
- * narrow column. Proposed rows are numbered in the order to review them.
+ * route's versions under the route's name, which folds; one route alone needs none unless `named`,
+ * as in a narrow column. Proposed rows are numbered in the order to review them. `foldId` keys
+ * each route's fold.
  */
 export function CountryRows({
   versions,
   tab,
+  foldId,
   named: alwaysNamed = false,
   onPick,
   words,
 }: {
   readonly versions: readonly KnowledgeVersion[];
   readonly tab: VersionTab;
+  readonly foldId: string;
   readonly named?: boolean;
   readonly onPick: (picked: Picked) => void;
   readonly words: KnowledgeWords;
@@ -152,8 +187,8 @@ export function CountryRows({
           <span className="text-small text-muted">
             {t('knowledge.lists.from', { date: words.date(version.effectiveFrom) })}
           </span>
+          {tab === 'previous' && <PreviousChip version={version} words={words} />}
         </span>
-        {tab === 'previous' && <PreviousChip version={version} words={words} />}
         <Chevron />
       </button>
     </li>
@@ -161,10 +196,16 @@ export function CountryRows({
   if (!named) return ordered.map(row);
   return routes.map((route) => (
     <li key={route.routeId}>
-      <p className="bg-soft px-4 py-2 text-small font-medium">{route.title}</p>
-      <ol className="flex flex-col divide-y divide-line border-t border-line">
-        {route.versions.map(row)}
-      </ol>
+      <Fold
+        id={`${foldId}:${route.routeId}`}
+        fallback
+        title={route.title}
+        level={5}
+        summary={spanSummary(route.versions, tab, words)}
+        className="bg-soft px-4 text-small [&_ol]:bg-surface"
+      >
+        <ol className={`-mx-4 border-t border-line ${rowsClass}`}>{route.versions.map(row)}</ol>
+      </Fold>
     </li>
   ));
 }
@@ -200,82 +241,35 @@ export function ComparisonRows({
             {t('knowledge.versionTitle', { title: version.title, number: version.number })}
           </span>
           <span className="text-small text-muted">{t('knowledge.comparison.meta')}</span>
+          {tab === 'previous' && <PreviousChip version={version} words={words} />}
         </span>
-        {tab === 'previous' && <PreviousChip version={version} words={words} />}
         <Chevron />
       </button>
     </li>
   ));
 }
 
-const rowsClass = 'flex flex-col divide-y divide-line';
+export const rowsClass = 'flex flex-col divide-y divide-line';
 
-/** Rows inside a card with no heading of its own. */
-export function RowsCard({ children }: { readonly children: ReactNode }) {
-  return (
-    <div className={`overflow-hidden ${cardClass}`}>
-      <ol className={rowsClass}>{children}</ol>
-    </div>
-  );
-}
-
-/** A country's (or the comparisons') versions of a list, folded behind its name. */
-function GroupCard({
-  title,
-  lead,
-  count,
-  open,
-  onOpenChange,
-  words,
-  children,
-}: {
-  readonly title: string;
-  readonly lead?: ReactNode;
-  readonly count: number;
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly words: KnowledgeWords;
-  readonly children: ReactNode;
-}) {
-  return (
-    <Disclosure
-      title={title}
-      lead={lead}
-      level={4}
-      open={open}
-      onOpenChange={onOpenChange}
-      aside={
-        <span className="flex basis-full flex-wrap items-center gap-2 pb-3">
-          <span className="text-small text-muted">
-            {words.t('knowledge.review.versions', { n: count })}
-          </span>
-        </span>
-      }
-      className={`overflow-hidden px-4 ${cardClass}`}
-    >
-      <ol className={`-mx-4 border-t border-line ${rowsClass}`}>{children}</ol>
-    </Disclosure>
-  );
-}
+/** The surface of a foldable card whose rows run edge to edge. */
+export const foldingCardClass = `overflow-hidden px-4 ${cardClass} ${foldCardClass}`;
 
 /**
- * One list as a card per country, in name order, the comparisons last. `isOpen` and `onOpenChange`
- * keep each card's fold in the screen, keyed by country.
+ * One list as a foldable card per country, in name order, the comparisons last, set in a masonry
+ * of `columns`. A card starts open on a wide screen and folded on a phone.
  */
 export function CountryCards({
   tab,
   lists,
   columns,
-  isOpen,
-  onOpenChange,
+  wide,
   onPick,
   words,
 }: {
   readonly tab: VersionTab;
   readonly lists: TabLists;
   readonly columns: string;
-  readonly isOpen: (key: string) => boolean;
-  readonly onOpenChange: (key: string, open: boolean) => void;
+  readonly wide: boolean;
   readonly onPick: (picked: Picked) => void;
   readonly words: KnowledgeWords;
 }) {
@@ -285,59 +279,73 @@ export function CountryCards({
     return <p className="text-muted">{t(`knowledge.lists.empty.${tab}`)}</p>;
   }
   return (
-    <div className={`grid items-start gap-3 ${columns}`}>
+    <div className={`gap-3 ${columns}`}>
       {groups.map(({ country, versions }) => (
-        <GroupCard
+        <Fold
           key={country}
+          id={`cards:${tab}:${country}`}
+          fallback={wide}
           title={words.country(country)}
           lead={<CountryFlag code={country} />}
           count={versions.length}
-          open={isOpen(country)}
-          onOpenChange={(open) => {
-            onOpenChange(country, open);
-          }}
-          words={words}
+          summary={spanSummary(versions, tab, words)}
+          className={foldingCardClass}
         >
-          <CountryRows versions={versions} tab={tab} onPick={onPick} words={words} />
-        </GroupCard>
+          <ol className={`-mx-4 border-t border-line ${rowsClass}`}>
+            <CountryRows
+              versions={versions}
+              tab={tab}
+              foldId={`cards:${tab}:${country}`}
+              onPick={onPick}
+              words={words}
+            />
+          </ol>
+        </Fold>
       ))}
       {lists.comparisons.length > 0 && (
-        <GroupCard
+        <Fold
+          id={`cards:${tab}:${comparisonsKey}`}
+          fallback={wide}
           title={t('knowledge.review.comparisons')}
           count={lists.comparisons.length}
-          open={isOpen(comparisonsKey)}
-          onOpenChange={(open) => {
-            onOpenChange(comparisonsKey, open);
-          }}
-          words={words}
+          summary={t('knowledge.review.versions', { n: lists.comparisons.length })}
+          className={foldingCardClass}
         >
-          <ComparisonRows comparisons={lists.comparisons} tab={tab} onPick={onPick} words={words} />
-        </GroupCard>
+          <ol className={`-mx-4 border-t border-line ${rowsClass}`}>
+            <ComparisonRows
+              comparisons={lists.comparisons}
+              tab={tab}
+              onPick={onPick}
+              words={words}
+            />
+          </ol>
+        </Fold>
       )}
     </div>
   );
 }
 
 /**
- * Reports, members' requests and requests for new routes, all of them or one country's. Each
- * request is about a country: a report or member's request through its route's version.
+ * Reports, members' requests and requests for new routes, all of them or one country's, each a
+ * foldable card in a masonry of `columns`. Each request is about a country: a report or member's
+ * request through its route's version.
  */
 export function RequestSections({
   versions,
   country,
-  className,
+  columns,
   words,
   onOpenVersion,
 }: {
   readonly versions: readonly KnowledgeVersion[];
   readonly country?: string;
-  readonly className: string;
+  readonly columns: string;
   readonly words: KnowledgeWords;
   readonly onOpenVersion: (routeId: string, number: number) => void;
 }) {
   const scope = country === undefined ? {} : { country };
   return (
-    <div className={className}>
+    <div className={`gap-3 ${columns}`}>
       <ReportsSection versions={versions} {...scope} words={words} />
       <MemberRequestsSection
         versions={versions}
