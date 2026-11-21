@@ -463,13 +463,15 @@ function CountryLayout({
         </ul>
       </nav>
       <div className="flex min-w-0 flex-col gap-4">
-        {shown !== undefined && (
+        {shown !== undefined && (section === 'rules' || country !== undefined) && (
           <h3 className="flex items-center gap-3 font-display text-lead">
             {country !== undefined && <CountryFlag code={country} />}
             {nameOf(shown.country)}
           </h3>
         )}
-        {section === 'requests' || shown === undefined ? (
+        {shown === undefined && section === 'rules' ? (
+          <p className="text-muted">{t('knowledge.lists.empty.proposed')}</p>
+        ) : section === 'requests' || shown === undefined ? (
           <RequestSections
             key={country}
             versions={versions}

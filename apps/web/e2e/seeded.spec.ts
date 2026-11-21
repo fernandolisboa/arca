@@ -193,7 +193,7 @@ test('the seed admin activates a version, reads and closes its reports, then rej
   await page.getByRole('tab', { name: 'Regras' }).click();
   await page
     .getByRole('region', { name: 'Ativas', exact: true })
-    .getByRole('button', { name: /^EB-5 immigrant investor/ })
+    .getByRole('button', { name: new RegExp(`^EB-5 immigrant investor .* versão ${version}\\b`) })
     .click();
 
   await reviewStep(page, 'Decisão');
