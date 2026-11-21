@@ -155,7 +155,7 @@ async function family(cases: CaseFiles) {
 /** A country no route covers, so the screen could never list it to show it again. */
 const withoutRoute = 'QZ';
 
-const nothingChosen = { weights: {}, ratings: {}, ownCriteria: [], hidden: [] };
+const nothingChosen = { weights: {}, ratings: {}, ownCriteria: [], hidden: [], dismissed: [] };
 const errorOf = async (response: Response) =>
   ((await response.json()) as { error: { code: string } }).error.code;
 
@@ -208,8 +208,9 @@ describe('the destination comparison (ADR-0026, #315)', () => {
     const response = await write(alice, {
       weights: { safety: 5, climate: 0 },
       ratings: { climate: { PT: 5 } },
-      ownCriteria: [{ name: 'Perto da praia' }],
+      ownCriteria: [{ name: 'Perto da praia', weight: 4 }],
       hidden: ['US', withoutRoute],
+      dismissed: ['Custo de creche'],
     });
     expect(response.status).toBe(200);
     const written = (await response.json()) as DestinationComparison;
@@ -220,7 +221,7 @@ describe('the destination comparison (ADR-0026, #315)', () => {
       id: own?.id,
       kind: 'own',
       name: 'Perto da praia',
-      weight: 3,
+      weight: 4,
       defaultWeight: 3,
     });
     expect(written.criteria.find(({ id }) => id === 'safety')?.weight).toBe(5);
@@ -245,6 +246,7 @@ describe('the destination comparison (ADR-0026, #315)', () => {
       ratings: { climate: { PT: 5 }, [id]: { PT: 4 } },
       ownCriteria: [{ id, name: 'Perto da praia' }],
       hidden: ['US'],
+      dismissed: ['Custo de creche'],
     });
 
     const deleted = await write(alice, { ...read.preferences, ownCriteria: [] });
@@ -253,6 +255,7 @@ describe('the destination comparison (ADR-0026, #315)', () => {
       ratings: { climate: { PT: 5 } },
       ownCriteria: [],
       hidden: ['US'],
+      dismissed: ['Custo de creche'],
     });
   });
 
