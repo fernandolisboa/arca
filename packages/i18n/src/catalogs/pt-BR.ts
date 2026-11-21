@@ -1072,10 +1072,25 @@ export const ptBR = {
     tooMany: 'Você abriu esta tela muitas vezes na última hora. Espere um pouco e tente de novo.',
     retry: 'Tentar de novo',
     noVersion:
-      'Os dados dos países ainda aguardam ativação. Por enquanto, só contam os critérios próprios que você criar.',
+      'Os critérios dos países ainda aguardam ativação. Até lá, só contam os critérios que você criar.',
     pendingNewer:
       'Há dados mais novos dos países aguardando ativação. Até lá, a comparação usa os dados atuais.',
     jumpToWeights: 'Ajustar os pesos',
+    searchLabel: 'Buscar país',
+    scoreFilter: 'Mostrar',
+    scoreFilterChoice: '{score, select, scored {Com nota} unscored {Sem nota} other {Todos}}',
+    noMatch: 'Nenhum país bate com a busca ou o filtro.',
+    noRankedMatch:
+      'Nenhum país do ranking bate com a busca ou o filtro. Veja os de poucos dados abaixo.',
+    tableCaption:
+      'Países em ordem de nota, com a nota de cada critério e o peso que você deu a ele.',
+    countryColumn: 'País',
+    actionsColumn: 'Rotas e ações',
+    totalColumn: 'Nota final',
+    fromData: 'Dado público',
+    fromStars: 'Suas estrelas',
+    weight: 'Peso',
+    sources: 'Ver as fontes',
     saving: 'Salvando…',
     saveFailure:
       '{reason, select, limited {Foram muitas mudanças em pouco tempo. Espere um pouco e tente de novo.} changed {Seus critérios mudaram em outra tela. Abrimos a versão mais recente.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar a última mudança. Tente de novo.}}',
@@ -1103,6 +1118,7 @@ export const ptBR = {
     ratingFor: 'Sua nota para {criterion} em {country}',
     star: '{n, plural, one {# estrela} other {# estrelas}} de 5',
     clearStars: 'Tirar a nota',
+    clearStarsFor: 'Tirar a nota de {criterion} em {country}',
     fewDataTitle: 'Poucos dados',
     fewDataLead:
       'Menos da metade do seu peso tem nota nestes países. Dê estrelas a eles nos seus critérios para que entrem no ranking.',
@@ -1126,7 +1142,9 @@ export const ptBR = {
     removeConfirm: 'Apagar “{name}” e as estrelas que você deu nele?',
     addTitle: 'Criar um critério próprio',
     addLabel: 'Nome do critério',
-    addHint: 'Por exemplo: perto da praia.',
+    addHint: 'Por exemplo: voo direto para o Brasil.',
+    ownTitle: 'Seus critérios',
+    ownLead: 'Crie o que pesa para você e dê estrelas a cada país na tabela.',
     add: 'Criar',
     ownLimit: 'Você já tem {max} critérios próprios. Apague um para criar outro.',
     /** Labels by criterion ID; a criterion without one shows the title in the data. */

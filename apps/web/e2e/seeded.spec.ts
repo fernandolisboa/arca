@@ -498,10 +498,11 @@ async function memberReportsARequirement(browser: Browser) {
 /**
  * Another account, in its own browser, compares destinations on the active comparison version
  * (#316): with weights that leave only climate counting, its stars order two countries, and hiding
- * the first moves the second up. Every number on the screen comes from the API.
+ * the first moves the second up. Every number on the screen comes from the API. A wide screen
+ * shows the table, with the weights on top of the columns; a phone shows a card per country.
  */
 async function memberCompares(browser: Browser) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   const problems = watchProblems(page);
   await signedIn(page);
@@ -509,10 +510,10 @@ async function memberCompares(browser: Browser) {
   await page.getByRole('link', { name: 'Comparar', exact: true }).first().click();
   await expect(page.getByRole('heading', { level: 2, name: 'Comparar destinos' })).toBeVisible();
   const ranking = page.getByRole('region', { name: 'Seu ranking' });
-  const places = ranking.getByRole('heading', { level: 4 });
+  const places = ranking.getByRole('rowheader').filter({ hasText: /º lugar/ });
   await expect(places.first()).toHaveText(/^1º lugar /);
   // Each change is saved as it is made; the next step waits for the API's answer.
-  const saved = async (change: Promise<void>) => {
+  const saved = async (change: Promise<unknown>) => {
     const answer = page.waitForResponse((response) =>
       response.url().endsWith('/v1/comparison/preferences'),
     );
@@ -520,61 +521,72 @@ async function memberCompares(browser: Browser) {
     expect((await answer).status()).toBe(200);
   };
 
-  const weights = page.getByRole('region', { name: 'Seus pesos' });
-  const weigh = (criterion: string, weight: number) =>
-    saved(
-      weights
-        .getByRole('group', { name: criterion })
-        .getByRole('radio', { name: String(weight), exact: true })
-        .check(),
-    );
+  const weight = (criterion: string) =>
+    ranking.getByRole('combobox', { name: `Peso ${criterion}` });
   for (const criterion of ['Custo de vida', 'Segurança', 'Saúde', 'Idioma']) {
-    await weigh(criterion, 0);
+    await saved(weight(criterion).selectOption('0'));
   }
-  await weigh('Clima', 5);
-  await expect(ranking).toContainText('Nenhum país tem nota em pelo menos metade do seu peso');
+  await saved(weight('Clima').selectOption('5'));
+  await expect(places).toHaveCount(0);
+  await expect(ranking).toContainText('Poucos dados');
 
-  const fewData = page.getByRole('region', { name: 'Poucos dados' });
-  // A click, not check(): the rated country can move to another group as soon as the API
-  // answers, and its card there opens with the notes closed.
-  const rate = async (country: string, stars: string) => {
-    const card = page.getByRole('article', { name: new RegExp(`${country}$`) });
-    await card.getByText('Ver as notas').click();
-    await saved(
-      card
+  // A click, not check(): the rated country can move to another group as soon as the API answers.
+  const rate = (country: string, stars: string) =>
+    saved(
+      ranking
         .getByRole('group', { name: `Sua nota para Clima em ${country}` })
         .getByRole('radio', { name: stars })
         .click(),
     );
-  };
   await rate('Portugal', '2 estrelas de 5');
   await rate('Uruguai', '5 estrelas de 5');
-  await expect(places).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
-  await expect(ranking.getByRole('article').first()).toContainText('nota final 10 de 10');
-  await expect(fewData).not.toContainText('Uruguai');
+  await expect(places).toHaveText([/^1º lugar Uruguai/, /^2º lugar Portugal/]);
+  await expect(ranking.getByRole('row').filter({ hasText: '1º lugar Uruguai' })).toContainText(
+    'nota final 10 de 10',
+  );
+
+  // The filter narrows the table without changing the ranking.
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('urug');
+  await expect(ranking.getByRole('rowheader')).toHaveText([/^1º lugar Uruguai/]);
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('');
+  await page.getByRole('radio', { name: 'Sem nota' }).check();
+  await expect(places).toHaveCount(0);
+  await page.getByRole('radio', { name: 'Todos' }).check();
 
   await saved(ranking.getByRole('button', { name: 'Ocultar Uruguai' }).click());
-  await expect(places).toHaveText(['1º lugar Portugal']);
+  await expect(places).toHaveText([/^1º lugar Portugal/]);
   const hidden = page.getByRole('region', { name: 'Países ocultos' });
   await expect(hidden).toContainText('Uruguai');
+  // A hidden country stays reachable whatever the filter.
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('port');
+  await expect(hidden).toContainText('Uruguai');
+  await page.getByRole('searchbox', { name: 'Buscar país' }).fill('');
 
   // The choices are the account's own and come back on the next visit.
   await page.reload();
-  await expect(places).toHaveText(['1º lugar Portugal']);
-  await expect(
-    weights.getByRole('group', { name: 'Clima' }).getByRole('radio', { name: '5', exact: true }),
-  ).toBeChecked();
-  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(places).toHaveText([/^1º lugar Portugal/]);
+  await expect(weight('Clima')).toHaveValue('5');
+  // The table scrolls inside its card; the page itself never scrolls sideways.
   expect(await horizontalOverflow(page)).toBe(0);
+  await expectNoAxeViolations(page);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const cards = ranking.getByRole('heading', { level: 4 });
+  await expect(cards).toHaveText(['1º lugar Portugal']);
+  expect(await horizontalOverflow(page)).toBe(0);
+  await expectNoAxeViolations(page);
+
+  await saved(hidden.getByRole('button', { name: 'Mostrar de novo: Uruguai' }).click());
+  await expect(cards).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
+  expect(problems).toEqual([]);
+  await context.close();
+}
+
+async function expectNoAxeViolations(page: Page) {
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();
   expect(violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual([]);
-
-  await saved(hidden.getByRole('button', { name: 'Mostrar de novo: Uruguai' }).click());
-  await expect(places).toHaveText(['1º lugar Uruguai', '2º lugar Portugal']);
-  expect(problems).toEqual([]);
-  await context.close();
 }
 
 /**
