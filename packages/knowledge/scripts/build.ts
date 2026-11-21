@@ -207,7 +207,11 @@ export function runtimeModule({
  * against its schema and its own number; null when the directory holds none.
  */
 export async function readSuggestedRatings(dir: string): Promise<Json | null> {
-  const numbers = (await readdir(dir).catch(() => []))
+  const names = await readdir(dir).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
+  });
+  const numbers = names
     .flatMap((name) => /^([1-9][0-9]*)\.json$/.exec(name)?.[1] ?? [])
     .map(Number)
     .sort((a, b) => b - a);

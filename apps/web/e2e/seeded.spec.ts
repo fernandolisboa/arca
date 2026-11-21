@@ -527,7 +527,8 @@ async function memberCompares(browser: Browser) {
     await saved(weight(criterion).selectOption('0'));
   }
   await saved(weight('Clima').selectOption('5'));
-  // Australia and Paraguay get 5 suggested stars each and tie; the country code breaks the tie.
+  // Australia and Paraguay get 5 suggested stars each in suggested-ratings/1.json and tie; the
+  // country code breaks the tie. A new ratings file may change this order.
   await expect(places.nth(0)).toHaveText(/^1º lugar Austrália/);
   await expect(places.nth(1)).toHaveText(/^2º lugar Paraguai/);
   await expect(ranking).not.toContainText('Poucos dados');

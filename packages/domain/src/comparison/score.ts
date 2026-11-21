@@ -52,7 +52,10 @@ export interface CriterionScore {
    * The stars the comparison suggests from a public source (ADR-0035). They score the criterion
    * while the person has not rated it; the person's own stars always win.
    */
-  readonly suggested?: SuggestedRating;
+  readonly suggested?: SuggestedRating & {
+    /** Its source was verified more than 90 days before today (spec 0002, R9). */
+    readonly stale: boolean;
+  };
 }
 
 export type CountryComparison = (
@@ -232,7 +235,9 @@ export function compareDestinations({
       const byCountry = ownValue(preferences.ratings, criterion.id);
       const rating = byCountry === undefined ? undefined : ownValue(byCountry, country);
       const key = suggestionKeys.get(criterion.id);
-      const suggested = key === undefined ? undefined : suggestions.rating(key, country);
+      const found = key === undefined ? undefined : suggestions.rating(key, country);
+      const suggested =
+        found === undefined ? undefined : { ...found, stale: isStale(found.source, today) };
       const stars = rating ?? suggested?.stars;
       if (stars === undefined) return { score: { criterion: criterion.id, score: null } };
       const exact = starScore(stars);

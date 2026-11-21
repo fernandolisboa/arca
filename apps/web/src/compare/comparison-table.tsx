@@ -292,7 +292,7 @@ function CountryRow({
                   }}
                   starLabel={(n) => t('compare.star', { n })}
                   clearLabel={t('compare.clearStarsFor', { criterion: label, country: name })}
-                  suggested={scores.get(criterion.id)?.suggested?.stars}
+                  suggested={score?.suggested?.stars}
                 />
               )}
             </td>

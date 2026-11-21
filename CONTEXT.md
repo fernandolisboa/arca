@@ -51,16 +51,17 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult unless shared as a shared analysis ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |
-| Criterion | Critério | One thing a destination comparison scores, such as safety or climate; knowledge data with a stable ID, scored from a country indicator or from the person's own rating |
-| Personal criterion | Critério pessoal | A criterion of a comparison version that each adult scores with their own rating, such as climate; knowledge data, unlike an own criterion. Avoid "subjective criterion" |
-| Own criterion | Critério próprio | A criterion an adult creates and names for their own comparison, scored only from their rating; case data, unlike a personal criterion. Avoid "custom criterion" |
+| Criterion | Critério | One thing a destination comparison scores, such as safety or climate; knowledge data with a stable ID, scored from a country indicator or from the person's own rating, or a suggested rating while they have none |
+| Personal criterion | Critério pessoal | A criterion of a comparison version that each adult scores with their own rating, or a suggested rating until they give one, such as climate; knowledge data, unlike an own criterion. Avoid "subjective criterion" |
+| Own criterion | Critério próprio | A criterion an adult creates and names for their own comparison, scored from their rating, or a suggested rating when its name matches a ready suggestion; case data, unlike a personal criterion. Avoid "custom criterion" |
 | Suggested criterion | Sugestão | A criterion the comparison screen proposes, from a ready list or from Arca's model, with a starting weight; becomes an own criterion when the adult adds it, or stays out of the suggestions when they turn it down ([ADR-0034](docs/adr/0034-criterion-suggestions.md)) |
 | Suggested rating | Sugestão do Arca | Stars from 1 to 5 the comparison suggests for a country on a personal or own criterion, from a public source in the repository; they score the criterion until the adult rates it, and the adult's own stars always win ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
+| Suggestion key | (no UI label) | The ID a suggested rating is filed under: a personal criterion's ID or a ready suggestion's ID; an own criterion takes the key whose catalog name it matches ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
 | Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |
-| Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value or the rating is missing, never zero |
+| Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value, or both the rating and any suggested rating, are missing, never zero |
 | Total score | Nota final | The weighted mean of a country's known scores, from 0 to 10 |
-| Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry; under half puts the country in "Poucos dados" |
+| Coverage | Dados conhecidos | The share of an adult's weight that a country's known scores carry, suggested ratings included; under half puts the country in "Poucos dados" |
 | Few data | Poucos dados | The group of countries with less than half of an adult's weight known, listed after the ranked ones without a rank |
 | Hidden country | País oculto | A country an adult left out of their comparison; still scored, listed last without a rank, and brought back with one tap; dropped on the next write once no route covers it |
 | Country indicator | Indicador do país | A versioned, sourced knowledge file with one measured value per country, such as the homicide rate, with its year |

@@ -85,6 +85,8 @@ export const CriterionScore = z.object({
       value: z.string().max(40),
       year: z.int().min(1900).max(2200).optional(),
       source: plainSourceSchema,
+      /** Its source was verified more than 90 days ago. */
+      stale: z.boolean(),
     })
     .optional(),
 });

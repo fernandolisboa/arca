@@ -269,7 +269,7 @@ export function SuggestionLines({
     <div className="flex flex-col gap-1">
       <p className="text-small">
         <span className="font-medium">{t('compare.suggested.stars', { n: suggested.stars })}</span>{' '}
-        · {words.suggestion(suggested)}
+        · {words.suggestionReason(suggested)}
       </p>
       <p className="text-caption break-all text-muted">
         {t('compare.source', {
@@ -277,6 +277,11 @@ export function SuggestionLines({
           date: formatCalendarDate(suggested.source.verifiedAt, words.language),
         })}
       </p>
+      {suggested.stale && (
+        <p className="text-caption text-warn-ink">
+          {t('compare.stale', { days: String(staleAfterDays) })}
+        </p>
+      )}
       {!rated && (
         <button
           type="button"

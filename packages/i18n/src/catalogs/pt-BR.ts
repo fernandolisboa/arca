@@ -1132,7 +1132,7 @@ export const ptBR = {
     measuredLead: 'A nota vem de dados públicos de cada país.',
     personalTitle: 'Critérios pessoais e próprios',
     personalLead:
-      'O Arca já sugere uma nota de 1 a 5 estrelas para cada país, com a fonte. Confirme ou mude em “Ver as notas”.',
+      'Onde há dado público, o Arca já sugere uma nota de 1 a 5 estrelas, com a fonte. Confirme ou mude em “Ver as notas” ou “Ver as fontes”.',
     rename: 'Renomear',
     renameLabel: 'Renomear {name}',
     newName: 'Novo nome',
@@ -1205,7 +1205,7 @@ export const ptBR = {
       confirm: 'Usar esta nota',
       confirmFor: 'Usar a nota sugerida para {criterion} em {country}',
       reason: {
-        climate: 'temperatura média do país no ano: {value} °C',
+        climate: 'temperatura média anual do país: {value} °C',
         language:
           '{value, select, pt {lá se fala português} es {lá se fala espanhol, parecido com o português} it {lá se fala italiano, parecido com o português} en {lá se fala inglês} other {o idioma de lá é bem diferente do português}}',
         schools: 'média de {value} pontos no PISA, a prova internacional de alunos de 15 anos',

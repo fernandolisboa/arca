@@ -157,7 +157,11 @@ describe('suggested stars in the comparison (ADR-0035)', () => {
     const qm = compare({ ratings: { climate: { QM: 1 } } }).countries.find(
       ({ country }) => country === 'QM',
     );
-    expect(qm?.scores[0]).toMatchObject({ score: '0', rating: 1, suggested: { stars: 4 } });
+    expect(qm?.scores[0]).toMatchObject({
+      score: '0',
+      rating: 1,
+      suggested: { stars: 4, stale: false },
+    });
   });
 
   it('leaves a country without a suggestion unknown', () => {
@@ -176,5 +180,18 @@ describe('suggested stars in the comparison (ADR-0035)', () => {
       today,
     });
     expect(result.countries[0]?.scores[0]).toEqual({ criterion: 'climate', score: null });
+  });
+});
+
+describe('a suggestion whose source is old (ADR-0035)', () => {
+  it('is flagged stale after 90 days, like an indicator reading', () => {
+    const result = compareDestinations({
+      entry: entry([personalCriterion('climate')], []),
+      preferences: preferences(),
+      countries: ['QM'],
+      today: parseCalendarDate('2027-03-01'),
+      suggestions,
+    });
+    expect(result.countries[0]?.scores[0]?.suggested?.stale).toBe(true);
   });
 });
