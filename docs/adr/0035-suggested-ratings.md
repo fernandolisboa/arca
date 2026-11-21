@@ -42,7 +42,7 @@ A source that has no value for a country (MIPEX for Georgia, Paraguay and Urugua
 
 - Every country with a route ranks from the first visit; the adult refines what matters.
 - The suggestions are coarse proxies (a country's mean temperature, cities' access to transport), so the screen always shows the value and the source behind them.
-- A country added to the route catalog has no suggestions until the next file. Refreshing them is another session run and pull request, with no model at run time, due once a year or when a country is added; the data years run from 2020 to 2025.
+- A country added to the route catalog has no suggestions until the next file. Refreshing them is another session run and pull request, with no model at run time, due when the screen flags the sources as more than 90 days old, as it does for indicators, or when a country is added; the data years run from 2020 to 2025.
 - A merged file changes every adult's ranking with no activation. A wrong or tampered file is held back only by the reviewers and the band test; it never decides eligibility, and each adult's own stars override it.
 
 ## Alternatives considered

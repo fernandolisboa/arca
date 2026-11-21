@@ -1,6 +1,7 @@
-import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { suggestedRatingsSchema } from '@arca/domain';
 import { describe, expect, it } from 'vitest';
+import { readSuggestedRatings } from '../scripts/build.ts';
 
 /**
  * The bands of ADR-0035, by suggestion key: thresholds for 5, 4, 3 and 2 stars, read as "at least"
@@ -33,7 +34,7 @@ function starsOf(value: number, { cuts, higher }: { cuts: readonly number[]; hig
 }
 
 const file = suggestedRatingsSchema.parse(
-  JSON.parse(await readFile(new URL('../suggested-ratings/1.json', import.meta.url), 'utf8')),
+  await readSuggestedRatings(fileURLToPath(new URL('../suggested-ratings', import.meta.url))),
 );
 
 describe('suggested ratings follow the bands of ADR-0035', () => {
