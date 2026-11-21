@@ -102,21 +102,26 @@ export const maxOwnCriteria = 30;
 /** The longest name a person may give an own criterion. */
 export const maxOwnCriterionName = 60;
 export const maxRatings = 2000;
+/** Suggested criteria a person may turn down and keep out of the suggestions. */
+export const maxDismissed = 100;
 /** Keys a weights or ratings record may hold: a version's 50 criteria and 30 own ones, with room. */
 export const maxCriterionKeys = 100;
+
+/** A criterion name a person gives or turns down, or a model suggests. */
+export const criterionNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(maxOwnCriterionName)
+  .refine((name) => !/[\p{Cc}\p{Cf}]/u.test(name), {
+    message: 'A name has no control or invisible characters',
+  })
+  .refine((name) => name === name.normalize('NFC'), { message: 'A name is in NFC' });
 
 /** A person's own criterion, named by them; case data, never logged and never sent to a model. */
 export const ownCriterionSchema = z.strictObject({
   id: ownCriterionIdSchema,
-  name: z
-    .string()
-    .trim()
-    .min(1)
-    .max(maxOwnCriterionName)
-    .refine((name) => !/[\p{Cc}\p{Cf}]/u.test(name), {
-      message: 'A name has no control or invisible characters',
-    })
-    .refine((name) => name === name.normalize('NFC'), { message: 'A name is in NFC' }),
+  name: criterionNameSchema,
 });
 
 const anyCriterionId = z.union([criterionIdSchema, ownCriterionIdSchema]);
@@ -146,11 +151,16 @@ function preferencesSchema<
         }),
       ownCriteria: z.array(ownCriterion).max(maxOwnCriteria),
       hidden: z.array(countryCodeSchema).max(300),
+      /** Names of suggested criteria the person turned down, so they are not suggested again. */
+      dismissed: z.array(criterionNameSchema).max(maxDismissed).default([]),
     })
     .superRefine((preferences, context) => {
       const ids = preferences.ownCriteria.flatMap(({ id }) => (id === undefined ? [] : [id]));
       if (new Set(ids).size !== ids.length) {
         context.addIssue({ code: 'custom', path: ['ownCriteria'], message: 'IDs are unique' });
+      }
+      if (new Set(preferences.dismissed).size !== preferences.dismissed.length) {
+        context.addIssue({ code: 'custom', path: ['dismissed'], message: 'Names are unique' });
       }
       if (new Set(preferences.hidden).size !== preferences.hidden.length) {
         context.addIssue({ code: 'custom', path: ['hidden'], message: 'Countries are unique' });
@@ -178,10 +188,13 @@ export const comparisonPreferencesSchema = preferencesSchema(ownCriterionSchema)
 
 /**
  * The preferences a person writes: an own criterion without an ID is a new one, which the API
- * names (`nextPreferences`).
+ * names (`nextPreferences`), with the weight it starts at when the person chose one.
  */
 export const comparisonPreferencesRequestSchema = preferencesSchema(
-  ownCriterionSchema.extend({ id: ownCriterionIdSchema.optional() }),
+  ownCriterionSchema.extend({
+    id: ownCriterionIdSchema.optional(),
+    weight: weightSchema.optional(),
+  }),
 );
 
 export type ComparisonPreferencesRequest = z.infer<typeof comparisonPreferencesRequestSchema>;
@@ -194,4 +207,5 @@ export const noPreferences: ComparisonPreferences = {
   ratings: {},
   ownCriteria: [],
   hidden: [],
+  dismissed: [],
 };

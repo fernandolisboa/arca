@@ -31095,6 +31095,16 @@
                             "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                           },
                           "maxItems": 300
+                        },
+                        "dismissed": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "maxItems": 100,
+                          "default": []
                         }
                       },
                       "required": [
@@ -31190,6 +31200,11 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 60
+                        },
+                        "weight": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 5
                         }
                       },
                       "required": [
@@ -31206,6 +31221,16 @@
                       "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                     },
                     "maxItems": 300
+                  },
+                  "dismissed": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 60
+                    },
+                    "maxItems": 100,
+                    "default": []
                   }
                 },
                 "required": [
@@ -31567,6 +31592,16 @@
                             "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                           },
                           "maxItems": 300
+                        },
+                        "dismissed": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "maxItems": 100,
+                          "default": []
                         }
                       },
                       "required": [
@@ -31585,6 +31620,93 @@
                     "countries",
                     "preferences"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comparison/suggestions": {
+      "post": {
+        "operationId": "suggestCriteria",
+        "summary": "Sends the criterion names the comparison screen shows (from the catalog, no case data) to a model and answers other country-level criteria worth weighing when a family chooses where to move, each with a starting weight; nothing is stored. Needs a confirmed account, like the case routes, but no case. 20 per account per day and 3 per minute (429 rate_limited); 502 suggestions_unparsable or suggestions_failed; 503 suggestions_unavailable when no model can be reached; 504 suggestions_timeout",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The suggested criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "weight": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 5
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "weight"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "suggestions"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

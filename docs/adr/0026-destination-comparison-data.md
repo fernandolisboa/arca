@@ -1,6 +1,6 @@
 # ADR-0026: Destination comparison data and scoring
 
-- Status: Accepted; since [ADR-0027](0027-admins-and-the-checked-batch-activation.md), a comparison decision needs a signed-in admin and no step-up, and its subject kind lives on the decision row only
+- Status: Accepted; since [ADR-0027](0027-admins-and-the-checked-batch-activation.md), a comparison decision needs a signed-in admin and no step-up, and its subject kind lives on the decision row only; amended 2026-11-21 by [ADR-0034](0034-criterion-suggestions.md): preferences keep turned-down suggestions, and a new own criterion may start at a weight
 - Date: 2026-11-07
 - Spec: [#310](https://github.com/fernandolisboa/arca/issues/310) (consultancy core slice 4, the destination comparison)
 - Builds on: [ADR-0014](0014-knowledge-base-as-reviewed-data.md), [ADR-0002](0002-rules-as-versioned-data.md)

@@ -400,7 +400,9 @@ export {
   comparisonVersionSchema,
   countryIndicatorSchema,
   criterionIdSchema,
+  criterionNameSchema,
   maxCriterionKeys,
+  maxDismissed,
   maxOwnCriteria,
   maxOwnCriterionName,
   maxRatings,
@@ -415,6 +417,7 @@ export {
   comparedCountries,
 } from './comparison/countries.js';
 export { nextPreferences } from './comparison/preferences.js';
+export { newlyNamed, plainName } from './comparison/names.js';
 export {
   type ComparedCriterion,
   type ComparisonInput,

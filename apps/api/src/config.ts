@@ -179,6 +179,15 @@ export function readScriptedRuleSummary(): boolean {
 }
 
 /**
+ * Whether a local server suggests comparison criteria from a scripted model instead of Claude,
+ * which the end-to-end build turns on with `ARCA_CRITERION_SUGGESTER=scripted`; only development
+ * honours it.
+ */
+export function readScriptedCriterionSuggester(): boolean {
+  return process.env['ARCA_CRITERION_SUGGESTER'] === 'scripted';
+}
+
+/**
  * Whether a local server reads no cited page at all (ADR-0031), which the end-to-end build turns
  * on with `ARCA_RULE_CHECK_FETCH=offline`; only development honours it.
  */

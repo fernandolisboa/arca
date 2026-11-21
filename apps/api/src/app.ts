@@ -108,6 +108,7 @@ import {
   updateRequestLimits,
   versionEditLimits,
   ruleSummaryLimits,
+  criterionSuggestionLimits,
   inviteLimits,
   monitoringLimits,
   documentLimits,
@@ -143,6 +144,8 @@ import type { StartRefusal, UpdateRequests } from './knowledge/update/requests.j
 import type { VersionReviews } from './knowledge/update/review.js';
 import type { RuleReportReview } from './knowledge/reports.js';
 import type { RuleSummaries } from './knowledge/summaries.js';
+import { knownCriterionNames } from './case/suggestion/known.js';
+import type { CriterionSuggestions } from './case/suggestion/suggestions.js';
 import type { KnowledgeVersions } from './knowledge/versions.js';
 import type { DocumentRequests } from './vault/documents.js';
 import {
@@ -242,6 +245,11 @@ export interface AppDependencies {
    * the route answers 503 `summary_unavailable` and the version reads as before.
    */
   readonly ruleSummaries?: RuleSummaries;
+  /**
+   * Criteria a model suggests on the comparison screen; absent, as without a model key, the route
+   * answers 503 `suggestions_unavailable` and the ready suggestions keep working.
+   */
+  readonly criterionSuggestions?: CriterionSuggestions;
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
@@ -350,6 +358,10 @@ export type ErrorCode =
   | 'intake_timeout'
   | 'intake_unavailable'
   | 'intake_failed'
+  | 'suggestions_unparsable'
+  | 'suggestions_timeout'
+  | 'suggestions_unavailable'
+  | 'suggestions_failed'
   | 'summary_unparsable'
   | 'summary_timeout'
   | 'summary_unavailable'
@@ -480,6 +492,7 @@ export function createApp({
   admins,
   knowledgeVersions,
   ruleSummaries,
+  criterionSuggestions,
   ruleReports,
   corrections,
   aiSettings,
@@ -1448,6 +1461,28 @@ export function createApp({
     return outcome.reason === 'not_found'
       ? fail(c, 'not_found', 404)
       : fail(c, outcome.reason, 409);
+  });
+  const suggestionFailures = {
+    suggestions_unparsable: 502,
+    suggestions_failed: 502,
+    suggestions_unavailable: 503,
+    suggestions_timeout: 504,
+  } as const;
+  v1.openapi(openApiRoutes.suggestCriteria, async (c) => {
+    const account = await caseAccount(c, false);
+    if ('refused' in account) return account.refused;
+    if (criterionSuggestions === undefined || authLimits === undefined) {
+      return fail(c, 'suggestions_unavailable', 503);
+    }
+    comparisonRoutes.suggestCriteria.body.parse(await c.req.json());
+    for (const rule of [criterionSuggestionLimits.minute, criterionSuggestionLimits.day]) {
+      const limited = await overLimit(c, authLimits, rule, account.current.accountId);
+      if (limited !== undefined) return limited;
+    }
+    const outcome = await criterionSuggestions.suggest(knownCriterionNames);
+    return outcome.ok
+      ? c.json(outcome.value, 200)
+      : fail(c, outcome.reason, suggestionFailures[outcome.reason]);
   });
   const intakeFailures = {
     not_found: 404,

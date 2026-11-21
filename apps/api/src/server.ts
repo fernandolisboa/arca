@@ -45,6 +45,8 @@ import { todayInSaoPaulo } from './calendar.js';
 import { createRuleReportReview } from './knowledge/reports.js';
 import { createRuleSummaries } from './knowledge/summaries.js';
 import { summarizerFor } from './knowledge/summary/environment.js';
+import { suggesterFor } from './case/suggestion/environment.js';
+import { createCriterionSuggestions } from './case/suggestion/suggestions.js';
 import { ruleSummaryPromptVersion } from './knowledge/summary/prompt.js';
 import { postgresSummaryStore } from './knowledge/summary/store.js';
 import { createKnowledgeVersions } from './knowledge/versions.js';
@@ -65,6 +67,7 @@ import {
   readOwnOrigin,
   readScriptedIntake,
   readScriptedRuleSummary,
+  readScriptedCriterionSuggester,
   readRateLimitKey,
   readVapidPrivateKey,
 } from './config.js';
@@ -394,6 +397,12 @@ const ruleSummaries =
         now: () => performance.now(),
       });
 
+const suggester = suggesterFor(environment, anthropicKey, readScriptedCriterionSuggester());
+const criterionSuggestions =
+  suggester === undefined
+    ? undefined
+    : createCriterionSuggestions({ suggester, logger, now: () => performance.now() });
+
 const monitored = startMonitoring({ environment, origin: ownOrigin });
 const tunnel = tunnelFor({ environment, origin: ownOrigin, send: sendToSentry });
 
@@ -585,6 +594,7 @@ const app = createApp({
   versionReviews,
   knowledgeVersions,
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
+  ...(criterionSuggestions === undefined ? {} : { criterionSuggestions }),
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {
