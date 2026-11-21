@@ -55,7 +55,7 @@ export function WeightsPanel({
     <section
       id={weightsAnchor}
       aria-labelledby={titleId}
-      className={`${cardClass} flex scroll-mt-20 flex-col gap-6 p-4 sm:p-5 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto`}
+      className={`${cardClass} flex scroll-mt-20 flex-col gap-6 p-4 sm:p-5`}
     >
       <div className="flex flex-col gap-1">
         <h3 id={titleId} className="font-display text-lead">

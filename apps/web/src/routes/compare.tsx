@@ -18,8 +18,8 @@ import { useMediaQuery } from '../use-media-query.js';
 
 export const Route = createFileRoute('/compare')({ component: Compare });
 
-/** Wide enough for the table, with a criterion per column. */
-const tableQuery = '(min-width: 64rem)';
+/** Wide enough for the table, with a criterion per column, and a pointer for its small stars. */
+const tableQuery = '(min-width: 64rem) and (pointer: fine)';
 
 /** Comparar destinos (ADR-0026): the person's own ranking of the countries that have a route. */
 function Compare() {
@@ -111,7 +111,12 @@ function Comparison({
   );
   // Hidden by the API, or just now by the person; one just shown stays here until the API answers.
   const hiddenCountries = comparison.countries.filter(
-    (country) => (country.group === 'hidden' || hidden.has(country.country)) && shown(country),
+    ({ group, country }) => group === 'hidden' || hidden.has(country),
+  );
+  const filtered = filter.search.trim() !== '' || filter.score !== 'all';
+  // Without a filter, an empty ranking means too few scores; with one, the filter left them out.
+  const noneRanked = ranked.length === 0 && !filtered && (
+    <p className="text-muted">{t('compare.noneRanked')}</p>
   );
   const card = (country: (typeof comparison.countries)[number], row: number) => (
     <CountryCard
@@ -132,22 +137,21 @@ function Comparison({
     ) : ranked.length + fewData.length === 0 ? (
       <p className="text-muted">{t('compare.noMatch')}</p>
     ) : wide ? (
-      <ComparisonTable
-        ranked={ranked}
-        fewData={fewData}
-        criteria={comparison.criteria}
-        preferences={preferences}
-        change={change}
-        words={words}
-      />
-    ) : (
       <>
-        {ranked.length === 0 ? (
-          <p className="text-muted">{t('compare.noneRanked')}</p>
-        ) : (
-          <ol className="flex flex-col gap-4">{ranked.map(card)}</ol>
-        )}
+        {noneRanked}
+        <ComparisonTable
+          ranked={ranked}
+          fewData={fewData}
+          criteria={comparison.criteria}
+          preferences={preferences}
+          change={change}
+          words={words}
+        />
       </>
+    ) : ranked.length === 0 ? (
+      noneRanked
+    ) : (
+      <ol className="flex flex-col gap-4">{ranked.map(card)}</ol>
     );
   return (
     <div className="flex min-w-0 flex-col gap-6">

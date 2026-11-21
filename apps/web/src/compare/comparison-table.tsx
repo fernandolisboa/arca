@@ -37,12 +37,13 @@ export function ComparisonTable({
 }) {
   const { t } = words;
   const weightOf = (criterion: Criterion) => preferences.weights[criterion.id] ?? criterion.weight;
-  const columns = criteria.length + 2;
+  const columns = criteria.length + 3;
   const row = (country: ComparedCountry) => (
     <CountryRow
       key={country.country}
       country={country}
       criteria={criteria}
+      columns={columns}
       weightOf={weightOf}
       preferences={preferences}
       change={change}
@@ -55,8 +56,11 @@ export function ComparisonTable({
         <caption className="sr-only">{t('compare.tableCaption')}</caption>
         <thead>
           <tr className="border-b border-line align-bottom">
-            <th scope="col" className={`${stickyCell} min-w-72 p-3 font-medium`}>
+            <th scope="col" className={`${stickyCell} min-w-48 p-3 font-medium`}>
               {t('compare.countryColumn')}
+            </th>
+            <th scope="col" className="p-3">
+              <span className="sr-only">{t('compare.actionsColumn')}</span>
             </th>
             <th scope="col" className="p-3 font-medium whitespace-nowrap">
               {t('compare.totalColumn')}
@@ -72,20 +76,20 @@ export function ComparisonTable({
             ))}
           </tr>
         </thead>
-        <tbody>
-          {ranked.map(row)}
-          {fewData.length > 0 && (
+        <tbody>{ranked.map(row)}</tbody>
+        {fewData.length > 0 && (
+          <tbody>
             <tr className="border-b border-line bg-soft">
-              <th scope="colgroup" colSpan={columns} className="p-3 text-left font-normal">
+              <th scope="rowgroup" colSpan={columns} className="p-3 text-left font-normal">
                 <span className="sticky left-3 flex max-w-prose flex-col">
                   <span className="font-medium">{t('compare.fewDataTitle')}</span>
                   <span className="text-small text-muted">{t('compare.fewDataLead')}</span>
                 </span>
               </th>
             </tr>
-          )}
-          {fewData.map(row)}
-        </tbody>
+            {fewData.map(row)}
+          </tbody>
+        )}
       </table>
     </div>
   );
@@ -144,6 +148,7 @@ function WeightHeader({
 function CountryRow({
   country,
   criteria,
+  columns,
   weightOf,
   preferences,
   change,
@@ -151,6 +156,7 @@ function CountryRow({
 }: {
   readonly country: ComparedCountry;
   readonly criteria: DestinationComparison['criteria'];
+  readonly columns: number;
   readonly weightOf: (criterion: Criterion) => number;
   readonly preferences: Preferences;
   readonly change: Change;
@@ -166,27 +172,29 @@ function CountryRow({
   return (
     <Fragment>
       <tr className="border-b border-line align-top">
-        <th scope="row" className={`${stickyCell} p-3 text-left font-normal`}>
-          <span className="flex flex-col gap-1">
-            <span className="flex items-baseline gap-2 font-medium">
+        <th scope="row" className={`${stickyCell} p-3 text-left font-medium`}>
+          <span className="flex items-baseline gap-2">
+            {country.rank !== null && (
+              // The number is drawn by CSS, so the row's name reads "1º lugar Portugal" once.
+              <span
+                aria-hidden="true"
+                data-rank={country.rank}
+                className={`tabular-nums before:content-[attr(data-rank)] ${country.rank === 1 ? 'text-primary' : 'text-muted'}`}
+              />
+            )}
+            <span>
               {country.rank !== null && (
-                // The number is drawn by CSS, so the row's name reads "1º lugar Portugal" once.
-                <span
-                  aria-hidden="true"
-                  data-rank={country.rank}
-                  className={`tabular-nums before:content-[attr(data-rank)] ${country.rank === 1 ? 'text-primary' : 'text-muted'}`}
-                />
+                <span className="sr-only">
+                  {t('compare.place', { rank: String(country.rank) })}{' '}
+                </span>
               )}
-              <span>
-                {country.rank !== null && (
-                  <span className="sr-only">
-                    {t('compare.place', { rank: String(country.rank) })}{' '}
-                  </span>
-                )}
-                <FlagLead code={country.country} />
-                {name}
-              </span>
+              <FlagLead code={country.country} />
+              {name}
             </span>
+          </span>
+        </th>
+        <td className="p-3">
+          <span className="flex flex-col items-start gap-1">
             {country.routeStatus !== null && (
               <StatusChip
                 tone={statusTones[country.routeStatus]}
@@ -226,7 +234,7 @@ function CountryRow({
               </button>
             </span>
           </span>
-        </th>
+        </td>
         <td className="p-3 whitespace-nowrap">
           {total === null ? (
             <span className="text-small text-muted">{t('compare.noTotal')}</span>
@@ -289,7 +297,7 @@ function CountryRow({
       </tr>
       {open && (
         <tr id={detailsId} className="border-b border-line bg-soft">
-          <td colSpan={criteria.length + 2} className="p-3">
+          <td colSpan={columns} className="p-3">
             <ul className="sticky left-3 grid max-w-5xl gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {read.map((criterion) => {
                 const reading = scores.get(criterion.id)?.reading;

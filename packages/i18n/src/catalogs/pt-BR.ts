@@ -1072,7 +1072,7 @@ export const ptBR = {
     tooMany: 'Você abriu esta tela muitas vezes na última hora. Espere um pouco e tente de novo.',
     retry: 'Tentar de novo',
     noVersion:
-      'Os critérios dos países ainda aguardam ativação em Regras. Até lá, só contam os critérios que você criar.',
+      'Os critérios dos países ainda aguardam ativação. Até lá, só contam os critérios que você criar.',
     pendingNewer:
       'Há dados mais novos dos países aguardando ativação. Até lá, a comparação usa os dados atuais.',
     jumpToWeights: 'Ajustar os pesos',
@@ -1083,6 +1083,7 @@ export const ptBR = {
     tableCaption:
       'Países em ordem de nota, com a nota de cada critério e o peso que você deu a ele.',
     countryColumn: 'País',
+    actionsColumn: 'Rotas e ações',
     totalColumn: 'Nota final',
     fromData: 'Dado público',
     fromStars: 'Suas estrelas',
