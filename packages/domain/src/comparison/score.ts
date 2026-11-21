@@ -10,6 +10,7 @@ import type { Source } from '../rules/route-version.js';
 import { isStale } from '../rules/staleness.js';
 import type { ComparisonPreferences } from './schema.js';
 import type { ComparisonEntry } from './select.js';
+import { type RatingSuggestions, type SuggestedRating, noRatingSuggestions } from './suggested.js';
 
 /** A criterion as one person's comparison counts it: from the version, or one they created. */
 export type ComparedCriterion = (
@@ -47,6 +48,11 @@ export interface CriterionScore {
   readonly reading?: IndicatorReading;
   /** The person's stars, for a personal or own criterion they rated. */
   readonly rating?: number;
+  /**
+   * The stars the comparison suggests from a public source (ADR-0035). They score the criterion
+   * while the person has not rated it; the person's own stars always win.
+   */
+  readonly suggested?: SuggestedRating;
 }
 
 export type CountryComparison = (
@@ -77,6 +83,8 @@ export interface ComparisonInput {
   /** The countries to compare: those with a route in the catalog. */
   readonly countries: readonly string[];
   readonly today: CalendarDate;
+  /** Suggested stars for personal and own criteria (ADR-0035); none when absent. */
+  readonly suggestions?: RatingSuggestions;
 }
 
 /** The weight an own criterion has until the person sets one: the middle of the scale. */
@@ -178,6 +186,7 @@ export function compareDestinations({
   preferences,
   countries,
   today,
+  suggestions = noRatingSuggestions,
 }: ComparisonInput): DestinationComparison {
   const versionCriteria = entry?.version.criteria ?? [];
   const indicators = new Map(
@@ -206,15 +215,36 @@ export function compareDestinations({
   ];
   const knowledge = new Map(versionCriteria.map((criterion) => [criterion.id, criterion]));
   const hidden = new Set(preferences.hidden);
+  const suggestionKeys = new Map(
+    criteria.flatMap((criterion) => {
+      const key = suggestions.keyOf(
+        criterion.kind === 'own'
+          ? { id: criterion.id, name: criterion.name }
+          : { id: criterion.id },
+      );
+      return key === undefined ? [] : [[criterion.id, key] as const];
+    }),
+  );
 
   const scoreOf = (criterion: ComparedCriterion, country: string): Scored => {
     const definition = knowledge.get(criterion.id);
     if (definition === undefined || definition.kind === 'personal') {
       const byCountry = ownValue(preferences.ratings, criterion.id);
       const rating = byCountry === undefined ? undefined : ownValue(byCountry, country);
-      if (rating === undefined) return { score: { criterion: criterion.id, score: null } };
-      const exact = starScore(rating);
-      return { score: { criterion: criterion.id, score: oneDecimal(exact), rating }, exact };
+      const key = suggestionKeys.get(criterion.id);
+      const suggested = key === undefined ? undefined : suggestions.rating(key, country);
+      const stars = rating ?? suggested?.stars;
+      if (stars === undefined) return { score: { criterion: criterion.id, score: null } };
+      const exact = starScore(stars);
+      return {
+        score: {
+          criterion: criterion.id,
+          score: oneDecimal(exact),
+          ...(rating === undefined ? {} : { rating }),
+          ...(suggested === undefined ? {} : { suggested }),
+        },
+        exact,
+      };
     }
     const indicator = indicators.get(definition.indicator);
     const countryValue = indicator?.values.find((value) => value.country === country);

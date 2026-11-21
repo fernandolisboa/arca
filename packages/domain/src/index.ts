@@ -419,6 +419,14 @@ export {
 export { nextPreferences } from './comparison/preferences.js';
 export { newlyNamed, plainName } from './comparison/names.js';
 export {
+  type RatingSuggestions,
+  type SuggestedRating,
+  type SuggestedRatings,
+  noRatingSuggestions,
+  ratingSuggestions,
+  suggestedRatingsSchema,
+} from './comparison/suggested.js';
+export {
   type ComparedCriterion,
   type ComparisonInput,
   type CountryComparison,

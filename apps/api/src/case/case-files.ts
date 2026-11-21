@@ -27,6 +27,7 @@ import {
   type ComparisonPreferences,
   type DecisionStates,
   type HeldAsset,
+  type RatingSuggestions,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
@@ -189,6 +190,8 @@ export interface CaseFilesSettings {
     }>;
     /** The destination comparison's versions (ADR-0026). */
     readonly comparisons: ComparisonCatalog;
+    /** The stars the comparison suggests per country (ADR-0035); none when absent. */
+    readonly suggestions?: RatingSuggestions;
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */
     readonly today: () => CalendarDate;
@@ -464,6 +467,7 @@ export function createCaseFiles({
   ) =>
     destinationComparison(rows, accountId, evaluated, preferences, {
       catalog: evaluation.comparisons,
+      ...(evaluation.suggestions === undefined ? {} : { suggestions: evaluation.suggestions }),
       ...asOf,
     });
 

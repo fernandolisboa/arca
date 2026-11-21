@@ -6,6 +6,12 @@ export type Criterion = DestinationComparison['criteria'][number];
 export type Reading = NonNullable<
   DestinationComparison['countries'][number]['scores'][number]['reading']
 >;
+export type Suggested = NonNullable<
+  DestinationComparison['countries'][number]['scores'][number]['suggested']
+>;
+
+/** Suggestion values that are counts or a number of hours, worded without decimals. */
+const countedKeys = new Set(['time-zone']);
 
 /** Criteria read from country data; the others are scored from the person's own stars. */
 export const measured = (criterion: Criterion) =>
@@ -40,6 +46,19 @@ export function useCompareWords() {
             ? t(phraseKey as 'compare.reading.homicides', { value: shown })
             : t('compare.valueUnit', { value: shown, unit: indicator.unit });
       return t('compare.inYear', { reading: phrase, year: String(year) });
+    },
+    /** Why Arca suggests the stars it does, such as "Desemprego: 4,2% (2025)". */
+    suggestion: ({ key, value, year }: Suggested) => {
+      const phraseKey = `compare.suggested.reason.${key}`;
+      if (!i18n.exists(phraseKey)) return value;
+      const numeric = /^-?\d/.test(value);
+      const reason = t(phraseKey as 'compare.suggested.reason.jobs', {
+        value: numeric && !countedKeys.has(key) ? words.decimal(value) : value,
+        n: numeric ? Number(value) : 0,
+      });
+      return year === undefined
+        ? reason
+        : t('compare.inYear', { reading: reason, year: String(year) });
     },
   };
 }

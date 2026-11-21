@@ -10,6 +10,7 @@ import {
   maxOwnCriteria,
   maxOwnCriterionName,
   ownCriterionIdSchema,
+  plainSourceSchema,
   slugSchema,
   sourceSchema,
   weightSchema,
@@ -71,6 +72,21 @@ export const CriterionScore = z.object({
     .optional(),
   /** The caller's stars, on a personal or own criterion they rated. */
   rating: z.int().min(1).max(5).optional(),
+  /**
+   * The stars Arca suggests from a public source (ADR-0035): they score the criterion until the
+   * caller rates it, and the caller's own stars always win.
+   */
+  suggested: z
+    .object({
+      /** The suggestion key, such as `climate` or `housing-cost`, which the screen words the value by. */
+      key: slugSchema,
+      stars: z.int().min(1).max(5),
+      /** A decimal string or a token such as `es`, which the screen words by criterion. */
+      value: z.string().max(40),
+      year: z.int().min(1900).max(2200).optional(),
+      source: plainSourceSchema,
+    })
+    .optional(),
 });
 
 export const ComparedCountry = z.object({

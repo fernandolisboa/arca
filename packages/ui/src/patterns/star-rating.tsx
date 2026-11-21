@@ -16,6 +16,8 @@ export interface StarRatingProps {
   readonly clearLabel: string;
   /** Smaller stars and no caption, for a table cell on a wide screen with a pointer. */
   readonly compact?: boolean;
+  /** Stars suggested while there is no rating, drawn as outlines in the accent color. */
+  readonly suggested?: number | undefined;
 }
 
 const stars = [1, 2, 3, 4, 5] as const;
@@ -33,7 +35,13 @@ export function StarRating({
   starLabel,
   clearLabel,
   compact = false,
+  suggested,
 }: StarRatingProps) {
+  const tone = (star: number) => {
+    if (value !== undefined)
+      return star <= value ? 'text-accent [&>svg]:fill-current' : 'text-muted';
+    return suggested !== undefined && star <= suggested ? 'text-accent' : 'text-muted';
+  };
   const groupId = useId();
   return (
     <fieldset className={`flex items-center ${compact ? 'gap-x-1' : 'flex-wrap gap-x-2'}`}>
@@ -47,11 +55,7 @@ export function StarRating({
         {stars.map((star) => (
           <label
             key={star}
-            className={`relative flex ${compact ? 'size-7' : 'min-h-touch min-w-touch'} cursor-pointer items-center justify-center rounded-control hover:bg-soft has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-primary ${
-              value !== undefined && star <= value
-                ? 'text-accent [&>svg]:fill-current'
-                : 'text-muted'
-            }`}
+            className={`relative flex ${compact ? 'size-7' : 'min-h-touch min-w-touch'} cursor-pointer items-center justify-center rounded-control hover:bg-soft has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-primary ${tone(star)}`}
           >
             <input
               type="radio"

@@ -6,7 +6,7 @@ import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
-import { ReadingLines } from './country-card.js';
+import { ReadingLines, SuggestionLines } from './country-card.js';
 import type { Edit, Preferences } from './edits.js';
 import { measured, type CompareWords, type Criterion } from './words.js';
 
@@ -167,7 +167,10 @@ function CountryRow({
   const detailsId = useId();
   const name = words.country(country.country);
   const scores = new Map(country.scores.map((score) => [score.criterion, score]));
-  const read = criteria.filter((criterion) => scores.get(criterion.id)?.reading !== undefined);
+  const read = criteria.filter((criterion) => {
+    const score = scores.get(criterion.id);
+    return score?.reading !== undefined || score?.suggested !== undefined;
+  });
   const total = country.total === null ? null : words.decimal(country.total);
   return (
     <Fragment>
@@ -289,6 +292,7 @@ function CountryRow({
                   }}
                   starLabel={(n) => t('compare.star', { n })}
                   clearLabel={t('compare.clearStarsFor', { criterion: label, country: name })}
+                  suggested={scores.get(criterion.id)?.suggested?.stars}
                 />
               )}
             </td>
@@ -300,14 +304,34 @@ function CountryRow({
           <td colSpan={columns} className="p-3">
             <ul className="sticky left-3 grid max-w-5xl gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {read.map((criterion) => {
-                const reading = scores.get(criterion.id)?.reading;
+                const { reading, suggested } = scores.get(criterion.id) ?? {};
+                const label = words.label(criterion);
                 return (
-                  reading !== undefined && (
-                    <li key={criterion.id} className="flex flex-col gap-1">
-                      <span className="font-medium">{words.label(criterion)}</span>
+                  <li key={criterion.id} className="flex flex-col gap-1">
+                    <span className="font-medium">{label}</span>
+                    {reading !== undefined && (
                       <ReadingLines criterion={criterion} reading={reading} words={words} />
-                    </li>
-                  )
+                    )}
+                    {reading === undefined && suggested !== undefined && (
+                      <SuggestionLines
+                        suggested={suggested}
+                        rated={preferences.ratings[criterion.id]?.[country.country] !== undefined}
+                        confirmLabel={t('compare.suggested.confirmFor', {
+                          criterion: label,
+                          country: name,
+                        })}
+                        onConfirm={(stars) => {
+                          change({
+                            kind: 'rating',
+                            criterion: criterion.id,
+                            country: country.country,
+                            rating: stars,
+                          });
+                        }}
+                        words={words}
+                      />
+                    )}
+                  </li>
                 );
               })}
             </ul>

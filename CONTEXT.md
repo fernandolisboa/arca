@@ -55,6 +55,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Personal criterion | Critério pessoal | A criterion of a comparison version that each adult scores with their own rating, such as climate; knowledge data, unlike an own criterion. Avoid "subjective criterion" |
 | Own criterion | Critério próprio | A criterion an adult creates and names for their own comparison, scored only from their rating; case data, unlike a personal criterion. Avoid "custom criterion" |
 | Suggested criterion | Sugestão | A criterion the comparison screen proposes, from a ready list or from Arca's model, with a starting weight; becomes an own criterion when the adult adds it, or stays out of the suggestions when they turn it down ([ADR-0034](docs/adr/0034-criterion-suggestions.md)) |
+| Suggested rating | Sugestão do Arca | Stars from 1 to 5 the comparison suggests for a country on a personal or own criterion, from a public source in the repository; they score the criterion until the adult rates it, and the adult's own stars always win ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
 | Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |
 | Score | Nota | A country's result on one criterion, from 0 to 10, computed in code; unknown when the value or the rating is missing, never zero |
