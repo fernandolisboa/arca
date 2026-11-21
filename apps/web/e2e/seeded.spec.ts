@@ -523,7 +523,18 @@ async function memberCompares(browser: Browser) {
 
   const weight = (criterion: string) =>
     ranking.getByRole('combobox', { name: `Peso ${criterion}` });
-  for (const criterion of ['Custo de vida', 'Segurança', 'Saúde', 'Idioma']) {
+  // Every criterion but climate is weighed 0; the personal ones now score from suggestions too.
+  for (const criterion of [
+    'Custo de vida',
+    'Segurança',
+    'Saúde',
+    'Idioma',
+    'Escolas',
+    'Emprego na sua área',
+    'Impostos',
+    'Distância do Brasil',
+    'Comunidade brasileira',
+  ]) {
     await saved(weight(criterion).selectOption('0'));
   }
   await saved(weight('Clima').selectOption('5'));
