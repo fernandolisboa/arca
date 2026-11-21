@@ -8,6 +8,7 @@ import { useId, useState, type ReactNode, type SubmitEvent } from 'react';
 import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { TextField } from '../forms/text-field.js';
 import type { Edit, Preferences } from './edits.js';
+import { SuggestionsPanel } from './suggestions-panel.js';
 import { measured, type CompareWords, type Criterion } from './words.js';
 
 type Change = (edit: Edit) => void;
@@ -65,6 +66,14 @@ export function WeightsPanel({
       </div>
       {group(t('compare.measuredTitle'), t('compare.measuredLead'), objective)}
       {group(t('compare.personalTitle'), t('compare.personalLead'), personal)}
+      <div className="border-t border-line pt-5">
+        <SuggestionsPanel
+          criteria={criteria}
+          preferences={preferences}
+          change={change}
+          words={words}
+        />
+      </div>
       <AddCriterion
         count={preferences.ownCriteria.length}
         separated
@@ -112,12 +121,12 @@ function WeightRow({
  */
 export function OwnCriteriaPanel({
   criteria,
-  count,
+  preferences,
   change,
   words,
 }: {
   readonly criteria: DestinationComparison['criteria'];
-  readonly count: number;
+  readonly preferences: Preferences;
   readonly change: Change;
   readonly words: CompareWords;
 }) {
@@ -143,8 +152,21 @@ export function OwnCriteriaPanel({
           ))}
         </ul>
       )}
+      <div className={own.length > 0 ? 'border-t border-line pt-5' : ''}>
+        <SuggestionsPanel
+          criteria={criteria}
+          preferences={preferences}
+          change={change}
+          words={words}
+        />
+      </div>
       <div className="max-w-md">
-        <AddCriterion count={count} separated={own.length > 0} change={change} words={words} />
+        <AddCriterion
+          count={preferences.ownCriteria.length}
+          separated
+          change={change}
+          words={words}
+        />
       </div>
     </section>
   );

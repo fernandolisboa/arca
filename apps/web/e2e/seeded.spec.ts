@@ -557,6 +557,23 @@ async function memberCompares(browser: Browser) {
   await expect(places).toHaveText([/^1º lugar Portugal/]);
   const hidden = page.getByRole('region', { name: 'Países ocultos' });
   await expect(hidden).toContainText('Uruguai');
+  // A suggestion becomes a column at its weight, and the last step can be undone.
+  const own = page.getByRole('region', { name: 'Seus critérios' });
+  await saved(own.getByRole('button', { name: 'Usar Voo direto para o Brasil' }).click());
+  await expect(weight('Voo direto para o Brasil')).toHaveValue('2');
+  await saved(own.getByRole('button', { name: 'Desfazer' }).click());
+  await expect(weight('Voo direto para o Brasil')).toHaveCount(0);
+  await saved(own.getByRole('button', { name: 'Tirar Custo da moradia das sugestões' }).click());
+  await expect(own.getByText('Custo da moradia', { exact: true })).toHaveCount(0);
+  await saved(own.getByRole('button', { name: 'Desfazer' }).click());
+  await expect(own.getByText('Custo da moradia', { exact: true })).toBeVisible();
+  // The Arca's suggestions, from the scripted model here, leave out what the screen already has.
+  await own.getByRole('button', { name: 'Pedir sugestões ao Arca' }).click();
+  await expect(
+    own.getByRole('button', { name: 'Usar Licença-maternidade e paternidade' }),
+  ).toBeVisible();
+  await expect(own.getByRole('button', { name: 'Usar Custo de vida' })).toHaveCount(0);
+
   // A hidden country stays reachable whatever the filter.
   await page.getByRole('searchbox', { name: 'Buscar país' }).fill('port');
   await expect(hidden).toContainText('Uruguai');

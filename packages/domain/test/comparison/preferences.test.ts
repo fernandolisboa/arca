@@ -3,6 +3,7 @@ import { nextPreferences } from '../../src/comparison/preferences.js';
 import {
   type ComparisonPreferencesRequest,
   comparisonPreferencesRequestSchema,
+  comparisonPreferencesSchema,
   maxOwnCriteria,
 } from '../../src/comparison/schema.js';
 import { preferences } from './fixtures.js';
@@ -83,6 +84,27 @@ describe('writing comparison preferences (ADR-0026)', () => {
     expect(next?.hidden).toEqual(['QN']);
   });
 
+  it('starts a new own criterion at the weight it was sent with', () => {
+    const next = nextPreferences(
+      preferences(),
+      request({ ownCriteria: [{ name: 'Voo direto', weight: 4 }] }),
+      ids('own-00000001'),
+      compared,
+    );
+    expect(next?.weights).toEqual({ 'own-00000001': 4 });
+    expect(next?.ownCriteria).toEqual([{ id: 'own-00000001', name: 'Voo direto' }]);
+  });
+
+  it('keeps the suggestions the person turned down', () => {
+    const next = nextPreferences(preferences(), request({ dismissed: ['Praia'] }), ids(), compared);
+    expect(next?.dismissed).toEqual(['Praia']);
+  });
+
+  it('reads preferences stored before turned-down suggestions existed', () => {
+    const older = { weights: {}, ratings: {}, ownCriteria: [], hidden: [] };
+    expect(comparisonPreferencesSchema.parse(older).dismissed).toEqual([]);
+  });
+
   it('refuses an own criterion ID the person does not have', () => {
     expect(
       nextPreferences(
@@ -109,6 +131,9 @@ describe('writing comparison preferences (ADR-0026)', () => {
       'too many own criteria',
       { ownCriteria: Array.from({ length: maxOwnCriteria + 1 }, () => ({ name: 'x' })) },
     ],
+    ['a starting weight above 5', { ownCriteria: [{ name: 'x', weight: 6 }] }],
+    ['a name turned down twice', { dismissed: ['Praia', 'Praia'] }],
+    ['an empty turned-down name', { dismissed: [' '] }],
     ['an unknown field', { extra: true }],
   ])('refuses %s', (_name, overrides) => {
     expect(

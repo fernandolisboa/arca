@@ -3,8 +3,10 @@ import {
   comparisonPreferencesSchema,
   countryCodeSchema,
   criterionIdSchema,
+  criterionNameSchema,
   decimalSchema,
   maxCriterionKeys,
+  maxDismissed,
   maxOwnCriteria,
   maxOwnCriterionName,
   ownCriterionIdSchema,
@@ -15,6 +17,8 @@ import {
 import { z } from 'zod';
 import { RouteResult } from './case.js';
 import type { RouteDefinition } from './index.js';
+
+export { newlyNamed, plainName } from '@arca/domain';
 
 /*
  * The destination comparison (ADR-0026, #310): one adult's ranking of the countries that have a
@@ -27,6 +31,8 @@ import type { RouteDefinition } from './index.js';
 export const ownCriteriaLimit = maxOwnCriteria;
 /** The longest own criterion name the API takes, for the screen's field. */
 export const ownCriterionNameLimit = maxOwnCriterionName;
+/** How many turned-down suggestions the API keeps, so the screen drops the oldest past it. */
+export const maxDismissedSuggestions = maxDismissed;
 
 const weights = { weight: weightSchema, defaultWeight: weightSchema };
 
@@ -116,4 +122,35 @@ export const writeComparisonPreferences = {
   response: { description: 'The comparison', schema: DestinationComparison },
 } as const satisfies RouteDefinition<typeof DestinationComparison>;
 
-export const comparisonRoutes = { getComparison, writeComparisonPreferences } as const;
+/** Most criteria one suggestion answers; the prompt asks for six, so two are margin. */
+export const maxSuggestedCriteria = 8;
+
+/**
+ * A request for suggestions carries nothing: the API sends the model only the names the screen
+ * already shows, from the interface's catalog, so nothing a person typed can reach it.
+ */
+export const SuggestCriteriaRequest = z.strictObject({});
+export type SuggestCriteriaRequest = z.infer<typeof SuggestCriteriaRequest>;
+
+export const SuggestedCriteria = z.strictObject({
+  suggestions: z
+    .array(z.strictObject({ name: criterionNameSchema, weight: weightSchema }))
+    .max(maxSuggestedCriteria),
+});
+export type SuggestedCriteria = z.infer<typeof SuggestedCriteria>;
+
+export const suggestCriteria = {
+  method: 'post',
+  path: '/comparison/suggestions',
+  operationId: 'suggestCriteria',
+  summary:
+    'Sends the criterion names the comparison screen shows (from the catalog, no case data) to a model and answers other country-level criteria worth weighing when a family chooses where to move, each with a starting weight; nothing is stored. Needs a confirmed account, like the case routes, but no case. 20 per account per day and 3 per minute (429 rate_limited); 502 suggestions_unparsable or suggestions_failed; 503 suggestions_unavailable when no model can be reached; 504 suggestions_timeout',
+  body: SuggestCriteriaRequest,
+  response: { description: 'The suggested criteria', schema: SuggestedCriteria },
+} as const satisfies RouteDefinition<typeof SuggestedCriteria>;
+
+export const comparisonRoutes = {
+  getComparison,
+  writeComparisonPreferences,
+  suggestCriteria,
+} as const;

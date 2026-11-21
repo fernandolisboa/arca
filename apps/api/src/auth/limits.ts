@@ -100,6 +100,12 @@ export const intakeLimits = {
   minute: { name: 'case_intake_minute', limit: 3, windowSeconds: 60 },
 } as const satisfies Record<string, RateLimitRule>;
 
+/** Criterion suggestions per account: each request is one model call, two when the first fails to parse. */
+export const criterionSuggestionLimits = {
+  day: { name: 'criterion_suggestions_day', limit: 20, windowSeconds: 24 * hour },
+  minute: { name: 'criterion_suggestions_minute', limit: 3, windowSeconds: 60 },
+} as const satisfies Record<string, RateLimitRule>;
+
 /**
  * Rule summaries per admin (ADR-0025): a request the cache misses is one model call, two when
  * the first reply does not parse.

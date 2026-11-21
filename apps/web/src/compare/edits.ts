@@ -1,4 +1,7 @@
-import type { WriteComparisonPreferencesRequest } from '@arca/api-contract/client';
+import {
+  maxDismissedSuggestions,
+  type WriteComparisonPreferencesRequest,
+} from '@arca/api-contract/client';
 
 export type Preferences = WriteComparisonPreferencesRequest;
 
@@ -13,7 +16,15 @@ export type Edit =
       readonly rating: number | undefined;
     }
   | { readonly kind: 'hide' | 'show'; readonly country: string }
-  | { readonly kind: 'add'; readonly name: string }
+  | {
+      readonly kind: 'add';
+      readonly name: string;
+      /** The weight it starts at, as a suggestion proposes; without one, the API's default. */
+      readonly weight?: number;
+    }
+  /** Takes back a criterion just added from a suggestion, found by its name. */
+  | { readonly kind: 'unadd'; readonly name: string }
+  | { readonly kind: 'dismiss' | 'undismiss'; readonly name: string }
   | { readonly kind: 'rename'; readonly criterion: string; readonly name: string }
   | { readonly kind: 'remove'; readonly criterion: string };
 
@@ -47,7 +58,36 @@ export function applyEdit(preferences: Preferences, edit: Edit): Preferences {
     case 'show':
       return { ...preferences, hidden: preferences.hidden.filter((each) => each !== edit.country) };
     case 'add':
-      return { ...preferences, ownCriteria: [...preferences.ownCriteria, { name: edit.name }] };
+      return {
+        ...preferences,
+        ownCriteria: [
+          ...preferences.ownCriteria,
+          { name: edit.name, ...(edit.weight === undefined ? {} : { weight: edit.weight }) },
+        ],
+      };
+    case 'unadd': {
+      const added = preferences.ownCriteria.findLast((own) => own.name === edit.name);
+      if (added === undefined) return preferences;
+      if (added.id !== undefined)
+        return applyEdit(preferences, { kind: 'remove', criterion: added.id });
+      return {
+        ...preferences,
+        ownCriteria: preferences.ownCriteria.filter((own) => own !== added),
+      };
+    }
+    case 'dismiss':
+      // At the cap, the oldest turned-down name makes room, so every later write still saves.
+      return preferences.dismissed.includes(edit.name)
+        ? preferences
+        : {
+            ...preferences,
+            dismissed: [...preferences.dismissed, edit.name].slice(-maxDismissedSuggestions),
+          };
+    case 'undismiss':
+      return {
+        ...preferences,
+        dismissed: preferences.dismissed.filter((each) => each !== edit.name),
+      };
     case 'rename':
       return {
         ...preferences,
@@ -61,6 +101,7 @@ export function applyEdit(preferences: Preferences, edit: Edit): Preferences {
         weights: without(preferences.weights, edit.criterion),
         ratings: without(preferences.ratings, edit.criterion),
         hidden: preferences.hidden,
+        dismissed: preferences.dismissed,
       };
   }
 }

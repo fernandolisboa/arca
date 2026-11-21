@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { maxDismissedSuggestions } from '@arca/api-contract/client';
 import { applyEdit, type Edit, type Preferences } from '../src/compare/edits.js';
 
 const start: Preferences = {
@@ -6,6 +7,7 @@ const start: Preferences = {
   ratings: { climate: { PT: 4, ES: 5 }, 'own-0000000a': { PT: 3 } },
   ownCriteria: [{ id: 'own-0000000a', name: 'Perto da praia' }],
   hidden: ['US'],
+  dismissed: [],
 };
 
 const after = (...edits: Edit[]) => edits.reduce(applyEdit, start);
@@ -90,6 +92,35 @@ describe('Comparison edits', () => {
     ],
   ])('%s', (_, edit, changed) => {
     expect(applyEdit(start, edit)).toEqual({ ...start, ...changed });
+  });
+
+  it('adds a suggestion at its weight and takes it back before the API names it', () => {
+    const added = after({ kind: 'add', name: 'Voo direto', weight: 4 });
+    expect(added.ownCriteria.at(-1)).toEqual({ name: 'Voo direto', weight: 4 });
+    expect(applyEdit(added, { kind: 'unadd', name: 'Voo direto' })).toEqual(start);
+  });
+
+  it('takes back a suggestion the API already named, with its weight and ratings', () => {
+    expect(after({ kind: 'unadd', name: 'Perto da praia' })).toEqual(
+      after({ kind: 'remove', criterion: 'own-0000000a' }),
+    );
+  });
+
+  it('turns a suggestion down once and brings it back', () => {
+    const dismissed = after({ kind: 'dismiss', name: 'Praia' }, { kind: 'dismiss', name: 'Praia' });
+    expect(dismissed.dismissed).toEqual(['Praia']);
+    expect(applyEdit(dismissed, { kind: 'undismiss', name: 'Praia' })).toEqual(start);
+  });
+
+  it('drops the oldest turned-down name at the cap, so the next write still saves', () => {
+    const full = {
+      ...start,
+      dismissed: Array.from({ length: maxDismissedSuggestions }, (_, i) => `n${String(i)}`),
+    };
+    const next = applyEdit(full, { kind: 'dismiss', name: 'Praia' });
+    expect(next.dismissed).toHaveLength(maxDismissedSuggestions);
+    expect(next.dismissed.at(0)).toBe('n1');
+    expect(next.dismissed.at(-1)).toBe('Praia');
   });
 
   it('applies edits in order, leaving the input alone', () => {

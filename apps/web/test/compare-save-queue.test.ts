@@ -15,7 +15,7 @@ const comparison = (weights: Record<string, number>): DestinationComparison => (
   pendingNewer: false,
   criteria: [],
   countries: [],
-  preferences: { weights, ratings: {}, ownCriteria: [], hidden: [] },
+  preferences: { weights, ratings: {}, ownCriteria: [], hidden: [], dismissed: [] },
 });
 
 const read = comparison({});

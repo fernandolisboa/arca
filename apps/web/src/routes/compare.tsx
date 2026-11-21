@@ -197,7 +197,7 @@ function Comparison({
       {wide ? (
         <OwnCriteriaPanel
           criteria={comparison.criteria}
-          count={preferences.ownCriteria.length}
+          preferences={preferences}
           change={change}
           words={words}
         />
