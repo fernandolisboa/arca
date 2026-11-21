@@ -51,7 +51,7 @@ export function ComparisonTable({
     />
   );
   return (
-    <div className={`${cardClass} overflow-x-auto`}>
+    <div className={`${cardClass} relative overflow-x-auto`}>
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">{t('compare.tableCaption')}</caption>
         <thead>

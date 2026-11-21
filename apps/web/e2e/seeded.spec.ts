@@ -564,6 +564,8 @@ async function memberCompares(browser: Browser) {
   await page.reload();
   await expect(places).toHaveText([/^1º lugar Portugal/]);
   await expect(weight('Clima')).toHaveValue('5');
+  // The table scrolls inside its card; the page itself never scrolls sideways.
+  expect(await horizontalOverflow(page)).toBe(0);
   await expectNoAxeViolations(page);
 
   await page.setViewportSize({ width: 390, height: 844 });
