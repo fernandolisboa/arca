@@ -527,10 +527,9 @@ async function memberCompares(browser: Browser) {
     await saved(weight(criterion).selectOption('0'));
   }
   await saved(weight('Clima').selectOption('5'));
-  // Australia and Paraguay get 5 suggested stars each in suggested-ratings/1.json and tie; the
-  // country code breaks the tie. A new ratings file may change this order.
-  await expect(places.nth(0)).toHaveText(/^1º lugar Austrália/);
-  await expect(places.nth(1)).toHaveText(/^2º lugar Paraguai/);
+  // Of the seeded countries, only Paraguay gets 5 suggested stars in suggested-ratings/1.json; a
+  // new ratings file may change this order.
+  await expect(places.nth(0)).toHaveText(/^1º lugar Paraguai/);
   await expect(ranking).not.toContainText('Poucos dados');
 
   // A click, not check(): the rated country can move to another group as soon as the API answers.
@@ -543,8 +542,9 @@ async function memberCompares(browser: Browser) {
     );
   await rate('Portugal', '2 estrelas de 5');
   await rate('Uruguai', '5 estrelas de 5');
-  await expect(places.nth(2)).toHaveText(/^3º lugar Uruguai/);
-  await expect(ranking.getByRole('row').filter({ hasText: '3º lugar Uruguai' })).toContainText(
+  // Uruguay now ties Paraguay at 10; the country code breaks the tie.
+  await expect(places.nth(1)).toHaveText(/^2º lugar Uruguai/);
+  await expect(ranking.getByRole('row').filter({ hasText: '2º lugar Uruguai' })).toContainText(
     'nota final 10 de 10',
   );
   await expect(ranking.getByRole('row').filter({ hasText: 'lugar Portugal' })).toContainText(
@@ -554,29 +554,29 @@ async function memberCompares(browser: Browser) {
   // A suggestion shows where it comes from, and one tap keeps it as the account's own stars.
   await ranking
     .getByRole('row')
-    .filter({ hasText: '1º lugar Austrália' })
+    .filter({ hasText: '1º lugar Paraguai' })
     .getByRole('button', { name: 'Ver as fontes' })
     .click();
   await expect(ranking).toContainText('Sugestão do Arca: 5 estrelas');
   await saved(
-    ranking.getByRole('button', { name: 'Usar a nota sugerida para Clima em Austrália' }).click(),
+    ranking.getByRole('button', { name: 'Usar a nota sugerida para Clima em Paraguai' }).click(),
   );
   await expect(
     ranking
-      .getByRole('group', { name: 'Sua nota para Clima em Austrália' })
+      .getByRole('group', { name: 'Sua nota para Clima em Paraguai' })
       .getByRole('radio', { name: '5 estrelas de 5' }),
   ).toBeChecked();
 
   // The filter narrows the table without changing the ranking.
   await page.getByRole('searchbox', { name: 'Buscar país' }).fill('urug');
-  await expect(ranking.getByRole('rowheader')).toHaveText([/^3º lugar Uruguai/]);
+  await expect(ranking.getByRole('rowheader')).toHaveText([/^2º lugar Uruguai/]);
   await page.getByRole('searchbox', { name: 'Buscar país' }).fill('');
   await page.getByRole('radio', { name: 'Sem nota' }).check();
   await expect(places).toHaveCount(0);
   await page.getByRole('radio', { name: 'Todos' }).check();
 
   await saved(ranking.getByRole('button', { name: 'Ocultar Uruguai' }).click());
-  await expect(places.nth(2)).not.toHaveText(/Uruguai/);
+  await expect(places.nth(1)).not.toHaveText(/Uruguai/);
   const hidden = page.getByRole('region', { name: 'Países ocultos' });
   await expect(hidden).toContainText('Uruguai');
   // A suggestion becomes a column at its weight, and the last step can be undone.
@@ -603,7 +603,7 @@ async function memberCompares(browser: Browser) {
 
   // The choices are the account's own and come back on the next visit.
   await page.reload();
-  await expect(places.nth(0)).toHaveText(/^1º lugar Austrália/);
+  await expect(places.nth(0)).toHaveText(/^1º lugar Paraguai/);
   await expect(weight('Clima')).toHaveValue('5');
   // The table scrolls inside its card; the page itself never scrolls sideways.
   expect(await horizontalOverflow(page)).toBe(0);
@@ -611,12 +611,12 @@ async function memberCompares(browser: Browser) {
 
   await page.setViewportSize({ width: 390, height: 844 });
   const cards = ranking.getByRole('heading', { level: 4 });
-  await expect(cards.nth(0)).toHaveText('1º lugar Austrália');
+  await expect(cards.nth(0)).toHaveText('1º lugar Paraguai');
   expect(await horizontalOverflow(page)).toBe(0);
   await expectNoAxeViolations(page);
 
   await saved(hidden.getByRole('button', { name: 'Mostrar de novo: Uruguai' }).click());
-  await expect(cards.nth(2)).toHaveText('3º lugar Uruguai');
+  await expect(cards.nth(1)).toHaveText('2º lugar Uruguai');
   expect(problems).toEqual([]);
   await context.close();
 }
