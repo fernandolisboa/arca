@@ -73,7 +73,9 @@ export function ReportsSection({
       summary={listed === undefined ? '' : t('knowledge.lists.requestCount', { n: listed.length })}
     >
       {reports.isError && <p>{t('knowledge.reports.loadFailure')}</p>}
-      {listed?.length === 0 && <p className="text-small text-muted">{t('knowledge.reports.none')}</p>}
+      {listed?.length === 0 && (
+        <p className="text-small text-muted">{t('knowledge.reports.none')}</p>
+      )}
       {listed !== undefined && listed.length > 0 && (
         <>
           <p className="text-small text-muted">{t('knowledge.reports.lead')}</p>
