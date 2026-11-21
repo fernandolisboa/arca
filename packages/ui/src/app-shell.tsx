@@ -278,7 +278,7 @@ export function AppShell({
         data-hidden={barsAway ? '' : undefined}
         className={`sticky top-0 z-40 border-b border-line bg-surface pt-[env(safe-area-inset-top)] ${slideClass} ${barsAway ? '-translate-y-full has-[:focus-visible]:translate-y-0' : ''} ${side ? 'md:hidden' : ''}`}
       >
-        <div className="mx-auto flex h-bar w-full max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-bar w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {brand}
           {(narrowMenu || wideMenu) && menuToggle(at(narrowMenu, wideMenu))}
           {top && (
@@ -378,11 +378,7 @@ export function AppShell({
         inert={menuOpen}
         className={`flex flex-1 flex-col ${side ? 'md:pt-[env(safe-area-inset-top)]' : ''} ${clearance(layout)}`}
       >
-        <main
-          id={mainId}
-          tabIndex={-1}
-          className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 sm:px-6"
-        >
+        <main id={mainId} tabIndex={-1} className="mx-auto w-full flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>

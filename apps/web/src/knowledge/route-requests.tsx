@@ -1,3 +1,4 @@
+import { RequestFold } from './folds.js';
 import { type RouteRequests, correctionLimits, routes } from '@arca/api-contract/client';
 import { Button } from '@arca/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -274,9 +275,9 @@ function RouteRequestWizard({
             total: routeRequestSteps.length,
           })}
         </p>
-        <h4 ref={headingRef} tabIndex={-1} className="font-medium focus:outline-none">
+        <h5 ref={headingRef} tabIndex={-1} className="font-medium focus:outline-none">
           {t('knowledge.routeRequests.stepTitle', { step })}
-        </h4>
+        </h5>
       </div>
       {step !== 'review' && (
         <p className="text-small font-medium text-danger-ink">
@@ -522,8 +523,12 @@ export function RouteRequestsSection({
   const initialCountry = country?.toLowerCase() ?? '';
   if (!canFile && listed.length === 0) return null;
   return (
-    <section aria-label={title} className="flex flex-col gap-3">
-      <h3 className="font-medium">{title}</h3>
+    <RequestFold
+      id="route-requests"
+      title={title}
+      count={listed.length}
+      summary={t('knowledge.lists.requestCount', { n: listed.length })}
+    >
       {canFile && !open && (
         <>
           <p className="text-small text-muted">{t('knowledge.routeRequests.lead')}</p>
@@ -570,6 +575,6 @@ export function RouteRequestsSection({
           ))}
         </ul>
       )}
-    </section>
+    </RequestFold>
   );
 }
