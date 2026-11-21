@@ -194,7 +194,7 @@ function CriterionLine({
 }
 
 /** What an objective score comes from: the value and its year, then its source as plain text. */
-function ReadingLines({
+export function ReadingLines({
   criterion,
   reading,
   words,
