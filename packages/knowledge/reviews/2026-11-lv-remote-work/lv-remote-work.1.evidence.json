@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "29) trešās valsts pilsonis — persona, kurai nav Eiropas Savienības dalībvalsts, Eiropas Ekonomikas zonas valsts vai Šveices Konfederācijas pilsonības (turpmāk arī — ārzemnieks);"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(1) Ārzemniekam, ņemot vērā ieceļošanas mērķi, var izsniegt:"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "4) ilgtermiņa vīzu."
+    },
+    {
+      "key": "requirement:not-russian",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(3) Krievijas Federācijas pilsonis nav tiesīgs pieprasīt vīzu ar tiesībām uz nodarbinātību vai vīzu attālināta darba veikšanai, izņemot šā panta pirmajā daļā noteikto gadījumu."
+    },
+    {
+      "key": "requirement:remote-work",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "6) vīzas izsniegšana ir saistīta ar nodarbinātību vai uzturēšanos Latvijas Republikā, veicot attālinātu darbu pie darba devēja, kas reģistrēts citā Ekonomiskās sadarbības un attīstības organizācijas dalībvalstī, vai kā Ekonomiskās sadarbības un attīstības organizācijas dalībvalstī reģistrētai pašnodarbinātai personai;"
+    },
+    {
+      "key": "requirement:remote-work",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "requirement:remote-work",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.10. Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu ārzemnieka pašreizējo nodarbinātību apliecinošu dokumentu un šajā valstī reģistrēta darba devēja apliecinājumu par vismaz sešus mēnešus ilgu ārzemnieka iepriekšēju nodarbinātību pie šī darba devēja"
+    },
+    {
+      "key": "requirement:remote-work",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Ja vīzu attālinātā darba veikšanai pieprasa pašnodarbināta persona, pieteikumam pievieno Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu dokumentu, kas apliecina, ka ārzemnieks šajā valstī ir reģistrēts kā pašnodarbināta persona un ienākumi no pašnodarbinātas personas aktivitātēm pēdējo sešu mēnešu laikā ir ne mazāki kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)."
+    },
+    {
+      "key": "assessment:oecd-registration",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "6) vīzas izsniegšana ir saistīta ar nodarbinātību vai uzturēšanos Latvijas Republikā, veicot attālinātu darbu pie darba devēja, kas reģistrēts citā Ekonomiskās sadarbības un attīstības organizācijas dalībvalstī, vai kā Ekonomiskās sadarbības un attīstības organizācijas dalībvalstī reģistrētai pašnodarbinātai personai;"
+    },
+    {
+      "key": "assessment:oecd-registration",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:oecd-registration",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.10. Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu ārzemnieka pašreizējo nodarbinātību apliecinošu dokumentu un šajā valstī reģistrēta darba devēja apliecinājumu par vismaz sešus mēnešus ilgu ārzemnieka iepriekšēju nodarbinātību pie šī darba devēja"
+    },
+    {
+      "key": "assessment:oecd-registration",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Ja vīzu attālinātā darba veikšanai pieprasa pašnodarbināta persona, pieteikumam pievieno Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu dokumentu, kas apliecina, ka ārzemnieks šajā valstī ir reģistrēts kā pašnodarbināta persona un ienākumi no pašnodarbinātas personas aktivitātēm pēdējo sešu mēnešu laikā ir ne mazāki kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)."
+    },
+    {
+      "key": "assessment:pay",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "informāciju par darba samaksas apmēru (ne mazāk kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)) un to, ka ārzemnieks savus darba pienākumus var veikt attālināti, ja ārzemnieks vēlas saņemt ilgtermiņa vīzu attālināta darba veikšanai."
+    },
+    {
+      "key": "assessment:pay",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Ja vīzu attālinātā darba veikšanai pieprasa pašnodarbināta persona, pieteikumam pievieno Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu dokumentu, kas apliecina, ka ārzemnieks šajā valstī ir reģistrēts kā pašnodarbināta persona un ienākumi no pašnodarbinātas personas aktivitātēm pēdējo sešu mēnešu laikā ir ne mazāki kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)."
+    },
+    {
+      "key": "assessment:pay",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:work-can-be-remote",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "informāciju par darba samaksas apmēru (ne mazāk kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)) un to, ka ārzemnieks savus darba pienākumus var veikt attālināti, ja ārzemnieks vēlas saņemt ilgtermiņa vīzu attālināta darba veikšanai."
+    },
+    {
+      "key": "assessment:work-can-be-remote",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Pašnodarbināta persona vīzas pieteikumam pievieno brīvas formas iesniegumu, kurā sniedz informāciju par veicamā darba jomu un iespējām pašnodarbinātas personas aktivitātes veikt attālināti."
+    },
+    {
+      "key": "assessment:work-can-be-remote",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "10. Ja ārzemnieks pieprasa vīzu vairākkārtējai ieceļošanai, viņš iesniedz pierādījumus, kas apliecina pirmajai uzturēšanās reizei nepieciešamo finanšu līdzekļu esību, un pievieno iesniegumu, kurā apliecina, ka ir informēts par finanšu līdzekļu apmēru, kāds nepieciešams turpmākajām ieceļošanas un uzturēšanās reizēm."
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "5.2. ne mazāk par minimālo mēneša darba algu, ja paredzamais uzturēšanās termiņš Latvijas Republikā pārsniedz 30 dienas;"
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "8. Ja ārzemniekam nepieciešams maksāt par paredzamo apmešanās vietu, viņš papildus šo noteikumu 5. punktā minētajam pierāda, ka viņam ir nepieciešamie finanšu līdzekļi, lai segtu šos izdevumus, vai to, ka samaksa par apmešanās vietu ir veikta."
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "9. Finanšu līdzekļus vai to esību apliecinošos dokumentus, kā arī biļeti turpceļam un atpakaļceļam vai pietiekamus finanšu līdzekļus ceļojumam nepieciešamās degvielas iegādei"
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/278067",
+      "quote": "2. Minimālā mēneša darba alga normālā darba laika ietvaros ir 780 | euro."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "Ja ārzemnieks pieprasa daudzkārtējo vīzu, ārzemnieks iesniedz apdrošināšanas polisi pirmajai uzturē"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "šanās reizei un apliecinājumu, ka viņš zina, ka nākamo braucienu laikā viņam jābūt apdrošināšanas polisei."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7.2. EUR 42 600 – pieprasot ilgtermiņa vīzu, ilgtermiņa vīzu, kas"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "9. Polises derīguma termiņš nedrīkst būt mazāks par paredzamo"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "nieka uzturēšanās termiņu Latvijas Republikā"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6. Polisei jāgarantē izdevumu segšana vismaz par šādiem pakalpojumiem, kas saistīti ar veselības aprūpi:"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.1. neatliekamā medicīniskā palīdzība;"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.2. dzīvībai vai veselībai bīstama kritiska stāvokļa ārstēšana stacionārā;"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.3. transportēšana uz tuvāko ārstniecības iestādi"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.4. transportēšana nogādāšanai atpakaļ mītnes zemē smagas slimības vai nāves gadījumā."
+    },
+    {
+      "key": "assessment:no-refusal-ground",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "1) ārzemnieks nav iesniedzis visus Ministru kabineta un Latvijas pārstāvniecības noteiktos vīzas pieprasīšanai nepieciešamos dokumentus;"
+    },
+    {
+      "key": "assessment:no-refusal-ground",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "5) ir pamats uzskatīt, ka ārzemnieka patiesais ieceļošanas mērķis neatbilst dokumentos norādītajam mērķim vai šis mērķis nav īstenojams;"
+    },
+    {
+      "key": "assessment:no-refusal-ground",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) ārzemnieks ir iekļauts sarakstā;"
+    },
+    {
+      "key": "assessment:no-refusal-ground",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "likumā noteiktajā kārtībā atzīts par vainīgu tāda noziedzīga nodarījuma izdarīšanā Latvijas Republikā vai ārpus tās, par ko Latvijas Republikas likumā paredzēts kriminālsods."
+    },
+    {
+      "key": "assessment:no-refusal-ground",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "pagājis ne mazāk kā gads pēc soda izciešanas (izpildes), savukārt brīvības atņemšanas soda piemērošanas gadījumā — pagājuši ne mazāk kā pieci gadi pēc brīvības atņemšanas soda izciešanas;"
+    },
+    {
+      "key": "assessment:extra-check",
+      "url": "https://likumi.lv/ta/id/212364",
+      "quote": "papildu pārbaudi veic šo noteikumu"
+    },
+    {
+      "key": "assessment:extra-check",
+      "url": "https://likumi.lv/ta/id/212364",
+      "quote": "Attiecas uz personu, kuras dzīvesvietas adrese vai dzimšanas vieta ir minētajā teritorijā."
+    },
+    {
+      "key": "assessment:extra-check",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Ja ilgtermiņa vīzas izsniegšanai nepieciešama papildu informācija vai pārbaude, lēmumu pieņem 60 dienu laikā."
+    },
+    {
+      "key": "assessment:extra-check",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "vai ārzemniekam, kuram ārvalstī piešķirts bezvalstnieka vai starptautiskās aizsardzības statuss, pārbauda pieejamo informāciju"
+    },
+    {
+      "key": "assessment:extra-check",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) Ministru kabineta 2010. gada 21. jūnija noteikumi Nr. 554"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "1) dokumentus ilgtermiņa vīzas pieprasīšanai iesniedz tai Latvijas pārstāvniecībai, kuras kompetencē ir teritorija, kurā atrodas pieteikuma iesniedzēja pastāvīgā dzīvesvieta;"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "17. Ilgtermiņa vīzas pieteikumu ārzemnieks iesniedz ne agrāk kā trīs mēnešus pirms plānotās ieceļošanas dienas."
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "25. Ārzemniekam, kurš likumīgi uzturas Latvijas Republikā, ilgtermiņa vīzu izsniedz, ja viņš pārvaldē iesniedz šo noteikumu"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "minētajā gadījumā nepieciešamos dokumentus ārzemnieks iesniedz ne vēlāk kā trīs darbdienas pirms iepriekšējās vīzas derīguma termiņa beigām"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "2. Valsts nodevas likmes par ilgtermiņa vīzas pieprasīšanai nepieciešamo dokumentu izskatīšanu ir šādas:"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "2.1. 90 euro;"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "2.2. 180 euro – par pieteikuma izskatīšanu, kas iesniegts mazāk nekā trīs darbdienas pirms likumīgā uzturēšanās termiņa Latvijas Republikā beigām."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "33) Ministru kabineta 2024. gada 26. novembra noteikumi Nr. 731"
+    },
+    {
+      "key": "duration:visa",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(2) Ārzemniekam, kura ieceļošanas mērķis ir nodarbinātība, izņemot šā panta pirmajā daļā minēto gadījumu, vai attālināta darba veikšana, ilgtermiņa vīzu var izsniegt uz laiku, kas nepārsniedz vienu gadu."
+    },
+    {
+      "key": "duration:second-visa",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Ārzemnieks, kurš pieprasa ilgtermiņa vīzu attālināta darba veikšanai, ir tiesīgs pieprasīt vēl vienu ilgtermiņa vīzu uz laiku, kas nepārsniedz vienu gadu, un pēc atkārtotās vīzas derīguma termiņa beigām ārzemnieks turpmāko sešu mēnešu laikā nav tiesīgs saņemt jaunu ilgtermiņa vīzu Latvijas Republikā, pamatojoties uz to pašu vīzas pieprasīšanas iemeslu."
+    },
+    {
+      "key": "duration:decision",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Lēmumu par ilgtermiņa vīzas izsniegšanu pieņem 15 dienu laikā pēc pieteikuma iesniegšanas. Ja ilgtermiņa vīzas izsniegšanai nepieciešama papildu informācija vai pārbaude, lēmumu pieņem 60 dienu laikā."
+    },
+    {
+      "key": "document:travel-document",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:travel-document",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.1. derīgu ceļošanas dokumentu, kura derīguma termiņš vismaz par trim mēnešiem pārsniedz pieprasītās vīzas derīguma termiņu un kurā ir vismaz divas brīvas lappuses vīzu ielīmēšanai. Ja dokumentus iesniedz pārvaldē elektroniski vai pa pastu, pieteikumam pievieno ceļošanas dokumenta kopiju;"
+    },
+    {
+      "key": "document:travel-document",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:application-form",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:application-form",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.2. aizpildītu vīzas pieteikuma anketu atbilstoši šo noteikumu"
+    },
+    {
+      "key": "document:application-form",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.3. pieteikuma iesniegšanas laikā fotografētu vai skenētu fotogrāfiju, kas izgatavota atbilstoši šo noteikumu"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.4. tā dokumenta kopiju, kas apliecina, ka viņam ir"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "pirmās daļas 4.punktā noteiktā apdrošināšanas polise, ja tāda nepieciešama;"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7.2. EUR 42 600 – pieprasot ilgtermiņa vīzu, ilgtermiņa vīzu, kas"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:accommodation",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:accommodation",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.6. dokumentus, kas pamato uzturēšanās vietu;"
+    },
+    {
+      "key": "document:accommodation",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:accommodation",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:means",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:means",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.7. dokumentus, kas apliecina, ka viņam ir nepieciešamie finanšu līdzekļi, lai uzturētos Latvijas Republikā un atgrieztos mītnes zemē vai izceļotu uz citu valsti;"
+    },
+    {
+      "key": "document:means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "4. Dokumenti, kas apliecina nepieciešamo finanšu līdzekļu esību, ir derīgi trīs mēnešus pēc to izsniegšanas."
+    },
+    {
+      "key": "document:means",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:travel-ticket",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "9. Finanšu līdzekļus vai to esību apliecinošos dokumentus, kā arī biļeti turpceļam un atpakaļceļam vai pietiekamus finanšu līdzekļus ceļojumam nepieciešamās degvielas iegādei, ja ārzemnieks ceļo ar personīgo transportlīdzekli, uzrāda attiecīgajām amatpersonām, pieprasot vīzu"
+    },
+    {
+      "key": "document:travel-ticket",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:travel-ticket",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:means",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:employment-record",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:employment-record",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.10. Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu ārzemnieka pašreizējo nodarbinātību apliecinošu dokumentu un šajā valstī reģistrēta darba devēja apliecinājumu par vismaz sešus mēnešus ilgu ārzemnieka iepriekšēju nodarbinātību pie šī darba devēja"
+    },
+    {
+      "key": "document:employment-record",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:employment-record",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:employer-confirmation",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19.10. Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu ārzemnieka pašreizējo nodarbinātību apliecinošu dokumentu un šajā valstī reģistrēta darba devēja apliecinājumu par vismaz sešus mēnešus ilgu ārzemnieka iepriekšēju nodarbinātību pie šī darba devēja"
+    },
+    {
+      "key": "document:employer-confirmation",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "informāciju par darba samaksas apmēru (ne mazāk kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)) un to, ka ārzemnieks savus darba pienākumus var veikt attālināti, ja ārzemnieks vēlas saņemt ilgtermiņa vīzu attālināta darba veikšanai."
+    },
+    {
+      "key": "document:employer-confirmation",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:employer-confirmation",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:self-employment-registration",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:self-employment-registration",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Ja vīzu attālinātā darba veikšanai pieprasa pašnodarbināta persona, pieteikumam pievieno Ekonomiskās sadarbības un attīstības organizācijas dalībvalsts nodokļu administrācijas vai sociālās apdrošināšanas iestādes izsniegtu dokumentu, kas apliecina, ka ārzemnieks šajā valstī ir reģistrēts kā pašnodarbināta persona un ienākumi no pašnodarbinātas personas aktivitātēm pēdējo sešu mēnešu laikā ir ne mazāki kā strādājošo mēneša vidējā bruto darba samaksa iepriekšējā gadā, piemērojot koeficientu 2,5 (saskaņā ar Centrālās statistikas pārvaldes pēdējo publicēto informāciju)."
+    },
+    {
+      "key": "document:self-employment-registration",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:self-employment-registration",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:self-employment-statement",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "19. Pieprasot ilgtermiņa vīzu, ārzemnieks iesniedz:"
+    },
+    {
+      "key": "document:self-employment-statement",
+      "url": "https://likumi.lv/ta/id/235770",
+      "quote": "Pašnodarbināta persona vīzas pieteikumam pievieno brīvas formas iesniegumu, kurā sniedz informāciju par veicamā darba jomu un iespējām pašnodarbinātas personas aktivitātes veikt attālināti."
+    },
+    {
+      "key": "document:self-employment-statement",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:self-employment-statement",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    }
+  ]
+}

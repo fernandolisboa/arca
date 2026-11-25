@@ -1,0 +1,850 @@
+{
+  "schemaVersion": 1,
+  "routeId": "lv-remote-work",
+  "number": 1,
+  "title": "Latvian long-stay visa for remote work for an employer registered in another OECD state, or as a self-employed person registered in an OECD state: up to one year, and one more",
+  "country": "LV",
+  "tags": ["digital-nomad", "work"],
+  "effectiveFrom": "2026-09-15",
+  "status": "open",
+  "currency": "EUR",
+  "leapDayBirthday": "unsettled",
+  "sources": [
+    {
+      "id": "immigration-law-remote-work",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 17. pants 6): a long-stay visa for remote work for an employer registered in another OECD member state, or as a self-employed person registered in an OECD member state",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-visa-term",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 18. pants (2): a remote work long-stay visa for up to one year, and one more for up to one year; then no new one on the same ground for six months",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-russia",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 18. pants (3): a citizen of the Russian Federation has no right to request a visa for remote work",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-third-country",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 1. pants 29) and 16. pants (1): a third-country national holds no EU, EEA or Swiss citizenship; a foreigner may be issued a long-stay visa",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-filing",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 19. pants (3): at a Latvian mission, the documents go to the mission for the place of permanent residence, or of lawful stay when the need is justified",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-decision",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 20. pants: the decision on a long-stay visa within 15 days of filing, or 60 days when more information or checks are needed",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-refusal",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 22. pants (1): when a long-stay visa is refused, such as missing documents, a doubtful purpose, lack of means, an entry ban or a conviction",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-earlier-regulations",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, transitional provision 3: until new Cabinet regulations take effect, and until 1 December 2027 at the latest, the listed earlier regulations apply where they do not contradict the law",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "visa-regulations",
+      "url": "https://likumi.lv/ta/id/235770",
+      "title": "Cabinet Regulations No. 676 of 2011, Visa Regulations, points 17, 19, 19.10, 25 and 26: when and where a long-stay visa is requested and the documents, those for remote work included",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "immigration-law-extra-check",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "title": "Immigration Law, 9. pants (1): an extra check before a visa or permit is issued to a citizen of a listed state, or to someone granted stateless or international protection status abroad",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "extra-check-regulations",
+      "url": "https://likumi.lv/ta/id/212364",
+      "title": "Cabinet Regulations No. 554 of 2010, points 1 and 2: when a visa or a residence permit is issued, citizens of the states in the annex undergo an extra check",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "state-fee-regulations",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "title": "Cabinet Regulations No. 731 of 2024 on migration service fees, point 2: a long-stay visa request EUR 90, or EUR 180 when filed less than three working days before the lawful stay ends",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "means-regulations",
+      "url": "https://likumi.lv/ta/id/290808",
+      "title": "Cabinet Regulations No. 225 of 2017 on the financial means a foreigner needs, points 4, 5.2, 8 and 9: at least the minimum monthly wage for a stay over 30 days, the lodging, a ticket both ways",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "minimum-wage-regulations",
+      "url": "https://likumi.lv/ta/id/278067",
+      "title": "Cabinet Regulations No. 656 of 2015, point 2: the minimum monthly wage for normal working time is EUR 780 (as in force since 1 January 2026)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "health-insurance-regulations",
+      "url": "https://likumi.lv/ta/id/179063",
+      "title": "Cabinet Regulations No. 591 of 2008, Health Insurance of Foreigners, points 6, 7.2, 8 and 9: what the policy covers, at least EUR 42,600 for a long-stay visa, for the whole stay",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "official-language-law",
+      "url": "https://likumi.lv/ta/id/14740",
+      "title": "Official Language Law, 10. pants (3): a document in a foreign language is accepted with a translation into Latvian certified as the Cabinet sets, or notarised",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "lv",
+      "number": 1
+    }
+  ],
+  "countrySets": [
+    {
+      "id": "eu-free-movement",
+      "number": 2
+    }
+  ],
+  "requirements": [
+    {
+      "id": "not-eu-eea-or-swiss-citizen",
+      "title": "Not a citizen of an EU or EEA state or of Switzerland, Latvia included: the law's visas are for third-country nationals",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "set",
+            "id": "eu-free-movement"
+          }
+        }
+      },
+      "sources": ["immigration-law-third-country"]
+    },
+    {
+      "id": "not-russian",
+      "title": "Not a citizen of Russia, whose citizens have no right to a visa for remote work",
+      "expression": {
+        "op": "not",
+        "operand": {
+          "op": "intersects",
+          "list": {
+            "op": "fact",
+            "key": "principal.citizenships"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["RU"]
+          }
+        }
+      },
+      "sources": ["immigration-law-russia"]
+    },
+    {
+      "id": "remote-work",
+      "title": "Works today for an employer seated outside Latvia, the same one for at least the last 6 months; a self-employed person, contractor or business owner is possible",
+      "expression": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "employee"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.employerCountry"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "LV"
+                  }
+                },
+                {
+                  "op": "since",
+                  "date": {
+                    "op": "fact",
+                    "key": "workPeriod.start"
+                  },
+                  "duration": "P6M"
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "in",
+                      "item": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "set": {
+                        "op": "tokens",
+                        "values": ["contractor", "self_employed", "owner"]
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        "immigration-law-remote-work",
+        "visa-regulations",
+        "immigration-law-earlier-regulations"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "oecd-registration",
+      "title": "The employer is registered in an OECD member state other than Latvia; a self-employed person is registered as such in an OECD member state",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": [
+        "immigration-law-remote-work",
+        "visa-regulations",
+        "immigration-law-earlier-regulations"
+      ]
+    },
+    {
+      "id": "pay",
+      "title": "Pay of at least 2.5 times the average monthly gross wage in Latvia of the previous year, as last published by the Central Statistical Bureau; self-employed: income of the last six months",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["visa-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "work-can-be-remote",
+      "title": "The employer confirms the work can be done remotely; a self-employed person states the field of work and how it can be done remotely",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["visa-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "subsistence-means",
+      "title": "Means for a stay over 30 days of at least the minimum monthly wage (EUR 780 in 2026), and for lodging to be paid, or proof it is paid; multiple entry: the first stay and a statement",
+      "evidence": ["unit.liquidAssets"],
+      "sources": [
+        "visa-regulations",
+        "means-regulations",
+        "minimum-wage-regulations",
+        "immigration-law-refusal",
+        "immigration-law-earlier-regulations"
+      ]
+    },
+    {
+      "id": "health-insurance",
+      "title": "A health insurance policy with an insurer limit of at least EUR 42,600, valid for the whole expected stay; for a multiple-entry visa, the first stay and a statement that later trips need a policy",
+      "evidence": ["principal.citizenships"],
+      "sources": [
+        "visa-regulations",
+        "health-insurance-regulations",
+        "immigration-law-earlier-regulations"
+      ]
+    },
+    {
+      "id": "health-insurance-cover",
+      "title": "The policy pays at least for emergency medical help, in-patient treatment of a critical condition, transport to the nearest medical institution and transport home on serious illness or death",
+      "evidence": ["principal.citizenships"],
+      "sources": ["health-insurance-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "no-refusal-ground",
+      "title": "None of the refusal grounds, such as missing documents, a purpose that does not match them, an entry ban, or a criminal conviction within the times the law sets",
+      "evidence": ["principal.citizenships"],
+      "sources": ["immigration-law-refusal"]
+    },
+    {
+      "id": "extra-check",
+      "title": "Citizens of the states Regulations No. 554 list (for some territories, people born or living there) and people stateless or protected abroad undergo an extra check; decision up to 60 days",
+      "evidence": ["principal.citizenships"],
+      "sources": [
+        "extra-check-regulations",
+        "immigration-law-extra-check",
+        "immigration-law-decision",
+        "immigration-law-earlier-regulations"
+      ]
+    },
+    {
+      "id": "where-to-file",
+      "title": "Filed no earlier than three months before planned entry, at the Latvian mission for the place of residence, or at the Office when lawfully in Latvia, by three working days before a visa held ends",
+      "evidence": ["principal.residenceCountry"],
+      "sources": [
+        "immigration-law-filing",
+        "visa-regulations",
+        "immigration-law-earlier-regulations"
+      ]
+    }
+  ],
+  "dependents": [],
+  "costs": [
+    {
+      "id": "visa-fee",
+      "title": "State fee for examining the long-stay visa request; EUR 180 when filed less than three working days before the lawful stay in Latvia ends",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 9000,
+        "currency": "EUR"
+      },
+      "appliesTo": "principal",
+      "sources": ["state-fee-regulations", "immigration-law-earlier-regulations"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "visa",
+      "title": "The long-stay visa for remote work",
+      "min": "P0D",
+      "max": "P1Y",
+      "sources": ["immigration-law-visa-term"]
+    },
+    {
+      "id": "second-visa",
+      "title": "One more remote work visa may be requested; after it ends, no new long-stay visa on the same ground for six months",
+      "min": "P0D",
+      "max": "P1Y",
+      "sources": ["immigration-law-visa-term"]
+    },
+    {
+      "id": "decision",
+      "title": "Decision on the visa, or up to 60 days when more information or a check is needed",
+      "min": "P0D",
+      "max": "P15D",
+      "sources": ["immigration-law-decision"]
+    }
+  ],
+  "documents": [
+    {
+      "id": "travel-document",
+      "title": "Valid travel document, valid at least three months beyond the visa requested, with at least two blank pages; a copy goes with a request filed at the Office online or by post",
+      "kind": "passport",
+      "appliesTo": "principal",
+      "sources": ["visa-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "application-form",
+      "title": "Visa application form, filled in",
+      "kind": "visa_application_form",
+      "appliesTo": "principal",
+      "sources": ["visa-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "photograph",
+      "title": "Photograph taken or scanned when the application is filed",
+      "kind": "photograph",
+      "appliesTo": "principal",
+      "sources": ["visa-regulations", "immigration-law-earlier-regulations"]
+    },
+    {
+      "id": "health-insurance",
+      "title": "Copy of the health insurance policy, with an insurer limit of at least EUR 42,600",
+      "kind": "health_insurance",
+      "appliesTo": "principal",
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "health-insurance-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "accommodation",
+      "title": "Documents on the place of stay",
+      "kind": "accommodation_proof",
+      "appliesTo": "principal",
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "means",
+      "title": "Documents proving the financial means to stay in Latvia and to return home or leave for another country",
+      "kind": "means_of_subsistence_proof",
+      "appliesTo": "principal",
+      "translation": "certified",
+      "validity": "P3M",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "means-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "travel-ticket",
+      "title": "A ticket both ways, or enough money for fuel when travelling by own vehicle",
+      "kind": "travel_ticket",
+      "appliesTo": "principal",
+      "translation": "certified",
+      "sources": [
+        "means-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "employment-record",
+      "title": "Employee: document on the current employment issued by the tax administration or social insurance institution of an OECD member state",
+      "kind": "employment_record",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "employee"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.employerCountry"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "LV"
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "employer-confirmation",
+      "title": "Employee: confirmation by the employer of at least six months of employment with it, the pay, and that the work can be done remotely",
+      "kind": "employment_reference_letter",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "employee"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.employerCountry"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "LV"
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "self-employment-registration",
+      "title": "Self-employed: document of an OECD member state's tax administration or social insurance institution on the registration as self-employed and the income of the last six months",
+      "kind": "self_employment_registration",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "in",
+                  "item": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["contractor", "self_employed"]
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    },
+    {
+      "id": "self-employment-statement",
+      "title": "Self-employed: a free-form statement on the field of work and how the activity can be done remotely",
+      "kind": "remote_work_proof",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "in",
+                  "item": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["contractor", "self_employed"]
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
+      },
+      "translation": "certified",
+      "sources": [
+        "visa-regulations",
+        "immigration-law-earlier-regulations",
+        "official-language-law"
+      ]
+    }
+  ]
+}
