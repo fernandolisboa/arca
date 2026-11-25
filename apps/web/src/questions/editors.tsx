@@ -118,11 +118,11 @@ export function useNames() {
           : group,
         options: sorted(options),
       })),
-    field: (key: string, questionId?: string) => {
-      const specific = `questions.fieldFor.${questionId ?? ''}.${key}`;
+    field: (key: string, question: string) => {
+      const specific = `questions.fieldFor.${question}.${key}`;
       if (i18n.exists(specific)) return t(specific as 'questions.fieldFor.assets.country');
       return i18n.exists(`questions.fields.${key}`)
-        ? t(`questions.fields.${key as FieldKey}`)
+        ? t(`questions.fields.${key as FieldKey}`, { question })
         : key;
     },
   };

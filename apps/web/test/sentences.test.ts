@@ -96,6 +96,41 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
     ],
     [{ kind: 'noWorkPeriod', ...ana }, 'Trabalhos de Ana: nenhum anotado.'],
     [
+      {
+        kind: 'residencePeriod',
+        ...ana,
+        country: 'PT',
+        basis: 'temporary_residence',
+        start: '2023-02',
+        end: 'none',
+      },
+      'Residência de Ana: Portugal, com visto ou residência temporária, desde fevereiro de 2023 até hoje.',
+    ],
+    [
+      {
+        kind: 'residencePeriod',
+        ...ana,
+        country: 'BR',
+        basis: 'citizen',
+        start: '1990',
+        end: '2023-01',
+      },
+      'Residência de Ana: Brasil, com cidadania, de 1990 a janeiro de 2023.',
+    ],
+    [
+      { kind: 'residencePeriod', ...ana, country: 'US', end: 'none' },
+      'Residência de Ana: Estados Unidos, até hoje.',
+    ],
+    [
+      { kind: 'residencePeriod', ...ana, country: 'US', basis: 'other', end: '2009-12' },
+      'Residência de Ana: Estados Unidos, em outra situação, até dezembro de 2009.',
+    ],
+    [
+      { kind: 'residencePeriod', ...ana, country: 'PT', start: '2020' },
+      'Residência de Ana: Portugal, começou em 2020.',
+    ],
+    [{ kind: 'noResidencePeriod', ...ana }, 'Países onde Ana morou: nenhum anotado.'],
+    [
       { kind: 'immigrationEvent', ...ana, country: 'US', event: 'visa_refusal', date: '2018' },
       'Imigração de Ana: Visto negado, Estados Unidos, em 2018.',
     ],
