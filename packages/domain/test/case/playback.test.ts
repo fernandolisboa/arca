@@ -27,7 +27,17 @@ const snapshot = caseSnapshotSchema.parse({
       educationLevel: 6,
       studying: false,
       languages: [{ language: 'pt', level: 'native' }],
-      jobOffers: [{ country: 'PT', sector: 'J', temporary: false }],
+      jobOffers: [
+        { country: 'PT', sector: 'J', temporary: false },
+        {
+          country: 'GB',
+          sector: 'Q',
+          temporary: false,
+          occupation: '2211',
+          annualSalary: { amount: 6_000_000, currency: 'GBP' },
+          sponsored: true,
+        },
+      ],
       workPeriods: [
         {
           occupation: '2512',
@@ -239,6 +249,24 @@ describe('playing the case back (spec 0007, R5)', () => {
     expect(labelled.filter(({ kind }) => kind !== 'workPeriod')).toEqual(
       said.filter(({ kind }) => kind !== 'workPeriod'),
     );
+  });
+
+  it('reads a job offer’s salary back in the currency’s units', () => {
+    expect(of('p1', 'jobOffer')).toEqual([
+      expect.objectContaining({ country: 'PT' }),
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: ['p1'],
+        person: 'p1',
+        country: 'GB',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '60000', currency: 'GBP' },
+        sponsored: true,
+      },
+    ]);
   });
 
   it('marks the assets recorded in full only with the finances in view', () => {

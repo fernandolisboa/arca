@@ -811,6 +811,8 @@ export const ptBR = {
       fullTime: 'É em tempo integral?',
       employerCountry: 'País da empresa ou do cliente',
       workplaceCountry: 'País de onde trabalha',
+      annualSalary: 'Salário bruto por ano',
+      sponsored: 'A empresa vai patrocinar o visto?',
     },
     labelHint:
       'Só aparece para quem vê os dados desta pessoa, como “Hospital” ou “Cliente dos EUA”.',
@@ -875,6 +877,8 @@ export const ptBR = {
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
+      jobOffers:
+        'Se souber, anote a ocupação, o salário por ano e se a empresa vai patrocinar o visto. Algumas rotas exigem um salário a partir de certo valor ou o patrocínio da empresa. O salário aparece para quem vê os dados pessoais desta pessoa.',
       residencePeriods:
         'Anote cada país, incluindo o país onde mora hoje, e cada mudança de situação no mesmo país. Algumas rotas pedem anos de residência legal.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
@@ -965,7 +969,7 @@ export const ptBR = {
       studying: '{person} {studying, select, yes {está} other {não está}} estudando agora.',
       language: 'Idioma de {person}: {language} ({level}).',
       noLanguage: 'Idiomas de {person}: nenhum.',
-      jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{temporary}.',
+      jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{details}.',
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
       workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
       noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
@@ -999,6 +1003,10 @@ export const ptBR = {
       from: ' de {date}',
       custodySince: ', guarda desde {date}',
       temporary: ', temporária',
+      offerOccupation: ', ocupação: {occupation}',
+      salary: ', salário de {amount} por ano',
+      sponsored:
+        ', {sponsored, select, yes {com patrocínio da empresa para o visto} other {sem patrocínio da empresa para o visto}}',
       label: ' ({label})',
       noOccupation: 'ocupação não informada',
       relation:
@@ -1836,6 +1844,7 @@ export const ptBR = {
       lineage: 'do elo da linha de ascendência',
       ancestor: 'do ascendente',
       workPeriod: 'do trabalho',
+      jobOffer: 'da oferta de emprego',
       residencePeriod: 'do período de residência',
     },
     fact: {
@@ -1884,6 +1893,14 @@ export const ptBR = {
         start: 'início',
         end: 'fim',
       },
+      jobOffer: {
+        country: 'país da oferta',
+        sector: 'área da oferta',
+        temporary: 'oferta temporária',
+        occupation: 'ocupação da oferta',
+        annualSalary: 'salário bruto por ano',
+        sponsored: 'patrocínio da empresa para o visto',
+      },
       residencePeriod: {
         country: 'país',
         basis: 'situação legal',
@@ -1898,11 +1915,13 @@ export const ptBR = {
       },
       person: {
         workPeriods: 'os trabalhos da pessoa avaliada',
+        jobOffers: 'as ofertas de emprego da pessoa avaliada',
         residencePeriods: 'os períodos de residência da pessoa avaliada',
       },
       principal: {
         ancestors: 'os ascendentes do requerente principal',
         workPeriods: 'os trabalhos do requerente principal',
+        jobOffers: 'as ofertas de emprego do requerente principal',
         residencePeriods: 'os períodos de residência do requerente principal',
       },
       lineage: {

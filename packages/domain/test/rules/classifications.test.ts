@@ -130,6 +130,25 @@ describe('classification codes in a route version', () => {
     ]);
   });
 
+  it('checks a job offer’s occupation against the pinned occupations', () => {
+    const offer = (code: string) => ({
+      op: 'some',
+      over: 'principal.jobOffers',
+      where: {
+        op: 'eq',
+        left: { op: 'fact', key: 'jobOffer.occupation' },
+        right: { op: 'token', value: code },
+      },
+    });
+    expect(issues([offer('2512')], bothPinned)).toEqual([]);
+    expect(issues([offer('9999')], bothPinned)).toEqual([
+      '/requirements/0/expression/where: The values are outside the domain of the fact',
+    ]);
+    expect(issues([offer('2512')])).toEqual([
+      '/requirements/0/expression/where/left: Occupation codes need the version to pin occupations',
+    ]);
+  });
+
   it('accepts codes of the pinned classifications', () => {
     expect(issues([occupationIn('2211', '2512'), fieldsIntersect('0912')], bothPinned)).toEqual([]);
   });
