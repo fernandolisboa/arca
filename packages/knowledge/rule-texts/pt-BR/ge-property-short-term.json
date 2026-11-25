@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ge-property-short-term",
+  "texts": [
+    {
+      "en": "Georgian short-term residence permit for owners of real estate worth more than USD 150,000, with their spouse and children",
+      "text": "Autorização de residência de curta duração na Geórgia para donos de imóvel de mais de USD 150.000, com cônjuge e filhos"
+    },
+    {
+      "en": "Liquid funds of more than USD 150,000, standing in for a Georgian property, not agricultural land, whose market value exceeds the equivalent in GEL of USD 150,000",
+      "text": "Dinheiro disponível de mais de USD 150.000, no lugar de um imóvel na Geórgia, que não seja terra agrícola, cujo valor de mercado passa do equivalente em GEL a USD 150.000"
+    },
+    {
+      "en": "Not a citizen of Georgia: residence permits are issued to aliens, and an alien is a person who is not a citizen of Georgia",
+      "text": "Não ser cidadão da Geórgia: autorizações de residência são dadas a estrangeiros, e estrangeiro é quem não é cidadão da Geórgia"
+    },
+    {
+      "en": "Ownership of the property registered under Georgian law, its market value set by a certified assessor of an accredited body; the permit ends if the ownership ends",
+      "text": "Propriedade do imóvel registrada pela lei da Geórgia, com valor de mercado fixado por avaliador certificado de um órgão credenciado; a autorização acaba se a propriedade acabar"
+    },
+    {
+      "en": "The owner, and each family member applying, in Georgia on a lawful ground: not as an asylum seeker, on a deferred obligation to leave, on an ordinary C visa or under Article 10(3^1)",
+      "text": "O dono, e cada familiar que pede, na Geórgia por um motivo legal: não como solicitante de asilo, com obrigação de sair adiada, com visto C comum nem pelo artigo 10(3^1)"
+    },
+    {
+      "en": "May be refused: the grounds on which the alien obtained the right to stay in Georgia no longer exist",
+      "text": "Pode haver recusa: os motivos pelos quais o estrangeiro conseguiu o direito de ficar na Geórgia não existem mais"
+    },
+    {
+      "en": "May be refused: sufficient grounds to assume the residence is inadvisable for state security or public safety, or an activity that threatens them",
+      "text": "Pode haver recusa: motivos suficientes para supor que a residência não convém à segurança do Estado ou à segurança pública, ou uma atividade que as ameace"
+    },
+    {
+      "en": "May be refused: crime against peace and humanity; wanted for a crime; final conviction in Georgia, less serious unless expunged, serious or exceptionally serious even if expunged; pending prosecution",
+      "text": "Pode haver recusa: crime contra a paz e a humanidade; procurado por crime; condenação definitiva na Geórgia, leve se não reabilitado, grave ou gravíssima mesmo se reabilitado; processo criminal em curso"
+    },
+    {
+      "en": "May be refused: an infectious or other disease on the Health Ministry's list whose nature, severity or duration may threaten the population of Georgia",
+      "text": "Pode haver recusa: doença infecciosa ou outra da lista do Ministério da Saúde cuja natureza, gravidade ou duração possa ameaçar a população da Geórgia"
+    },
+    {
+      "en": "May be refused: forged or invalid documents submitted, incorrect data in the application or significant information concealed",
+      "text": "Pode haver recusa: documentos falsos ou inválidos, dados errados no pedido ou informação importante escondida"
+    },
+    {
+      "en": "No permit for an alien whose expulsion from Georgia is under review or has been decided, even while the decision is under appeal",
+      "text": "Não há autorização para estrangeiro cuja expulsão da Geórgia está em análise ou foi decidida, mesmo com recurso em andamento"
+    },
+    {
+      "en": "Application and documents in Georgian, unless the law lets the Agency accept another language, so marriage and birth certificates need a translation; a passport with Latin data needs none",
+      "text": "Pedido e documentos em georgiano, salvo se a lei deixar a Agência aceitar outra língua; por isso certidões de casamento e de nascimento precisam de tradução; passaporte com dados em letras latinas não precisa"
+    },
+    {
+      "en": "The spouse and children apply for the same permit once the owner holds it, with a copy of it and proof of the relationship; the owner's permit must have more than 6 months left",
+      "text": "Cônjuge e filhos pedem a mesma autorização depois que o dono a tiver, com uma cópia dela e prova do vínculo; a autorização do dono precisa ter mais de 6 meses pela frente"
+    },
+    {
+      "en": "Real estate in Georgia, not agricultural land, worth more than USD 150,000",
+      "text": "Imóvel na Geórgia, que não seja terra agrícola, de mais de USD 150.000"
+    },
+    {
+      "en": "Service fee for deciding the principal's permit application on the 30th calendar day: GEL 300 (GEL 450 on the 20th day, GEL 600 on the 10th)",
+      "text": "Taxa de serviço para decidir o pedido do requerente principal no 30º dia corrido: GEL 300 (GEL 450 no 20º dia, GEL 600 no 10º)"
+    },
+    {
+      "en": "Each family member applies for the same short-term permit, with the same service fee: GEL 300 for a decision on the 30th calendar day (GEL 450 on the 20th, GEL 600 on the 10th)",
+      "text": "Cada familiar pede a mesma autorização de curta duração, com a mesma taxa de serviço: GEL 300 para decisão no 30º dia corrido (GEL 450 no 20º, GEL 600 no 10º)"
+    },
+    {
+      "en": "Decision on the application on the 10th, 20th or 30th calendar day, by the service fee paid",
+      "text": "Decisão sobre o pedido no 10º, 20º ou 30º dia corrido, conforme a taxa de serviço paga"
+    },
+    {
+      "en": "The permit's validity is extended one year at a time while the alien owns the property, up to 12 years in all",
+      "text": "A validade da autorização é prorrogada um ano por vez enquanto o estrangeiro for dono do imóvel, até 12 anos no total"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import {
   evaluateRoute,
   routeResult,
 } from '@arca/domain';
+import type { RuleTexts } from '@arca/knowledge';
 import type { CaseRows } from './view.js';
 
 export interface EvaluationSettings {
@@ -16,6 +17,8 @@ export interface EvaluationSettings {
   /** Today in São Paulo: the snapshot's date, the rules' and the facts' (spec 0007, R6). */
   readonly today: CalendarDate;
   readonly engineCommit: string;
+  /** Route version titles in the screen's language (ADR-0036); none leaves them in English. */
+  readonly texts?: RuleTexts;
 }
 
 /**
@@ -26,7 +29,7 @@ export interface EvaluationSettings {
  */
 export function caseEvaluations(
   rows: CaseRows,
-  { catalog, routeIds, states, today, engineCommit }: EvaluationSettings,
+  { catalog, routeIds, states, today, engineCommit, texts }: EvaluationSettings,
 ) {
   const { snapshot, personIds } = buildCaseSnapshot(rows, today);
   const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
@@ -55,6 +58,13 @@ export function caseEvaluations(
     rulesAsOf: today,
     engineCommit,
     results: results.map((result) => {
+      // A translated title keeps the version's own English beside it; the content is unchanged.
+      const shown = <Item extends { readonly title: string }>(item: Item) => {
+        const translated = texts?.(result.routeId, item.title);
+        return translated === undefined
+          ? { ...item, original: null }
+          : { ...item, title: translated, original: item.title };
+      };
       // Only an active version's title and country reach the screen (CLAUDE.md rule 5).
       const identity =
         result.version === null || result.status === 'pending_activation'
@@ -74,18 +84,18 @@ export function caseEvaluations(
         route:
           entry === undefined
             ? null
-            : { title: entry.version.title, country: entry.version.country },
+            : { ...shown({ title: entry.version.title }), country: entry.version.country },
         version: result.version,
         stale: result.stale,
         newerProposedVersion: result.newerProposedVersion,
         dependents: result.dependents.map(uuid),
         possibleDependents: result.possibleDependents.map(uuid),
         unitOpen: result.unitOpen,
-        requirements: result.requirements,
-        assessments: result.assessments,
+        requirements: result.requirements.map(shown),
+        assessments: result.assessments.map(shown),
         costs: result.costs.map((cost) => ({
           costId: cost.costId,
-          title: cost.title,
+          ...shown({ title: cost.title }),
           appliesTo: cost.appliesTo,
           personId: cost.personId === null ? null : uuid(cost.personId),
           applies: cost.applies,
@@ -93,7 +103,8 @@ export function caseEvaluations(
           max: cost.max,
           sources: cost.sources,
         })),
-        durations: result.durations,
+        durations: result.durations.map(shown),
+        totals: result.totals,
         closureSources:
           entry?.version.status === 'closed'
             ? (entry.version.closureSources ?? []).flatMap((id) =>

@@ -54,7 +54,7 @@ packages/
                 the personal-data registry and the synthetic seed
   knowledge/    the knowledge base as data: route versions and their cases, country sets, official-domain
                 lists, the countries files, and the country indicators and comparison versions of the
-                destination comparison; validated and hashed; `suggested-ratings/`, the comparison's suggested stars, reviewed non-rule data with no activation ([ADR-0035](adr/0035-suggested-ratings.md)); route versions, country sets and official-domain
+                destination comparison; validated and hashed; `suggested-ratings/`, the comparison's suggested stars, reviewed non-rule data with no activation ([ADR-0035](adr/0035-suggested-ratings.md)); `rule-texts/`, route version titles in Portuguese, the same kind of data ([ADR-0036](adr/0036-rule-texts-in-the-screens-language.md)); route versions, country sets and official-domain
                 lists were imported once into the database, which the API reads, and the rest is bundled
                 into the API ([ADR-0014](adr/0014-knowledge-base-as-reviewed-data.md), [ADR-0031](adr/0031-rule-updates-on-request.md),
                 [ADR-0026](adr/0026-destination-comparison-data.md))

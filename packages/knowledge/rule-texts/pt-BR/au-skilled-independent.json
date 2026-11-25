@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "routeId": "au-skilled-independent",
+  "texts": [
+    {
+      "en": "Australian Skilled Independent visa (subclass 189), points-tested stream: permanent residence for a skilled worker invited before turning 45",
+      "text": "Visto Skilled Independent da Austrália (subclasse 189), modalidade por pontos: residência permanente para trabalhador qualificado convidado antes dos 45 anos"
+    },
+    {
+      "en": "Under 45: the invitation to apply must come before the 45th birthday",
+      "text": "Menos de 45 anos: o convite para pedir o visto precisa chegar antes do 45º aniversário"
+    },
+    {
+      "en": "An invitation in writing from the Minister to apply, and an application made within the period it states",
+      "text": "Convite por escrito do Ministro para pedir o visto, e pedido feito dentro do prazo que ele dá"
+    },
+    {
+      "en": "A listed occupation named in the invitation, assessed as suitable by its assessing authority, not for a 485 visa; at invitation within its stated validity of up to 3 years, else at most 3 years old",
+      "text": "Uma profissão da lista, citada no convite e avaliada como adequada pelo órgão avaliador dela, não para um visto 485; no convite, dentro da validade indicada de até 3 anos, ou com no máximo 3 anos"
+    },
+    {
+      "en": "If the skills assessment rests on a qualification obtained in Australia while holding a student visa, the qualification came from studying a registered course",
+      "text": "Se a avaliação de qualificação se baseia num diploma obtido na Austrália com visto de estudante, o diploma veio de um curso registrado"
+    },
+    {
+      "en": "Competent English at the time of invitation: a specified test score from the last 3 years, or a passport of a type the Minister specifies",
+      "text": "Inglês competente na data do convite: nota de um teste aceito, feito nos últimos 3 anos, ou passaporte de um tipo que o Ministro indica"
+    },
+    {
+      "en": "A points-test score at least the score in the invitation and the pass mark, from age, English, work experience, qualifications, the partner's skills and other attributes",
+      "text": "Pontuação no teste de pontos pelo menos igual à do convite e à nota mínima, somando idade, inglês, experiência de trabalho, formação, qualificação do cônjuge ou companheiro e outros fatores"
+    },
+    {
+      "en": "A principal who holds a subclass 491 or 494 visa, or whose last substantive visa was one, has held it at least 3 years at application, unless the Minister's instrument excuses it",
+      "text": "Requerente principal que tem visto subclasse 491 ou 494, ou cujo último visto principal foi um deles, o tem há pelo menos 3 anos na data do pedido, salvo se o ato do Ministro dispensar"
+    },
+    {
+      "en": "In or outside Australia, not in immigration clearance; in Australia, holding a substantive visa or a Bridging A, B or C visa; a family member applies before the decision on the principal",
+      "text": "Dentro ou fora da Austrália, fora do controle de imigração; na Austrália, com um visto principal ou um visto ponte A, B ou C; um familiar pede antes da decisão sobre o requerente principal"
+    },
+    {
+      "en": "In Australia without a substantive visa after a refusal since last entry (not of a bridging visa or on character grounds) or some cancellations: subclass 189 cannot be applied for there (Act s 48)",
+      "text": "Na Austrália sem visto principal depois de uma recusa desde a última entrada (que não seja de visto ponte nem por caráter) ou de alguns cancelamentos: não dá para pedir o 189 de lá (lei, s 48)"
+    },
+    {
+      "en": "The principal and each family member, applying or not, satisfy the character criterion 4001, giving a police statement and form 80 when the Minister asks",
+      "text": "O requerente principal e cada familiar, pedindo ou não, atendem ao critério de caráter 4001, entregando atestado policial e formulário 80 quando o Ministro pedir"
+    },
+    {
+      "en": "Principal and each family member, applying or not: no security risk, no foreign policy, weapons or unwaived sanctions bar, no critical technology risk (criteria 4002, 4003, 4003B)",
+      "text": "Requerente principal e cada familiar, pedindo ou não: sem risco à segurança, sem impedimento de política externa, armas ou sanções não dispensadas, sem risco de tecnologia crítica (critérios 4002, 4003, 4003B)"
+    },
+    {
+      "en": "The principal and each family member, applying or not, owe no debt to the Commonwealth, unless the Minister is satisfied that arrangements to pay it were made (criterion 4004)",
+      "text": "O requerente principal e cada familiar, pedindo ou não, não devem nada à Comunidade (Commonwealth), salvo se o Ministro aceitar um acordo para pagar a dívida (critério 4004)"
+    },
+    {
+      "en": "Criterion 4020: no bogus document or false information on the application or a visa held 12 months before, nor a refusal for it in 3 years (waivable); identity proven, no refusal for it in 10 years",
+      "text": "Critério 4020: nenhum documento falso ou informação falsa no pedido ou num visto dos 12 meses anteriores, nem recusa por isso em 3 anos (dispensável); identidade comprovada, sem recusa por isso em 10 anos"
+    },
+    {
+      "en": "The principal and each family member applying hold a valid passport issued by an official source, unless it would be unreasonable to require one (criterion 4021)",
+      "text": "O requerente principal e cada familiar que pede têm passaporte válido emitido por fonte oficial, salvo se não for razoável exigir (critério 4021)"
+    },
+    {
+      "en": "The principal and each family member applying who had turned 18 at the time of application sign a values statement, unless compelling circumstances excuse it (criterion 4019)",
+      "text": "O requerente principal e cada familiar que pede e já tinha 18 anos na data do pedido assinam uma declaração de valores, salvo motivo forte que dispense (critério 4019)"
+    },
+    {
+      "en": "The principal and each family member applying meet the health criterion 4005, and so does each family member not applying unless it would be unreasonable to require an assessment",
+      "text": "O requerente principal e cada familiar que pede atendem ao critério de saúde 4005, e também cada familiar que não pede, salvo se não for razoável exigir a avaliação"
+    },
+    {
+      "en": "The principal and each family member applying are likely to become established in Australia without undue personal difficulty or undue difficulties or costs to the community (criterion 4010)",
+      "text": "O requerente principal e cada familiar que pede devem conseguir se estabelecer na Austrália sem dificuldade pessoal excessiva nem dificuldades ou custos excessivos para a comunidade (critério 4010)"
+    },
+    {
+      "en": "For a family member under 18 applying: the home country's law permits removal, or each person who can decide where the child lives consents, or a child order fits; and the child's best interests",
+      "text": "Para familiar menor de 18 anos que pede: a lei do país de origem permite a saída, ou cada pessoa que pode decidir onde a criança mora consente, ou há uma ordem judicial que cubra isso; e o melhor interesse da criança"
+    },
+    {
+      "en": "Criteria 5001, 5002, 5010: no deportation; no character cancellation or refusal unless cleared as 5001 says; 12 months since a removal under s 198, 199 or 205 unless waived; sponsored students' terms",
+      "text": "Critérios 5001, 5002, 5010: sem deportação; sem cancelamento ou recusa por caráter, salvo liberação como diz o 5001; 12 meses desde uma remoção pelas s 198, 199 ou 205, salvo dispensa; regras para estudantes patrocinados"
+    },
+    {
+      "en": "Outside Australia at grant: first entry before the date the Minister sets; a family member may be barred from marrying or entering a de facto relationship before entering (condition 8515)",
+      "text": "Fora da Austrália na concessão: primeira entrada antes da data que o Ministro fixar; um familiar pode ficar impedido de casar ou começar união estável antes de entrar (condição 8515)"
+    },
+    {
+      "en": "Base application charge, first instalment",
+      "text": "Taxa básica do pedido, primeira parcela"
+    },
+    {
+      "en": "Base application charge, first instalment, for a principal with a passport from a Pacific-regional country",
+      "text": "Taxa básica do pedido, primeira parcela, para requerente principal com passaporte de um país da região do Pacífico"
+    },
+    {
+      "en": "Additional applicant charge for each family member aged 18 or more",
+      "text": "Taxa adicional por requerente, para cada familiar com 18 anos ou mais"
+    },
+    {
+      "en": "Additional applicant charge for each family member under 18",
+      "text": "Taxa adicional por requerente, para cada familiar menor de 18 anos"
+    },
+    {
+      "en": "Additional applicant charge for each family member aged 18 or more, when the principal has a passport from a Pacific-regional country",
+      "text": "Taxa adicional por requerente, para cada familiar com 18 anos ou mais, quando o requerente principal tem passaporte de um país da região do Pacífico"
+    },
+    {
+      "en": "Additional applicant charge for each family member under 18, when the principal has a passport from a Pacific-regional country",
+      "text": "Taxa adicional por requerente, para cada familiar menor de 18 anos, quando o requerente principal tem passaporte de um país da região do Pacífico"
+    },
+    {
+      "en": "Second instalment before grant, for each family member aged 18 or more assessed as not having functional English",
+      "text": "Segunda parcela antes da concessão, para cada familiar com 18 anos ou mais avaliado como sem inglês funcional"
+    },
+    {
+      "en": "Permanent visa; travel to and entry into Australia allowed for 5 years from the date of grant",
+      "text": "Visto permanente; viajar e entrar na Austrália é permitido por 5 anos a partir da data da concessão"
+    }
+  ]
+}

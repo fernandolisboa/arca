@@ -46,6 +46,8 @@ export {
   recoveryLinkMinutes,
   replaceDocumentsAction,
   routes,
+  routeCountry,
+  routeStatusOrder,
   ownCriteriaLimit,
   ownCriterionNameLimit,
   maxDismissedSuggestions,

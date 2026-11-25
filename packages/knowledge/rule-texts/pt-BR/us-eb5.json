@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb5",
+  "texts": [
+    {
+      "en": "EB-5 immigrant investor (permanent residence)",
+      "text": "EB-5, investidor imigrante (residência permanente)"
+    },
+    {
+      "en": "Capital to invest of at least USD 800,000 (targeted employment area or infrastructure project; USD 1,050,000 elsewhere)",
+      "text": "Capital para investir de pelo menos USD 800.000 (área de emprego prioritária ou projeto de infraestrutura; USD 1.050.000 nos demais casos)"
+    },
+    {
+      "en": "The capital, and the money for the investment's fees and costs, come from a lawful source through lawful means, with a documented path of funds",
+      "text": "O capital, e o dinheiro para as taxas e custos do investimento, vêm de fonte legal e por meios legais, com o caminho do dinheiro documentado"
+    },
+    {
+      "en": "The capital is invested, or actively being invested, at risk in a new commercial enterprise, with a present commitment beyond a mere intent to invest",
+      "text": "O capital está investido, ou sendo investido de fato, com risco, num novo empreendimento comercial, com compromisso atual que vai além da simples intenção de investir"
+    },
+    {
+      "en": "The capital is expected to remain invested for at least 2 years",
+      "text": "Espera-se que o capital fique investido por pelo menos 2 anos"
+    },
+    {
+      "en": "The enterprise will create at least 10 full-time jobs for qualifying employees, not counting the investor or the investor's spouse, sons and daughters",
+      "text": "O empreendimento vai criar pelo menos 10 empregos de tempo integral para trabalhadores que se qualificam, sem contar o investidor nem o cônjuge e os filhos dele"
+    },
+    {
+      "en": "The investor is or will be engaged in managing the enterprise, by day-to-day managerial control or policy formulation, not in a purely passive role; a limited partner with the usual rights counts",
+      "text": "O investidor participa ou vai participar da gestão do empreendimento, pelo controle do dia a dia ou pela definição de diretrizes, não num papel só passivo; sócio comanditário com os direitos usuais conta"
+    },
+    {
+      "en": "Minimum investment in a targeted employment area or infrastructure project",
+      "text": "Investimento mínimo numa área de emprego prioritária ou projeto de infraestrutura"
+    },
+    {
+      "en": "Form I-526 or I-526E petition fee in effect until 2024-03-31, which USCIS accepts again since 2025-11-12, when a court stayed the 2024 EB-5 fees",
+      "text": "Taxa da petição Form I-526 ou I-526E em vigor até 2024-03-31, que o USCIS volta a aceitar desde 2025-11-12, quando um tribunal suspendeu as taxas do EB-5 de 2024"
+    },
+    {
+      "en": "EB-5 Integrity Fund fee for each Form I-526E regional center petition; a standalone Form I-526 investor does not pay it",
+      "text": "Taxa do EB-5 Integrity Fund para cada petição Form I-526E de centro regional; o investidor com Form I-526 independente não paga"
+    },
+    {
+      "en": "Form I-829 petition to remove the conditions on permanent residence, filed in the 90 days before the second anniversary",
+      "text": "Petição Form I-829 para tirar as condições da residência permanente, protocolada nos 90 dias antes do segundo aniversário"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for the investor, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para o investidor, quando o visto é emitido num consulado fora dos EUA (não no ajuste de status dentro dos EUA)"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for each accompanying family member, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando o visto é emitido num consulado fora dos EUA (não no ajuste de status dentro dos EUA)"
+    },
+    {
+      "en": "USCIS immigrant fee for the investor, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para o investidor, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para cada familiar que acompanha, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "Conditional permanent residence for the investor, spouse and children, to its second anniversary, or the third if DHS extends it a year while the jobs are still being created",
+      "text": "Residência permanente condicional para o investidor, o cônjuge e os filhos, até o segundo aniversário, ou o terceiro se o DHS prorrogar um ano enquanto os empregos ainda estão sendo criados"
+    },
+    {
+      "en": "Capital of USD 800,000 or more (targeted employment area or infrastructure project; USD 1,050,000 elsewhere), filed before 2027-01-01; liquid assets compared; the law counts cash and tangible assets",
+      "text": "Capital de USD 800.000 ou mais (área de emprego prioritária ou projeto de infraestrutura; USD 1.050.000 nos demais casos), com petição protocolada antes de 2027-01-01; o Arca compara bens líquidos; a lei conta dinheiro e bens tangíveis"
+    },
+    {
+      "en": "The capital, and the funds for the investment's administrative costs and fees, were obtained from a lawful source and through lawful means, shown by the records the petition must contain",
+      "text": "O capital, e os recursos para os custos administrativos e as taxas do investimento, foram obtidos de fonte legal e por meios legais, comprovados pelos registros que a petição precisa conter"
+    },
+    {
+      "en": "Form I-526E regional center petition fee, technology fee included (standalone Form I-526: USD 7,615); the program runs to 2027-09-30 and a lapse spares only petitions filed by 2026-09-30",
+      "text": "Taxa da petição Form I-526E de centro regional, taxa de tecnologia incluída (Form I-526 independente: USD 7.615); o programa vai até 2027-09-30 e uma interrupção só preserva petições protocoladas até 2026-09-30"
+    },
+    {
+      "en": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
+      "text": "Taxa do EB-5 Integrity Fund para cada petição Form I-526E de centro regional"
+    }
+  ]
+}

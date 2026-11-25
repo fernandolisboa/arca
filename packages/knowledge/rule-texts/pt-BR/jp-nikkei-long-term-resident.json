@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "routeId": "jp-nikkei-long-term-resident",
+  "texts": [
+    {
+      "en": "Japanese long-term resident status (teijusha) for the third generation of Japanese descent (sansei), with their spouse and children",
+      "text": "Status de residente de longa duração no Japão (teijusha) para a terceira geração de descendentes de japoneses (sansei), com cônjuge e filhos"
+    },
+    {
+      "en": "A biological grandchild of a Japanese national: the parent was born while the grandparent was Japanese, or the grandparent, born to a Japanese national, was once Japanese with a register in Japan",
+      "text": "Neto biológico de japonês: o pai ou a mãe nasceu quando o avô ou a avó era japonês, ou o avô ou a avó, filho de japonês, já foi japonês com registro no Japão"
+    },
+    {
+      "en": "Not a Japanese national: statuses of residence are only for foreigners, who hold no Japanese nationality",
+      "text": "Não ser japonês: os status de residência são só para estrangeiros, que não têm a nacionalidade japonesa"
+    },
+    {
+      "en": "Good conduct, and none of the grounds for refusing landing (criminal record, earlier deportation and the others in art. 5 of the act)",
+      "text": "Boa conduta, e nenhum dos motivos para recusar a entrada (antecedentes criminais, deportação anterior e os outros do art. 5 da lei)"
+    },
+    {
+      "en": "If family come: a lawful spouse; each child's supporter, and for the spouse's child also the spouse, holds a stay of a year or more; spouse and biological children of good conduct",
+      "text": "Se a família vier: cônjuge legal; quem sustenta cada filho, e para o filho do cônjuge também o cônjuge, tem estadia de um ano ou mais; cônjuge e filhos biológicos de boa conduta"
+    },
+    {
+      "en": "Papers for each extension of stay: family status documents, proof of income and tax paid (or, without income, the supporter's job and income), and a guarantor living in Japan",
+      "text": "Documentos para cada prorrogação da estadia: documentos de estado civil, prova de renda e de impostos pagos (ou, sem renda, emprego e renda de quem sustenta) e um fiador que mora no Japão"
+    },
+    {
+      "en": "Each extension weighs: still fitting the notice (an age or support that later lapses does not alone bar it), good conduct, a self-supporting household, no long absence abroad without good reason",
+      "text": "Cada prorrogação avalia: se ainda se encaixa no aviso (uma idade ou um sustento que depois deixa de valer não impede sozinho), boa conduta, família que se sustenta, nenhuma ausência longa fora do país sem bom motivo"
+    },
+    {
+      "en": "Each extension also weighs: work on terms that meet labour law; taxes paid; statutory payments such as health insurance paid (serious arrears count against); residence card and other notices filed",
+      "text": "Cada prorrogação avalia também: trabalho em condições que cumprem a lei trabalhista; impostos pagos; contribuições obrigatórias, como plano de saúde, pagas (atrasos graves pesam contra); cartão de residente e outros avisos entregues"
+    },
+    {
+      "en": "Papers to land, for a certificate of eligibility or to change to this status: family status documents, proof of means for the whole stay and a guarantor living in Japan",
+      "text": "Documentos para entrar, para o certificado de elegibilidade ou para mudar para este status: documentos de estado civil, prova de recursos para toda a estadia e um fiador que mora no Japão"
+    },
+    {
+      "en": "Fee for each change of status to, or extension of, the principal's stay, by the period granted: JPY 18,000 for 6 months, 33,000 for 1 year, 64,000 for 3 years, 75,000 for 5 years (shown), less online",
+      "text": "Taxa de cada mudança para este status ou prorrogação da estadia do requerente principal, pelo período concedido: JPY 18.000 por 6 meses, 33.000 por 1 ano, 64.000 por 3 anos, 75.000 por 5 anos (mostrado), menos on-line"
+    },
+    {
+      "en": "Fee for each change of status to, or extension of, a relative's stay, by the period granted: JPY 18,000 for 6 months, 33,000 for 1 year, 64,000 for 3 years, 75,000 for 5 years (shown), less online",
+      "text": "Taxa de cada mudança para este status ou prorrogação da estadia de um parente, pelo período concedido: JPY 18.000 por 6 meses, 33.000 por 1 ano, 64.000 por 3 anos, 75.000 por 5 anos (mostrado), menos on-line"
+    },
+    {
+      "en": "Period of stay as a long-term resident (teijusha) of a status the notice sets: 5 years, 3 years, 1 year or 6 months",
+      "text": "Período de estadia como residente de longa duração (teijusha) de um status fixado no aviso: 5 anos, 3 anos, 1 ano ou 6 meses"
+    },
+    {
+      "en": "Papers for each extension of stay: family status documents, means with yearly income, tax and social insurance records (also of any payer or supporter), and a guarantor living in Japan",
+      "text": "Documentos para cada prorrogação da estadia: documentos de estado civil, recursos com renda anual, registros de impostos e de seguro social (também de quem paga ou sustenta) e um fiador que mora no Japão"
+    },
+    {
+      "en": "Papers to land or change to this status: family status papers, means for the stay with yearly income, tax and social insurance records (also of any payer or supporter), and a guarantor in Japan",
+      "text": "Documentos para entrar ou mudar para este status: documentos de estado civil, recursos para a estadia com renda anual, registros de impostos e de seguro social (também de quem paga ou sustenta) e um fiador no Japão"
+    }
+  ]
+}
