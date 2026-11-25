@@ -108,6 +108,24 @@ const valid = {
     },
   ],
   durations: [{ id: 'decision', title: 'To a decision', min: 'P2M', max: 'P6M', sources: ['law'] }],
+  documents: [
+    {
+      id: 'birth-certificate',
+      title: 'Birth certificate',
+      kind: 'birth_certificate',
+      appliesTo: 'each_dependent',
+      condition: {
+        op: 'lt',
+        left: { op: 'fact', key: 'person.ageYears' },
+        right: { op: 'int', value: 18 },
+      },
+      apostille: true,
+      translation: 'sworn',
+      validity: 'P90D',
+      note: 'A full copy, not an abstract',
+      sources: ['law'],
+    },
+  ],
 };
 
 const official: OfficialHosts = {
@@ -129,6 +147,15 @@ describe('route version', () => {
     expect(issues({})).toEqual([]);
   });
 
+  it('tells a version with no document list from one that asks for none', () => {
+    const without = routeVersionSchema.parse({ ...valid, documents: undefined });
+    const none = routeVersionSchema.parse({ ...valid, documents: [] });
+    expect(without.documents).toBeUndefined();
+    expect(none.documents).toEqual([]);
+    expect(issues({ documents: undefined })).toEqual([]);
+    expect(issues({ documents: [] })).toEqual([]);
+  });
+
   it('accepts an unsettled leap-day birthday that cites no sources', () => {
     expect(issues({ leapDayBirthday: 'unsettled', leapDayBirthdaySources: undefined })).toEqual([]);
   });
@@ -138,6 +165,17 @@ describe('route version', () => {
     ['a route ID without a country', { routeId: 'sample' }],
     ['a correction of a later version', { number: 2, corrects: 3 }],
     ['a free-text cost kind', { costs: [{ ...valid.costs[0], kind: 'Fee!' }] }],
+    ['a document with no source', { documents: [{ ...valid.documents[0], sources: [] }] }],
+    ['a free-text document kind', { documents: [{ ...valid.documents[0], kind: 'Birth!' }] }],
+    ['a free-text translation', { documents: [{ ...valid.documents[0], translation: 'Sworn' }] }],
+    [
+      'a document validity that is no duration',
+      { documents: [{ ...valid.documents[0], validity: '90 days' }] },
+    ],
+    [
+      'a document apostille that is no yes or no',
+      { documents: [{ ...valid.documents[0], apostille: 'yes' }] },
+    ],
     [
       'a plain-http source',
       { sources: [{ ...valid.sources[0], url: 'http://www.gov.example/law' }] },
@@ -203,6 +241,43 @@ describe('route version', () => {
         ],
       },
       '/dependents/0/condition',
+    ],
+    [
+      'a document citing a missing source',
+      { documents: [{ ...valid.documents[0], sources: ['nope'] }] },
+      '/documents/0/sources',
+    ],
+    [
+      'a document citing only a secondary source',
+      { documents: [{ ...valid.documents[0], sources: ['blog'] }] },
+      '/documents/0/sources',
+    ],
+    [
+      'duplicate document IDs',
+      { documents: [valid.documents[0], valid.documents[0]] },
+      '/documents',
+    ],
+    [
+      "a principal's document reading an edge",
+      {
+        documents: [
+          {
+            ...valid.documents[0],
+            appliesTo: 'principal',
+            condition: {
+              op: 'lt',
+              left: { op: 'fact', key: 'edge.ageAtStart' },
+              right: { op: 'int', value: 18 },
+            },
+          },
+        ],
+      },
+      '/documents/0/condition',
+    ],
+    [
+      'a document condition that is not a condition',
+      { documents: [{ ...valid.documents[0], condition: { op: 'int', value: 1 } }] },
+      '/documents/0/condition',
     ],
     [
       'a duration in two units',
@@ -279,20 +354,26 @@ describe('route version', () => {
       assessments: [],
       dependents: [],
       costs: [],
+      documents: undefined,
     };
     expect(issues(closed)).toEqual([]);
     expect(issues({ ...closed, closureSources: ['blog'] })).toEqual([
       '/closureSources: At least one cited source is official',
     ]);
     expect(issues({ ...closed, requirements: valid.requirements })).toContain(
-      ': A closed version has no requirements, assessments, dependents or costs',
+      ': A closed version has no requirements, assessments, dependents, costs or documents',
     );
+    expect(issues({ ...closed, documents: valid.documents })).toContain(
+      ': A closed version has no requirements, assessments, dependents, costs or documents',
+    );
+    expect(issues({ ...closed, documents: [] })).toEqual([]);
   });
 
   it('exports a JSON Schema for editors', () => {
     const schema = routeVersionJsonSchema() as { type?: string; properties?: object };
     expect(schema.type).toBe('object');
     expect(Object.keys(schema.properties ?? {})).toContain('requirements');
+    expect(Object.keys(schema.properties ?? {})).toContain('documents');
   });
 });
 
