@@ -14,7 +14,7 @@ The visa's page on `immi.homeaffairs.gov.au` writes its steps and document list 
 
 ## What version 4 adds
 
-Fifteen items, for the principal and for each family member applying:
+Sixteen items, for the principal and for each family member applying:
 
 - **Everyone:** the application on form 1393 over the internet, with the residential address (a family member's is combined with the principal's, before the principal's is decided); a valid passport, unless it would be unreasonable to require one.
 - **Principal only:** the Minister's written invitation; the skills assessment, suitable for the nominated occupation, not one made for a subclass 485 visa, within its validity at the invitation; competent English, by a specified test taken in the 3 years before the invitation or by a passport of one of the five countries.

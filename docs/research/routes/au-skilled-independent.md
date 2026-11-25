@@ -10,7 +10,7 @@ The [session rule review](../../runbooks/session-rule-review.md#documents) of th
 
 - **Version audited:** 3
 - **Outcome:** correction, version 4, from version 3's date, 2026-07-01, which keeps every item of version 3 and adds the official document list: the Migration Regulations 1994 (regs. 1.15C, 2.03AA and 2.07, Schedule 2 Part 189, Schedule 4 criteria 4005, 4017, 4019 and 4021 and Part 3), LIN 20/162 (form 1393, an internet application) and the language tests and passports instrument of 2025. Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-au-documents/README.md).
-- **Amendments looked for:** the register lists the regulations' compilation of 2026-11-12 and two amendments from 2026-11-13 and 2026-11-28, which the review of 2026-11-20 found touch none of the provisions cited.
+- **Amendments looked for:** on 2026-11-25 the register's versions API lists, after the regulations' compilation of 2026-11-03, the amending instruments F2026L01449 (from 2026-11-12, training visas), F2026L01500 (2026-11-13) and F2026L01503 (2026-11-28), which the review of 2026-11-20 found touch none of the provisions cited; LIN 20/162's latest compilation is still that of 2024-07-01, and the 2025 language instrument has none since it was made.
 - **Watch next:** the Home Affairs page of the visa lists more documents (identity, relationship, points claims), but it draws its text with scripts the app's reader cannot see; those stay out until an official page the app can read states them.
 
 ### 2026-11-20, session review
