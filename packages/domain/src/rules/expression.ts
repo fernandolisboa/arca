@@ -29,6 +29,8 @@ export const collectionNames = [
   'lineage.links',
   'person.workPeriods',
   'principal.workPeriods',
+  'person.residencePeriods',
+  'principal.residencePeriods',
   'person.qualifications',
   'principal.qualifications',
   'person.registrations',
@@ -43,11 +45,13 @@ export type CollectionName = (typeof collectionNames)[number];
  * span time, the facts that bound each item's period, which `covers` reads. An absent list is
  * unknown, `[]` none.
  */
-const workPeriods = {
-  list: 'workPeriods',
-  record: 'workPeriod',
-  period: { start: 'workPeriod.start', end: 'workPeriod.end' },
-} as const;
+const periods = <const List extends keyof Person, const Record extends PersonRecord['kind']>(
+  list: List,
+  record: Record,
+) => ({ list, record, period: { start: `${record}.start`, end: `${record}.end` } }) as const;
+
+const workPeriods = periods('workPeriods', 'workPeriod');
+const residencePeriods = periods('residencePeriods', 'residencePeriod');
 const qualifications = { list: 'qualifications', record: 'qualification' } as const;
 const registrations = { list: 'registrations', record: 'registration' } as const;
 
@@ -61,6 +65,8 @@ interface RecordCollection {
 export const recordCollections = {
   'person.workPeriods': { owner: 'current', ...workPeriods },
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
+  'person.residencePeriods': { owner: 'current', ...residencePeriods },
+  'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
   'person.qualifications': { owner: 'current', ...qualifications },
   'principal.qualifications': { owner: 'principal', ...qualifications },
   'person.registrations': { owner: 'current', ...registrations },

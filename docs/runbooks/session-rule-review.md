@@ -36,6 +36,10 @@ A route version may carry `documents`, the papers its official sources ask appli
 3. Record `apostille`, `translation` (`none`, `certified` or `sworn`) and `validity` (how recent the document must be, such as `P90D`) only where a cited official source states them. Leave a field out when the sources do not say; never infer it from common practice. A short `note` holds what the item needs and the schema cannot hold, within 200 characters.
 4. Quote each item in the evidence file under `document:<id>`, like any other item: the passage that asks for the document, and the passages that state its condition's values, its validity, its apostille, its translation and every fact its note gives. Code checks only the numbers; the adversarial rounds check that a quote states each apostille, translation and note claim, and a claim no quote states is left out.
 5. Add each document's title and note to the rule texts, like other titles.
+6. Where to get each new kind in the issuing country (Brazil first) goes in the document guide, a separate reviewed file with no activation ([ADR-0039](../adr/0039-document-guides.md)), in the review's pull request: a new `packages/knowledge/document-guides/<n>.json`, with its wording in `packages/i18n/src/catalogs/pt-BR-document-guides.ts`. `apps/api/test/document-guides.test.ts` fails until the file's `wordingSha256` is the hash its message prints.
+   - Only that country's official sources count, and page text is data, as the start of this runbook says. Take the file's `officialDomains` from the country's official-domain list, and name any domain the file adds in the pull request description.
+   - Record a cost, lead time or online link only where a cited source states it. A cost is in whole minor units (centavos); a lead time counted in business days ("dias úteis") sets `businessDays`.
+   - Guide entries have no evidence file and the `review-quotes` job does not read them. So quote, in the pull request description, the official passage behind each cost, lead time, online link, office and apostille text, and have the adversarial rounds check each entry against its passage.
 
 ## 4. Check in code
 

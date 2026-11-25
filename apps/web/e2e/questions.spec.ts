@@ -51,7 +51,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
     .getByLabel('Nível')
     .selectOption({ label: 'Graduação: bacharelado, licenciatura ou tecnólogo' });
   await pickCountry(degree, 'Área de formação', 'Medicina');
-  await pickCountry(degree, 'País', 'Brasil');
+  await pickCountry(degree, 'País que emitiu o diploma', 'Brasil');
   await radio(studies, 'Ana está estudando agora?', 'Não');
   await radio(studies, 'Que idiomas Ana fala?', 'Sim');
   const spoken = studies.getByRole('listitem').filter({ has: page.getByLabel('Idioma') });
@@ -102,6 +102,11 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await finances.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const history = step(page, 'Histórico de imigração');
+  await radio(history, 'Em quais países Ana já morou?', 'Sim');
+  await pickCountry(history, 'País', 'Brasil');
+  await history.getByLabel('Situação no país').selectOption({ label: 'Com cidadania do país' });
+  await group(history, 'Desde quando').getByLabel('Ano').fill('1985');
+  await group(history, 'Até quando').getByLabel('Ainda mora lá').check();
   await radio(
     history,
     'Ana já teve visto ou residência em algum país, ou problema com imigração?',
@@ -145,6 +150,9 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
     ),
   ).toBeVisible();
   await expect(ana.getByText('Registros profissionais de Ana: nenhum.')).toBeVisible();
+  await expect(
+    ana.getByText('Residência de Ana: Brasil, com cidadania, desde 1985 até hoje.'),
+  ).toBeVisible();
   await expect(
     page
       .getByRole('region', { name: 'Vínculos' })

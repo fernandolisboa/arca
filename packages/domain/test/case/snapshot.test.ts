@@ -207,6 +207,32 @@ describe('CaseSnapshot', () => {
       { ...base, people: [{ id: 'p1', workPeriods: [{ occupation: '22' }] }] },
     ],
     [
+      'a residence period that ends before it starts',
+      {
+        ...base,
+        people: [
+          { id: 'p1', residencePeriods: [{ country: 'QM', start: '2020', end: '2019-12' }] },
+        ],
+      },
+    ],
+    [
+      'a residence period with no country',
+      { ...base, people: [{ id: 'p1', residencePeriods: [{ basis: 'citizen' }] }] },
+    ],
+    [
+      'a residence basis outside its set',
+      { ...base, people: [{ id: 'p1', residencePeriods: [{ country: 'QM', basis: 'visitor' }] }] },
+    ],
+    [
+      'more residence periods than the limit',
+      {
+        ...base,
+        people: [
+          { id: 'p1', residencePeriods: Array.from({ length: 31 }, () => ({ country: 'QM' })) },
+        ],
+      },
+    ],
+    [
       'more work periods than the limit',
       { ...base, people: [{ id: 'p1', workPeriods: Array.from({ length: 21 }, () => ({})) }] },
     ],
@@ -223,6 +249,17 @@ describe('CaseSnapshot', () => {
       [{ occupation: '2211', relation: 'owner', capacity: 'executive', fullTime: true }],
     ]) {
       expect(accepts({ ...base, people: [{ id: 'p1', workPeriods }] })).toBe(true);
+    }
+  });
+
+  it('accepts residence periods with an unknown basis or dates, and ongoing ones', () => {
+    for (const residencePeriods of [
+      [],
+      [{ country: 'QM' }],
+      [{ country: 'QM', basis: 'permanent_residence', start: '2021-03', end: 'none' }],
+      [{ country: 'QM', basis: 'other', start: '2020-05', end: '2020-05' }],
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', residencePeriods }] })).toBe(true);
     }
   });
 

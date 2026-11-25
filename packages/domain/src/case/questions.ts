@@ -16,6 +16,7 @@ import {
   isicSections,
   languageLevels,
   parentKinds,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -63,6 +64,7 @@ export const choiceSets = {
   custody: custodies,
   workRelation: workRelations,
   workCapacity: workCapacities,
+  residenceBasis: residenceBases,
 } as const;
 export type ChoiceSet = keyof typeof choiceSets;
 
@@ -272,6 +274,20 @@ export const questionFlow = [
     step: 'finances',
     target: { kind: 'assetsMarker' },
     input: { kind: 'complete' },
+  },
+  {
+    id: 'residencePeriods',
+    step: 'history',
+    target: fact('residencePeriods'),
+    input: {
+      kind: 'list',
+      fields: [
+        needed('country', { kind: 'country' }),
+        maybe('basis', { kind: 'choice', set: 'residenceBasis' }),
+        maybe('start', partialDate),
+        maybe('end', { ...partialDate, none: true }),
+      ],
+    },
   },
   {
     id: 'immigrationHistory',

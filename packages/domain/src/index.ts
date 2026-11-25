@@ -99,6 +99,7 @@ export {
   type Qualification,
   type Registration,
   type Relationship,
+  type ResidencePeriod,
   type WorkPeriod,
   assetKinds,
   caseSnapshotSchema,
@@ -116,10 +117,12 @@ export {
   maxCaseRelationships,
   maxQualifications,
   maxRegistrations,
+  maxResidencePeriods,
   maxWorkPeriods,
   occupationCodeSchema,
   studyFieldCodeSchema,
   opaqueIdSchema,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './case/snapshot.js';
@@ -458,6 +461,14 @@ export {
   departureChecklistViews,
   departureChecklistsSchema,
 } from './departure/checklist.js';
+export {
+  type DocumentGuideEntry,
+  type DocumentGuides,
+  documentGuideEntries,
+  documentGuidesSchema,
+  guideEntriesFor,
+} from './document-guides/guide.js';
+export { type DatedSource } from './reviewed-data/official-sources.js';
 export {
   type ComparedCriterion,
   type ComparisonInput,

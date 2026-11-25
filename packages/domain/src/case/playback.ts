@@ -23,6 +23,7 @@ import {
   occupationCodeSchema,
   parentKinds,
   studyFieldCodeSchema,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -100,6 +101,14 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     since: dateValueSchema.optional(),
   }),
   sentence('noRegistration', { person }),
+  sentence('residencePeriod', {
+    person,
+    country: countryCodeSchema,
+    basis: z.enum(residenceBases).optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNone.optional(),
+  }),
+  sentence('noResidencePeriod', { person }),
   sentence('immigrationEvent', {
     person,
     country: countryCodeSchema,
@@ -212,7 +221,8 @@ function describePerson(
     /** A list read back: unanswered when absent, one sentence for none, else one per item. */
     const records = <Item>(
       items: readonly Item[] | undefined,
-      none: 'noWorkPeriod' | 'noQualification' | 'noRegistration' | 'noJobOffer',
+      none:
+        'noWorkPeriod' | 'noResidencePeriod' | 'noQualification' | 'noRegistration' | 'noJobOffer',
       each: (item: Item) => Sentence,
     ) => {
       if (items === undefined) unanswered(question);
@@ -284,6 +294,13 @@ function describePerson(
           kind: 'jobOffer',
           ...ask,
           ...offer,
+        }));
+        break;
+      case 'residencePeriods':
+        records(subject.residencePeriods, 'noResidencePeriod', (period) => ({
+          kind: 'residencePeriod',
+          ...ask,
+          ...period,
         }));
         break;
       case 'immigrationHistory':

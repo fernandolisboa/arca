@@ -198,6 +198,29 @@ export const qualificationsWithinLevel = ({
 export const qualificationLevelMessage = {
   message: 'A qualification is not above the education level',
 };
+/** The legal basis a person lived in a country on; `other` covers any basis outside the three. */
+export const residenceBases = [
+  'citizen',
+  'permanent_residence',
+  'temporary_residence',
+  'other',
+] as const;
+export const maxResidencePeriods = 30;
+
+/**
+ * A stretch of living in one country on one basis (ADR-0036). `end` is `"none"` while it goes on.
+ * `residenceCountry` stays the country lived in now.
+ */
+export const residencePeriodSchema = z
+  .strictObject({
+    country: countryCodeSchema,
+    basis: z.enum(residenceBases).optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNoneSchema.optional(),
+  })
+  .refine(periodInOrder, periodOrderMessage);
+
+export type ResidencePeriod = z.infer<typeof residencePeriodSchema>;
 
 /** A person's fields, before the checks across them; storage derives its schemas from these. */
 export const personFieldsSchema = z.strictObject({
@@ -215,6 +238,8 @@ export const personFieldsSchema = z.strictObject({
   workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
   qualifications: z.array(qualificationSchema).max(maxQualifications).optional(),
   registrations: z.array(registrationSchema).max(maxRegistrations).optional(),
+  /** Residence periods, past and current, in any order. */
+  residencePeriods: z.array(residencePeriodSchema).max(maxResidencePeriods).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
   studying: z.boolean().optional(),

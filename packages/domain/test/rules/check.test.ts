@@ -432,6 +432,29 @@ describe('record collections and covers (ADR-0036)', () => {
       dependent,
     ],
     [
+      'two years of legal residence in a country, over the person’s residence periods',
+      covers('person.residencePeriods', {
+        where: {
+          op: 'all',
+          operands: [
+            {
+              op: 'eq',
+              left: fact('residencePeriod.country'),
+              right: { op: 'token', value: 'QM' },
+            },
+            {
+              op: 'ne',
+              left: fact('residencePeriod.basis'),
+              right: { op: 'token', value: 'other' },
+            },
+          ],
+        },
+        atLeast: 'P2Y',
+        continuous: false,
+      }),
+      requirement,
+    ],
+    [
       'the owner’s own facts inside a work period',
       {
         op: 'every',
@@ -474,6 +497,32 @@ describe('record collections and covers (ADR-0036)', () => {
       'work periods nested in the unit',
       { op: 'some', over: 'unit.members', where: covers('person.workPeriods') },
       '/where: Collections do not nest, except lineage.links inside principal.ancestors',
+    ],
+    [
+      'a residence-period fact inside work periods',
+      {
+        op: 'some',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('residencePeriod.country'),
+          right: { op: 'token', value: 'PT' },
+        },
+      },
+      '/where/left: residencePeriod.country cannot be read here',
+    ],
+    [
+      'a residence basis outside its values',
+      {
+        op: 'some',
+        over: 'principal.residencePeriods',
+        where: {
+          op: 'eq',
+          left: fact('residencePeriod.basis'),
+          right: { op: 'token', value: 'visitor' },
+        },
+      },
+      '/where: The values are outside the domain of the fact',
     ],
     [
       'a relation outside its values',

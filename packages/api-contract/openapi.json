@@ -6235,6 +6235,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -7455,6 +7511,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -8682,6 +8794,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -9915,6 +10083,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -11136,6 +11360,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -12363,6 +12643,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -13614,6 +13950,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -14768,6 +15160,62 @@
                         },
                         "maxItems": 20
                       },
+                      "residencePeriods": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "country": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "basis": {
+                              "type": "string",
+                              "enum": [
+                                "citizen",
+                                "permanent_residence",
+                                "temporary_residence",
+                                "other"
+                              ]
+                            },
+                            "start": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                }
+                              ]
+                            },
+                            "end": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "none"
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "country"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 30
+                      },
                       "studying": {
                         "type": "boolean"
                       },
@@ -15210,6 +15658,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -16648,6 +17152,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -17887,6 +18447,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -19235,6 +19851,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -20456,6 +21128,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -21918,6 +22646,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -23374,6 +24158,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -24595,6 +25435,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -25828,6 +26724,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -27054,6 +28006,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -28282,6 +29290,62 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -29141,6 +30205,7 @@
                                           "dependsOn",
                                           "assets",
                                           "allAssets",
+                                          "residencePeriods",
                                           "immigrationHistory",
                                           "allSpouses",
                                           "allPartners",
@@ -29284,6 +30349,7 @@
                             "dependsOn",
                             "assets",
                             "allAssets",
+                            "residencePeriods",
                             "immigrationHistory",
                             "allSpouses",
                             "allPartners",
@@ -29300,7 +30366,7 @@
                       "additionalProperties": false
                     },
                     "minItems": 1,
-                    "maxItems": 20
+                    "maxItems": 21
                   }
                 },
                 "required": [
@@ -29709,6 +30775,62 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 20
+                                      },
+                                      "residencePeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "basis": {
+                                              "type": "string",
+                                              "enum": [
+                                                "citizen",
+                                                "permanent_residence",
+                                                "temporary_residence",
+                                                "other"
+                                              ]
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "country"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 30
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -30552,6 +31674,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30605,6 +31728,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30658,6 +31782,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30711,6 +31836,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30795,6 +31921,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30894,6 +32021,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -30947,6 +32075,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31005,6 +32134,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31064,6 +32194,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31121,6 +32252,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31191,6 +32323,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31244,6 +32377,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31322,6 +32456,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31375,6 +32510,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31464,6 +32600,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31517,6 +32654,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31637,6 +32775,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31690,6 +32829,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31763,6 +32903,159 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "residencePeriod"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "citizen",
+                                  "permanent_residence",
+                                  "temporary_residence",
+                                  "other"
+                                ]
+                              },
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "end": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "none"
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person",
+                              "country"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noResidencePeriod"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31816,6 +33109,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31898,6 +33192,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -31951,6 +33246,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32012,6 +33308,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32065,6 +33362,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32129,6 +33427,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32380,6 +33679,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32433,6 +33733,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32532,6 +33833,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -32628,6 +33930,7 @@
                                   "dependsOn",
                                   "assets",
                                   "allAssets",
+                                  "residencePeriods",
                                   "immigrationHistory",
                                   "allSpouses",
                                   "allPartners",
@@ -33709,6 +35012,7 @@
                               "dependsOn",
                               "assets",
                               "allAssets",
+                              "residencePeriods",
                               "immigrationHistory",
                               "allSpouses",
                               "allPartners",

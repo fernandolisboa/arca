@@ -446,6 +446,7 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
     case 'ancestor':
       return scope.lineage !== undefined;
     case 'workPeriod':
+    case 'residencePeriod':
     case 'qualification':
     case 'registration':
       return scope.record === target;

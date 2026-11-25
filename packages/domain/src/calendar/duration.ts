@@ -38,3 +38,12 @@ export function durationUnits(duration: Duration): DurationUnit[] {
   const parts = durationParts(duration);
   return (['years', 'months', 'days'] as const).filter((unit) => parts[unit] > 0);
 }
+
+/** Whether a duration range uses a single unit and its minimum is not above its maximum. */
+export function orderedDurationRange(min: Duration, max: Duration): boolean {
+  const units = new Set([...durationUnits(min), ...durationUnits(max)]);
+  if (units.size !== 1) return false;
+  const [unit] = units;
+  if (unit === undefined) return false;
+  return durationParts(min)[unit] <= durationParts(max)[unit];
+}

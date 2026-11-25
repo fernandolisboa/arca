@@ -32,11 +32,13 @@ import {
   type Qualification,
   type Registration,
   type Relationship,
+  type ResidencePeriod,
   type WorkPeriod,
   custodies,
   maxEducationLevel,
   isicSections,
   parentKinds,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -72,19 +74,32 @@ export interface LineageBinding {
 }
 
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
-export type PersonRecord =
-  | { readonly kind: 'workPeriod'; readonly value: WorkPeriod }
-  | { readonly kind: 'qualification'; readonly value: Qualification }
-  | { readonly kind: 'registration'; readonly value: Registration };
+interface RecordValues {
+  readonly workPeriod: WorkPeriod;
+  readonly residencePeriod: ResidencePeriod;
+  readonly qualification: Qualification;
+  readonly registration: Registration;
+}
+
+export type PersonRecord = {
+  readonly [Kind in keyof RecordValues]: {
+    readonly kind: Kind;
+    readonly value: RecordValues[Kind];
+  };
+}[keyof RecordValues];
 
 export type RecordKind = PersonRecord['kind'];
 
-/** The record kinds, each also the scope of its item facts, such as `qualification.field`. */
 export const recordKinds = [
   'workPeriod',
+  'residencePeriod',
   'qualification',
   'registration',
 ] as const satisfies readonly RecordKind[];
+
+export function isRecordKind(name: string): name is RecordKind {
+  return (recordKinds as readonly string[]).includes(name);
+}
 
 /**
  * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
@@ -430,6 +445,27 @@ export const factCatalog = {
     type: { kind: 'date' },
     scope: 'workPeriod',
     derive: (binding) => endFact(recordOf(binding, 'workPeriod').end, binding.environment),
+  },
+  'residencePeriod.country': {
+    type: { kind: 'country' },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').country) }),
+  },
+  'residencePeriod.basis': {
+    type: { kind: 'enum', values: residenceBases },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').basis) }),
+  },
+  'residencePeriod.start': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => dateFact(recordOf(binding, 'residencePeriod').start),
+  },
+  /** The last day lived there; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'residencePeriod.end': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => endFact(recordOf(binding, 'residencePeriod').end, binding.environment),
   },
   /** The qualification's ISCED 2011 level; unknown, any level up to the person's education level. */
   'qualification.level': {
@@ -800,13 +836,10 @@ function edgeOf(binding: FactBinding): Relationship {
   return binding.edge;
 }
 
-function recordOf<Kind extends RecordKind>(
-  binding: FactBinding,
-  kind: Kind,
-): Extract<PersonRecord, { kind: Kind }>['value'] {
+function recordOf<Kind extends RecordKind>(binding: FactBinding, kind: Kind): RecordValues[Kind] {
   const { record } = binding;
-  if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside a ${kind} collection`);
-  return record.value;
+  if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside its collection`);
+  return record.value as RecordValues[Kind];
 }
 
 function otherEnd(edge: Relationship, id: string): string {
