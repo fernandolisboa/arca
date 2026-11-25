@@ -163,6 +163,14 @@ export const sessionReviews: readonly SessionReview[] = [
     versions: [{ routeId: 'us-eb5', number: 10 }],
   },
   {
+    id: '2026-11-pt-documents',
+    migration: 'knowledge_session_review_2026_11_pt_documents',
+    versions: [
+      { routeId: 'pt-d7', number: 8 },
+      { routeId: 'pt-d8', number: 8 },
+    ],
+  },
+  {
     id: '2026-11-us-routes',
     migration: 'knowledge_session_review_2026_11_us_routes',
     versions: [

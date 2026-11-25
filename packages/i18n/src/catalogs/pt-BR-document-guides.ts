@@ -41,6 +41,11 @@ export const documentGuide: Readonly<
         'Peça a certidão no cartório onde o casamento foi registrado ou, em versão eletrônica, em qualquer cartório, pelo Serp. A lei dá até 5 dias para a entrega.',
       apostille,
     },
+    pension_statement: {
+      office: 'INSS, pelo Meu INSS',
+      request:
+        'Emita no Meu INSS, no site ou no aplicativo, com conta gov.br bronze, prata ou ouro: em "Do que você precisa?", digite "Extrato de pagamento". O documento sai na hora, de graça, com os valores, a data e o banco onde o benefício foi depositado. Se precisar de atendimento presencial, agende pelo telefone 135; a espera estimada é de até 30 dias. Vale só para benefícios do INSS.',
+    },
     passport: {
       office: 'Polícia Federal',
       request:
@@ -56,6 +61,11 @@ export const documentGuide: Readonly<
       office: 'Receita Federal',
       request:
         'Baixe as cópias das declarações em PDF no Portal de Serviços, com conta gov.br prata ou ouro, na hora. As cópias de GFIP se pedem pelo chat; as de Dacon, DMED, Dimob, PER/DCOMP, LCDPR e da declaração de imposto de renda da pessoa física anterior a 2008, por processo. As outras que não dá para baixar se pedem em atendimento presencial agendado, menos a declaração da pessoa física e o recibo dela. O prazo estimado é de até 30 dias. Vale para declarações de pessoa física e de empresa; para as de empresa, quem pede precisa estar no quadro de sócios e administradores do CNPJ.',
+    },
+    tax_residence_certificate: {
+      office: 'Receita Federal, pelo Minhas Isenções e Regimes Especiais',
+      request:
+        'Com conta gov.br prata ou ouro, peça o Atestado de Residência Fiscal no Brasil em "Novo Requerimento", com o CPF e as datas de início e fim do período a comprovar; a data final não pode passar da data de emissão. É preciso ter aderido ao Domicílio Tributário Eletrônico (DTE). O atestado não sai com CPF pendente de regularização, suspenso, cancelado ou nulo, nem para quem deixou de ser residente fiscal no Brasil no período. É de graça. Acompanhe o resultado no mesmo canal; se for indeferido, faça novo pedido com as justificativas e os documentos que comprovem a residência fiscal.',
     },
     vaccination_record: {
       office: 'Ministério da Saúde, pelo Meu SUS Digital',
