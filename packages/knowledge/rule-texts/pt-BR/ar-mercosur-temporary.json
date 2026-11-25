@@ -65,6 +65,86 @@
     {
       "en": "Temporary residence by nationality: two years, extendable, with multiple entries and exits; among other grounds, cancelled after six months or more abroad, save exceptions",
       "text": "Residência temporária por nacionalidade: dois anos, prorrogável, com várias entradas e saídas; entre outros motivos, é cancelada depois de seis meses ou mais fora do país, salvo exceções"
+    },
+    {
+      "en": "Proof of paying the migration services fee, or of falling under one of its exemptions",
+      "text": "Comprovante de pagamento da taxa de serviços migratórios, ou de que a pessoa se enquadra em uma das isenções"
+    },
+    {
+      "en": "In the online system (RaDEX), the fees are paid on the platform itself",
+      "text": "No sistema on-line (RaDEX), as taxas são pagas na própria plataforma"
+    },
+    {
+      "en": "Valid, current identity document: a passport, another document in annex I of the Mercosur travel documents agreement, or a consulate's nationality certificate with a photo",
+      "text": "Documento de identidade válido e vigente: passaporte, outro documento do anexo I do acordo de documentos de viagem do Mercosul, ou certificado de nacionalidade com foto emitido pelo consulado"
+    },
+    {
+      "en": "Legible and unaltered, any amendment validated by its issuer; its names are the ones used for the residence and the DNI",
+      "text": "Legível e sem rasuras, com qualquer emenda ressalvada pelo emissor; os nomes que constam nele são os usados na residência e no DNI"
+    },
+    {
+      "en": "Proof of lawful entry into Argentina: the entry card or the passport stamped by the migration authority, or the record in the national entry and exit registry",
+      "text": "Comprovante de entrada regular na Argentina: o cartão de entrada ou o passaporte carimbado pela autoridade migratória, ou o registro no cadastro nacional de entradas e saídas"
+    },
+    {
+      "en": "Proof of an address in the area of the migration directorate's office that handles the application",
+      "text": "Comprovante de endereço na área do escritório da Direção de Migrações que cuida do pedido"
+    },
+    {
+      "en": "Argentine criminal record certificate from the Registro Nacional de Reincidencia, from age 16",
+      "text": "Certidão de antecedentes criminais argentina, do Registro Nacional de Reincidencia, a partir dos 16 anos"
+    },
+    {
+      "en": "Included in RaDEX, with no separate request; got outside it, as with a preferential appointment, it is valid 90 days from issue",
+      "text": "Já incluída no RaDEX, sem pedido à parte; se tirada por fora, como no atendimento preferencial, vale 90 dias a partir da emissão"
+    },
+    {
+      "en": "From age 16, a criminal record certificate from each country lived in for over 1 year in the last 3 years, showing no convictions or pending criminal proceedings",
+      "text": "A partir dos 16 anos, certidão de antecedentes criminais de cada país onde morou por mais de 1 ano nos últimos 3 anos, mostrando que não há condenações nem processos criminais em andamento"
+    },
+    {
+      "en": "Apostille or consular legalization; a public translator's translation unless in Spanish or a Brazilian paper in Portuguese",
+      "text": "Apostila ou legalização consular; tradução por tradutor público, salvo se estiver em espanhol ou for documento brasileiro em português"
+    },
+    {
+      "en": "Sworn statement of having no international criminal record, signed by the applicant",
+      "text": "Declaração juramentada de que não tem antecedentes criminais internacionais, assinada pelo solicitante"
+    },
+    {
+      "en": "For an applicant under 18: a legalized birth certificate proving the family link",
+      "text": "Para quem tem menos de 18 anos: certidão de nascimento legalizada que comprove o vínculo familiar"
+    },
+    {
+      "en": "Apostille or consular legalization if issued abroad; a public translator's translation unless in Spanish or a Brazilian record in Portuguese",
+      "text": "Apostila ou legalização consular, se emitida fora; tradução por tradutor público, salvo se estiver em espanhol ou for certidão brasileira em português"
+    },
+    {
+      "en": "For an applicant under 18: the authorization of one parent or the guardian, signed before a migration officer",
+      "text": "Para quem tem menos de 18 anos: autorização do pai, da mãe ou do tutor, assinada diante de um funcionário da imigração"
+    },
+    {
+      "en": "The adult who signs shows their own valid, current identity document",
+      "text": "Quem assina apresenta o próprio documento de identidade válido e vigente"
+    },
+    {
+      "en": "For an applicant under 18 whose parents are not in Argentina: the public instrument appointing a guardian, who must be a legal resident of Argentina",
+      "text": "Para quem tem menos de 18 anos e cujos pais não estão na Argentina: instrumento público que nomeia um tutor, que precisa ser residente legal na Argentina"
+    },
+    {
+      "en": "Issued abroad: apostille, or legalization by an Argentine consulate or, for a Mercosur paper, by the issuer's consulate in Argentina",
+      "text": "Se emitido fora: apostila, ou legalização por um consulado argentino ou, para documento do Mercosul, pelo consulado do país emissor na Argentina"
+    },
+    {
+      "en": "Birth certificate, marriage certificate or registered cohabiting union record proving the link with the resident, with names matching the identity documents",
+      "text": "Certidão de nascimento, certidão de casamento ou registro de união convivencial que comprove o vínculo com o residente, com nomes iguais aos dos documentos de identidade"
+    },
+    {
+      "en": "Apostille or consular legalization if issued abroad; a public translator's translation unless in Spanish or a Brazilian birth or marriage record in Portuguese",
+      "text": "Apostila ou legalização consular, se emitida fora; tradução por tradutor público, salvo se estiver em espanhol ou for certidão brasileira de nascimento ou casamento em português"
+    },
+    {
+      "en": "For an adult child with a disability: the Single Disability Certificate (CUD), or a court ruling of incapacity",
+      "text": "Para filho maior de idade com deficiência: o Certificado Único de Discapacidad (CUD) ou uma sentença judicial de incapacidade"
     }
   ]
 }
