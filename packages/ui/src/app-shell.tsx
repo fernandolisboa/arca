@@ -31,7 +31,7 @@ export interface AppShellLabels {
   /** The button that switches the bars and the side column to icons only, and back. */
   readonly collapseMenu: string;
   readonly expandMenu: string;
-  /** The tooltip of the mark and the name, which lead to the home page. */
+  /** The tooltip of the mark and the name. */
   readonly home: string;
 }
 
@@ -242,7 +242,7 @@ export function AppShell({
     <Link
       href={homeHref}
       title={labels.home}
-      className={`flex min-h-touch min-w-0 items-center gap-2 rounded-control ${focusRing}`}
+      className={`flex min-h-touch ${nameHidden ? 'min-w-touch justify-center' : 'min-w-0'} items-center gap-2 rounded-control ${focusRing}`}
       {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
     >
       <Mark size={36} />

@@ -84,6 +84,7 @@ describe('AppShell', () => {
     expect(count(render({ wide: 'side' }), brand)).toBe(2);
     const collapsed = [...render({ wide: 'side', collapse: 'collapsed' }).matchAll(brand)];
     expect(collapsed.map((match) => match[2])).toEqual(['min-w-0', 'sr-only']);
+    expect(collapsed[1]?.[0]).toContain('min-w-touch');
   });
 
   it('puts the Settings entry last in a dock, after the items', () => {
