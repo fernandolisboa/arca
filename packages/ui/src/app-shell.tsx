@@ -288,7 +288,7 @@ export function AppShell({
         data-hidden={barsAway ? '' : undefined}
         className={`sticky top-0 z-40 border-b border-line bg-surface pt-[env(safe-area-inset-top)] ${slideClass} ${barsAway ? '-translate-y-full has-[:focus-visible]:translate-y-0' : ''} ${side ? 'md:hidden' : ''}`}
       >
-        <div className="mx-auto flex h-bar w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="@container mx-auto flex h-bar w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {brandLink(false, menuOpen ? leaveMenu : undefined)}
           {(narrowMenu || wideMenu) && menuToggle(at(narrowMenu, wideMenu))}
           {top && (
