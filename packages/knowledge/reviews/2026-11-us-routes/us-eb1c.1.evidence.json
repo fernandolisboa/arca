@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "assessment:employment-abroad",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "An alien is described in this subparagraph if the alien, in the 3 years preceding the time of the alien's application for classification and admission into the United States under this subparagraph, has been employed for at least 1 year by a firm or corporation or other legal entity or an affiliate or subsidiary thereof"
+    },
+    {
+      "key": "assessment:employment-abroad",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "If the alien is already in the United States working for the same employer or a subsidiary or affiliate of the firm or corporation, or other legal entity by which the alien was employed overseas, in the three years preceding entry as a nonimmigrant, the alien was employed by the entity abroad for at least one year in a managerial or executive capacity;"
+    },
+    {
+      "key": "assessment:related-employer",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The prospective employer in the United States is the same employer or a subsidiary or affiliate of the firm or corporation or other legal entity by which the alien was employed overseas; and"
+    },
+    {
+      "key": "assessment:related-employer",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Multinational means that the qualifying entity, or its affiliate, or subsidiary, conducts business in two or more countries, one of which is the United States."
+    },
+    {
+      "key": "assessment:doing-business-one-year",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The prospective United States employer has been doing business for at least one year."
+    },
+    {
+      "key": "assessment:managerial-or-executive-job",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "No labor certification is required for this classification; however, the prospective employer in the United States must furnish a job offer in the form of a statement which indicates that the alien is to be employed in the United States in a managerial or executive capacity."
+    },
+    {
+      "key": "assessment:managerial-or-executive-job",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "manages the organization, or a department, subdivision, function, or component of the organization;"
+    },
+    {
+      "key": "assessment:managerial-or-executive-job",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "directs the management of the organization or a major component or function of the organization;"
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Immigrant Petition for Alien Worker, Form I-140. For filing a petition to classify preference status of an alien based on profession or occupation under section 204(a) of the Act: $715."
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "A United States employer may file a petition on Form I-140 for classification of an alien under section 203(b)(1)(C) of the Act as a multinational executive or manager."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "the Asylum Program Fee must be paid by any petitioner filing a Petition for a Nonimmigrant Worker, Form I-129 under 8 CFR 214.2, Petition for a CNMI-Only Nonimmigrant Transitional Worker, Form I-129CW under 8 CFR 214.2(w), or an Immigrant Petition for Alien Worker, Form I-140 under 8 CFR 204.1(a). $600."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Filed by a small employer as defined in § 106.1(f): $300."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "by reason of any marriage ceremony where the contracting parties thereto are not physically present in the presence of each other, unless the marriage shall have been consummated"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if the father has or had a bona fide parent-child relationship with the person"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if such legitimation takes place before the child reaches the age of eighteen years and the child is in the legal custody of the legitimating parent or parents at the time of such legitimation"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a child adopted while under the age of sixteen years if the child has been in the legal custody of, and has resided with, the adopting parent or parents for at least two years or if the child has been battered or subject to extreme cruelty by the adopting parent or by a family member of the adopting parent residing in the same household"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "(I) is a natural sibling of a child described in clause (i) or subparagraph (F)(i); (II) was adopted by the adoptive parent or parents of the sibling described in such clause or subparagraph; and (III) is otherwise described in clause (i), except that the child was adopted while under the age of 18 years"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a stepchild, whether or not born out of wedlock, provided the child had not reached the age of eighteen years at the time the marriage creating the status of stepchild occurred"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "cost:visa-application-fee",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:visa-application-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:uscis-immigrant-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "cost:uscis-immigrant-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "cost:adjustment-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Application to Register Permanent Residence or Adjust Status, Form I-485. For filing an application for permanent resident status or creation of a record of lawful permanent residence:"
+    },
+    {
+      "key": "cost:adjustment-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$1,440 for an applicant 14 years of age or older; or"
+    },
+    {
+      "key": "cost:adjustment-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$1,440 for an applicant 14 years of age or older; or"
+    },
+    {
+      "key": "cost:adjustment-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$950 for an applicant under the age of 14 years who submits the application concurrently with the Form I-485 of a parent."
+    }
+  ]
+}

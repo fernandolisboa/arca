@@ -75,6 +75,27 @@ describe('runCases', () => {
     ]);
   });
 
+  it('asks a version with no requirement only for the status it can reach', async () => {
+    const judged = {
+      ...eligible,
+      id: 'judged',
+      expected: { ...eligible.expected, status: 'needs_assessment' },
+    };
+    const assessmentsOnly = routeVersion({
+      requirements: [],
+      assessments: [
+        {
+          id: 'merit',
+          title: 'The principal merits the route',
+          evidence: ['principal.citizenships'],
+          sources: ['law'],
+        },
+      ],
+    });
+    const tree = { ...withCases([judged]), 'routes/qm-work/1.json': assessmentsOnly };
+    expect((await run(tree)).problems).toEqual([]);
+  });
+
   it('runs only the newest of a superseded case, and refuses duplicate IDs', async () => {
     const old = {
       ...eligible,

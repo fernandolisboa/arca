@@ -2,6 +2,7 @@ import {
   type CaseSnapshot,
   type CatalogEntry,
   type Evaluation,
+  type EvaluationStatus,
   type VersionContext,
   computeUnit,
   evaluateVersion,
@@ -171,7 +172,8 @@ function cannotHold(condition: Condition): boolean {
 /**
  * The coverage rules of spec 0002 R8, from the engine's results: every requirement true, false and
  * unknown at least once; every dependent rule including and excluding someone; the statuses each
- * open version must reach, and `unavailable` for a closed one. Each dependent rule is measured on
+ * open version can reach (`not_eligible` and `missing_information` only with a requirement), and
+ * `unavailable` for a closed one. Each dependent rule is measured on
  * its own, so another rule cannot cover for it: it includes someone, or makes someone possible when
  * its condition cannot be true (see `cannotHold`), and reaches someone whose condition fails,
  * unless its condition cannot be false (see `cannotFail`).
@@ -183,11 +185,11 @@ function coverage(entry: CatalogEntry, runs: readonly Run[]): string[] {
     return statuses.has('unavailable') ? [] : ['A closed version has an unavailable case'];
   }
   const gaps: string[] = [];
-  const wanted = [
-    version.assessments.length > 0 ? 'needs_assessment' : 'eligible',
-    'not_eligible',
-    'missing_information',
-  ] as const;
+  const holds = version.assessments.length > 0 ? 'needs_assessment' : 'eligible';
+  // With no requirement nothing can be false or unknown, so a route that rests wholly on
+  // assessments reaches only `needs_assessment`.
+  const wanted: readonly EvaluationStatus[] =
+    version.requirements.length > 0 ? [holds, 'not_eligible', 'missing_information'] : [holds];
   for (const status of wanted) {
     if (!statuses.has(status)) gaps.push(`No case is ${status}`);
   }
