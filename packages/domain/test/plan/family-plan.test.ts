@@ -159,6 +159,22 @@ describe('evaluatePlan', () => {
     expect(plan.totals).toEqual([]);
   });
 
+  it('adds nothing for a closed route', () => {
+    const closed = entry({ status: 'closed', closureSources: ['law'] });
+    const closedCatalog: RouteCatalog = {
+      identities: () => [closed.identity],
+      activeEntry: () => closed,
+    };
+    const plan = evaluatePlan(
+      family(),
+      closedCatalog,
+      [move()],
+      context({ states: new Map([[identityKey(closed.identity), 'active']]) }),
+    );
+    expect(plan.moves[0]?.result.status).toBe('unavailable');
+    expect(plan.totals).toEqual([]);
+  });
+
   it('says from which earlier stage a principal already goes', () => {
     const plan = evaluated([
       move({ dependentIds: ['p2'] }),

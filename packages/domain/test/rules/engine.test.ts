@@ -492,6 +492,38 @@ describe('evaluateVersion', () => {
     expect(evaluation.missingFacts).toEqual([]);
   });
 
+  it('asks for no rate a person the plan leaves out would need', () => {
+    const value = snapshot({
+      members: ['p1', 'p2'],
+      people: [known('p1', '1980-01-01'), known('p2', '2012-01-01')],
+      relationships: [{ kind: 'parent', parent: 'p1', child: 'p2', parentKind: 'biological' }],
+      assets: [cash('p1', 1200_00), cash('p2', 1, 'BRL')],
+    });
+    const poorChildren = entry({
+      dependents: [
+        {
+          id: 'children',
+          title: 'Children without means',
+          path: ['child'],
+          condition: {
+            op: 'lt',
+            left: { op: 'fact', key: 'person.liquidAssets' },
+            right: { op: 'money', amount: 1000_00, currency: 'EUR' },
+          },
+          sources: ['law'],
+        },
+      ],
+    });
+    const evaluation = evaluateVersion(
+      value,
+      poorChildren,
+      'p1',
+      context({ chosenDependents: [] }),
+    );
+    expect(evaluation.unit.excluded).toEqual([{ personId: 'p2', reason: 'not_chosen' }]);
+    expect(evaluation.missingRates).toEqual([]);
+  });
+
   it('lists no fact when only a reference date leaves the unit open', () => {
     const atFiling = entry({
       referenceDates: ['filingDate'],

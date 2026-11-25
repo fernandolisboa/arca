@@ -952,11 +952,9 @@ export function createCaseFiles({
         }
         if (!planFitsCase(rows, moves, routeIds)) return { ok: false, reason: 'case_invalid' };
         await savePlan(tx, caseId, moves);
-        return {
-          ok: true,
-          caseId,
-          view: familyPlan(rows, moves, planSettings(catalog, states)),
-        };
+        // Read back, so the answer's revision is the one the next write is checked against.
+        const stored = await readPlan(tx, caseId);
+        return { ok: true, caseId, view: familyPlan(rows, stored, planSettings(catalog, states)) };
       });
       if (written.ok) {
         await recordAll(accountId, [

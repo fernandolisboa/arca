@@ -11,8 +11,8 @@ import type { CaseRows } from './view.js';
 export type StoredPlanMove = WriteFamilyPlanRequest['moves'][number];
 
 /**
- * The case's family plan as row-level security shows it to a member, in the order written, read
- * in one statement so a write committed meanwhile cannot split a move from the people it takes.
+ * The case's family plan as row-level security shows it to a member, moves in the order written
+ * and the people each takes by ID, read in one statement so a write committed meanwhile cannot split a move from the people it takes.
  */
 export async function readPlan(tx: Transaction, caseId: string): Promise<StoredPlanMove[]> {
   const moves = await tx.execute<{
@@ -22,7 +22,7 @@ export async function readPlan(tx: Transaction, caseId: string): Promise<StoredP
     dependent_ids: string[];
   }>(sql`
     SELECT m.stage, m.route_id, m.principal_id,
-           COALESCE(array_agg(d.person_id ORDER BY d.created_at, d.person_id)
+           COALESCE(array_agg(d.person_id ORDER BY d.person_id)
                       FILTER (WHERE d.person_id IS NOT NULL), '{}') AS dependent_ids
       FROM cases.plan_move m
       LEFT JOIN cases.plan_move_dependent d ON d.move_id = m.id

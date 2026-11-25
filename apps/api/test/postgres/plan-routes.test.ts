@@ -186,9 +186,34 @@ describe('the family plan (ADR-0040)', () => {
     const one = { stage: 1, routeId: route, principalId: ids.alice, dependentIds: [ids.bruno] };
     const first = await call(alice, 'PUT', { revision: empty, moves: [one] });
     expect(first.status).toBe(200);
+    const recorded = await testDatabase.asAdmin((client) =>
+      client.query<{ details: unknown }>(
+        `SELECT details FROM audit.event WHERE subject_account_id = $1 AND code = 'plan_written'`,
+        [alice],
+      ),
+    );
+    // The case and the number of moves only: no route, no person.
+    expect(recorded.rows.map(({ details }) => Object.entries(details as object).sort())).toEqual([
+      [
+        ['caseId', (await cases.view(alice))?.caseId],
+        ['moves', 1],
+      ],
+    ]);
     const { revision } = (await first.json()) as FamilyPlan;
     expect((await call(alice, 'PUT', { revision, moves: [] })).status).toBe(200);
     expect((await plan(alice)).moves).toEqual([]);
+  });
+
+  it('answers the revision the next write is checked against, whatever order people come in', async () => {
+    const { cases, call } = setup();
+    const { alice, ids } = await family(cases);
+    const taken = [ids.bruno, ids.grandma].sort().reverse();
+    const move = { stage: 1, routeId: route, principalId: ids.alice, dependentIds: taken };
+    const first = await call(alice, 'PUT', { revision: empty, moves: [move] });
+    expect(first.status === 200 ? 'saved' : await errorOf(first)).toBe('saved');
+    const { revision } = (await first.json()) as FamilyPlan;
+    const again = await call(alice, 'PUT', { revision, moves: [{ ...move, stage: 2 }] });
+    expect(again.status === 200 ? 'saved' : await errorOf(again)).toBe('saved');
   });
 
   it('refuses a write over a plan it did not see, so no member loses another’s edit', async () => {
