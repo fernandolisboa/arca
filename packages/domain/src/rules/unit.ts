@@ -88,6 +88,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
   const markers = new Map<string, MissingMarker>();
   const traces: Trace[] = [];
   const unreadDates = new Set<string>();
+  const chosen = prepared.context.chosenDependents;
+  const counted = (personId: string) => chosen === undefined || chosen.includes(personId);
 
   for (const rule of version.dependents) {
     const date = rule.at === undefined ? prepared.factsAsOf : prepared.referenceDates.get(rule.at);
@@ -122,7 +124,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
           edge: arrival.edge,
           ...(arrival.firstEdge === undefined ? {} : { firstEdge: arrival.firstEdge }),
         });
-        traces.push(trace);
+        // Someone the plan leaves out adds no missing date or rate to the unit that goes.
+        if (counted(person.id)) traces.push(trace);
         const condition = truthOf(trace);
         const truth = and([arrival.reached, condition]);
         if (truth === false) continue;
@@ -148,7 +151,6 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
   const dependents: Dependent[] = [];
   const possibleDependents: PossibleDependent[] = [];
   const excluded: ExcludedPerson[] = [];
-  const chosen = prepared.context.chosenDependents;
   for (const { id } of indexed.snapshot.people) {
     if (id === principalId) continue;
     const candidate = candidates.get(id);
@@ -158,7 +160,7 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
       edges: [...(candidate?.edges ?? [])].map(([edge, holds]) => ({ edge, holds })),
     };
     const covered = candidate !== undefined && candidate.truth !== false;
-    if (covered && chosen !== undefined && !chosen.includes(id)) {
+    if (covered && !counted(id)) {
       excluded.push({ personId: id, reason: 'not_chosen' });
     } else if (candidate?.truth === true) dependents.push(member);
     else if (candidate?.truth === 'unknown') {

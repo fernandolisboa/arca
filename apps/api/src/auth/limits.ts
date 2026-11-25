@@ -69,8 +69,8 @@ export const documentLimits = {
 } as const satisfies Record<string, RateLimitRule>;
 
 /**
- * Case writes and rule reports per account; the case's playback, evaluations, document checklists
- * and comparison per session (spec 0007, ADR-0026, spec #519).
+ * Case writes and rule reports per account; the case's playback, evaluations, document checklists,
+ * comparison and family plan per session (spec 0007, ADR-0026, spec #519, ADR-0040).
  */
 export const caseLimits = {
   write: { name: 'case_write_account', limit: 300, windowSeconds: hour },

@@ -295,7 +295,7 @@ function setup({
     cases,
     accountConfirmed: () => Promise.resolve(confirmedAccount),
   });
-  const call = (method: 'GET' | 'POST', path: string, body?: unknown) =>
+  const call = (method: 'GET' | 'POST' | 'PUT', path: string, body?: unknown) =>
     app.request(`/v1${path}`, {
       method,
       headers: {
@@ -407,6 +407,25 @@ describe('the case routes (spec 0007, R3)', () => {
       expect(response.status).toBe(status);
       expect(await errorOf(response)).toBe(code);
       expect(calls).toEqual([]);
+    }
+  });
+
+  it('refuses the family plan to an unconfirmed account and over the limit', async () => {
+    const write = { revision: 'A'.repeat(43), moves: [] };
+    for (const [method, body] of [
+      ['GET', undefined],
+      ['PUT', write],
+    ] as const) {
+      for (const [options, status, code] of [
+        [{ confirmedAccount: false }, 403, 'account_unconfirmed'],
+        [{ allowed: false }, 429, 'rate_limited'],
+      ] as const) {
+        const { call, calls } = setup(options);
+        const response = await call(method, '/case/plan', body);
+        expect(response.status).toBe(status);
+        expect(await errorOf(response)).toBe(code);
+        expect(calls).toEqual([]);
+      }
     }
   });
 

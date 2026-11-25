@@ -65,7 +65,8 @@ export function RouteDetail({
 }: {
   readonly row: RouteRow;
   readonly principalId: string;
-  readonly onPrincipal: (principalId: string) => void;
+  /** Lets the viewer switch principal; without it the detail stays on the one given. */
+  readonly onPrincipal?: (principalId: string) => void;
   /** Under its own card, which already names the route and country. */
   readonly inline?: boolean;
   /** Offers to put the route in the family plan; the plan's own panel leaves it out. */
@@ -116,7 +117,7 @@ export function RouteDetail({
           </label>
         </div>
       )}
-      {row.results.length > 1 && (
+      {row.results.length > 1 && onPrincipal !== undefined && (
         <Tabs
           label={t('results.principalTabs')}
           tabs={row.results.map((each) => ({

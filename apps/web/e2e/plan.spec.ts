@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import type { CaseView, FamilyPlan, WriteFamilyPlanRequest } from '@arca/api-contract/client';
+import type { CaseView, WriteFamilyPlanRequest } from '@arca/api-contract/client';
 import { expect, test, type Page } from '@playwright/test';
 import { family, signedIn } from './case-accounts.js';
 import { horizontalOverflow } from './layouts.js';
@@ -46,6 +46,9 @@ function result(principalId: string, dependents: readonly string[]) {
   };
 }
 
+/** Two plan revisions as the API digests them: before and after the one write. */
+const revisions = ['A'.repeat(43), 'B'.repeat(43)] as const;
+
 /**
  * The plan's screen against a fixture route no database route is, so the API's answers are
  * stubbed here; the API's own tests cover how the server stores and evaluates a plan.
@@ -57,7 +60,9 @@ async function fixturePlan(page: Page, people: { ana: string; child: string }) {
     results: [result(people.ana, [people.child])],
     questions: [],
   };
-  let plan: FamilyPlan = {
+  // The answers as JSON on the wire, before the client's schema reads them.
+  let plan: Record<string, unknown> = {
+    revision: revisions[0],
     rulesAsOf: '2026-11-25',
     moves: [],
     unplanned: [people.ana, people.child],
@@ -73,17 +78,16 @@ async function fixturePlan(page: Page, people: { ana: string; child: string }) {
         body.moves.flatMap((move) => [move.principalId, ...move.dependentIds]),
       );
       plan = {
+        revision: revisions[1],
         rulesAsOf: '2026-11-25',
         moves: body.moves.map((move) => ({
           stage: move.stage,
-          result: result(
-            move.principalId,
-            move.dependentIds,
-          ) as FamilyPlan['moves'][number]['result'],
+          result: result(move.principalId, move.dependentIds),
           dependents: move.dependentIds.map((personId) => ({
             personId,
-            coverage: 'covered' as const,
+            fit: 'covered' as const,
           })),
+          principalGoesFrom: null,
         })),
         unplanned: [people.ana, people.child].filter((id) => !placed.has(id)),
         totals:
@@ -135,12 +139,20 @@ test('puts a route in the family plan with who goes along, in a stage (ADR-0040)
   await expect(page.getByText('Todo mundo do caso já tem uma etapa.')).toBeVisible();
   expect(written).toEqual([
     {
+      revision: revisions[0],
       moves: [{ stage: 1, routeId, principalId: id('Ana'), dependentIds: [id('Criança')] }],
     },
   ]);
 
   await card.getByRole('button', { name: 'Ver detalhes' }).click();
   await expect(page.getByText('Dependentes: Criança')).toBeVisible();
+  if (test.info().project.name === 'desktop') {
+    // On a wide screen the detail opens in the side panel, beside the stages.
+    const side = page.getByRole('complementary', { name: 'Detalhes da mudança' });
+    await expect(side.getByText('Dependentes: Criança')).toBeVisible();
+    const [stageBox, sideBox] = await Promise.all([stage.boundingBox(), side.boundingBox()]);
+    expect(sideBox?.x).toBeGreaterThan((stageBox?.x ?? 0) + (stageBox?.width ?? 0) - 1);
+  }
   expect(await horizontalOverflow(page)).toBe(0);
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])

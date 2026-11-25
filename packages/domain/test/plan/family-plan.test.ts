@@ -12,7 +12,7 @@ import { context, entry } from '../rules/fixtures.js';
 
 const everything = ['spouses', 'partners', 'children', 'parents', 'assets'];
 
-/** A synthetic couple and the wife's parents: every value is invented. */
+/** A synthetic couple and one partner's parents: every value is invented. */
 function family(): CaseSnapshot {
   return snapshot({
     members: ['p1', 'p2', 'p3', 'p4'],
@@ -113,7 +113,7 @@ describe('evaluatePlan', () => {
       [2, 'qm-other', 'p3'],
     ]);
     expect(plan.moves[0]?.result.dependents).toEqual(['p2']);
-    expect(plan.moves[0]?.dependents).toEqual([{ personId: 'p2', coverage: 'covered' }]);
+    expect(plan.moves[0]?.dependents).toEqual([{ personId: 'p2', fit: 'covered' }]);
     expect(plan.unplanned).toEqual([]);
   });
 
@@ -121,8 +121,8 @@ describe('evaluatePlan', () => {
     const [planned] = evaluated([move({ dependentIds: ['p3', 'p2'] })]).moves;
     // A parent goes only when dependent on the principal, which the case does not say.
     expect(planned?.dependents).toEqual([
-      { personId: 'p3', coverage: 'not_covered' },
-      { personId: 'p2', coverage: 'covered' },
+      { personId: 'p3', fit: 'not_covered' },
+      { personId: 'p2', fit: 'covered' },
     ]);
   });
 
@@ -152,9 +152,23 @@ describe('evaluatePlan', () => {
     ]);
   });
 
-  it('adds nothing for a route with no version in effect', () => {
+  it('adds nothing, and rules nobody out, for a route with no version in effect', () => {
     const plan = evaluatePlan(family(), catalog, [move()], context({ states: new Map() }));
     expect(plan.moves[0]?.result.status).toBe('pending_activation');
+    expect(plan.moves[0]?.dependents).toEqual([{ personId: 'p2', fit: 'unknown' }]);
     expect(plan.totals).toEqual([]);
+  });
+
+  it('says from which earlier stage a principal already goes', () => {
+    const plan = evaluated([
+      move({ dependentIds: ['p2'] }),
+      move({ stage: 3, routeId: 'qm-other', principalId: 'p2', dependentIds: ['p3'] }),
+      move({ stage: 2, routeId: 'qm-other', principalId: 'p1', dependentIds: [] }),
+    ]);
+    expect(plan.moves.map(({ stage, principalGoesFrom }) => [stage, principalGoesFrom])).toEqual([
+      [1, null],
+      [2, 1],
+      [3, 1],
+    ]);
   });
 });

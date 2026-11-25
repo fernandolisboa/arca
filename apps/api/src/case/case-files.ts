@@ -67,7 +67,14 @@ import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { type RouteDocumentsView, caseRouteDocuments } from './route-documents.js';
 import { casePlayback } from './playback.js';
-import { type FamilyPlanView, familyPlan, planFitsCase, readPlan, savePlan } from './plan.js';
+import {
+  type FamilyPlanView,
+  familyPlan,
+  planFitsCase,
+  planRevision,
+  readPlan,
+  savePlan,
+} from './plan.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
@@ -83,7 +90,7 @@ export type CaseWritten =
 /** A plan write's answer: the plan evaluated, or why it was refused. */
 export type PlanWritten =
   | { readonly ok: true; readonly view: FamilyPlanView }
-  | { readonly ok: false; readonly reason: 'not_found' | 'case_invalid' };
+  | { readonly ok: false; readonly reason: 'not_found' | 'case_invalid' | 'plan_changed' };
 
 /** A comparison write's answer: the recomputed comparison, or why it was refused. */
 export type ComparisonWritten =
@@ -927,21 +934,36 @@ export function createCaseFiles({
       });
     },
 
-    async writePlan(accountId, { moves }) {
+    async writePlan(accountId, { revision, moves }) {
       const [states, { catalog, routeIds }] = await Promise.all([
         evaluation.states(),
         evaluation.rules(),
       ]);
-      return withIdentity(db(), { accountId }, async (tx): Promise<PlanWritten> => {
+      type Saved =
+        Exclude<PlanWritten, { ok: true }> | { ok: true; caseId: string; view: FamilyPlanView };
+      const written = await withIdentity(db(), { accountId }, async (tx): Promise<Saved> => {
         const caseId = await memberCase(tx, accountId);
         if (caseId === undefined) return { ok: false, reason: 'not_found' };
         await lockCase(tx, caseId);
         const rows = await readCase(tx, accountId, caseId);
         if (rows === undefined) return { ok: false, reason: 'not_found' };
+        if (planRevision(await readPlan(tx, caseId)) !== revision) {
+          return { ok: false, reason: 'plan_changed' };
+        }
         if (!planFitsCase(rows, moves, routeIds)) return { ok: false, reason: 'case_invalid' };
         await savePlan(tx, caseId, moves);
-        return { ok: true, view: familyPlan(rows, moves, planSettings(catalog, states)) };
+        return {
+          ok: true,
+          caseId,
+          view: familyPlan(rows, moves, planSettings(catalog, states)),
+        };
       });
+      if (written.ok) {
+        await recordAll(accountId, [
+          event('plan_written', { caseId: written.caseId, moves: moves.length }),
+        ]);
+      }
+      return written.ok ? { ok: true, view: written.view } : written;
     },
 
     async leave(accountId) {

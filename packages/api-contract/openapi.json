@@ -3180,6 +3180,7 @@
                               "case_created",
                               "member_joined",
                               "member_left",
+                              "plan_written",
                               "person_added",
                               "person_removed",
                               "person_handed_over",
@@ -41723,6 +41724,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "revision": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    },
                     "rulesAsOf": {
                       "type": "string",
                       "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
@@ -42468,27 +42473,37 @@
                                   "type": "string",
                                   "format": "uuid"
                                 },
-                                "coverage": {
+                                "fit": {
                                   "type": "string",
                                   "enum": [
                                     "covered",
                                     "possible",
-                                    "not_covered"
+                                    "not_covered",
+                                    "unknown"
                                   ]
                                 }
                               },
                               "required": [
                                 "personId",
-                                "coverage"
+                                "fit"
                               ]
                             },
                             "maxItems": 60
+                          },
+                          "principalGoesFrom": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 6
                           }
                         },
                         "required": [
                           "stage",
                           "result",
-                          "dependents"
+                          "dependents",
+                          "principalGoesFrom"
                         ]
                       },
                       "maxItems": 20
@@ -42619,6 +42634,7 @@
                     }
                   },
                   "required": [
+                    "revision",
                     "rulesAsOf",
                     "moves",
                     "unplanned",
@@ -42659,7 +42675,7 @@
       },
       "put": {
         "operationId": "writeFamilyPlan",
-        "summary": "Replaces the case's family plan and answers it evaluated; counts as a case write (429 rate_limited); 404 not_found outside a case; 409 case_invalid for a principal outside the planning, someone outside the case, an unknown route or one route twice for one principal",
+        "summary": "Replaces the case's family plan and answers it evaluated; counts as a case write (429 rate_limited); 404 not_found outside a case; 409 plan_changed when the plan is no longer the revision named, case_invalid for a principal outside the planning, someone outside the case, an unknown route or one route twice for one principal",
         "requestBody": {
           "required": true,
           "content": {
@@ -42667,6 +42683,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "revision": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  },
                   "moves": {
                     "type": "array",
                     "items": {
@@ -42706,6 +42726,7 @@
                   }
                 },
                 "required": [
+                  "revision",
                   "moves"
                 ],
                 "additionalProperties": false
@@ -42721,6 +42742,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "revision": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    },
                     "rulesAsOf": {
                       "type": "string",
                       "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
@@ -43466,27 +43491,37 @@
                                   "type": "string",
                                   "format": "uuid"
                                 },
-                                "coverage": {
+                                "fit": {
                                   "type": "string",
                                   "enum": [
                                     "covered",
                                     "possible",
-                                    "not_covered"
+                                    "not_covered",
+                                    "unknown"
                                   ]
                                 }
                               },
                               "required": [
                                 "personId",
-                                "coverage"
+                                "fit"
                               ]
                             },
                             "maxItems": 60
+                          },
+                          "principalGoesFrom": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 6
                           }
                         },
                         "required": [
                           "stage",
                           "result",
-                          "dependents"
+                          "dependents",
+                          "principalGoesFrom"
                         ]
                       },
                       "maxItems": 20
@@ -43617,6 +43652,7 @@
                     }
                   },
                   "required": [
+                    "revision",
                     "rulesAsOf",
                     "moves",
                     "unplanned",

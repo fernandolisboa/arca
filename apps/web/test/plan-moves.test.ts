@@ -1,13 +1,6 @@
 import type { FamilyPlan } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
-import {
-  earlierStage,
-  routeTaken,
-  stagesOf,
-  withMove,
-  withoutMove,
-  writtenMoves,
-} from '../src/plan/moves.js';
+import { routeTaken, stagesOf, withMove, withoutMove, writtenMoves } from '../src/plan/moves.js';
 
 type Move = FamilyPlan['moves'][number];
 
@@ -21,15 +14,17 @@ const planned = (
   ({
     stage,
     result: { routeId, principalId },
-    dependents: taken.map((personId) => ({ personId, coverage: 'covered' })),
+    dependents: taken.map((personId) => ({ personId, fit: 'covered' })),
   }) as unknown as Move;
 
-const plan = (...moves: Move[]): FamilyPlan => ({
-  rulesAsOf: '2026-11-25',
-  moves,
-  unplanned: [],
-  totals: [],
-});
+const plan = (...moves: Move[]): FamilyPlan =>
+  ({
+    revision: 'A'.repeat(43),
+    rulesAsOf: '2026-11-25',
+    moves,
+    unplanned: [],
+    totals: [],
+  }) as unknown as FamilyPlan;
 
 describe('the family plan’s moves on the screen', () => {
   const family = plan(
@@ -61,14 +56,6 @@ describe('the family plan’s moves on the screen', () => {
       [1, [0, 1]],
       [2, [2]],
     ]);
-  });
-
-  it('finds the stage a principal already went in', () => {
-    expect(earlierStage(family, 2)).toBe(1);
-    expect(earlierStage(family, 0)).toBeUndefined();
-    expect(
-      earlierStage(plan(planned(1, 'qm-work', 'p1', ['p2']), planned(3, 'qm-b', 'p2')), 1),
-    ).toBe(1);
   });
 
   it('tells a route the principal already has from the move being edited', () => {

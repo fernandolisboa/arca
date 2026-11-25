@@ -6,9 +6,7 @@ import type { RouteCatalog } from '../rules/catalog.js';
 import type { EvaluationContext } from '../rules/context.js';
 import { type AmountRange, type CostTotal, evaluateRoute } from '../rules/engine.js';
 
-/** At most this many moves in one plan (ADR-0040). */
 export const maxPlanMoves = 20;
-/** Stages run from 1, who goes first, to this. */
 export const maxPlanStages = 6;
 
 /**
@@ -37,8 +35,9 @@ export interface PlanBounds {
  */
 export function validPlan(moves: readonly PlanMove[], bounds: PlanBounds): boolean {
   if (moves.length > maxPlanMoves) return false;
-  const keys = new Set(moves.map(({ routeId, principalId }) => `${routeId}\u0000${principalId}`));
-  if (keys.size !== moves.length) return false;
+  if (moves.some((move, at) => moves.findIndex((other) => sameApplication(move, other)) !== at)) {
+    return false;
+  }
   return moves.every(
     ({ stage, routeId, principalId, dependentIds }) =>
       Number.isInteger(stage) &&
@@ -51,14 +50,40 @@ export function validPlan(moves: readonly PlanMove[], bounds: PlanBounds): boole
   );
 }
 
-/** Whether the route takes a chosen person along, may take them, or does not. */
-export type Coverage = 'covered' | 'possible' | 'not_covered';
+/** Whether two moves are the same application: one route for one principal, once per plan. */
+export function sameApplication(
+  left: Pick<PlanMove, 'routeId' | 'principalId'>,
+  right: Pick<PlanMove, 'routeId' | 'principalId'>,
+): boolean {
+  return left.routeId === right.routeId && left.principalId === right.principalId;
+}
+
+/**
+ * Whether a route takes a person along as the engine found it: `unknown` when no version was
+ * evaluated, so nothing was found either way.
+ */
+export const dependentFits = ['covered', 'possible', 'not_covered', 'unknown'] as const;
+export type DependentFit = (typeof dependentFits)[number];
+
+export function dependentFit(
+  result: Pick<RouteResult, 'status' | 'version' | 'dependents' | 'possibleDependents'>,
+  personId: string,
+): DependentFit {
+  if (result.version === null || result.status === 'pending_activation') return 'unknown';
+  if (result.dependents.includes(personId)) return 'covered';
+  return result.possibleDependents.includes(personId) ? 'possible' : 'not_covered';
+}
 
 export interface PlannedMove {
   readonly stage: number;
   /** The route evaluated for the principal with only the chosen people in the unit. */
   readonly result: RouteResult;
-  readonly dependents: readonly { readonly personId: string; readonly coverage: Coverage }[];
+  readonly dependents: readonly { readonly personId: string; readonly fit: DependentFit }[];
+  /**
+   * The first earlier stage in which the principal already goes, as principal or taken along:
+   * someone who moved first and now applies for the people who join them. Null when none.
+   */
+  readonly principalGoesFrom: number | null;
 }
 
 export interface PlanTotal {
@@ -94,22 +119,21 @@ export function evaluatePlan(
       chosenDependents: move.dependentIds,
     });
     const result = routeResult(outcome, move.principalId);
-    const coverage = (personId: string): Coverage =>
-      result.dependents.includes(personId)
-        ? 'covered'
-        : result.possibleDependents.includes(personId)
-          ? 'possible'
-          : 'not_covered';
     return {
       planned: {
         stage: move.stage,
         result,
         dependents: move.dependentIds.map((personId) => ({
           personId,
-          coverage: coverage(personId),
+          fit: dependentFit(result, personId),
         })),
+        principalGoesFrom: firstStageOf(moves, move.principalId, move.stage),
       },
-      totals: outcome.kind === 'evaluated' ? outcome.evaluation.totals : [],
+      // A closed route takes no application, so its fees are no part of what the plan costs.
+      totals:
+        result.status === 'unavailable' || outcome.kind !== 'evaluated'
+          ? []
+          : outcome.evaluation.totals,
     };
   });
   const placed = new Set(moves.flatMap((move) => [move.principalId, ...move.dependentIds]));
@@ -118,6 +142,17 @@ export function evaluatePlan(
     unplanned: snapshot.members.filter((id) => !placed.has(id)),
     totals: addedTotals(evaluated.flatMap(({ totals }) => totals)),
   };
+}
+
+function firstStageOf(moves: readonly PlanMove[], personId: string, before: number): number | null {
+  const stages = moves
+    .filter(
+      (move) =>
+        move.stage < before &&
+        (move.principalId === personId || move.dependentIds.includes(personId)),
+    )
+    .map(({ stage }) => stage);
+  return stages.length === 0 ? null : Math.min(...stages);
 }
 
 /** Totals added per currency; an open bound in any of them leaves the sum's bound open. */

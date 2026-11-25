@@ -1218,16 +1218,16 @@ export const ptBR = {
     principal: '{name} pede o visto',
     takes: 'leva {names}',
     takesNobody: 'sem acompanhantes',
-    alreadyThere: '{name} já terá se mudado na etapa {stage}.',
+    alreadyThere: '{name} já se mudou na etapa {stage}.',
     noVersion: 'Rota sem versão ativa',
     notCovered:
-      'Esta rota não leva {names}. Escolha outra rota para essa pessoa ou tire ela desta mudança.',
+      'Esta rota não leva {names}. Tire quem ficou de fora desta mudança ou escolha outra rota.',
     maybeCovered:
       'Ainda não dá para saber se esta rota leva {names}. As perguntas na tela de rotas resolvem isso.',
     coverage:
-      '{coverage, select, covered {A rota leva junto.} possible {Ainda não dá para saber se a rota leva junto.} other {A rota não leva junto.}}',
+      '{coverage, select, covered {A rota leva junto.} possible {Ainda não dá para saber se a rota leva junto.} unknown {A rota não tem versão em vigor, então ainda não dá para saber.} other {A rota não leva junto.}}',
     details: 'Ver detalhes',
-    documents: 'Lista de documentos',
+    documents: 'Lista de documentos da rota',
     edit: 'Editar',
     remove: 'Tirar do plano',
     closeDetail: 'Fechar detalhes',
@@ -1241,7 +1241,7 @@ export const ptBR = {
     allPlanned: 'Todo mundo do caso já tem uma etapa.',
     unplanned: 'Ainda sem etapa: {names}.',
     saveFailure:
-      '{reason, select, invalid {O plano mudou ou cita alguém que não está mais no caso. Recarregue a tela e tente de novo.} limited {Você salvou muitas vezes na última hora. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar o plano agora. Tente de novo.}}',
+      '{reason, select, changed {Alguém mudou o plano enquanto você editava. Já abrimos a versão mais recente: confira e salve de novo.} invalid {O plano cita alguém que não está mais no caso ou repete uma rota para a mesma pessoa. Recarregue a tela e tente de novo.} limited {Você salvou muitas vezes na última hora. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar o plano agora. Tente de novo.}}',
     guideTitle: 'Como montar o plano',
     guideMoves:
       'Cada mudança é um pedido de visto: uma pessoa pede e leva junto quem a rota aceita. O Arca avalia a rota só com quem vai naquela mudança, então a renda exigida e as taxas mudam conforme o grupo.',
@@ -1249,7 +1249,7 @@ export const ptBR = {
       'As etapas dizem a ordem. Quem vai primeiro fica na etapa 1, e quem vai depois entra numa etapa seguinte.',
     reunionTitle: 'Reagrupamento familiar',
     reunion:
-      'Para levar alguém depois, crie numa etapa seguinte uma mudança de quem já se mudou, pela rota de reagrupamento do país, levando quem vai. O tempo de residência de quem já mora lá sai dos períodos de residência anotados no caso.',
+      'Para levar alguém depois, crie numa etapa seguinte uma mudança em que quem já mora lá pede o visto e leva quem vai. O tempo de residência sai dos períodos de residência anotados no caso. A base ainda não tem rota de reagrupamento familiar; quando tiver, ela aparece na lista de rotas.',
     editor: {
       title: '{editing, select, yes {Editar mudança} other {Nova mudança}}',
       principal: 'Quem pede o visto',

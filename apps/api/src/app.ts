@@ -354,6 +354,7 @@ export type ErrorCode =
   | 'case_exists'
   | 'case_limit'
   | 'case_invalid'
+  | 'plan_changed'
   | 'too_many_push_channels'
   | 'not_admin'
   | 'owner_list_admin'

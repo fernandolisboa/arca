@@ -1,4 +1,4 @@
-import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
+import { maxPlanMoves, routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
@@ -839,6 +839,8 @@ export const auditEventDetails = {
   /** `accountId`: the account the actor added. */
   member_joined: caseEvent.extend({ accountId: z.uuid() }),
   member_left: caseEvent,
+  /** A member replaced the family plan (ADR-0040): the count of moves only. */
+  plan_written: caseEvent.extend({ moves: z.int().min(0).max(maxPlanMoves) }),
   person_added: casePersonEvent,
   person_removed: casePersonEvent,
   /** `accountId`: the new keeper. */

@@ -1,9 +1,12 @@
 import {
   calendarDateSchema,
+  dependentFit,
+  dependentFits,
   maxCasePeople,
   maxPlanMoves,
   maxPlanStages,
   routeIdSchema,
+  sameApplication,
 } from '@arca/domain';
 import { z } from 'zod';
 import { CostTotal, RouteResult } from './case.js';
@@ -16,9 +19,13 @@ import type { RouteDefinition } from './index.js';
  * Like the rest of the case, it needs a session and a confirmed account (401, 403).
  */
 
-export { maxPlanMoves, maxPlanStages };
+export { dependentFit, maxPlanMoves, maxPlanStages, sameApplication };
 
 const stage = z.int().min(1).max(maxPlanStages);
+/** At most one total per currency, and a plan's fees come in a handful of currencies. */
+const maxPlanCurrencies = 50;
+/** A digest of the plan as stored, which a write names so it never replaces a plan it did not see. */
+const revision = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 
 export const PlannedMove = z.object({
   stage,
@@ -28,25 +35,29 @@ export const PlannedMove = z.object({
     .array(
       z.object({
         personId: z.uuid(),
-        coverage: z.enum(['covered', 'possible', 'not_covered']),
+        fit: z.enum(dependentFits),
       }),
     )
     .max(maxCasePeople),
+  /** The first earlier stage in which the principal already goes; null when none. */
+  principalGoesFrom: stage.nullable(),
 });
 export type PlannedMove = z.infer<typeof PlannedMove>;
 
 export const FamilyPlan = z.object({
+  revision,
   /** The date versions were selected and facts computed at: today in São Paulo. */
   rulesAsOf: calendarDateSchema,
   moves: z.array(PlannedMove).max(maxPlanMoves),
-  /** Members of the case in no move. */
   unplanned: z.array(z.uuid()).max(maxCasePeople),
-  /** Every move's total per currency, added in code. */
-  totals: z.array(CostTotal).max(50),
+  /** Every move's total per currency, added in code; a closed route adds nothing. */
+  totals: z.array(CostTotal).max(maxPlanCurrencies),
 });
 export type FamilyPlan = z.infer<typeof FamilyPlan>;
 
 export const WriteFamilyPlanRequest = z.strictObject({
+  /** The revision of the plan this write changes. */
+  revision,
   moves: z
     .array(
       z.strictObject({
@@ -76,7 +87,7 @@ export const writeFamilyPlan = {
   path: '/case/plan',
   operationId: 'writeFamilyPlan',
   summary:
-    "Replaces the case's family plan and answers it evaluated; counts as a case write (429 rate_limited); 404 not_found outside a case; 409 case_invalid for a principal outside the planning, someone outside the case, an unknown route or one route twice for one principal",
+    "Replaces the case's family plan and answers it evaluated; counts as a case write (429 rate_limited); 404 not_found outside a case; 409 plan_changed when the plan is no longer the revision named, case_invalid for a principal outside the planning, someone outside the case, an unknown route or one route twice for one principal",
   body: WriteFamilyPlanRequest,
   response: answer,
 } as const satisfies RouteDefinition<typeof FamilyPlan>;

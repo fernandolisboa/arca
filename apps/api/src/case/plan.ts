@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { WriteFamilyPlanRequest } from '@arca/api-contract/routes';
 import type { Transaction } from '@arca/db';
 import { type PlanMove, evaluatePlan, validPlan } from '@arca/domain';
@@ -9,26 +10,36 @@ import type { CaseRows } from './view.js';
 /** A move as the case stores it, with the case's own person UUIDs. */
 export type StoredPlanMove = WriteFamilyPlanRequest['moves'][number];
 
-/** The case's family plan as row-level security shows it to a member, in the order written. */
+/**
+ * The case's family plan as row-level security shows it to a member, in the order written, read
+ * in one statement so a write committed meanwhile cannot split a move from the people it takes.
+ */
 export async function readPlan(tx: Transaction, caseId: string): Promise<StoredPlanMove[]> {
   const moves = await tx.execute<{
-    id: string;
     stage: number;
     route_id: string;
     principal_id: string;
+    dependent_ids: string[];
   }>(sql`
-    SELECT id, stage, route_id, principal_id FROM cases.plan_move
-     WHERE case_id = ${caseId} ORDER BY position`);
-  const taken = await tx.execute<{ move_id: string; person_id: string }>(sql`
-    SELECT move_id, person_id FROM cases.plan_move_dependent WHERE case_id = ${caseId}`);
+    SELECT m.stage, m.route_id, m.principal_id,
+           COALESCE(array_agg(d.person_id ORDER BY d.created_at, d.person_id)
+                      FILTER (WHERE d.person_id IS NOT NULL), '{}') AS dependent_ids
+      FROM cases.plan_move m
+      LEFT JOIN cases.plan_move_dependent d ON d.move_id = m.id
+     WHERE m.case_id = ${caseId}
+     GROUP BY m.id
+     ORDER BY m.position`);
   return moves.rows.map((move) => ({
     stage: move.stage,
     routeId: move.route_id,
     principalId: move.principal_id,
-    dependentIds: taken.rows
-      .filter(({ move_id: moveId }) => moveId === move.id)
-      .map(({ person_id: personId }) => personId),
+    dependentIds: move.dependent_ids,
   }));
+}
+
+/** A digest of the stored plan, which a write must name so it never replaces one it did not see. */
+export function planRevision(moves: readonly StoredPlanMove[]): string {
+  return createHash('sha256').update(JSON.stringify(moves)).digest('base64url');
 }
 
 /**
@@ -82,30 +93,35 @@ export function familyPlan(
   settings: Omit<EvaluationSettings, 'routeIds'>,
 ) {
   const { snapshot, personIds, uuid } = viewedSnapshot(rows, settings.today);
-  const opaque = (id: string) => personIds.get(id);
+  const snapshotId = (id: string) => personIds.get(id);
   const moves = stored.flatMap((move): PlanMove[] => {
-    const principalId = opaque(move.principalId);
+    const principalId = snapshotId(move.principalId);
     if (principalId === undefined || !snapshot.members.includes(principalId)) return [];
     return [
       {
         stage: move.stage,
         routeId: move.routeId,
         principalId,
-        dependentIds: move.dependentIds.flatMap((id) => opaque(id) ?? []),
+        dependentIds: move.dependentIds.flatMap((id) => {
+          const dependent = snapshotId(id);
+          return dependent === undefined || dependent === principalId ? [] : [dependent];
+        }),
       },
     ];
   });
   const plan = evaluatePlan(snapshot, settings.catalog, moves, evaluationContext(settings));
   const view = resultView({ ...settings, uuid });
   return {
+    revision: planRevision(stored),
     rulesAsOf: settings.today,
     moves: plan.moves.map((move) => ({
       stage: move.stage,
       result: view(move.result),
-      dependents: move.dependents.map(({ personId, coverage }) => ({
+      dependents: move.dependents.map(({ personId, fit }) => ({
         personId: uuid(personId),
-        coverage,
+        fit,
       })),
+      principalGoesFrom: move.principalGoesFrom,
     })),
     unplanned: plan.unplanned.map(uuid),
     totals: plan.totals,

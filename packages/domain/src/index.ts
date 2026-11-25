@@ -215,15 +215,18 @@ export {
 } from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
 export {
-  type Coverage,
+  type DependentFit,
   type EvaluatedPlan,
   type PlanBounds,
   type PlanMove,
   type PlanTotal,
   type PlannedMove,
+  dependentFit,
+  dependentFits,
   evaluatePlan,
   maxPlanMoves,
   maxPlanStages,
+  sameApplication,
   validPlan,
 } from './plan/family-plan.js';
 export { type CheckIssue, type PinnedClassifications } from './rules/check.js';

@@ -58,8 +58,11 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances; not a document share |
 | Case stage | Etapa do caso | Where a case stands on the home: telling about the family, the guided questions, then the routes; counted in the client from the case and its answers, never an eligibility decision |
 | Family plan | Plano da família | The moves the family intends, in stages; one per case, read and written by every member, evaluated by the engine and never an eligibility decision ([ADR-0040](docs/adr/0040-family-plan.md)) |
-| Move | Mudança | One application in the family plan: a member as principal, a route and the people it takes along, in a stage; a person who went in an earlier stage may be the principal of a later move, as in a family reunification; avoid "step", which the step-by-step plan uses |
-| Stage | Etapa | A move's place in the family plan's order, from 1, who goes first |
+| Move | Mudança | One application in the family plan: a member as principal, a route and the people it takes along, in a stage; a person who went in an earlier stage may be the principal of a later move, as in a family reunification; avoid "step", which the step-by-step plan uses. In pt-BR "mudança" means only this on the plan's screen; write "change" as "alteração" there |
+| Plan stage | Etapa | A move's place in the family plan's order, from 1, who goes first; the screen says "Etapa 1". Not a duration stage of the rule schema, a case stage or an update stage |
+| Dependent fit | (no label; "A rota leva junto") | Whether a move's route takes a person the move names: covered, possible, not covered, or unknown when no version was evaluated; read from the engine's unit, never decided elsewhere |
+| Plan total | Total em dinheiro do plano | Every move's cost total added per currency, in code; a closed route adds nothing |
+| Unplanned | Ainda sem etapa | A person in the planning who is in no move of the family plan, as principal or taken along |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult unless shared as a shared analysis ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |

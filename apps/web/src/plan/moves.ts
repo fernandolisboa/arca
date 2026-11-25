@@ -1,4 +1,8 @@
-import type { FamilyPlan, WriteFamilyPlanRequest } from '@arca/api-contract/client';
+import {
+  type FamilyPlan,
+  type WriteFamilyPlanRequest,
+  sameApplication,
+} from '@arca/api-contract/client';
 
 export type WrittenMove = WriteFamilyPlanRequest['moves'][number];
 
@@ -39,25 +43,6 @@ export function stagesOf(plan: FamilyPlan): {
     .map(([stage, moves]) => ({ stage, moves }));
 }
 
-/**
- * The first stage, before this move's, in which its principal already goes, as principal or taken
- * along: someone who moved first and later applies for the people who join them.
- */
-export function earlierStage(plan: FamilyPlan, index: number): number | undefined {
-  const move = plan.moves[index];
-  if (move === undefined) return undefined;
-  const person = move.result.principalId;
-  return plan.moves
-    .filter(
-      (other) =>
-        other.stage < move.stage &&
-        (other.result.principalId === person ||
-          other.dependents.some(({ personId }) => personId === person)),
-    )
-    .map(({ stage }) => stage)
-    .sort((left, right) => left - right)[0];
-}
-
 /** Whether the plan already has this route for this principal, outside the move being edited. */
 export function routeTaken(
   moves: readonly WrittenMove[],
@@ -66,6 +51,6 @@ export function routeTaken(
   principalId: string,
 ): boolean {
   return moves.some(
-    (move, at) => at !== editing && move.routeId === routeId && move.principalId === principalId,
+    (move, at) => at !== editing && sameApplication(move, { routeId, principalId }),
   );
 }

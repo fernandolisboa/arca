@@ -1042,7 +1042,7 @@ describe('the family plan (ADR-0040)', () => {
 
   it('lets every member of the case read, add and delete the plan, and nobody else', async () => {
     const { caseId, otherCaseId, alice, bruno, diana, people } = await seedFamily();
-    await as(
+    const kept = await as(
       'app_api',
       alice,
       (client) => addMove(client, caseId, people.bruno, [people.child, people.grandparent]),
@@ -1066,6 +1066,22 @@ describe('the family plan (ADR-0040)', () => {
       expect(
         await refused(
           client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, caseId, people.alice],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect((await client.query('DELETE FROM cases.plan_move_dependent')).rowCount).toBe(0);
+      // A move of another case cannot be named under her own.
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, otherCaseId, people.alice],
+        ),
+      ).toBe(foreignKeyViolation);
+      expect(
+        await refused(
+          client,
           `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
            VALUES ($1, 1, 1, 'qm-sample', $2)`,
           [caseId, people.alice],
@@ -1084,6 +1100,7 @@ describe('the family plan (ADR-0040)', () => {
       ).toBe(foreignKeyViolation);
     });
     expect(await as('app_api', undefined, moves)).toEqual([]);
+    expect(await countAsAdmin('FROM cases.plan_move_dependent WHERE move_id = $1', [kept])).toBe(2);
   });
 
   it('goes with the people it names', async () => {

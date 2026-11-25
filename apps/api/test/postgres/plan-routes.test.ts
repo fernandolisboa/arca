@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { auditLog } from '../../src/audit/log.js';
 import { type CaseFiles, createCaseFiles } from '../../src/case/case-files.js';
+import { planRevision } from '../../src/case/plan.js';
 import { noLimits } from '../limits.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 
@@ -135,6 +136,11 @@ async function family(cases: CaseFiles) {
   return { alice, bruno, ids: { alice: id('Alice'), bruno: id('Bruno'), grandma: id('Avó') } };
 }
 
+/** The revision of a plan nobody has written yet. */
+const empty = planRevision([]);
+
+type Ids = Awaited<ReturnType<typeof family>>['ids'];
+
 const errorOf = async (response: Response) =>
   ((await response.json()) as { error: { code: string } }).error.code;
 
@@ -156,7 +162,7 @@ describe('the family plan (ADR-0040)', () => {
       { stage: 2, routeId: other, principalId: ids.bruno, dependentIds: [] },
       { stage: 1, routeId: route, principalId: ids.alice, dependentIds: [ids.grandma] },
     ];
-    const written = await call(alice, 'PUT', { moves });
+    const written = await call(alice, 'PUT', { revision: empty, moves });
     expect(written.status).toBe(200);
     expect(limited).toEqual(['case_write_account']);
     const seen = await plan(bruno);
@@ -168,7 +174,8 @@ describe('the family plan (ADR-0040)', () => {
     ]);
     const [first] = seen.moves;
     // Bruno is Alice's spouse in no relationship, and the rule leaves the grandmother out too.
-    expect(first?.dependents).toEqual([{ personId: ids.grandma, coverage: 'not_covered' }]);
+    expect(first?.dependents).toEqual([{ personId: ids.grandma, fit: 'not_covered' }]);
+    expect(seen.moves.map(({ principalGoesFrom }) => principalGoesFrom)).toEqual([null, null]);
     expect(first?.result.dependents).toEqual([]);
     expect(seen.unplanned).toEqual([]);
   });
@@ -177,12 +184,27 @@ describe('the family plan (ADR-0040)', () => {
     const { cases, call, plan } = setup();
     const { alice, ids } = await family(cases);
     const one = { stage: 1, routeId: route, principalId: ids.alice, dependentIds: [ids.bruno] };
-    expect((await call(alice, 'PUT', { moves: [one] })).status).toBe(200);
-    expect((await call(alice, 'PUT', { moves: [] })).status).toBe(200);
+    const first = await call(alice, 'PUT', { revision: empty, moves: [one] });
+    expect(first.status).toBe(200);
+    const { revision } = (await first.json()) as FamilyPlan;
+    expect((await call(alice, 'PUT', { revision, moves: [] })).status).toBe(200);
     expect((await plan(alice)).moves).toEqual([]);
   });
 
-  it.each<[string, (ids: Record<string, string>) => unknown[]]>([
+  it('refuses a write over a plan it did not see, so no member loses another’s edit', async () => {
+    const { cases, call, plan } = setup();
+    const { alice, bruno, ids } = await family(cases);
+    const seenByBruno = (await plan(bruno)).revision;
+    const aliceMove = { stage: 1, routeId: route, principalId: ids.alice, dependentIds: [] };
+    expect((await call(alice, 'PUT', { revision: empty, moves: [aliceMove] })).status).toBe(200);
+    const brunoMove = { stage: 2, routeId: other, principalId: ids.bruno, dependentIds: [] };
+    const stale = await call(bruno, 'PUT', { revision: seenByBruno, moves: [brunoMove] });
+    expect(stale.status).toBe(409);
+    expect(await errorOf(stale)).toBe('plan_changed');
+    expect((await plan(bruno)).moves.map(({ result }) => result.principalId)).toEqual([ids.alice]);
+  });
+
+  it.each<[string, (ids: Ids) => unknown[]]>([
     [
       'a principal outside the planning',
       (ids) => [{ stage: 1, routeId: route, principalId: ids.grandma, dependentIds: [] }],
@@ -205,7 +227,7 @@ describe('the family plan (ADR-0040)', () => {
   ])('refuses %s', async (_label, moves) => {
     const { cases, call, plan } = setup();
     const { alice, ids } = await family(cases);
-    const response = await call(alice, 'PUT', { moves: moves(ids) });
+    const response = await call(alice, 'PUT', { revision: empty, moves: moves(ids) });
     expect(response.status).toBe(409);
     expect(await errorOf(response)).toBe('case_invalid');
     expect((await plan(alice)).moves).toEqual([]);
@@ -215,6 +237,7 @@ describe('the family plan (ADR-0040)', () => {
     const { cases, call } = setup();
     const { alice, ids } = await family(cases);
     const response = await call(alice, 'PUT', {
+      revision: empty,
       moves: [{ stage: 7, routeId: route, principalId: ids.alice, dependentIds: [] }],
     });
     expect(response.status).toBe(400);
@@ -226,7 +249,7 @@ describe('the family plan (ADR-0040)', () => {
     const moves = [
       { stage: 1, routeId: route, principalId: ids.alice, dependentIds: [ids.grandma] },
     ];
-    expect((await call(alice, 'PUT', { moves })).status).toBe(200);
+    expect((await call(alice, 'PUT', { revision: empty, moves })).status).toBe(200);
     const removed = await cases.removePerson(alice, ids.grandma);
     expect(removed.ok).toBe(true);
     const [move] = (await plan(alice)).moves;
@@ -237,6 +260,6 @@ describe('the family plan (ADR-0040)', () => {
     const { call } = setup();
     const stranger = await account();
     expect((await call(stranger, 'GET')).status).toBe(404);
-    expect((await call(stranger, 'PUT', { moves: [] })).status).toBe(404);
+    expect((await call(stranger, 'PUT', { revision: empty, moves: [] })).status).toBe(404);
   });
 });

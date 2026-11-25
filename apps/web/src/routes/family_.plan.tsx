@@ -15,14 +15,7 @@ import { textLinkClass } from '../forms/text-link.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
 import { Page, stickyColumnClass } from '../page.js';
 import { type PlanPerson, MoveEditor } from '../plan/move-editor.js';
-import {
-  type WrittenMove,
-  earlierStage,
-  stagesOf,
-  withMove,
-  withoutMove,
-  writtenMoves,
-} from '../plan/moves.js';
+import { type WrittenMove, stagesOf, withMove, withoutMove, writtenMoves } from '../plan/moves.js';
 import { reach, UnreachableError } from '../requests.js';
 import { shownTotals } from '../results/amount.js';
 import { type RouteRow, resultRows } from '../results/group.js';
@@ -174,25 +167,21 @@ function PlanBoard({
   );
   const saved = useMutation({
     mutationFn: (next: readonly WrittenMove[]) =>
-      reach(api.call(routes.writeFamilyPlan, { moves: [...next] })),
+      reach(api.call(routes.writeFamilyPlan, { revision: plan.revision, moves: [...next] })),
     onSuccess: (answer) => {
       queryClient.setQueryData(familyPlanQuery.queryKey, answer);
       setPanel({ kind: 'none' });
+    },
+    onError: (error) => {
+      if (saveFailureReason(error) === 'changed') {
+        void queryClient.invalidateQueries({ queryKey: familyPlanQuery.queryKey });
+      }
     },
   });
   const failure =
     saved.error === null
       ? undefined
-      : t('plan.saveFailure', {
-          reason:
-            saved.error instanceof UnreachableError
-              ? 'unreachable'
-              : saved.error instanceof ApiError && saved.error.status === 409
-                ? 'invalid'
-                : saved.error instanceof ApiError && saved.error.status === 429
-                  ? 'limited'
-                  : 'other',
-        });
+      : t('plan.saveFailure', { reason: saveFailureReason(saved.error) });
   const save = (next: readonly WrittenMove[]) => {
     saved.mutate(next);
   };
@@ -223,7 +212,6 @@ function PlanBoard({
       <RouteDetail
         row={detailRow(selected)}
         principalId={selected.result.principalId}
-        onPrincipal={() => undefined}
         plannable={false}
         name={name}
         words={words}
@@ -265,7 +253,7 @@ function PlanBoard({
           <p className="text-muted">{t('plan.empty')}</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {stages.map(({ stage, moves: inStage }) => (
+            {stages.map(({ stage, moves: inStage }, at) => (
               <section
                 key={stage}
                 aria-labelledby={`plan-stage-${String(stage)}`}
@@ -276,9 +264,9 @@ function PlanBoard({
                     {t('plan.stage', { n: stage })}
                   </h3>
                   <p className="text-small text-muted">
-                    {stage === stages[0]?.stage
+                    {at === 0
                       ? t('plan.stageFirst')
-                      : t('plan.stageLater', { previous: stage - 1 })}
+                      : t('plan.stageLater', { previous: stages[at - 1]?.stage ?? stage - 1 })}
                   </p>
                 </header>
                 <ul className="flex flex-col gap-3">
@@ -286,8 +274,7 @@ function PlanBoard({
                     <MoveCard
                       key={`${move.result.routeId}:${move.result.principalId}`}
                       move={move}
-                      before={earlierStage(plan, index)}
-                      selected={panel.kind !== 'none' && 'index' in panel && panel.index === index}
+                      selected={panel.kind !== 'none' && panel.index === index}
                       onDetail={() => {
                         setPanel({ kind: 'detail', index });
                       }}
@@ -325,6 +312,17 @@ function PlanBoard({
       )}
     </div>
   );
+}
+
+/** Why a save failed, as the failure message says it. */
+function saveFailureReason(
+  error: Error,
+): 'changed' | 'invalid' | 'limited' | 'unreachable' | 'other' {
+  if (error instanceof UnreachableError) return 'unreachable';
+  if (!(error instanceof ApiError)) return 'other';
+  if (error.code === 'plan_changed') return 'changed';
+  if (error.status === 409) return 'invalid';
+  return error.status === 429 ? 'limited' : 'other';
 }
 
 /** One move as the results' detail panel reads a route: its single result. */
@@ -380,7 +378,6 @@ function Summary({
 
 function MoveCard({
   move,
-  before,
   selected,
   onDetail,
   onEdit,
@@ -390,8 +387,6 @@ function MoveCard({
   words,
 }: {
   readonly move: FamilyPlan['moves'][number];
-  /** The stage in which the principal already went, when earlier than this one. */
-  readonly before: number | undefined;
   readonly selected: boolean;
   readonly onDetail: () => void;
   readonly onEdit: () => void;
@@ -401,9 +396,9 @@ function MoveCard({
   readonly words: KnowledgeWords;
 }) {
   const { t } = words;
-  const { result, dependents } = move;
-  const left = dependents.filter(({ coverage }) => coverage === 'not_covered');
-  const open = dependents.filter(({ coverage }) => coverage === 'possible');
+  const { result, dependents, principalGoesFrom } = move;
+  const left = dependents.filter(({ fit }) => fit === 'not_covered');
+  const open = dependents.filter(({ fit }) => fit === 'possible');
   const total = totalShort(result, words);
   const title = result.route?.title ?? t('plan.noVersion');
   return (
@@ -427,9 +422,9 @@ function MoveCard({
               names: words.list(dependents.map(({ personId }) => name(personId))),
             })}
       </p>
-      {before !== undefined && (
+      {principalGoesFrom !== null && (
         <p className="text-small text-muted">
-          {t('plan.alreadyThere', { name: name(result.principalId), stage: before })}
+          {t('plan.alreadyThere', { name: name(result.principalId), stage: principalGoesFrom })}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-2">
