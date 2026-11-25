@@ -941,7 +941,6 @@
       },
       "note": "A spouse, parent, child or sibling acting pays no stamp duty on it; documents in the case should prove the kinship",
       "sources": [
-        "uw-pomorski-page",
         "mswia-confirmation-page",
         "oplata-skarbowa-part-iv"
       ]
@@ -970,7 +969,7 @@
           }
         ]
       },
-      "note": "None for someone exempt from the duty, such as a person who files with a certificate of receiving social assistance because of poverty",
+      "note": "Not needed by someone exempt from the duty, such as a person who files with a certificate of receiving social assistance because of poverty",
       "sources": [
         "uw-pomorski-page",
         "oplata-skarbowa-due",
