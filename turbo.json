@@ -27,6 +27,7 @@
       "inputs": [
         "data/**",
         "suggested-ratings/**",
+        "departure-checklists/**",
         "rule-texts/**",
         "scripts/**",
         "package.json",

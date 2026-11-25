@@ -82,6 +82,7 @@ import {
   stepUpNonceHeader,
   StepUpOptionsRequest,
   stepUpVerify,
+  DepartureChecklists,
   type ErrorResponse,
   type RouteDefinition,
 } from '@arca/api-contract/routes';
@@ -136,7 +137,12 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import { type DecisionKind, type DecisionSubject, releasable } from '@arca/domain';
+import {
+  type DecisionKind,
+  type DecisionSubject,
+  type DepartureChecklistView,
+  releasable,
+} from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
@@ -251,6 +257,8 @@ export interface AppDependencies {
    * answers 503 `suggestions_unavailable` and the ready suggestions keep working.
    */
   readonly criterionSuggestions?: CriterionSuggestions;
+  /** What to do when leaving a country, from the repository's reviewed file (ADR-0038). */
+  readonly departureChecklists?: readonly DepartureChecklistView[];
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
@@ -494,6 +502,7 @@ export function createApp({
   knowledgeVersions,
   ruleSummaries,
   criterionSuggestions,
+  departureChecklists = [],
   ruleReports,
   corrections,
   aiSettings,
@@ -1468,6 +1477,10 @@ export function createApp({
     return comparison === null
       ? fail(c, 'not_found', 404)
       : c.json(DestinationComparison.parse(comparison), 200);
+  });
+  v1.openapi(openApiRoutes.getDepartureChecklists, async (c) => {
+    if ((await signedIn(c)) === null) return unauthorized(c);
+    return c.json(DepartureChecklists.parse({ checklists: departureChecklists }), 200);
   });
   v1.openapi(openApiRoutes.writeComparisonPreferences, async (c) => {
     const account = await caseAccount(c, 'write');

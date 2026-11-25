@@ -40,6 +40,7 @@ export const appTour: Tour = {
 export const screenHints: readonly Tour[] = [
   screenHint('family', '/family'),
   screenHint('compare', '/compare'),
+  screenHint('departure', '/departure'),
   screenHint('vault', '/vault'),
   screenHint('knowledge', '/knowledge'),
 ];
