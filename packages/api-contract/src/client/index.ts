@@ -46,6 +46,7 @@ export {
   recoveryLinkMinutes,
   replaceDocumentsAction,
   routes,
+  bestRouteStatus,
   routeCountry,
   routeStatusOrder,
   ownCriteriaLimit,

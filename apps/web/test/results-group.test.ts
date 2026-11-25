@@ -1,6 +1,12 @@
 import type { RouteResult } from '@arca/api-contract/client';
 import { describe, expect, it } from 'vitest';
-import { anchorCountry, resultRows, resultsAnchor, rowMatches } from '../src/results/group.js';
+import {
+  anchorCountry,
+  resultRows,
+  resultsAnchor,
+  rowMatches,
+  selectedRoute,
+} from '../src/results/group.js';
 
 const result = (
   routeId: string,
@@ -88,5 +94,30 @@ describe('resultRows (spec 0007, R6)', () => {
   it('reads back the country of its own anchor only', () => {
     expect(anchorCountry(resultsAnchor('PT'))).toBe('PT');
     expect(anchorCountry('perguntas')).toBeUndefined();
+  });
+});
+
+describe('selectedRoute', () => {
+  const { rows } = resultRows(
+    [
+      result('us-eb5', 'a', route('EB-5', 'US'), 'eligible'),
+      result('pt-d7', 'a', route('Visto D7', 'PT')),
+      result('pt-d7', 'b', route('Visto D7', 'PT')),
+    ],
+    name,
+    'pt-BR',
+  );
+  const pick = (routeId: string, principalId = 'a') => ({ routeId, principalId });
+
+  it.each([
+    ['nothing chosen on a phone', undefined, undefined, false, undefined],
+    ['nothing chosen on a wide screen', undefined, undefined, true, pick('us-eb5')],
+    ['a link to a country', undefined, 'PT', false, pick('pt-d7')],
+    ['a chosen route over the link', pick('pt-d7', 'b'), 'US', false, pick('pt-d7', 'b')],
+    ['a closed card, even with a link', null, 'PT', false, undefined],
+    ['a closed card on a wide screen', null, 'PT', true, pick('us-eb5')],
+    ['a chosen route the search hides', pick('gone'), undefined, true, pick('us-eb5')],
+  ] as const)('opens the right route with %s', (_, chosen, linked, wide, expected) => {
+    expect(selectedRoute(rows, chosen, linked, wide)).toEqual(expected);
   });
 });

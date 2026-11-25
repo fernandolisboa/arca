@@ -59,7 +59,7 @@ export function caseEvaluations(
     engineCommit,
     results: results.map((result) => {
       // A translated title keeps the version's own English beside it; the content is unchanged.
-      const shown = <Item extends { readonly title: string }>(item: Item) => {
+      const withTranslation = <Item extends { readonly title: string }>(item: Item) => {
         const translated = texts?.(result.routeId, item.title);
         return translated === undefined
           ? { ...item, original: null }
@@ -84,18 +84,21 @@ export function caseEvaluations(
         route:
           entry === undefined
             ? null
-            : { ...shown({ title: entry.version.title }), country: entry.version.country },
+            : {
+                ...withTranslation({ title: entry.version.title }),
+                country: entry.version.country,
+              },
         version: result.version,
         stale: result.stale,
         newerProposedVersion: result.newerProposedVersion,
         dependents: result.dependents.map(uuid),
         possibleDependents: result.possibleDependents.map(uuid),
         unitOpen: result.unitOpen,
-        requirements: result.requirements.map(shown),
-        assessments: result.assessments.map(shown),
+        requirements: result.requirements.map(withTranslation),
+        assessments: result.assessments.map(withTranslation),
         costs: result.costs.map((cost) => ({
           costId: cost.costId,
-          ...shown({ title: cost.title }),
+          ...withTranslation({ title: cost.title }),
           appliesTo: cost.appliesTo,
           personId: cost.personId === null ? null : uuid(cost.personId),
           applies: cost.applies,
@@ -103,7 +106,7 @@ export function caseEvaluations(
           max: cost.max,
           sources: cost.sources,
         })),
-        durations: result.durations.map(shown),
+        durations: result.durations.map(withTranslation),
         totals: result.totals,
         closureSources:
           entry?.version.status === 'closed'

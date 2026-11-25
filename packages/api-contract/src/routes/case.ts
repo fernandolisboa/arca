@@ -426,7 +426,7 @@ export const RouteResult = z.object({
     )
     .max(20),
   /** The cost per currency, summed in code: what certainly applies, and what may on top. */
-  totals: z.array(z.object({ currency, certain: unitsRange, possibleExtra: unitsRange })).max(20),
+  totals: z.array(z.object({ currency, certain: unitsRange, possibleExtra: unitsRange })).max(50),
   /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
   closureSources: sources,
   /** Rates the exchange table lacks; no one in the family can answer them. */
@@ -600,6 +600,7 @@ export {
   languageCodes,
   questionFlow,
   questionSteps,
+  bestRouteStatus,
   routeCountry,
   routeStatusOrder,
 } from '@arca/domain';

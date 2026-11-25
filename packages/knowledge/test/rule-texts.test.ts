@@ -84,7 +84,7 @@ const numbersIn = (text: string): readonly string[] =>
   text.replaceAll(/(?<=\d)[.,](?=\d)/gu, '').match(/\d+/gu) ?? [];
 
 describe('rule texts (ADR-0036)', async () => {
-  const files = (await readRuleTexts(textsDir)).map((json) => ruleTextFileSchema.parse(json));
+  const files = await readRuleTexts(textsDir);
   const versions = await repositoryVersions();
   const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
   // As the API reads them: shipped by the hash of their English, never the English itself.
@@ -113,12 +113,16 @@ describe('rule texts (ADR-0036)', async () => {
     expect(unused).toEqual([]);
   });
 
-  it('keeps every number of the English title in its translation', () => {
+  it('keeps the numbers of the English title in its translation, and adds none', () => {
     const changed = files.flatMap(({ routeId, texts }) =>
       texts
         .filter(({ en, text }) => {
-          const kept = numbersIn(text);
-          return numbersIn(en).some((number) => !kept.includes(number));
+          const english = numbersIn(en);
+          const translated = numbersIn(text);
+          return (
+            english.some((number) => !translated.includes(number)) ||
+            translated.some((number) => !english.includes(number))
+          );
         })
         .map(({ en }) => `${routeId}: ${en}`),
     );

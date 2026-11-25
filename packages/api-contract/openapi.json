@@ -30121,7 +30121,7 @@
                                 "possibleExtra"
                               ]
                             },
-                            "maxItems": 20
+                            "maxItems": 50
                           },
                           "closureSources": {
                             "type": "array",

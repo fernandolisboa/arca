@@ -9,17 +9,18 @@ The results screen showed every route version's title, requirement, assessment, 
 
 ## Decision
 
-- **A reviewed data file per route.** `packages/knowledge/rule-texts/pt-BR/<route-id>.json` pairs each English title a version writes (`en`, exactly as written) with its translation (`text`, up to 400 characters). A Claude Code session writes them, with no call to the app's model providers; a reviewed pull request changes them, with the repository's reviewers and no activation, as for suggested ratings ([ADR-0035](0035-suggested-ratings.md)). The build validates each file and ships it in the API's runtime module with each English title replaced by its SHA-256, so the server bundle holds no route version content ([ADR-0031](0031-rule-updates-on-request.md)).
+- **A reviewed data file per route.** `packages/knowledge/rule-texts/pt-BR/<route-id>.json` pairs each English title a version writes (`en`, exactly as written) with its translation (`text`, up to 400 characters). A Claude Code session writes them, with no call to the app's model providers; a reviewed pull request changes them, with the repository's reviewers and no activation, as for suggested ratings ([ADR-0035](0035-suggested-ratings.md)). The build validates each file and ships it in the API's runtime module with each English title replaced by its SHA-256, so the server bundle holds no route version's own text ([ADR-0031](0031-rule-updates-on-request.md)). The Portuguese it does ship is display text only: never evaluated, and shown only where it matches the English of an active version.
 - **Keyed by the English text, not by item ID.** A version that rewords a title gets no translation until the file catches up, so a stale translation can never show for a changed rule; the title shows in English meanwhile.
 - **The API translates.** `GET /case/evaluations` gives each title in Portuguese where the route's file has it, with the version's English in `original`; with no translation, `original` is null. The engine, the version, its hash and every evaluation stay as they are. Only titles of active versions reach the screen, as before (CLAUDE.md rule 5).
-- **Tests.** `packages/knowledge/test/rule-texts.test.ts` fails when a title of a version in effect today or later has no translation, when an entry translates a title no version of its route writes, and when a translation drops a number its English states (amounts, ages, dates, article numbers).
+- **Rule 1 holds.** Every number a translation shows is the version's own, kept by the numbers test and the hash key, and each item's sources and verification dates still come from the version.
+- **Tests.** `packages/knowledge/test/rule-texts.test.ts` fails when a title of a version in effect today or later has no translation, when an entry translates a title no version of its route writes, and when a translation drops a number its English states or adds one it does not (amounts, ages, dates, article numbers).
 - **Screen.** The titles show in Portuguese with "Textos traduzidos pelo Arca. Na dúvida, vale a fonte oficial." and a switch that shows each English original under it. Sources stay as they are.
 - **Totals.** The API also returns the engine's cost totals per currency, which it already computed in code (CLAUDE.md rule 3): what certainly applies and what may on top. Durations are not summed: the schema does not tell a waiting time from a validity period, and their sum would mislead.
 
 ## Consequences
 
-- A new route version, from an update request or a session review, shows in English until a pull request adds its titles; the session review runbook adds them in the same pull request.
-- A wrong translation misleads without changing any result; the numbers test, the reviewers and the English one switch away limit that. Eligibility stays with the engine.
+- A new route version from a session review gets its titles in the same pull request (the runbook says so). One from an update request lives only in the database, so its titles show in English until a session review brings that route into the repository.
+- A wrong translation misleads without changing any result; the numbers test, the reviewers and the English one switch away limit that, but a dropped qualifier or a flipped comparison passes the test and rests on the reviewers. Eligibility stays with the engine.
 - A second locale is another folder under `rule-texts/` and a locale choice in the API.
 
 ## Alternatives considered

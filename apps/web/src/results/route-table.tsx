@@ -2,22 +2,16 @@ import { StatusChip, cardClass } from '@arca/ui';
 import type { ReactNode } from 'react';
 import { FlagLead } from '../country-flag.js';
 import type { KnowledgeWords } from '../knowledge/words.js';
-import { type RouteRow, resultsAnchor } from './group.js';
+import { type RouteRow, type Selection, resultsAnchor } from './group.js';
 import { totalShort } from './route-detail.js';
 import { statusTones } from './status-tone.js';
-
-/** A route and a member as principal: what the detail panel shows. */
-export interface Selection {
-  readonly routeId: string;
-  readonly principalId: string;
-}
 
 interface RowsProps {
   readonly rows: readonly RouteRow[];
   readonly principals: readonly string[];
   readonly selection: Selection | undefined;
-  /** Nothing chosen closes the open card on a phone. */
-  readonly onSelect: (selection: Selection | undefined) => void;
+  /** `null` closes the open card on a phone. */
+  readonly onSelect: (selection: Selection | null) => void;
   readonly name: (id: string) => string;
   readonly words: KnowledgeWords;
 }
@@ -144,7 +138,7 @@ export function RouteCards({
                 const first = row.results[0];
                 onSelect(
                   chosen || first === undefined
-                    ? undefined
+                    ? null
                     : { routeId: row.routeId, principalId: first.principalId },
                 );
               }}

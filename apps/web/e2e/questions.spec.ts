@@ -149,7 +149,7 @@ test('lists every route for the family by its status, with nothing hidden behind
   const caption = 'Rotas da família, com a situação de cada pessoa como requerente principal';
   // Another test may leave every version but one waiting for activation; those only get a count.
   const list = page.getByRole(isMobile ? 'list' : 'table', { name: caption });
-  const waiting = page.getByText(/^Ainda sem versão aprovada/);
+  const waiting = page.getByText(/^Ainda sem versão ativa/);
   await expect(list.or(waiting).first()).toBeVisible();
   if ((await list.count()) > 0 && isMobile) {
     // A card per route; the chosen one opens its detail under it.

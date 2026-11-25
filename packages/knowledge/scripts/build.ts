@@ -14,7 +14,12 @@ import { parseJsonSubset } from '@arca/scripts/json';
 import type { Json } from '../src/canonical.ts';
 import { parseComparisons, parseEntries } from '../src/entries.ts';
 import { caseSummaries } from '../src/cases.ts';
-import { ruleTextFileSchema, ruleTextLocale, shipRuleTexts } from '../src/rule-texts.ts';
+import {
+  type RuleTextFile,
+  ruleTextFileSchema,
+  ruleTextLocale,
+  shipRuleTexts,
+} from '../src/rule-texts.ts';
 import type { RuleRows, VersionCases } from '../src/rule-rows.ts';
 import { contentHash } from './content-hash.ts';
 import { checkHashes } from './hashes.ts';
@@ -240,12 +245,12 @@ export async function readSuggestedRatings(dir: string): Promise<Json | null> {
  * Every route's texts in `dir` (ADR-0036), one `<route-id>.json` a route, each checked against its
  * schema, its file name and for a title written twice; none when the directory is missing.
  */
-export async function readRuleTexts(dir: string): Promise<Json[]> {
+export async function readRuleTexts(dir: string): Promise<RuleTextFile[]> {
   const names = await readdir(dir).catch((error: unknown) => {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw error;
   });
-  const files: Json[] = [];
+  const files: RuleTextFile[] = [];
   for (const name of names.sort()) {
     const routeId = /^([a-z0-9-]+)\.json$/.exec(name)?.[1];
     if (routeId === undefined) throw new Error(`rule-texts: ${name} is not <route-id>.json`);
@@ -259,7 +264,7 @@ export async function readRuleTexts(dir: string): Promise<Json[]> {
       if (english.has(en)) throw new Error(`rule-texts: ${name} translates "${en}" twice`);
       english.add(en);
     }
-    files.push(json);
+    files.push(parsed);
   }
   return files;
 }
@@ -293,9 +298,7 @@ async function main(): Promise<void> {
   await writeFile(targets.catalog, catalogModule(parts));
   const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
   const ruleTexts = shipRuleTexts(
-    (await readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale))).map((json) =>
-      ruleTextFileSchema.parse(json),
-    ),
+    await readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
     (text) => createHash('sha256').update(text, 'utf8').digest('hex'),
   );
   await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings, ruleTexts }));

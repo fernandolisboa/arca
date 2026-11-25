@@ -8,9 +8,15 @@ import { textLinkClass } from '../forms/text-link.js';
 import { TextField } from '../forms/text-field.js';
 import { useKnowledgeWords, type KnowledgeWords } from '../knowledge/words.js';
 import { Page, stickyColumnClass } from '../page.js';
-import { anchorCountry, resultRows, rowMatches } from '../results/group.js';
+import {
+  type Selection,
+  anchorCountry,
+  resultRows,
+  rowMatches,
+  selectedRoute,
+} from '../results/group.js';
 import { RouteDetail } from '../results/route-detail.js';
-import { RouteCards, RouteTable, type Selection } from '../results/route-table.js';
+import { RouteCards, RouteTable } from '../results/route-table.js';
 import { useMediaQuery } from '../use-media-query.js';
 
 export const Route = createFileRoute('/family_/results')({ component: Results });
@@ -110,7 +116,7 @@ function Evaluated({
   const { rows, unnamed } = resultRows(evaluations.results, words.country, words.language);
   const principals = [...new Set(evaluations.results.map(({ principalId }) => principalId))];
   const [search, setSearch] = useState('');
-  const [chosen, setChosen] = useState<Selection>();
+  const [chosen, setChosen] = useState<Selection | null>();
   const shown = rows.filter((row) => rowMatches(row, search, words.country));
   const { hash } = useLocation();
   const linked = anchorCountry(hash);
@@ -118,15 +124,7 @@ function Evaluated({
   useEffect(() => {
     if (hash !== '') document.getElementById(hash)?.scrollIntoView();
   }, [hash]);
-  const linkedRow = shown.find(({ route }) => route.country === linked);
-  const opened = (chosen === undefined ? linkedRow : undefined) ?? (wide ? shown[0] : undefined);
-  const first = opened?.results[0];
-  const selection: Selection | undefined =
-    chosen !== undefined && shown.some(({ routeId }) => routeId === chosen.routeId)
-      ? chosen
-      : first === undefined
-        ? undefined
-        : { routeId: first.routeId, principalId: first.principalId };
+  const selection = selectedRoute(shown, chosen, linked, wide);
   const selectedRow = shown.find(({ routeId }) => routeId === selection?.routeId);
   const detail = selectedRow !== undefined && selection !== undefined && (
     <RouteDetail
@@ -227,7 +225,7 @@ function Questions({
     <Disclosure
       title={t('results.questionsTitle')}
       level={4}
-      defaultOpen={false}
+      defaultOpen
       badge={<span className="text-small text-muted tabular-nums">{questions.length}</span>}
       className={`${cardClass} flex flex-col gap-2 px-4 py-1`}
     >

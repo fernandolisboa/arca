@@ -81,12 +81,14 @@ export function RouteDetail({
   const versionNumber = row.results.find((each) => each.version !== null)?.version?.number;
   return (
     <article aria-label={row.route.title} className="flex flex-col gap-4">
-      <header className={`flex flex-col gap-1 ${inline ? 'sr-only' : ''}`}>
-        <p className="text-small text-muted">
+      <header className="flex flex-col gap-1">
+        <p className={`text-small text-muted ${inline ? 'sr-only' : ''}`}>
           <FlagLead code={row.route.country} />
           {words.country(row.route.country)}
         </p>
-        <h3 className="font-display text-lead break-words">{row.route.title}</h3>
+        <h3 className={`font-display text-lead break-words ${inline ? 'sr-only' : ''}`}>
+          {row.route.title}
+        </h3>
         {showOriginal && row.route.original !== null && (
           <p className="text-small text-muted">
             {t('results.original', { text: row.route.original })}
