@@ -4,6 +4,15 @@ Research notes for Latvia's temporary residence permit for an investment in a co
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Version audited:** 5
+- **Outcome:** correction, version 6, from version 5's date, 2026-09-15, which keeps every item of version 5 and adds the official document list: Regulations No. 564 of 2010 (points 11, 28, 29, 37, 40, 41 and 73), Regulations No. 591 of 2008 (point 7), the Official Language Law (art. 10) and Regulations No. 291 of 2000 on certified translations. Brazil's document guide needs no new version. The quote check now reads Latvian number words, which the documents' validity needs. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-lv-documents/README.md).
+- **Amendments looked for:** none since the review of 2026-11-20; Regulations No. 564 still apply under the Immigration Law's transitional provision 3.
+- **Watch next:** the new Cabinet regulations under the new law, due by 1 December 2027, replace Regulations No. 564 and so the whole list. With the number words read, the permit's two-year term can come back as a duration.
+
 ### 2026-11-20, session review
 
 A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-lv/README.md](../../../packages/knowledge/reviews/2026-11-lv/README.md).
