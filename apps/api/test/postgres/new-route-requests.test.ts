@@ -72,7 +72,9 @@ const firstVersion = (
   country: string,
   officialDomains: RouteVersion['officialDomains'],
 ): Json => ({
-  ...Object.fromEntries(Object.entries(base).filter(([key]) => key !== 'corrects')),
+  ...Object.fromEntries(
+    Object.entries(base).filter(([key]) => key !== 'corrects' && key !== 'documents'),
+  ),
   routeId: `${country.toLowerCase()}-synthetic-entry`,
   number: 1,
   country,

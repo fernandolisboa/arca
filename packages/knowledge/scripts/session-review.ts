@@ -235,6 +235,14 @@ export const sessionReviews: readonly SessionReview[] = [
       { routeId: 'jp-nikkei-long-term-resident', number: 6 },
     ],
   },
+  {
+    id: '2026-11-ar-documents',
+    migration: 'knowledge_session_review_2026_11_ar_documents',
+    versions: [
+      { routeId: 'ar-mercosur-temporary', number: 6 },
+      { routeId: 'ar-mercosur-temporary', number: 7 },
+    ],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */
