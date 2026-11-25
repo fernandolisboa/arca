@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { calendarDateSchema } from '../calendar/calendar-date.js';
-import { compareDateValues, dateValueSchema } from '../calendar/partial-date.js';
+import { type DateValue, compareDateValues, dateValueSchema } from '../calendar/partial-date.js';
 import { currencyCodeSchema } from '../money/currency.js';
 import {
   type Decimal,
@@ -106,11 +106,132 @@ const immigrationEventSchema = z.strictObject({
   date: dateValueSchema.optional(),
 });
 
+/** An ISCO-08 unit group code; the API checks it against the occupations classification. */
+export const occupationCodeSchema = z.string().regex(/^[0-9]{4}$/);
+
+/**
+ * A job offer in a country (ADR-0036). The occupation, the gross annual salary and whether the
+ * employer will sponsor the application are optional, so offers recorded without them still load.
+ */
 const jobOfferSchema = z.strictObject({
   country: countryCodeSchema,
   sector: z.enum(isicSections),
   temporary: z.boolean(),
+  occupation: occupationCodeSchema.optional(),
+  annualSalary: nonNegativeMoneySchema.optional(),
+  sponsored: z.boolean().optional(),
 });
+
+export type JobOffer = z.infer<typeof jobOfferSchema>;
+
+export const workRelations = ['employee', 'contractor', 'self_employed', 'owner'] as const;
+/** The role a person says they had; whether it meets a route's legal definition is an assessment. */
+export const workCapacities = ['executive', 'manager', 'other'] as const;
+export const maxWorkPeriods = 20;
+
+/**
+ * A work period's fields (ADR-0036): where the employer or main client is seated, where the person
+ * works from, codes and dates only. `end` is `"none"` while it goes on.
+ */
+export const workPeriodFieldsSchema = z.strictObject({
+  employerCountry: countryCodeSchema.optional(),
+  workplaceCountry: countryCodeSchema.optional(),
+  relation: z.enum(workRelations).optional(),
+  occupation: occupationCodeSchema.optional(),
+  capacity: z.enum(workCapacities).optional(),
+  fullTime: z.boolean().optional(),
+  start: dateValueSchema.optional(),
+  end: dateOrNoneSchema.optional(),
+  /** The business asset, co-owned by the person, that the work is at. */
+  business: opaqueIdSchema.optional(),
+});
+
+/** A period does not end before it starts. */
+export const periodInOrder = ({
+  start,
+  end,
+}: {
+  readonly start?: DateValue | undefined;
+  readonly end?: DateValue | 'none' | undefined;
+}): boolean =>
+  start === undefined ||
+  end === undefined ||
+  end === 'none' ||
+  compareDateValues(end, 'lt', start) !== true;
+
+export const periodOrderMessage = { message: 'A period does not end before it starts' };
+
+export const workPeriodSchema = workPeriodFieldsSchema.refine(periodInOrder, periodOrderMessage);
+
+export type WorkPeriod = z.infer<typeof workPeriodSchema>;
+
+export const maxEducationLevel = 8;
+
+/** An ISCED 2011 level, 0 to 8. */
+export const educationLevelSchema = z.number().int().min(0).max(maxEducationLevel);
+
+/** An ISCED-F 2013 detailed field code; the API checks it against the study-fields classification. */
+export const studyFieldCodeSchema = z.string().regex(/^[0-9]{4}$/);
+
+export const maxQualifications = 20;
+export const maxRegistrations = 20;
+
+/** A qualification (ADR-0036): its level, field of study, the country that awarded it and when. */
+export const qualificationSchema = z.strictObject({
+  level: educationLevelSchema.optional(),
+  field: studyFieldCodeSchema.optional(),
+  country: countryCodeSchema.optional(),
+  completed: dateValueSchema.optional(),
+});
+
+export type Qualification = z.infer<typeof qualificationSchema>;
+
+/** A professional registration (ADR-0036): the occupation, the country it is held in, since when. */
+export const registrationSchema = z.strictObject({
+  country: countryCodeSchema.optional(),
+  occupation: occupationCodeSchema.optional(),
+  since: dateValueSchema.optional(),
+});
+
+export type Registration = z.infer<typeof registrationSchema>;
+
+/** No qualification is above the education level, when both are known. */
+export const qualificationsWithinLevel = ({
+  educationLevel,
+  qualifications,
+}: {
+  readonly educationLevel?: number | undefined;
+  readonly qualifications?: readonly Qualification[] | undefined;
+}): boolean =>
+  educationLevel === undefined ||
+  (qualifications ?? []).every(({ level }) => level === undefined || level <= educationLevel);
+
+export const qualificationLevelMessage = {
+  message: 'A qualification is not above the education level',
+};
+/** The legal basis a person lived in a country on; `other` covers any basis outside the three. */
+export const residenceBases = [
+  'citizen',
+  'permanent_residence',
+  'temporary_residence',
+  'other',
+] as const;
+export const maxResidencePeriods = 30;
+
+/**
+ * A stretch of living in one country on one basis (ADR-0036). `end` is `"none"` while it goes on.
+ * `residenceCountry` stays the country lived in now.
+ */
+export const residencePeriodSchema = z
+  .strictObject({
+    country: countryCodeSchema,
+    basis: z.enum(residenceBases).optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNoneSchema.optional(),
+  })
+  .refine(periodInOrder, periodOrderMessage);
+
+export type ResidencePeriod = z.infer<typeof residencePeriodSchema>;
 
 /** A person's fields, before the checks across them; storage derives its schemas from these. */
 export const personFieldsSchema = z.strictObject({
@@ -118,12 +239,18 @@ export const personFieldsSchema = z.strictObject({
   birthDate: dateValueSchema.optional(),
   citizenships: z.array(citizenshipSchema).max(10).optional(),
   residenceCountry: countryCodeSchema.optional(),
-  /** ISCED 2011 level, 0 to 8. */
-  educationLevel: z.number().int().min(0).max(8).optional(),
+  /** ISCED 2011 level, 0 to 8: the highest completed, which no qualification exceeds. */
+  educationLevel: educationLevelSchema.optional(),
   languages: z.array(languageSchema).max(20).optional(),
   incomes: z.array(incomeSchema).max(20).optional(),
   immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
   jobOffers: z.array(jobOfferSchema).max(10).optional(),
+  /** Work periods, past and current, in any order. */
+  workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
+  qualifications: z.array(qualificationSchema).max(maxQualifications).optional(),
+  registrations: z.array(registrationSchema).max(maxRegistrations).optional(),
+  /** Residence periods, past and current, in any order. */
+  residencePeriods: z.array(residencePeriodSchema).max(maxResidencePeriods).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
   studying: z.boolean().optional(),
@@ -143,7 +270,8 @@ export const personSchema = personFieldsSchema
   })
   .refine((person) => distinct(person.recordedInFull ?? []), {
     message: 'A completeness marker is listed once',
-  });
+  })
+  .refine(qualificationsWithinLevel, qualificationLevelMessage);
 
 export const coupleEdgeSchema = z.strictObject({
   kind: z.enum(['spouse', 'partner']),
@@ -190,7 +318,27 @@ export const assetKinds = [
   'other',
 ] as const;
 
-/** An asset's fields, before the checks across its owners. */
+const maxBusinessEmployees = 10_000_000;
+
+/** What only a business records: where it is seated, since when it operates, how many it employs. */
+const businessFieldsSchema = z.strictObject({
+  country: countryCodeSchema.optional(),
+  operatingSince: dateValueSchema.optional(),
+  employees: z.number().int().min(0).max(maxBusinessEmployees).optional(),
+});
+
+const businessFieldKeys = Object.keys(businessFieldsSchema.shape);
+
+/** Only a business holds the business fields. */
+export const businessFieldsOnBusiness = (asset: {
+  readonly kind: string;
+  readonly [key: string]: unknown;
+}): boolean =>
+  asset.kind === 'business' || businessFieldKeys.every((key) => asset[key] === undefined);
+
+export const businessFieldsMessage = { message: 'Only a business has business fields' };
+
+/** An asset's fields, before the checks across them and its owners. */
 export const assetFieldsSchema = z.strictObject({
   id: opaqueIdSchema,
   kind: z.enum(assetKinds),
@@ -202,11 +350,14 @@ export const assetFieldsSchema = z.strictObject({
   valuedAt: calendarDateSchema,
   liquid: z.boolean().optional(),
   sold: dateOrNoneSchema.optional(),
+  ...businessFieldsSchema.shape,
 });
 
-const assetSchema = assetFieldsSchema.refine((asset) => validShares(asset.owners), {
-  message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
-});
+const assetSchema = assetFieldsSchema
+  .refine((asset) => validShares(asset.owners), {
+    message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
+  })
+  .refine(businessFieldsOnBusiness, businessFieldsMessage);
 
 /**
  * The engine's only view of a case. It holds no free text, names or document numbers, so it
@@ -241,6 +392,19 @@ export const caseSnapshotSchema = z
       ...snapshot.assets.flatMap((asset) => asset.owners.map((owner) => owner.person)),
     ];
     if (references.some((id) => !known.has(id))) issue('Every referenced person is in `people`');
+    const businesses = new Map(
+      snapshot.assets.flatMap((asset) =>
+        asset.kind === 'business'
+          ? [[asset.id, new Set(asset.owners.map((owner) => owner.person))] as const]
+          : [],
+      ),
+    );
+    const atBusinessesTheyOwn = snapshot.people.every((person) =>
+      (person.workPeriods ?? []).every(
+        ({ business }) => business === undefined || businesses.get(business)?.has(person.id),
+      ),
+    );
+    if (!atBusinessesTheyOwn) issue('A work period is at a business its person owns');
     if (snapshot.relationships.map(endpoints).some(([a, b]) => a === b)) {
       issue('A relationship links two different people');
     }

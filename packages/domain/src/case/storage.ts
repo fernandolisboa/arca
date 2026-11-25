@@ -1,12 +1,20 @@
 import { z } from 'zod';
 import {
   assetFieldsSchema,
+  businessFieldsMessage,
+  businessFieldsOnBusiness,
   completenessMarkers,
   coupleEdgeSchema,
   distinct,
   incomeSchema,
+  maxWorkPeriods,
   parentEdgeSchema,
+  periodInOrder,
+  periodOrderMessage,
   personFieldsSchema,
+  qualificationLevelMessage,
+  qualificationsWithinLevel,
+  workPeriodFieldsSchema,
 } from './snapshot.js';
 
 /**
@@ -25,6 +33,17 @@ export const displayNameSchema = z
   .max(80)
   .refine((name) => name === name.trim(), { message: 'A name has no outer spaces' });
 
+/**
+ * A work period as the profile stores it: with an optional label that tells work periods apart on
+ * screen, which stays with the profile and never enters the snapshot or a model call (ADR-0036),
+ * and the business asset it is at by its row's UUID.
+ */
+export const storedWorkPeriodSchema = workPeriodFieldsSchema
+  .extend({ label: displayNameSchema.optional(), business: storedIdSchema.optional() })
+  .refine(periodInOrder, periodOrderMessage);
+
+export type StoredWorkPeriod = z.infer<typeof storedWorkPeriodSchema>;
+
 /** The completeness markers a profile holds; the assets marker is in the finances. */
 export const profileMarkers = completenessMarkers.filter(
   (marker): marker is Exclude<typeof marker, 'assets'> => marker !== 'assets',
@@ -34,11 +53,13 @@ export const profileMarkers = completenessMarkers.filter(
 export const storedProfileFactsSchema = personFieldsSchema
   .omit({ id: true, incomes: true, financiallyDependentOn: true, recordedInFull: true })
   .extend({
+    workPeriods: z.array(storedWorkPeriodSchema).max(maxWorkPeriods).optional(),
     recordedInFull: z.array(z.enum(profileMarkers)).max(profileMarkers.length).optional(),
   })
   .refine((facts) => distinct(facts.recordedInFull ?? []), {
     message: 'A completeness marker is listed once',
-  });
+  })
+  .refine(qualificationsWithinLevel, qualificationLevelMessage);
 
 export const storedProfileSchema = z.strictObject({
   facts: storedProfileFactsSchema,
@@ -52,7 +73,9 @@ export const storedFinancesSchema = z.strictObject({
   assetsRecordedInFull: z.boolean(),
 });
 
-export const storedAssetSchema = assetFieldsSchema.omit({ id: true, owners: true });
+export const storedAssetSchema = assetFieldsSchema
+  .omit({ id: true, owners: true })
+  .refine(businessFieldsOnBusiness, businessFieldsMessage);
 
 /** A person's share of an asset: more than 0 and at most 1, with at most six decimal places. */
 export const storedOwnerShareSchema = z
@@ -88,7 +111,7 @@ export const storedRelationshipSchema = z
     message: 'A relationship links two different people',
   });
 
-export const shareScopes = ['profile', 'finances'] as const;
+export const shareScopes = ['profile', 'finances', 'checklist'] as const;
 export const shareScopeSchema = z.enum(shareScopes);
 
 export type StoredProfile = z.infer<typeof storedProfileSchema>;

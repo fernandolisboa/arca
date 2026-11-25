@@ -74,6 +74,20 @@ export const caseEvaluationsQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** One route's document checklist for a member as principal (spec #519). */
+/** Every principal's checklist of one route, which a mark on it changes. */
+export const routeDocumentsKey = (routeId: string) => ['case', 'documents', routeId] as const;
+
+export const routeDocumentsQuery = (routeId: string, principalId: string) =>
+  queryOptions({
+    queryKey: [...routeDocumentsKey(routeId), principalId],
+    queryFn: () => api.call(routes.getRouteDocuments, { routeId, principalId }),
+    networkMode: 'always',
+    retry: false,
+    // Each read counts against a per-session limit, so a tab coming back into view does not read.
+    refetchOnWindowFocus: false,
+  });
+
 /** The caller's destination comparison and their own choices for it (ADR-0026). */
 export const comparisonQuery = queryOptions({
   queryKey: ['comparison'],
@@ -82,6 +96,25 @@ export const comparisonQuery = queryOptions({
   retry: false,
   // Each read counts against a per-session limit, so a tab coming back into view does not read.
   refetchOnWindowFocus: false,
+});
+
+/** The case's family plan, each move evaluated with only the people it takes (ADR-0040). */
+export const familyPlanQuery = queryOptions({
+  queryKey: ['case', 'plan'],
+  queryFn: () => api.call(routes.getFamilyPlan),
+  networkMode: 'always',
+  retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
+});
+
+/** What to do when leaving a country, with official sources (ADR-0038): public, rarely changed. */
+export const departureChecklistsQuery = queryOptions({
+  queryKey: ['departure-checklists'],
+  queryFn: () => api.call(routes.getDepartureChecklists),
+  networkMode: 'always',
+  retry: false,
+  staleTime: Infinity,
 });
 
 /** The account's passkeys, each with its sessions (spec 0003, R4). */

@@ -62,6 +62,7 @@ export {
   currencyCodes,
   minorUnitExponent,
   minorUnitExponents,
+  unitsAmount,
 } from './money/currency.js';
 export { type Decimal, decimalSchema, parseDecimal, roundedDecimal } from './money/decimal.js';
 export {
@@ -96,7 +97,11 @@ export {
   type CompletenessMarker,
   type CountryCode,
   type Person,
+  type Qualification,
+  type Registration,
   type Relationship,
+  type ResidencePeriod,
+  type WorkPeriod,
   assetKinds,
   caseSnapshotSchema,
   citizenshipBases,
@@ -111,7 +116,16 @@ export {
   maxCaseMembers,
   maxCasePeople,
   maxCaseRelationships,
+  maxQualifications,
+  maxRegistrations,
+  maxResidencePeriods,
+  maxWorkPeriods,
+  occupationCodeSchema,
+  studyFieldCodeSchema,
   opaqueIdSchema,
+  residenceBases,
+  workCapacities,
+  workRelations,
 } from './case/snapshot.js';
 export {
   type ShareScope,
@@ -119,6 +133,7 @@ export {
   type StoredFinances,
   type StoredProfile,
   type StoredRelationship,
+  type StoredWorkPeriod,
   displayNameSchema,
   profileMarkers,
   relationshipKinds,
@@ -131,18 +146,22 @@ export {
   storedProfileFactsSchema,
   storedProfileSchema,
   storedRelationshipSchema,
+  storedWorkPeriodSchema,
 } from './case/storage.js';
 export {
   type BuiltSnapshot,
   type VisibleCaseRows,
   buildCaseSnapshot,
+  ownsBusiness,
   validCaseStructure,
 } from './case/builder.js';
 export {
+  type AppliesTo,
   type Assessment,
   type Cost,
   type CountrySet,
   type DependentRule,
+  type DocumentItem,
   type DurationStage,
   type OfficialDomainList,
   type Pin,
@@ -150,6 +169,7 @@ export {
   type RouteVersion,
   type Source,
   countrySetSchema,
+  documentItemSchema,
   durationStageSchema,
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
@@ -161,10 +181,12 @@ export {
   routeVersionSchema,
   sourceSchema,
   sourceUrls,
+  tagSchema,
   addressPages,
 } from './rules/route-version.js';
 export {
   collectionNames,
+  recordCollections,
   comparisonOperators,
   expressionOperators,
   nodeCount,
@@ -172,12 +194,19 @@ export {
   slugSchema,
 } from './rules/expression.js';
 export { factTargets } from './rules/fact-reference.js';
-export { type FactKey, factKeys } from './case/facts.js';
+export {
+  type Classification,
+  type FactKey,
+  citizenshipsHeldOn,
+  classifications,
+  factKeys,
+} from './case/facts.js';
 export {
   type DecisiveQuestion,
   type RouteResult,
   type RouteStatus,
   type UnitsMoney,
+  type UnitsRange,
   bestRouteStatus,
   decisiveQuestions,
   questionForFact,
@@ -185,7 +214,22 @@ export {
   routeStatusOrder,
 } from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
-export { type CheckIssue } from './rules/check.js';
+export {
+  type DependentFit,
+  type EvaluatedPlan,
+  type PlanBounds,
+  type PlanMove,
+  type PlanTotal,
+  type PlannedMove,
+  dependentFit,
+  dependentFits,
+  evaluatePlan,
+  maxPlanMoves,
+  maxPlanStages,
+  sameApplication,
+  validPlan,
+} from './plan/family-plan.js';
+export { type CheckIssue, type PinnedClassifications } from './rules/check.js';
 export {
   type OfficialHosts,
   type PinnedCountries,
@@ -312,7 +356,25 @@ export {
   evaluateRoute,
   evaluateVersion,
   evaluateVersionTraced,
+  selectRouteVersion,
 } from './rules/engine.js';
+export {
+  type DocumentChecklist,
+  type DocumentResult,
+  type PersonDocuments,
+  type RouteDocuments,
+  documentChecklist,
+  routeDocuments,
+} from './rules/documents.js';
+export {
+  type ChecklistProgress,
+  type DroppedItem,
+  type MarkState,
+  droppedItems,
+  listProgress,
+  markStates,
+  routeProgress,
+} from './rules/checklist-marks.js';
 export { type StaleSource, staleAfterDays, staleSources } from './rules/staleness.js';
 export { type Trace } from './rules/evaluate.js';
 export { type MissingFact } from './rules/missing.js';
@@ -331,6 +393,7 @@ export {
   type Sentence,
   type SentenceKind,
   describeCase,
+  labelWorkPeriods,
   renamePeople,
   sentenceSchema,
 } from './case/playback.js';
@@ -353,6 +416,7 @@ export {
   answerCanBeUnknown,
   answerOf,
   applyAnswers,
+  classifiedCodesKnown,
   choiceSets,
   questionFlow,
   questionIds,
@@ -426,6 +490,21 @@ export {
   ratingSuggestions,
   suggestedRatingsSchema,
 } from './comparison/suggested.js';
+export {
+  type DepartureChecklistView,
+  type DepartureChecklists,
+  type DepartureSource,
+  departureChecklistViews,
+  departureChecklistsSchema,
+} from './departure/checklist.js';
+export {
+  type DocumentGuideEntry,
+  type DocumentGuides,
+  documentGuideEntries,
+  documentGuidesSchema,
+  guideEntriesFor,
+} from './document-guides/guide.js';
+export { type DatedSource } from './reviewed-data/official-sources.js';
 export {
   type ComparedCriterion,
   type ComparisonInput,

@@ -29,10 +29,10 @@ import {
   casesHashOf,
   countryPins,
 } from '../src/rule-rows.ts';
-import { buildKnowledge, formatIssue } from './build.ts';
+import { formatIssue } from './build.ts';
 import { inlinedRows } from './inline-cases.ts';
 import { readKnowledgeFile } from './load.ts';
-import { importDate } from './rule-import.ts';
+import { importBuild } from './rule-import.ts';
 import { json, literal } from './sql.ts';
 
 /** A version a review lists: the next of a stored route, or the first of a route it names as new. */
@@ -158,6 +158,11 @@ export const sessionReviews: readonly SessionReview[] = [
     versions: [{ routeId: 'ie-critical-skills', number: 4 }],
   },
   {
+    id: '2026-11-us-documents',
+    migration: 'knowledge_session_review_2026_11_us_documents',
+    versions: [{ routeId: 'us-eb5', number: 10 }],
+  },
+  {
     id: '2026-11-us-routes',
     migration: 'knowledge_session_review_2026_11_us_routes',
     versions: [
@@ -210,7 +215,7 @@ export function evidenceProblems(
   evidence: Evidence,
   pages: ReadonlyMap<string, ReadPage>,
 ): string[] {
-  const items = checkItems(entry);
+  const items = checkItems(entry, { documents: true });
   const keys = new Set(items.map((item) => item.key));
   const answers: CheckAnswer[] = items.map(({ key }) => ({
     key,
@@ -307,9 +312,9 @@ export interface ReviewDirs {
 export async function importedRows(
   dataDir: string,
 ): Promise<{ readonly rows: RuleRows; readonly reading: RuleRowReading }> {
-  const { issues, rows, countryFiles } = await buildKnowledge(dataDir, importDate);
+  const { issues, rows, datasetFiles } = await importBuild(dataDir);
   if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
-  return { rows, reading: { countryFiles, sha256, hostOf } };
+  return { rows, reading: { datasetFiles, sha256, hostOf } };
 }
 
 /**

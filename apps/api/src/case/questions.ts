@@ -33,7 +33,14 @@ export function questionState(rows: CaseRows, personId: string): QuestionState {
   };
 }
 
-export function caseQuestions(rows: CaseRows, countries: PinnedCountries): CaseQuestions {
+export function caseQuestions(
+  rows: CaseRows,
+  countries: PinnedCountries,
+  classifications: {
+    readonly occupations: readonly string[];
+    readonly studyFields: readonly string[];
+  },
+): CaseQuestions {
   return {
     people: rows.people
       .filter((person) => person.keptByMe)
@@ -60,5 +67,7 @@ export function caseQuestions(rows: CaseRows, countries: PinnedCountries): CaseQ
       }),
     countries: [...countries.countries],
     formerCountries: [...countries.formerCountries],
+    occupations: [...classifications.occupations],
+    studyFields: [...classifications.studyFields],
   };
 }

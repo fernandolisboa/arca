@@ -1,4 +1,4 @@
-import { matchesSearch } from '../forms/country-search.js';
+import { matchesSearch } from '@arca/ui';
 
 /** Which countries the list shows by their final score. */
 export const scoreFilters = ['all', 'scored', 'unscored'] as const;

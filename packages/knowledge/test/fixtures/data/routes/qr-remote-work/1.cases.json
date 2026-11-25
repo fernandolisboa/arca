@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "remote-contractor",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 1,
+        "sha256": "391c21eb0690f9593f761bb806b72fbd86052fa1634a2137d6803b4b345fddf7"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "part-time-doctor",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 1,
+        "sha256": "391c21eb0690f9593f761bb806b72fbd86052fa1634a2137d6803b4b345fddf7"
+      },
+      "principal": "p2",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "business-owner",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 1,
+        "sha256": "391c21eb0690f9593f761bb806b72fbd86052fa1634a2137d6803b4b345fddf7"
+      },
+      "principal": "p3",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "work-unanswered",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1990-01-01"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["records workPeriods@p1"]
+      }
+    },
+    {
+      "id": "no-work",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": []
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "start-known-by-month",
+      "snapshot": {
+        "recordedOn": "2026-11-15",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "employee",
+                "employerCountry": "QN",
+                "fullTime": true,
+                "occupation": "2512",
+                "start": "2026-08",
+                "end": "none"
+              },
+              {
+                "relation": "employee",
+                "employerCountry": "BR",
+                "fullTime": true,
+                "occupation": "2512",
+                "start": "2019",
+                "end": "2025"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-15",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["workPeriod.start@p1"]
+      }
+    },
+    {
+      "id": "full-time-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "contractor",
+                "employerCountry": "QN",
+                "occupation": "2211",
+                "start": "2024-03",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["workPeriod.fullTime@p1"]
+      }
+    }
+  ]
+}

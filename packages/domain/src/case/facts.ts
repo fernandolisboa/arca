@@ -25,14 +25,24 @@ import {
   parents,
 } from './graph.js';
 import {
+  type Asset,
   type Citizenship,
   type CompletenessMarker,
   type CountryCode,
+  type JobOffer,
   type Person,
+  type Qualification,
+  type Registration,
   type Relationship,
+  type ResidencePeriod,
+  type WorkPeriod,
   custodies,
+  maxEducationLevel,
   isicSections,
   parentKinds,
+  residenceBases,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
 
 /** What every fact of one evaluation reads besides the person it is about. */
@@ -65,12 +75,46 @@ export interface LineageBinding {
   readonly position: number;
 }
 
-/** Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage. */
+/** One of a person's records, inside a record collection such as `person.workPeriods`. */
+interface RecordValues {
+  readonly workPeriod: WorkPeriod;
+  readonly jobOffer: JobOffer;
+  readonly residencePeriod: ResidencePeriod;
+  readonly qualification: Qualification;
+  readonly registration: Registration;
+}
+
+export type PersonRecord = {
+  readonly [Kind in keyof RecordValues]: {
+    readonly kind: Kind;
+    readonly value: RecordValues[Kind];
+  };
+}[keyof RecordValues];
+
+export type RecordKind = PersonRecord['kind'];
+
+export const recordKinds = [
+  'workPeriod',
+  'jobOffer',
+  'residencePeriod',
+  'qualification',
+  'registration',
+] as const satisfies readonly RecordKind[];
+
+export function isRecordKind(name: string): name is RecordKind {
+  return (recordKinds as readonly string[]).includes(name);
+}
+
+/**
+ * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
+ * one of the person's records.
+ */
 export interface FactBinding {
   readonly environment: FactEnvironment;
   readonly personId: string;
   readonly edge?: Relationship;
   readonly lineage?: LineageBinding;
+  readonly record?: PersonRecord;
 }
 
 export interface Derived {
@@ -87,9 +131,10 @@ export interface Derived {
 /**
  * What a fact is about: a person (the principal, a candidate dependent, a member inside a
  * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
- * candidate was reached by, or the line from an ancestor to the principal.
+ * candidate was reached by, the line from an ancestor to the principal, or one record inside a
+ * record collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage';
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | RecordKind;
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -98,7 +143,13 @@ export type FactType =
       /** Admits ISO 3166-3 former states, as citizenship and ancestry facts do (spec 0002, R7). */
       readonly formerStates?: boolean;
     }
-  | { readonly kind: 'enum' | 'enum-list'; readonly values: readonly string[] };
+  | { readonly kind: 'enum' | 'enum-list'; readonly values: readonly string[] }
+  /** A code of a classification the route version pins, such as an ISCO-08 occupation. */
+  | { readonly kind: 'code' | 'codes'; readonly classification: Classification };
+
+/** The classifications a route version may pin, by the name of its pin. */
+export const classifications = ['occupations', 'studyFields'] as const;
+export type Classification = (typeof classifications)[number];
 
 export interface FactDefinition {
   readonly type: FactType;
@@ -166,7 +217,10 @@ export const factCatalog = {
     nonNegative: true,
     derive: ({ environment, personId }) => {
       const level = person(environment, personId).educationLevel;
-      return { value: level === undefined ? integerRange(0, 8) : integerRange(level, level) };
+      return {
+        value:
+          level === undefined ? integerRange(0, maxEducationLevel) : integerRange(level, level),
+      };
     },
   },
   'person.monthlyActiveIncome': {
@@ -304,11 +358,7 @@ export const factCatalog = {
     scope: 'edge',
     derive: (binding) => {
       const edge = edgeOf(binding);
-      if (edge.kind === 'parent' || edge.end === undefined) return dateFact(undefined);
-      if (edge.end !== 'none') return dateFact(edge.end);
-      const unknown = unknownDate();
-      const recordedOn = binding.environment.snapshot.snapshot.recordedOn;
-      return { value: { ...unknown, min: tryAddDays(recordedOn, 1) ?? unknown.max } };
+      return endFact(edge.kind === 'parent' ? undefined : edge.end, binding.environment);
     },
   },
   /** Whether the candidate depends financially on the person they were reached from. */
@@ -354,6 +404,181 @@ export const factCatalog = {
       return { value: citizenshipsDuring(person(binding.environment, binding.personId), during) };
     },
   },
+  /** Where the employer or main client is seated. */
+  'workPeriod.employerCountry': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').employerCountry) }),
+  },
+  /** Where the person physically works from. */
+  'workPeriod.workplaceCountry': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').workplaceCountry) }),
+  },
+  'workPeriod.relation': {
+    type: { kind: 'enum', values: workRelations },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').relation) }),
+  },
+  'workPeriod.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').occupation) }),
+  },
+  /** The role the person says they had; a route's legal definition stays an assessment. */
+  'workPeriod.capacity': {
+    type: { kind: 'enum', values: workCapacities },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').capacity) }),
+  },
+  'workPeriod.fullTime': {
+    type: { kind: 'boolean' },
+    scope: 'workPeriod',
+    derive: (binding) => ({
+      value: booleanValue(recordOf(binding, 'workPeriod').fullTime ?? 'unknown'),
+    }),
+  },
+  'workPeriod.start': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => dateFact(recordOf(binding, 'workPeriod').start),
+  },
+  /** The last day worked; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'workPeriod.end': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => endFact(recordOf(binding, 'workPeriod').end, binding.environment),
+  },
+  'residencePeriod.country': {
+    type: { kind: 'country' },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').country) }),
+  },
+  'residencePeriod.basis': {
+    type: { kind: 'enum', values: residenceBases },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').basis) }),
+  },
+  'residencePeriod.start': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => dateFact(recordOf(binding, 'residencePeriod').start),
+  },
+  /** The last day lived there; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'residencePeriod.end': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => endFact(recordOf(binding, 'residencePeriod').end, binding.environment),
+  },
+  /** Where the business the person works at, and co-owns, is seated. */
+  'workPeriod.business.country': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(businessOf(binding)?.country) }),
+  },
+  /** Since when that business operates. */
+  'workPeriod.business.operatingSince': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => dateFact(businessOf(binding)?.operatingSince),
+  },
+  /** How many people that business employs. */
+  'workPeriod.business.employees': {
+    type: { kind: 'integer' },
+    scope: 'workPeriod',
+    derive: (binding) => {
+      const employees = businessOf(binding)?.employees;
+      return {
+        value:
+          employees === undefined ? integerRange(0, undefined) : integerRange(employees, employees),
+      };
+    },
+  },
+  'jobOffer.country': {
+    type: { kind: 'country' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').country) }),
+  },
+  'jobOffer.sector': {
+    type: { kind: 'enum', values: isicSections },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').sector) }),
+  },
+  'jobOffer.temporary': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: booleanValue(recordOf(binding, 'jobOffer').temporary) }),
+  },
+  'jobOffer.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').occupation) }),
+  },
+  /** The gross annual salary the offer states, in the route's currency at `factsAsOf`. */
+  'jobOffer.annualSalary': {
+    type: { kind: 'money' },
+    scope: 'jobOffer',
+    nonNegative: true,
+    derive: (binding) => {
+      const salary = new MoneySum(binding.environment);
+      const stated = recordOf(binding, 'jobOffer').annualSalary;
+      if (stated === undefined) salary.open([], true);
+      else salary.add(toExact(stated), true);
+      return salary.result();
+    },
+  },
+  /** Whether the employer will sponsor the application. */
+  'jobOffer.sponsored': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({
+      value: booleanValue(recordOf(binding, 'jobOffer').sponsored ?? 'unknown'),
+    }),
+  },
+  /** The qualification's ISCED 2011 level; unknown, any level up to the person's education level. */
+  'qualification.level': {
+    type: { kind: 'integer' },
+    scope: 'qualification',
+    nonNegative: true,
+    derive: (binding) => {
+      const { level } = recordOf(binding, 'qualification');
+      if (level !== undefined) return { value: integerRange(level, level) };
+      const highest = person(binding.environment, binding.personId).educationLevel;
+      return { value: integerRange(0, highest ?? maxEducationLevel) };
+    },
+  },
+  'qualification.field': {
+    type: { kind: 'code', classification: 'studyFields' },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').field) }),
+  },
+  /** A qualification may come from a state that no longer exists, such as the USSR. */
+  'qualification.country': {
+    type: { kind: 'country', formerStates: true },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').country) }),
+  },
+  'qualification.completed': {
+    type: { kind: 'date' },
+    scope: 'qualification',
+    derive: (binding) => dateFact(recordOf(binding, 'qualification').completed),
+  },
+  'registration.country': {
+    type: { kind: 'country' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').country) }),
+  },
+  'registration.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').occupation) }),
+  },
+  'registration.since': {
+    type: { kind: 'date' },
+    scope: 'registration',
+    derive: (binding) => dateFact(recordOf(binding, 'registration').since),
+  },
 } as const satisfies Record<string, FactDefinition>;
 
 export type FactKey = keyof typeof factCatalog;
@@ -378,6 +603,14 @@ function person(environment: FactEnvironment, id: string): Person {
 
 function dateFact(value: DateValue | undefined): Derived {
   return { value: value === undefined ? unknownDate() : { type: 'date', ...dateRange(value) } };
+}
+
+/** An end that may not have come: `"none"` holds as of `recordedOn`, so the end is later. */
+function endFact(end: DateValue | 'none' | undefined, environment: FactEnvironment): Derived {
+  if (end !== 'none') return dateFact(end);
+  const unknown = unknownDate();
+  const recordedOn = environment.snapshot.snapshot.recordedOn;
+  return { value: { ...unknown, min: tryAddDays(recordedOn, 1) ?? unknown.max } };
 }
 
 const relationshipMarkers: Record<CoupleKind, CompletenessMarker> = {
@@ -444,6 +677,15 @@ function citizenshipsDuring(subject: Person, during: Interval<CalendarDate>): To
         : onOrBefore(since, during);
     return and([acquired, notLostDuring(citizenship, during)]);
   });
+}
+
+/**
+ * The countries whose citizenship a person holds on `at`, certainly or possibly: whose documents
+ * they may ask for, such as a document guide's issuing country (ADR-0039).
+ */
+export function citizenshipsHeldOn(subject: Person, at: CalendarDate): string[] {
+  const { definite, possible } = citizenshipsDuring(subject, { min: at, max: at });
+  return [...definite, ...possible];
 }
 
 /**
@@ -670,6 +912,19 @@ class MoneySum {
 function edgeOf(binding: FactBinding): Relationship {
   if (binding.edge === undefined) throw new RangeError('An edge fact outside a dependent rule');
   return binding.edge;
+}
+
+function recordOf<Kind extends RecordKind>(binding: FactBinding, kind: Kind): RecordValues[Kind] {
+  const { record } = binding;
+  if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside its collection`);
+  return record.value as RecordValues[Kind];
+}
+
+/** The business a work period is at, which the snapshot only links while its person owns it. */
+function businessOf(binding: FactBinding): Asset | undefined {
+  const { business } = recordOf(binding, 'workPeriod');
+  if (business === undefined) return undefined;
+  return binding.environment.snapshot.snapshot.assets.find(({ id }) => id === business);
 }
 
 function otherEnd(edge: Relationship, id: string): string {

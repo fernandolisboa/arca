@@ -25,12 +25,15 @@ const tables = [
   'asset',
   'asset_owner',
   'case_file',
+  'checklist_mark',
   'comparison_preferences',
   'dependence',
   'member',
   'person',
   'person_finances',
   'person_profile',
+  'plan_move',
+  'plan_move_dependent',
   'relationship',
   'rule_report',
   'share',
@@ -281,8 +284,21 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
         'liquid',
         'sold',
         'updated_at',
+        'country',
+        'operating_since',
+        'employees',
       ],
       'asset_owner UPDATE': ['confirmed'],
+      'checklist_mark INSERT': [
+        'case_id',
+        'person_id',
+        'route_id',
+        'document_id',
+        'state',
+        'vault_document_id',
+        'vault_owner_id',
+      ],
+      'checklist_mark UPDATE': ['state', 'vault_document_id', 'vault_owner_id', 'updated_at'],
       'comparison_preferences INSERT': ['account_id', 'case_id', 'preferences'],
       'comparison_preferences UPDATE': ['preferences', 'updated_at'],
       'dependence INSERT': ['case_id', 'person_id', 'depends_on_id'],
@@ -292,6 +308,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'person_finances UPDATE': ['incomes', 'assets_recorded_in_full', 'updated_at'],
       'person_profile INSERT': ['person_id', 'facts', 'dependence_answered'],
       'person_profile UPDATE': ['facts', 'dependence_answered', 'updated_at'],
+      'plan_move INSERT': ['case_id', 'position', 'stage', 'route_id', 'principal_id'],
+      'plan_move_dependent INSERT': ['move_id', 'case_id', 'person_id'],
       'relationship INSERT': ['id', 'case_id', 'kind', 'from_person_id', 'to_person_id', 'details'],
       'relationship UPDATE': ['details'],
       'rule_report INSERT': [
@@ -1007,6 +1025,133 @@ describe('rule reports (spec 0007, R8)', () => {
   });
 });
 
+describe('the family plan (ADR-0040)', () => {
+  const addMove = async (
+    client: pg.Client,
+    caseId: string,
+    principal: string,
+    taken: readonly string[] = [],
+  ) => {
+    const inserted = await client.query<{ id: string }>(
+      `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+       VALUES ($1, 0, 1, 'qm-sample', $2) RETURNING id`,
+      [caseId, principal],
+    );
+    const moveId = inserted.rows[0]?.id ?? '';
+    for (const person of taken) {
+      await client.query(
+        `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+        [moveId, caseId, person],
+      );
+    }
+    return moveId;
+  };
+  const moves = (client: pg.Client) =>
+    ids(client, "SELECT principal_id || ':' || stage AS id FROM cases.plan_move");
+  const taken = (client: pg.Client) =>
+    ids(client, 'SELECT person_id AS id FROM cases.plan_move_dependent');
+
+  it('lets every member of the case read, add and delete the plan, and nobody else', async () => {
+    const { caseId, otherCaseId, alice, bruno, diana, people } = await seedFamily();
+    const kept = await as(
+      'app_api',
+      alice,
+      (client) => addMove(client, caseId, people.bruno, [people.child, people.grandparent]),
+      { commit: true },
+    );
+    await as('app_api', bruno, async (client) => {
+      expect(await moves(client)).toEqual([`${people.bruno}:1`]);
+      expect(await taken(client)).toEqual(sorted(people.child, people.grandparent));
+      expect(await refused(client, 'UPDATE cases.plan_move SET stage = 2')).toBe(
+        insufficientPrivilege,
+      );
+      const deleted = await client.query('DELETE FROM cases.plan_move WHERE case_id = $1', [
+        caseId,
+      ]);
+      expect(deleted.rowCount).toBe(1);
+      expect(await taken(client)).toEqual([]);
+    });
+    await as('app_api', diana, async (client) => {
+      expect(await moves(client)).toEqual([]);
+      expect(await taken(client)).toEqual([]);
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, caseId, people.alice],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect((await client.query('DELETE FROM cases.plan_move_dependent')).rowCount).toBe(0);
+      // A move of another case cannot be named under her own.
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, otherCaseId, people.alice],
+        ),
+      ).toBe(foreignKeyViolation);
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+           VALUES ($1, 1, 1, 'qm-sample', $2)`,
+          [caseId, people.alice],
+        ),
+      ).toBe(insufficientPrivilege);
+      const deleted = await client.query('DELETE FROM cases.plan_move');
+      expect(deleted.rowCount).toBe(0);
+      // Her own case cannot name a person of another case.
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+           VALUES ($1, 0, 1, 'qm-sample', $2)`,
+          [otherCaseId, people.alice],
+        ),
+      ).toBe(foreignKeyViolation);
+    });
+    expect(await as('app_api', undefined, moves)).toEqual([]);
+    expect(await countAsAdmin('FROM cases.plan_move_dependent WHERE move_id = $1', [kept])).toBe(2);
+  });
+
+  it('goes with the people it names', async () => {
+    const { caseId, alice, people } = await seedFamily();
+    await as('app_api', alice, (client) => addMove(client, caseId, people.alice, [people.child]), {
+      commit: true,
+    });
+    await as(
+      'app_api',
+      alice,
+      (client) => client.query('DELETE FROM cases.person WHERE id = $1', [people.child]),
+      { commit: true },
+    );
+    expect(await countAsAdmin('FROM cases.plan_move_dependent WHERE case_id = $1', [caseId])).toBe(
+      0,
+    );
+    expect(await countAsAdmin('FROM cases.plan_move WHERE case_id = $1', [caseId])).toBe(1);
+  });
+
+  it('refuses a stage or a place outside the plan’s bounds', async () => {
+    const { caseId, alice, people } = await seedFamily();
+    await as('app_api', alice, async (client) => {
+      for (const [position, stage] of [
+        [20, 1],
+        [0, 0],
+        [0, 7],
+      ]) {
+        expect(
+          await refused(
+            client,
+            `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+             VALUES ($1, $2, $3, 'qm-sample', $4)`,
+            [caseId, position, stage, people.alice],
+          ),
+        ).toBe(checkViolation);
+      }
+    });
+  });
+});
+
 describe('comparison preferences (ADR-0026)', () => {
   const preferences = (weight: number) =>
     JSON.stringify({ weights: { climate: weight }, ratings: {}, ownCriteria: [], hidden: [] });
@@ -1102,6 +1247,171 @@ describe('comparison preferences (ADR-0026)', () => {
       countAsAdmin('FROM cases.comparison_preferences WHERE account_id = $1', [account]);
     expect(await rowsOf(bruno)).toBe(0);
     expect(await rowsOf(alice)).toBe(1);
+  });
+});
+
+describe('checklist marks (spec #519)', () => {
+  const markChild = (
+    client: pg.Client,
+    { caseId, people }: Family,
+    owner: { document: string; account: string } | null = null,
+  ) =>
+    client.query(
+      `INSERT INTO cases.checklist_mark
+         (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+       VALUES ($1, $2, 'pt-d7', 'birth-certificate', 'had', $3, $4)`,
+      [caseId, people.child, owner?.document ?? null, owner?.account ?? null],
+    );
+  const marks = (client: pg.Client) =>
+    ids(client, `SELECT person_id || ':' || document_id AS id FROM cases.checklist_mark`);
+  /** A confirmed vault document of the account's, which only the admin may plant. */
+  const vaultDocument = async (account: string) =>
+    withClient(adminTarget(database), async (client) => {
+      const result = await client.query<{ id: string }>(
+        `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label, confirmed_at)
+         VALUES ($1, 'other', 1, decode(repeat('ab', 32), 'hex'), 'documents/' || gen_random_uuid(),
+                 decode('01', 'hex'), now())
+         RETURNING id`,
+        [account],
+      );
+      return result.rows[0]?.id ?? '';
+    });
+
+  it('lets only the keeper write a mark, linking only their own document', async () => {
+    const family = await seedFamily();
+    const { alice, bruno, people } = family;
+    const own = await vaultDocument(alice);
+    const brunos = await vaultDocument(bruno);
+    await as(
+      'app_api',
+      alice,
+      (client) => markChild(client, family, { document: own, account: alice }),
+      {
+        commit: true,
+      },
+    );
+    await as('app_api', alice, async (client) => {
+      expect(
+        await refused(
+          client,
+          `UPDATE cases.checklist_mark SET vault_document_id = $1, vault_owner_id = $2`,
+          [brunos, bruno],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect(await refused(client, `UPDATE cases.checklist_mark SET state = 'missing'`)).toBe(
+        checkViolation,
+      );
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.checklist_mark
+             (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had', $3, $4)`,
+          [family.caseId, people.child, brunos, bruno],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had')`,
+          [family.caseId, people.bruno],
+        ),
+      ).toBe(insufficientPrivilege);
+    });
+    await as('app_api', bruno, async (client) => {
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had')`,
+          [family.caseId, people.child],
+        ),
+      ).toBe(insufficientPrivilege);
+      const updated = await client.query(`UPDATE cases.checklist_mark SET state = 'missing'`);
+      expect(updated.rowCount).toBe(0);
+      const deleted = await client.query('DELETE FROM cases.checklist_mark');
+      expect(deleted.rowCount).toBe(0);
+    });
+    expect(
+      await countAsAdmin(`FROM cases.checklist_mark WHERE person_id = $1 AND state = 'had'`, [
+        people.child,
+      ]),
+    ).toBe(1);
+  });
+
+  it('shows a mark to its keeper and to a member the checklist is shared with, and to no one else', async () => {
+    const family = await seedFamily();
+    const { caseId, alice, bruno, diana, people } = family;
+    await as('app_api', alice, (client) => markChild(client, family), { commit: true });
+    const mark = `${people.child}:birth-certificate`;
+    expect(await as('app_api', alice, marks)).toEqual([mark]);
+    // The child's profile is shared with Bruno, which shows no marks.
+    expect(await as('app_api', bruno, marks)).toEqual([]);
+    await withClient(adminTarget(database), (client) =>
+      client.query(
+        `INSERT INTO cases.share (case_id, person_id, grantee_account_id, scope)
+         VALUES ($1, $2, $3, 'checklist')`,
+        [caseId, people.child, bruno],
+      ),
+    );
+    expect(await as('app_api', bruno, marks)).toEqual([mark]);
+    // The checklist share reads, never writes.
+    await as('app_api', bruno, async (client) => {
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had')`,
+          [caseId, people.child],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect(
+        (await client.query(`UPDATE cases.checklist_mark SET state = 'missing'`)).rowCount,
+      ).toBe(0);
+      expect((await client.query('DELETE FROM cases.checklist_mark')).rowCount).toBe(0);
+    });
+    expect(await as('app_api', diana, marks)).toEqual([]);
+    expect(await as('app_api', undefined, marks)).toEqual([]);
+    expect(
+      await as('app_jobs', alice, (client) =>
+        refused(client, 'SELECT 1 FROM cases.checklist_mark'),
+      ),
+    ).toBe(insufficientPrivilege);
+  });
+
+  it('goes with its person, and clears only the link when the linked document goes', async () => {
+    const family = await seedFamily();
+    const { alice, people } = family;
+    const own = await vaultDocument(alice);
+    await as(
+      'app_api',
+      alice,
+      (client) => markChild(client, family, { document: own, account: alice }),
+      {
+        commit: true,
+      },
+    );
+    await withClient(adminTarget(database), (client) =>
+      client.query('DELETE FROM vault.document WHERE id = $1', [own]),
+    );
+    expect(
+      await countAsAdmin(
+        `FROM cases.checklist_mark WHERE person_id = $1 AND vault_document_id IS NULL AND vault_owner_id IS NULL`,
+        [people.child],
+      ),
+    ).toBe(1);
+    await as(
+      'app_api',
+      alice,
+      (client) => client.query('DELETE FROM cases.member WHERE account_id = $1', [alice]),
+      {
+        commit: true,
+      },
+    );
+    expect(
+      await countAsAdmin('FROM cases.checklist_mark WHERE person_id = $1', [people.child]),
+    ).toBe(0);
   });
 });
 

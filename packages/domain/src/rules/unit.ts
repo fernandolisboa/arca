@@ -5,11 +5,17 @@ import type { CaseSnapshot, Relationship } from '../case/snapshot.js';
 import type { CurrencyPair } from '../money/fx.js';
 import { type Truth, and, or } from '../logic/truth.js';
 import type { CatalogEntry } from './catalog.js';
-import { type Prepared, type VersionContext, environmentOf, prepare } from './context.js';
-import { type Trace, evaluate, truthOf } from './evaluate.js';
+import {
+  type Prepared,
+  type VersionContext,
+  environmentOf,
+  prepare,
+  principalFrame,
+} from './context.js';
+import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
 import { type Expression, childrenOf } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import { type MissingFact, decisiveFacts, distinct, traceGaps } from './missing.js';
+import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
 
 /**
  * A dependent: the rules that cover them, and each last edge they were reached by with whether
@@ -27,12 +33,12 @@ export interface PossibleDependent extends Dependent {
 }
 
 /**
- * Someone the version does not cover: no rule's path reaches them, no condition holds, or, while
- * any dependent rule lacks its reference date, nobody can be ruled out.
+ * Someone outside the unit: no rule's path reaches them, no condition holds, while any dependent
+ * rule lacks its reference date nobody can be ruled out, or a family plan leaves them behind.
  */
 export interface ExcludedPerson {
   readonly personId: string;
-  readonly reason: 'not_related' | 'condition_not_met' | 'reference_date_missing';
+  readonly reason: 'not_related' | 'condition_not_met' | 'reference_date_missing' | 'not_chosen';
 }
 
 /**
@@ -82,6 +88,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
   const markers = new Map<string, MissingMarker>();
   const traces: Trace[] = [];
   const unreadDates = new Set<string>();
+  const chosen = prepared.context.chosenDependents;
+  const counted = (personId: string) => chosen === undefined || chosen.includes(personId);
 
   for (const rule of version.dependents) {
     const date = rule.at === undefined ? prepared.factsAsOf : prepared.referenceDates.get(rule.at);
@@ -116,7 +124,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
           edge: arrival.edge,
           ...(arrival.firstEdge === undefined ? {} : { firstEdge: arrival.firstEdge }),
         });
-        traces.push(trace);
+        // Someone the plan leaves out adds no missing date or rate to the unit that goes.
+        if (counted(person.id)) traces.push(trace);
         const condition = truthOf(trace);
         const truth = and([arrival.reached, condition]);
         if (truth === false) continue;
@@ -150,7 +159,10 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
       rules: [...(candidate?.rules ?? [])],
       edges: [...(candidate?.edges ?? [])].map(([edge, holds]) => ({ edge, holds })),
     };
-    if (candidate?.truth === true) dependents.push(member);
+    const covered = candidate !== undefined && candidate.truth !== false;
+    if (covered && !counted(id)) {
+      excluded.push({ personId: id, reason: 'not_chosen' });
+    } else if (candidate?.truth === true) dependents.push(member);
     else if (candidate?.truth === 'unknown') {
       possibleDependents.push({ ...member, missingFacts: distinct(candidate.gaps) });
     } else {
@@ -166,7 +178,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
     }
   }
   const gaps = traceGaps(traces);
-  const missingMarkers = [...markers.values()];
+  // A plan names everyone who goes, so a relative missing from the case cannot join the unit.
+  const missingMarkers = chosen === undefined ? [...markers.values()] : [];
   const unit: Unit = {
     principalId,
     dependents,
@@ -178,6 +191,40 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
     missingRates: gaps.missingRates,
   };
   return { unit, traces };
+}
+
+/**
+ * The unit with the traces of its dependent conditions, and the principal's frame, which reads the
+ * unit as the unit facts see it.
+ */
+export function unitFrame(prepared: Prepared): {
+  readonly unit: Unit;
+  readonly traces: readonly Trace[];
+  readonly frame: Frame;
+} {
+  const { unit, traces } = unitOf(prepared);
+  return {
+    unit,
+    traces,
+    frame: principalFrame(prepared, environmentOf(prepared, unitEnvironment(unit))),
+  };
+}
+
+/**
+ * A per-dependent item read once per last edge the dependent was reached by: through each edge it
+ * applies when some rule covers them through it and the item's own truth holds there. A dependent
+ * reached by several edges is counted once, so the item applies when it applies through any.
+ */
+export function throughEdges<T extends { readonly applies: Truth }>(
+  frame: Frame,
+  dependent: Dependent,
+  read: (at: Frame) => T,
+): { readonly applies: Truth; readonly perEdge: readonly T[] } {
+  const perEdge = dependent.edges.map(({ edge, holds }) => {
+    const reading = read({ ...frame, current: dependent.personId, edge });
+    return { ...reading, applies: and([holds, reading.applies]) };
+  });
+  return { applies: or(perEdge.map((reading) => reading.applies)), perEdge };
 }
 
 /** The unit as facts read it: the principal is included. */
@@ -194,4 +241,19 @@ export function unitEnvironment(unit: Unit): NonNullable<FactEnvironment['unit']
 function readsFirstEdge(expression: Expression): boolean {
   if (expression.op === 'fact') return resolveFactReference(expression.key)?.target === 'firstEdge';
   return childrenOf(expression).some(readsFirstEdge);
+}
+
+/** What makes each possible dependent possible, and the unit's own open markers. */
+export function unitGaps(unit: Unit): UnitGaps {
+  const byPerson = new Map(
+    unit.possibleDependents.map((member) => [member.personId, member.missingFacts]),
+  );
+  const markers = unit.missingMarkers.map((missing): MissingFact => ({
+    kind: 'marker',
+    ...missing,
+  }));
+  return {
+    member: (personId) => byPerson.get(personId) ?? [],
+    all: () => [...unit.possibleDependents.flatMap((member) => member.missingFacts), ...markers],
+  };
 }

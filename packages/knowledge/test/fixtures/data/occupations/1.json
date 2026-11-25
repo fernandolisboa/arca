@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "occupations",
+  "number": 1,
+  "classification": "Fixture: a few ISCO-08 unit groups",
+  "sources": [
+    {
+      "id": "fixture-isco",
+      "url": "https://www.gov.example/fixture-isco",
+      "title": "Fixture occupation codes",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "codes": ["1420", "2211", "2512", "4311"]
+}

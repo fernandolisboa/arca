@@ -9,6 +9,8 @@ const base = {
   assets: [],
 };
 
+const offer = { country: 'QM', sector: 'J', temporary: false };
+
 function accepts(input: object): boolean {
   return caseSnapshotSchema.safeParse(input).success;
 }
@@ -194,8 +196,143 @@ describe('CaseSnapshot', () => {
         people: [{ id: 'p1', jobOffers: [{ country: 'QM', sector: 'Z', temporary: true }] }],
       },
     ],
+    [
+      'a work period that ends before it starts',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ start: '2020-05', end: '2020-04' }] }] },
+    ],
+    [
+      'a label on a work period, which stays with the profile',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ label: 'Clínica' }] }] },
+    ],
+    [
+      'an occupation that is not an ISCO-08 unit group code',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ occupation: '22' }] }] },
+    ],
+    [
+      'a residence period that ends before it starts',
+      {
+        ...base,
+        people: [
+          { id: 'p1', residencePeriods: [{ country: 'QM', start: '2020', end: '2019-12' }] },
+        ],
+      },
+    ],
+    [
+      'a residence period with no country',
+      { ...base, people: [{ id: 'p1', residencePeriods: [{ basis: 'citizen' }] }] },
+    ],
+    [
+      'a residence basis outside its set',
+      { ...base, people: [{ id: 'p1', residencePeriods: [{ country: 'QM', basis: 'visitor' }] }] },
+    ],
+    [
+      'more residence periods than the limit',
+      {
+        ...base,
+        people: [
+          { id: 'p1', residencePeriods: Array.from({ length: 31 }, () => ({ country: 'QM' })) },
+        ],
+      },
+    ],
+    [
+      'more work periods than the limit',
+      { ...base, people: [{ id: 'p1', workPeriods: Array.from({ length: 21 }, () => ({})) }] },
+    ],
+    [
+      'a job offer with an occupation that is not an ISCO-08 unit group code',
+      {
+        ...base,
+        people: [{ id: 'p1', jobOffers: [{ ...offer, occupation: '251' }] }],
+      },
+    ],
+    [
+      'a job offer with a negative salary',
+      {
+        ...base,
+        people: [
+          { id: 'p1', jobOffers: [{ ...offer, annualSalary: { amount: -1, currency: 'EUR' } }] },
+        ],
+      },
+    ],
   ])('rejects %s', (_label, input) => {
     expect(accepts(input)).toBe(false);
+  });
+
+  const business = {
+    ...asset,
+    kind: 'business',
+    country: 'BR',
+    operatingSince: '2018-05',
+    employees: 6,
+  };
+
+  it('accepts a business with its country, operating start and head count, any of them unknown', () => {
+    expect(accepts({ ...base, assets: [business] })).toBe(true);
+    expect(accepts({ ...base, assets: [{ ...asset, kind: 'business' }] })).toBe(true);
+  });
+
+  it.each([
+    ['a country on an asset that is not a business', { ...asset, country: 'BR' }],
+    ['an operating start on an asset that is not a business', { ...asset, operatingSince: '2018' }],
+    ['a head count on an asset that is not a business', { ...asset, employees: 3 }],
+    ['a negative head count', { ...business, employees: -1 }],
+    ['a fractional head count', { ...business, employees: 1.5 }],
+  ])('rejects %s', (_label, value) => {
+    expect(accepts({ ...base, assets: [value] })).toBe(false);
+  });
+
+  it('links a work period only to a business its person owns', () => {
+    const at = (link: string, assets: object[]) =>
+      accepts({ ...base, people: [{ id: 'p1', workPeriods: [{ business: link }] }], assets });
+    expect(at('a1', [business])).toBe(true);
+    expect(at('a2', [business])).toBe(false);
+    expect(at('a1', [asset])).toBe(false);
+    expect(
+      accepts({
+        ...base,
+        members: ['p1', 'p2'],
+        people: [{ id: 'p1' }, { id: 'p2', workPeriods: [{ business: 'a1' }] }],
+        assets: [business],
+      }),
+    ).toBe(false);
+  });
+
+  it('accepts job offers with or without an occupation, a salary and sponsorship', () => {
+    for (const jobOffer of [
+      offer,
+      {
+        ...offer,
+        occupation: '2512',
+        annualSalary: { amount: 6_000_000, currency: 'GBP' },
+        sponsored: true,
+      },
+      { ...offer, sponsored: false },
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', jobOffers: [jobOffer] }] })).toBe(true);
+    }
+  });
+
+  it('accepts work periods with any part unknown, ongoing ones, and one that starts and ends in a month', () => {
+    for (const workPeriods of [
+      [],
+      [{}],
+      [{ start: '2021-03', end: 'none' }],
+      [{ start: '2020-05', end: '2020-05' }],
+      [{ occupation: '2211', relation: 'owner', capacity: 'executive', fullTime: true }],
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', workPeriods }] })).toBe(true);
+    }
+  });
+
+  it('accepts residence periods with an unknown basis or dates, and ongoing ones', () => {
+    for (const residencePeriods of [
+      [],
+      [{ country: 'QM' }],
+      [{ country: 'QM', basis: 'permanent_residence', start: '2021-03', end: 'none' }],
+      [{ country: 'QM', basis: 'other', start: '2020-05', end: '2020-05' }],
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', residencePeriods }] })).toBe(true);
+    }
   });
 
   it('accepts unknown, none and dates for things that may not have happened', () => {

@@ -403,6 +403,211 @@ describe('checkExpression', () => {
   });
 });
 
+describe('record collections and covers (ADR-0036)', () => {
+  const capacity = {
+    op: 'eq',
+    left: fact('workPeriod.capacity'),
+    right: { op: 'token', value: 'manager' },
+  };
+  const covers = (over: string, extra: object = {}): object => ({
+    op: 'covers',
+    over,
+    where: capacity,
+    atLeast: 'P1Y',
+    window: 'P3Y',
+    continuous: true,
+    ...extra,
+  });
+
+  it.each<[string, unknown, CheckScope]>([
+    ['covers over the person’s work periods', covers('person.workPeriods'), requirement],
+    [
+      'covers with a declared reference date',
+      covers('person.workPeriods', { at: 'filingDate' }),
+      requirement,
+    ],
+    [
+      'the principal’s work periods from a dependent',
+      { op: 'some', over: 'principal.workPeriods', where: capacity },
+      dependent,
+    ],
+    [
+      'two years of legal residence in a country, over the person’s residence periods',
+      covers('person.residencePeriods', {
+        where: {
+          op: 'all',
+          operands: [
+            {
+              op: 'eq',
+              left: fact('residencePeriod.country'),
+              right: { op: 'token', value: 'QM' },
+            },
+            {
+              op: 'ne',
+              left: fact('residencePeriod.basis'),
+              right: { op: 'token', value: 'other' },
+            },
+          ],
+        },
+        atLeast: 'P2Y',
+        continuous: false,
+      }),
+      requirement,
+    ],
+    [
+      'the owner’s own facts inside a work period',
+      {
+        op: 'every',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('person.residenceCountry'),
+          right: fact('workPeriod.workplaceCountry'),
+        },
+      },
+      requirement,
+    ],
+    [
+      'a job offer’s salary against a threshold in the route’s currency',
+      {
+        op: 'some',
+        over: 'principal.jobOffers',
+        where: {
+          op: 'all',
+          operands: [
+            fact('jobOffer.sponsored'),
+            { op: 'gte', left: fact('jobOffer.annualSalary'), right: euros(4_000_000) },
+          ],
+        },
+      },
+      dependent,
+    ],
+  ])('accepts %s', (_label, input, scope) => {
+    expect(check(input, scope).issues).toEqual([]);
+  });
+
+  it.each<[string, unknown, string]>([
+    [
+      'a work-period fact outside its collection',
+      capacity,
+      '/left: workPeriod.capacity cannot be read here',
+    ],
+    ['covers over people', covers('unit.members'), ': covers reads a collection of periods'],
+    [
+      'covers of no time',
+      covers('person.workPeriods', { atLeast: 'P0D' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
+      'covers in an empty window',
+      covers('person.workPeriods', { window: 'P0Y0M' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
+      'covers at an undeclared date',
+      covers('person.workPeriods', { at: 'arrival' }),
+      ': Reference date arrival is not declared by the version',
+    ],
+    [
+      'work periods nested in the unit',
+      { op: 'some', over: 'unit.members', where: covers('person.workPeriods') },
+      '/where: Collections do not nest, except lineage.links inside principal.ancestors',
+    ],
+    [
+      'a residence-period fact inside work periods',
+      {
+        op: 'some',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('residencePeriod.country'),
+          right: { op: 'token', value: 'PT' },
+        },
+      },
+      '/where/left: residencePeriod.country cannot be read here',
+    ],
+    [
+      'a residence basis outside its values',
+      {
+        op: 'some',
+        over: 'principal.residencePeriods',
+        where: {
+          op: 'eq',
+          left: fact('residencePeriod.basis'),
+          right: { op: 'token', value: 'visitor' },
+        },
+      },
+      '/where: The values are outside the domain of the fact',
+    ],
+    [
+      'a relation outside its values',
+      {
+        op: 'some',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('workPeriod.relation'),
+          right: { op: 'token', value: 'intern' },
+        },
+      },
+      '/where: The values are outside the domain of the fact',
+    ],
+    [
+      'a job-offer fact inside work periods',
+      { op: 'some', over: 'person.workPeriods', where: fact('jobOffer.sponsored') },
+      '/where: jobOffer.sponsored cannot be read here',
+    ],
+    [
+      'covers over job offers, which have no period',
+      { ...covers('person.jobOffers'), where: fact('jobOffer.sponsored') },
+      ': covers reads a collection of periods',
+    ],
+  ])('refuses %s', (_label, input, issue) => {
+    expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);
+  });
+
+  const licensed = {
+    op: 'eq',
+    left: fact('registration.country'),
+    right: { op: 'token', value: 'QM' },
+  };
+  const graduate = {
+    op: 'gte',
+    left: fact('qualification.level'),
+    right: { op: 'int', value: 6 },
+  };
+
+  it.each<[string, unknown]>([
+    ['the person’s registrations', { op: 'some', over: 'person.registrations', where: licensed }],
+    [
+      'the principal’s qualifications',
+      { op: 'count', over: 'principal.qualifications', where: graduate },
+    ],
+  ])('accepts %s', (_label, input) => {
+    expect(check(input).issues).toEqual([]);
+  });
+
+  it.each<[string, unknown, string]>([
+    [
+      'a registration fact outside its collection',
+      licensed,
+      '/left: registration.country cannot be read here',
+    ],
+    [
+      'a qualification fact inside registrations',
+      { op: 'some', over: 'person.registrations', where: graduate },
+      '/where/left: qualification.level cannot be read here',
+    ],
+    [
+      'covers over qualifications, which are not periods',
+      covers('person.qualifications', { where: graduate }),
+      ': covers reads a collection of periods',
+    ],
+  ])('refuses %s', (_label, input, issue) => {
+    expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);
+  });
+});
+
 describe('isNonNegative', () => {
   it.each<[string, unknown, boolean]>([
     ['a count', { op: 'count', over: 'unit.members', where: { op: 'bool', value: true } }, true],

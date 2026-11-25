@@ -30,6 +30,8 @@ const parenthood = 'ad9e8f7a-6b5c-4d4e-8f1a-0b9c8d7e6f5a';
 const known = {
   countries: new Set(['BR', 'PT', 'US', 'IT']),
   formerCountries: new Set(['YUCS']),
+  occupations: new Set(['2211', '2512']),
+  studyFields: new Set(['0912', '0613']),
 };
 
 const empty: QuestionState = {
@@ -167,6 +169,98 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(answerOf(question('studying'), applied.state)).toBeUndefined();
   });
 
+  it('saves work periods with their label, leaving out what is not known', () => {
+    const periods = [
+      {
+        label: 'Clínica',
+        occupation: '2211',
+        relation: 'employee',
+        capacity: 'manager',
+        fullTime: false,
+        employerCountry: 'BR',
+        workplaceCountry: 'BR',
+        start: '2019-03',
+        end: 'none',
+      },
+      { occupation: '2512', relation: 'contractor', start: '2012', end: '2019-02' },
+      { relation: 'owner', business: house },
+    ];
+    const applied = apply(empty, { workPeriods: periods });
+    expect(applied.ok && applied.state.facts).toEqual({ workPeriods: periods });
+    if (!applied.ok) return;
+    expect(answerOf(question('workPeriods'), applied.state)).toEqual(periods);
+    const none = apply(applied.state, { workPeriods: [] });
+    expect(none.ok && none.state.facts).toEqual({ workPeriods: [] });
+    const unknown = apply(applied.state, { workPeriods: null });
+    expect(unknown.ok && unknown.state.facts).toEqual({});
+  });
+
+  it('saves qualifications and registrations, leaving out what is not known', () => {
+    const qualifications = [
+      { level: 7, field: '0912', country: 'BR', completed: '2012-12' },
+      { level: 6, country: 'YUCS' },
+    ];
+    const registrations = [{ country: 'BR', occupation: '2211', since: '2013-02' }, {}];
+    const applied = apply(empty, { educationLevel: 7, qualifications, registrations });
+    expect(applied.ok && applied.state.facts).toEqual({
+      educationLevel: 7,
+      qualifications,
+      registrations,
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('qualifications'), applied.state)).toEqual(qualifications);
+    expect(question('qualifications').step).toBe('studies');
+    expect(question('registrations').step).toBe('work');
+    const none = apply(applied.state, { qualifications: [], registrations: null });
+    expect(none.ok && none.state.facts).toEqual({ educationLevel: 7, qualifications: [] });
+  });
+
+  it('refuses a qualification above the education level, either way round', () => {
+    expect(apply(empty, { educationLevel: 6, qualifications: [{ level: 7 }] }).ok).toBe(false);
+    const held = apply(empty, { educationLevel: 7, qualifications: [{ level: 7 }] });
+    if (!held.ok) throw new Error('refused');
+    expect(apply(held.state, { educationLevel: 6 }).ok).toBe(false);
+    expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
+  });
+
+  it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {
+    const offers = [
+      {
+        country: 'PT',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '48000.5', currency: 'EUR' },
+        sponsored: true,
+      },
+      { country: 'US', sector: 'J', temporary: true },
+    ];
+    const applied = apply(empty, { jobOffers: offers });
+    expect(applied.ok && applied.state.facts).toEqual({
+      jobOffers: [
+        { ...offers[0], annualSalary: { amount: 4_800_050, currency: 'EUR' } },
+        offers[1],
+      ],
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('jobOffers'), applied.state)).toEqual(offers);
+  });
+
+  it('saves residence periods, leaving out what is not known', () => {
+    const periods = [
+      { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' },
+      { country: 'BR', start: '1990', end: '2023-01' },
+    ];
+    const applied = apply(empty, { residencePeriods: periods });
+    expect(applied.ok && applied.state.facts).toEqual({ residencePeriods: periods });
+    if (!applied.ok) return;
+    expect(answerOf(question('residencePeriods'), applied.state)).toEqual(periods);
+    const none = apply(applied.state, { residencePeriods: [] });
+    expect(none.ok && none.state.facts).toEqual({ residencePeriods: [] });
+    const unknown = apply(applied.state, { residencePeriods: null });
+    expect(unknown.ok && unknown.state.facts).toEqual({});
+  });
+
   it('takes "Não sei" as leaving the fact out', () => {
     const answered = apply(empty, { studying: true, educationLevel: 6 });
     if (!answered.ok) throw new Error('refused');
@@ -229,17 +323,14 @@ describe('answering the guided questions (spec 0007, R4)', () => {
         share: '0.5',
       },
     ]);
-    const applied = apply(state, {
-      assets: [
-        {
-          kind: 'cash',
-          value: { amount: '100.25', currency: 'EUR' },
-          valuedAt: '2026-11-01',
-          liquid: true,
-          share: '1',
-        },
-      ],
-    });
+    const newCash = {
+      kind: 'cash',
+      value: { amount: '100.25', currency: 'EUR' },
+      valuedAt: '2026-11-01',
+      liquid: true,
+      share: '1',
+    };
+    const applied = apply(state, { assets: [newCash] });
     const added = {
       asset: {
         kind: 'cash',
@@ -261,9 +352,34 @@ describe('answering the guided questions (spec 0007, R4)', () => {
       [{ id: house, dropped: true, share: '1' }],
       [{ id: house, dropped: false }],
       [{ id: marriage, dropped: true }],
+      [{ ...newCash, country: 'BR' }],
+      [{ ...newCash, kind: 'business', employees: -1 }],
+      [{ ...newCash, kind: 'business', country: 'XX' }],
     ]) {
       expect(apply(state, { assets: refused }).ok, JSON.stringify(refused)).toBe(false);
     }
+    const business = apply(state, {
+      assets: [
+        { ...newCash, kind: 'business', country: 'BR', operatingSince: '2018-05', employees: 6 },
+      ],
+    });
+    expect(business.ok && business.state.assets[1]?.asset).toMatchObject({
+      kind: 'business',
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
+  it('asks the business fields of a business only', () => {
+    const fields = questionFlow.find(({ id }) => id === 'assets')?.input;
+    const businessOnly =
+      fields?.kind === 'list'
+        ? fields.fields.flatMap((field) =>
+            'onlyWhen' in field && field.onlyWhen.value === 'business' ? [field.key] : [],
+          )
+        : [];
+    expect(businessOnly).toEqual(['country', 'operatingSince', 'employees']);
   });
 
   it('works out the owner rows to drop and the assets, fields and shares to write', () => {
@@ -343,6 +459,45 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['a former state where only current countries go', { residenceCountry: 'YUCS' }],
     ['a language outside ISO 639-1', { languages: [{ language: 'xx', level: 'B2' }] }],
     ['a choice outside its set', { educationLevel: 9 }],
+    ['an occupation outside the classification', { workPeriods: [{ occupation: '9999' }] }],
+    ['a work period that ends before it starts', { workPeriods: [{ start: '2020', end: '2019' }] }],
+    ['a label with outer spaces', { workPeriods: [{ label: ' Clínica' }] }],
+    ['a residence period in a country not pinned', { residencePeriods: [{ country: 'QM' }] }],
+    [
+      'a residence period that ends before it starts',
+      { residencePeriods: [{ country: 'PT', start: '2020', end: '2019' }] },
+    ],
+    ['a residence basis outside its set', { residencePeriods: [{ country: 'PT', basis: 'visa' }] }],
+    ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
+    ['a business named by something other than its ID', { workPeriods: [{ business: 'a1' }] }],
+    [
+      'a business on a work period that is not at the person’s own company',
+      { workPeriods: [{ relation: 'employee', business: '8b7c6d5e-4f3a-4b2c-8d9e-8f7a6b5c4d3e' }] },
+    ],
+    ['a field of study outside the classification', { qualifications: [{ field: '9999' }] }],
+    ['a qualification level outside ISCED', { qualifications: [{ level: 9 }] }],
+    [
+      'a registration occupation outside the classification',
+      { registrations: [{ occupation: '9999' }] },
+    ],
+    ['a registration country outside the pinned list', { registrations: [{ country: 'XX' }] }],
+    [
+      'a job offer’s occupation outside the classification',
+      { jobOffers: [{ country: 'US', sector: 'J', temporary: false, occupation: '9999' }] },
+    ],
+    [
+      'a job offer’s salary in more decimals than the currency has',
+      {
+        jobOffers: [
+          {
+            country: 'US',
+            sector: 'J',
+            temporary: false,
+            annualSalary: { amount: '1.001', currency: 'USD' },
+          },
+        ],
+      },
+    ],
     [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },

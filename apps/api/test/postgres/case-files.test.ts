@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  type QuestionId,
   buildCaseSnapshot,
   identityKey,
   parseCalendarDate,
@@ -36,12 +37,15 @@ beforeAll(async () => {
     audit: auditLog(testDatabase.auditDb),
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
+    occupations: ['2211', '2512'],
+    studyFields: ['0613', '0912'],
     evaluation: {
       rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,
       states: () => Promise.resolve(activeStates),
       today: () => parseCalendarDate('2026-11-06'),
       engineCommit: 'test',
+      texts: (routeId, english) => (routeId === 'pt-d7' ? `Tradução: ${english}` : undefined),
     },
   });
 });
@@ -128,7 +132,7 @@ describe('creating a case (spec 0007, R2)', () => {
         keptByMe: true,
         profile: null,
         finances: null,
-        shares: { profile: [], finances: [] },
+        shares: { profile: [], finances: [], checklist: [] },
         sharedWithMe: [],
       },
     ]);
@@ -229,7 +233,14 @@ describe('joining after an invite (spec 0007, R2)', () => {
         dependsOn: null,
       }),
     );
-    viewOf(await files.replaceShares(alice, { personId: mother, profile: [bruno], finances: [] }));
+    viewOf(
+      await files.replaceShares(alice, {
+        personId: mother,
+        profile: [bruno],
+        finances: [],
+        checklist: [],
+      }),
+    );
     const gina = await account();
     await link(alice, gina);
     const joined = viewOf(await files.addMember(alice, { accountId: gina, personId: mother }));
@@ -243,7 +254,7 @@ describe('joining after an invite (spec 0007, R2)', () => {
     expect((await files.view(gina))?.people.find(({ id }) => id === mother)).toMatchObject({
       keptByMe: true,
       profile: { facts: { studying: false } },
-      shares: { profile: [], finances: [] },
+      shares: { profile: [], finances: [], checklist: [] },
     });
     expect((await files.view(bruno))?.people.find(({ id }) => id === mother)?.profile).toBeNull();
   });
@@ -400,6 +411,7 @@ describe('profiles, finances and shares', () => {
         personId: people.child,
         profile: [bruno],
         finances: [],
+        checklist: [],
       }),
     );
     expect((await seenBy(bruno, people.child))?.profile?.facts).toEqual({ studying: true });
@@ -410,8 +422,19 @@ describe('profiles, finances and shares', () => {
     expect((await seenBy(carla, people.child))?.shares).toBeNull();
     expect((await seenBy(carla, people.child))?.sharedWithMe).toEqual([]);
     expect((await seenBy(alice, people.child))?.sharedWithMe).toEqual([]);
-    expect((await seenBy(alice, people.child))?.shares).toEqual({ profile: [bruno], finances: [] });
-    viewOf(await files.replaceShares(alice, { personId: people.child, profile: [], finances: [] }));
+    expect((await seenBy(alice, people.child))?.shares).toEqual({
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
+    viewOf(
+      await files.replaceShares(alice, {
+        personId: people.child,
+        profile: [],
+        finances: [],
+        checklist: [],
+      }),
+    );
     expect((await seenBy(bruno, people.child))?.profile).toBeNull();
     expect((await seenBy(bruno, people.child))?.sharedWithMe).toEqual([]);
 
@@ -422,6 +445,7 @@ describe('profiles, finances and shares', () => {
             personId: people.child,
             profile: grantees,
             finances: [],
+            checklist: [],
           }),
         ),
       ).toBe('case_invalid');
@@ -432,6 +456,7 @@ describe('profiles, finances and shares', () => {
           personId: people.child,
           profile: [bruno],
           finances: [],
+          checklist: [],
         }),
       ),
     ).toBe('not_found');
@@ -453,6 +478,7 @@ describe('profiles, finances and shares', () => {
       personId: people.child,
       profile: [bruno],
       finances: [bruno],
+      checklist: [],
     });
     expect(refusal(await files.handOver(bruno, { personId: people.child, accountId: bruno }))).toBe(
       'not_found',
@@ -470,7 +496,7 @@ describe('profiles, finances and shares', () => {
     const brunoView = await files.view(bruno);
     expect(brunoView?.people.find(({ id }) => id === people.child)).toMatchObject({
       keptByMe: true,
-      shares: { profile: [], finances: [] },
+      shares: { profile: [], finances: [], checklist: [] },
     });
     expect((await events(alice)).at(-1)).toEqual({
       code: 'person_handed_over',
@@ -832,6 +858,328 @@ describe('guided questions (spec 0007, R4)', () => {
   });
 });
 
+describe('work periods (ADR-0036)', () => {
+  const doctor = {
+    label: 'Hospital',
+    occupation: '2211',
+    relation: 'employee',
+    capacity: 'other',
+    fullTime: false,
+    employerCountry: 'BR',
+    workplaceCountry: 'BR',
+    start: '2014-03',
+    end: 'none',
+  };
+  const contractor = { occupation: '2512', relation: 'contractor', start: '2010', end: '2014-02' };
+
+  it('saves work periods, reads them back, and plays them back with their label to a sharer', async () => {
+    const { alice, bruno, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'workPeriods', answer: [doctor, contractor] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      workPeriods: [doctor, contractor],
+    });
+    const questions = await files.questions(alice);
+    expect(questions?.occupations).toEqual(['2211', '2512']);
+    const answered = questions?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'workPeriods');
+    expect(answered?.answer).toEqual([doctor, contractor]);
+
+    const workOf = async (viewer: string) =>
+      (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'workPeriod');
+    // Without a profile share, neither the work periods nor their labels reach another member.
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
+    expect(await workOf(bruno)).toEqual([]);
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
+    const played = await workOf(bruno);
+    expect(played).toEqual([
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: [people.alice],
+        person: people.alice,
+        ...doctor,
+      },
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: [people.alice],
+        person: people.alice,
+        ...contractor,
+      },
+    ]);
+    const evaluated = await files.evaluations(alice);
+    expect(evaluated).not.toBeNull();
+  });
+
+  it('refuses an occupation outside the classification and a period ending before it starts', async () => {
+    const { alice, people } = await family();
+    const answer = async (workPeriods: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'workPeriods', answer: workPeriods }],
+        }),
+      );
+    expect(await answer([{ occupation: '9999' }])).toBe('case_invalid');
+    expect(await answer([{ start: '2020', end: '2019-06' }])).toBe('case_invalid');
+    expect(await answer([{ employerCountry: 'IT' }])).toBe('case_invalid');
+    expect(
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: storedProfileFactsSchema.parse({ workPeriods: [{ occupation: '9999' }] }),
+          dependsOn: null,
+        }),
+      ),
+    ).toBe('case_invalid');
+  });
+});
+
+describe('a business and a work period at it (ADR-0036)', () => {
+  const company = {
+    kind: 'business',
+    value: { amount: '300000', currency: 'BRL' },
+    valuedAt: '2026-06-30',
+    country: 'BR',
+    operatingSince: '2018-05',
+    employees: 6,
+    share: '1',
+  };
+  const snapshotFor = (accountId: string) =>
+    withIdentity(testDatabase.apiDb, { accountId }, async (tx) => {
+      const rows = await readCase(tx, accountId);
+      if (rows === undefined) throw new Error('no case');
+      return buildCaseSnapshot(rows, parseCalendarDate('2026-11-06')).snapshot;
+    });
+  const answer = (accountId: string, personId: string, questionId: QuestionId, value: unknown) =>
+    files.answerQuestions(accountId, { personId, answers: [{ questionId, answer: value }] });
+
+  it('stores a business’s details, links a work period to it, and shows both only with the finances', async () => {
+    const { alice, bruno, people } = await family();
+    const added = viewOf(await answer(alice, people.alice, 'assets', [company]));
+    const businessId = added.assets[0]?.id ?? '';
+    expect(added.assets[0]?.asset).toMatchObject({
+      kind: 'business',
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+    const owner = { relation: 'owner', capacity: 'manager', business: businessId };
+    viewOf(await answer(alice, people.alice, 'workPeriods', [owner]));
+    const own = await snapshotFor(alice);
+    expect(own.people[0]?.workPeriods).toEqual([{ ...owner, business: 'a1' }]);
+    expect(own.assets[0]).toMatchObject({ id: 'a1', operatingSince: '2018-05', employees: 6 });
+
+    // With only the profile shared, Bruno reads the work period but not the business it is at.
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
+    const profileOnly = await snapshotFor(bruno);
+    expect(profileOnly.people[0]?.workPeriods).toEqual([
+      { relation: 'owner', capacity: 'manager' },
+    ]);
+    expect(profileOnly.assets).toEqual([]);
+    const seenBy = async (viewer: string) =>
+      (await files.view(viewer))?.people.find(({ id }) => id === people.alice)?.profile?.facts
+        .workPeriods;
+    expect(await seenBy(bruno)).toEqual([{ relation: 'owner', capacity: 'manager' }]);
+    const played = (await files.playback(bruno))?.sentences ?? [];
+    expect(played.filter(({ kind }) => kind === 'asset')).toEqual([]);
+    expect(played.find(({ kind }) => kind === 'workPeriod')).not.toHaveProperty('atOwnBusiness');
+
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [bruno],
+      checklist: [],
+    });
+    expect(await seenBy(bruno)).toEqual([owner]);
+    const shared = (await files.playback(bruno))?.sentences ?? [];
+    expect(shared.find(({ kind }) => kind === 'workPeriod')).toMatchObject({ atOwnBusiness: true });
+    expect(shared.find(({ kind }) => kind === 'asset')).toMatchObject({
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
+  it('refuses a work period at a business the person does not own, or at an asset that is not a business', async () => {
+    const { alice, bruno, people } = await family();
+    const house = viewOf(
+      await answer(alice, people.alice, 'assets', [
+        {
+          kind: 'real_estate',
+          value: { amount: '500000', currency: 'BRL' },
+          valuedAt: '2026-01-10',
+          share: '1',
+        },
+      ]),
+    ).assets[0]?.id;
+    const brunos = viewOf(await answer(bruno, people.bruno, 'assets', [company])).assets[0]?.id;
+    for (const business of [house, brunos, randomUUID()]) {
+      expect(
+        refusal(
+          await answer(alice, people.alice, 'workPeriods', [{ relation: 'owner', business }]),
+        ),
+      ).toBe('case_invalid');
+    }
+    expect(
+      refusal(await answer(alice, people.alice, 'assets', [{ ...company, kind: 'investment' }])),
+    ).toBe('case_invalid');
+  });
+
+  it('keeps a stored link once the business is gone, out of the snapshot, so other answers still save', async () => {
+    const { alice, people } = await family();
+    const businessId =
+      viewOf(await answer(alice, people.alice, 'assets', [company])).assets[0]?.id ?? '';
+    viewOf(
+      await answer(alice, people.alice, 'workPeriods', [
+        { relation: 'owner', business: businessId },
+      ]),
+    );
+    viewOf(await answer(alice, people.alice, 'assets', [{ id: businessId, dropped: true }]));
+    viewOf(await answer(alice, people.alice, 'studying', true));
+    expect((await snapshotFor(alice)).people[0]?.workPeriods).toEqual([{ relation: 'owner' }]);
+  });
+});
+
+describe('qualifications and registrations (ADR-0036)', () => {
+  const degree = { level: 7, field: '0912', country: 'BR', completed: '2010-12' };
+  const licence = { country: 'BR', occupation: '2211', since: '2011-02' };
+
+  it('saves them, reads them back and plays them back', async () => {
+    const { alice, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [
+          { questionId: 'educationLevel', answer: 7 },
+          { questionId: 'qualifications', answer: [degree, { country: 'PT' }] },
+          { questionId: 'registrations', answer: [licence] },
+        ],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      educationLevel: 7,
+      qualifications: [degree, { country: 'PT' }],
+      registrations: [licence],
+    });
+    expect((await files.questions(alice))?.studyFields).toEqual(['0613', '0912']);
+    const said = (await files.playback(alice))?.sentences.filter(
+      ({ kind }) => kind === 'qualification' || kind === 'registration',
+    );
+    const about = { about: [people.alice], person: people.alice };
+    expect(said).toEqual([
+      { kind: 'qualification', question: 'qualifications', ...about, ...degree },
+      { kind: 'qualification', question: 'qualifications', ...about, country: 'PT' },
+      { kind: 'registration', question: 'registrations', ...about, ...licence },
+    ]);
+  });
+
+  it('refuses unknown codes and a qualification above the education level', async () => {
+    const { alice, people } = await family();
+    const answer = async (answers: { questionId: never; answer: unknown }[]) =>
+      refusal(await files.answerQuestions(alice, { personId: people.alice, answers }));
+    const asked = (questionId: string, value: unknown) => ({
+      questionId: questionId as never,
+      answer: value,
+    });
+    expect(await answer([asked('qualifications', [{ field: '9999' }])])).toBe('case_invalid');
+    expect(await answer([asked('registrations', [{ occupation: '9999' }])])).toBe('case_invalid');
+    expect(
+      await answer([asked('educationLevel', 6), asked('qualifications', [{ level: 7 }])]),
+    ).toBe('case_invalid');
+    const write = async (facts: unknown) =>
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: facts as never,
+          dependsOn: null,
+        }),
+      );
+    expect(await write({ qualifications: [{ field: '9999' }] })).toBe('case_invalid');
+    expect(await write({ registrations: [{ occupation: '9999' }] })).toBe('case_invalid');
+  });
+});
+
+describe('residence periods (ADR-0036)', () => {
+  const portugal = { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' };
+  const brazil = { country: 'BR', basis: 'citizen', start: '1990', end: '2023-01' };
+
+  it('saves residence periods, reads them back, and plays them back to a sharer', async () => {
+    const { alice, bruno, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'residencePeriods', answer: [portugal, brazil] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      residencePeriods: [portugal, brazil],
+    });
+    const answered = (await files.questions(alice))?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'residencePeriods');
+    expect(answered?.answer).toEqual([portugal, brazil]);
+
+    const residenceOf = async (viewer: string) =>
+      (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'residencePeriod');
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
+    expect(await residenceOf(bruno)).toEqual([]);
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
+    const about = { question: 'residencePeriods', about: [people.alice], person: people.alice };
+    expect(await residenceOf(bruno)).toEqual([
+      { kind: 'residencePeriod', ...about, ...portugal },
+      { kind: 'residencePeriod', ...about, ...brazil },
+    ]);
+  });
+
+  it('refuses a country outside the pinned list and a period ending before it starts', async () => {
+    const { alice, people } = await family();
+    const answer = async (residencePeriods: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'residencePeriods', answer: residencePeriods }],
+        }),
+      );
+    expect(await answer([{ country: 'IT' }])).toBe('case_invalid');
+    expect(await answer([{ country: 'PT', start: '2020', end: '2019-06' }])).toBe('case_invalid');
+    expect(await answer([{ basis: 'citizen' }])).toBe('case_invalid');
+  });
+});
+
 describe('playing the case back (spec 0007, R5)', () => {
   it('reads a shared profile as unanswered and a profile never shared as not shared', async () => {
     const { alice, bruno, people } = await family();
@@ -867,7 +1215,12 @@ describe('playing the case back (spec 0007, R5)', () => {
       child: people.child,
     });
 
-    await files.replaceShares(alice, { personId: people.child, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const after = await files.playback(bruno);
     const child = kinds(after?.sentences ?? [], people.child);
     expect(child.slice(0, 3)).toEqual(['financesHidden', 'born', 'unanswered']);
@@ -879,7 +1232,12 @@ describe('playing the case back (spec 0007, R5)', () => {
     });
     expect(await files.playback(await account())).toBeNull();
 
-    await files.replaceShares(alice, { personId: people.child, profile: [], finances: [bruno] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
     const finances = kinds((await files.playback(bruno))?.sentences ?? [], people.child);
     expect(finances[0]).toBe('profileHidden');
     expect(finances).not.toContain('financesHidden');
@@ -918,6 +1276,15 @@ describe('evaluating the case (spec 0007, R6)', () => {
     expect(new Set(byAlice.results.map(({ principalId }) => principalId))).toEqual(
       new Set(members),
     );
+    // A translated title keeps the version's English beside it; an untranslated one has none.
+    const d7 = byAlice.results.find(({ routeId }) => routeId === 'pt-d7');
+    expect(d7?.route?.title).toBe(`Tradução: ${d7?.route?.original ?? ''}`);
+    expect(
+      d7?.requirements.every(({ title, original }) => title === `Tradução: ${original ?? ''}`),
+    ).toBe(true);
+    const eb5 = byAlice.results.find(({ routeId }) => routeId === 'us-eb5');
+    expect(eb5?.route?.original).toBeNull();
+    expect(eb5?.totals.map(({ currency }) => currency)).toContain('USD');
     for (const result of byAlice.results) {
       expect(result.status).not.toBe('pending_activation');
       expect(result.route?.title).toBeTruthy();
@@ -947,6 +1314,8 @@ describe('evaluating the case (spec 0007, R6)', () => {
       audit: auditLog(testDatabase.auditDb),
       today: () => new Date('2026-11-06T12:00:00Z'),
       countries: { countries: ['BR'], formerCountries: [] },
+      occupations: ['2211', '2512'],
+      studyFields: ['0613', '0912'],
       evaluation: {
         rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
         comparisons: comparisonCatalog,
@@ -1034,7 +1403,12 @@ describe('leaving the case (spec 0007, R2)', () => {
       to: people.bruno,
       details: {},
     });
-    await files.replaceShares(alice, { personId: people.child, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     await files.addAsset(bruno, { personId: people.bruno, share: '1', asset: house });
 
     expect(await files.leave(bruno)).toBe('left');
@@ -1045,11 +1419,91 @@ describe('leaving the case (spec 0007, R2)', () => {
     expect(view?.people.find(({ id }) => id === people.child)?.shares).toEqual({
       profile: [],
       finances: [],
+      checklist: [],
     });
     expect(await admin(`SELECT FROM cases.asset WHERE case_id = $1`, [caseId])).toEqual([]);
     expect((await events(bruno)).at(-1)).toEqual({ code: 'member_left', details: { caseId } });
 
     expect(await files.leave(alice)).toBe('left');
     expect(await admin(`SELECT FROM cases.case_file WHERE id = $1`, [caseId])).toEqual([]);
+  });
+});
+
+describe('job offers with occupation, salary and sponsorship (#510)', () => {
+  const offer = {
+    country: 'PT',
+    sector: 'Q',
+    temporary: false,
+    occupation: '2211',
+    annualSalary: { amount: '48000', currency: 'EUR' },
+    sponsored: true,
+  };
+  const offerBeforeNewFields = { country: 'US', sector: 'J', temporary: true };
+
+  it('saves the new fields, reads them back, plays them back, and keeps offerBeforeNewFields offers', async () => {
+    const { alice, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'jobOffers', answer: [offer, offerBeforeNewFields] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      jobOffers: [
+        { ...offer, annualSalary: { amount: 4_800_000, currency: 'EUR' } },
+        offerBeforeNewFields,
+      ],
+    });
+    const answered = (await files.questions(alice))?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'jobOffers');
+    expect(answered?.answer).toEqual([offer, offerBeforeNewFields]);
+    const played = (await files.playback(alice))?.sentences.filter(
+      (said) => said.kind === 'jobOffer',
+    );
+    expect(played).toEqual([
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: [people.alice],
+        person: people.alice,
+        ...offer,
+      },
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: [people.alice],
+        person: people.alice,
+        ...offerBeforeNewFields,
+      },
+    ]);
+    expect(await files.evaluations(alice)).not.toBeNull();
+  });
+
+  it('refuses an offer’s occupation outside the classification and a negative salary', async () => {
+    const { alice, people } = await family();
+    const answer = async (jobOffers: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'jobOffers', answer: jobOffers }],
+        }),
+      );
+    expect(await answer([{ ...offerBeforeNewFields, occupation: '9999' }])).toBe('case_invalid');
+    expect(
+      await answer([{ ...offerBeforeNewFields, annualSalary: { amount: '-1', currency: 'EUR' } }]),
+    ).toBe('case_invalid');
+    expect(
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: storedProfileFactsSchema.parse({
+            jobOffers: [{ ...offerBeforeNewFields, occupation: '9999' }],
+          }),
+          dependsOn: null,
+        }),
+      ),
+    ).toBe('case_invalid');
   });
 });

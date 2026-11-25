@@ -2,7 +2,8 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import type { Truth } from '../logic/truth.js';
 import { unitsAmount } from '../money/currency.js';
 import type { Money } from '../money/money.js';
-import type { EvaluationStatus, RouteEvaluation } from '../rules/engine.js';
+import type { AmountRange, EvaluationStatus, RouteEvaluation } from '../rules/engine.js';
+import type { RecordList } from '../rules/expression.js';
 import { resolveFactReference } from '../rules/fact-reference.js';
 import type { MissingFact } from '../rules/missing.js';
 import type { Source } from '../rules/route-version.js';
@@ -39,7 +40,44 @@ export const questionForFact = {
   'lineage.edgeKind': 'relationships',
   'lineage.childBirthDate': 'birthDate',
   'lineage.citizenshipsAtChildBirth': 'citizenships',
+  'workPeriod.employerCountry': 'workPeriods',
+  'workPeriod.workplaceCountry': 'workPeriods',
+  'workPeriod.relation': 'workPeriods',
+  'workPeriod.occupation': 'workPeriods',
+  'workPeriod.capacity': 'workPeriods',
+  'workPeriod.fullTime': 'workPeriods',
+  'workPeriod.start': 'workPeriods',
+  'workPeriod.end': 'workPeriods',
+  'workPeriod.business.country': 'assets',
+  'workPeriod.business.operatingSince': 'assets',
+  'workPeriod.business.employees': 'assets',
+  'jobOffer.country': 'jobOffers',
+  'jobOffer.sector': 'jobOffers',
+  'jobOffer.temporary': 'jobOffers',
+  'jobOffer.occupation': 'jobOffers',
+  'jobOffer.annualSalary': 'jobOffers',
+  'jobOffer.sponsored': 'jobOffers',
+  'qualification.level': 'qualifications',
+  'qualification.field': 'qualifications',
+  'qualification.country': 'qualifications',
+  'qualification.completed': 'qualifications',
+  'registration.country': 'registrations',
+  'registration.occupation': 'registrations',
+  'registration.since': 'registrations',
+  'residencePeriod.country': 'residencePeriods',
+  'residencePeriod.basis': 'residencePeriods',
+  'residencePeriod.start': 'residencePeriods',
+  'residencePeriod.end': 'residencePeriods',
 } as const satisfies Record<FactKey, QuestionId>;
+
+/** The guided question that records each list of a person's records. */
+const questionForRecords = {
+  workPeriods: 'workPeriods',
+  jobOffers: 'jobOffers',
+  qualifications: 'qualifications',
+  registrations: 'registrations',
+  residencePeriods: 'residencePeriods',
+} as const satisfies Record<RecordList, QuestionId>;
 
 const questionForMarker = {
   spouses: 'allSpouses',
@@ -97,6 +135,14 @@ function asked(
           ];
         case 'lineage.edgeKind':
           return relationshipQuestion(next === undefined ? [personId] : [personId, next], kept);
+        // Open while the work period names no business, or while the business lacks the detail.
+        case 'workPeriod.business.country':
+        case 'workPeriod.business.operatingSince':
+        case 'workPeriod.business.employees':
+          return [
+            { personId, question: 'workPeriods' },
+            { personId, question },
+          ];
         default:
           // The edge a fact reads may not touch the person it is about, so ask through its ends.
           return question === 'relationships' && edge !== undefined
@@ -108,6 +154,8 @@ function asked(
       return [{ personId: missing.personId, question: questionForMarker[missing.marker] }];
     case 'relationship':
       return relationshipQuestion(endpoints(missing.edge), kept);
+    case 'records':
+      return [{ personId: missing.personId, question: questionForRecords[missing.list] }];
   }
 }
 
@@ -149,6 +197,12 @@ export function decisiveQuestions(
 export interface UnitsMoney {
   readonly amount: string;
   readonly currency: string;
+}
+
+/** A range of amounts in currency units; a bound is null when it is open. */
+export interface UnitsRange {
+  readonly min: UnitsMoney | null;
+  readonly max: UnitsMoney | null;
 }
 
 /** A route's result for one person: an evaluation status, or a version waiting for activation. */
@@ -214,6 +268,15 @@ export interface RouteResult {
     readonly max: string;
     readonly sources: readonly Source[];
   }[];
+  /**
+   * The route's cost per currency, summed in code from the costs above (CLAUDE.md rule 3): what
+   * certainly applies, and what may apply on top of it; a bound is null when it is open.
+   */
+  readonly totals: readonly {
+    readonly currency: string;
+    readonly certain: UnitsRange;
+    readonly possibleExtra: UnitsRange;
+  }[];
   /** Rates the FX table lacks, which no one in the family can answer (spec 0002, R5). */
   readonly missingRates: readonly { readonly from: string; readonly to: string }[];
   /** Reference dates the version reads that the case does not set yet. */
@@ -229,6 +292,12 @@ const unitsMoney = (money: Money | undefined): UnitsMoney | null =>
         amount: unitsAmount(money.amount, money.currency),
         currency: money.currency,
       };
+
+/** An engine range in currency units, as the screens show it. */
+export const unitsRange = ({ min, max }: AmountRange): UnitsRange => ({
+  min: unitsMoney(min),
+  max: unitsMoney(max),
+});
 
 /** A route a requirement already rules out, or a closed one: no answer changes its status. */
 const settled = (status: EvaluationStatus) => status === 'not_eligible' || status === 'unavailable';
@@ -248,6 +317,7 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
     assessments: [],
     costs: [],
     durations: [],
+    totals: [],
     missingRates: [],
     missingDates: [],
     missingFacts: [],
@@ -298,6 +368,11 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
       min,
       max,
       sources,
+    })),
+    totals: evaluation.totals.map(({ currency, certain, possibleExtra }) => ({
+      currency,
+      certain: unitsRange(certain),
+      possibleExtra: unitsRange(possibleExtra),
     })),
     missingRates: evaluation.missingRates.map(({ from, to }) => ({ from, to })),
     missingDates: evaluation.missingDates,

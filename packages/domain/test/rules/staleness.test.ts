@@ -82,6 +82,22 @@ describe('staleSources', () => {
     ['a dependent rule', (version) => ({ dependents: withProbe(version.dependents) })],
     ['a cost', (version) => ({ costs: withProbe(version.costs) })],
     ['a duration', (version) => ({ durations: withProbe(version.durations) })],
+    [
+      'a document',
+      () => ({
+        documents: [
+          {
+            id: 'passport',
+            title: 'Passport',
+            kind: 'passport',
+            appliesTo: 'principal',
+            apostille: false,
+            translation: 'none',
+            sources: ['probe'],
+          },
+        ],
+      }),
+    ],
     ['the leap-day choice', () => ({ leapDayBirthdaySources: ['probe'] })],
     ['a closure', () => ({ status: 'closed', closureSources: ['probe'] })],
   ])('counts a source cited only by %s', (_, patch) => {

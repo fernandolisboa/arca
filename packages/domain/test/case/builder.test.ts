@@ -64,6 +64,90 @@ const rows = (overrides: Partial<VisibleCaseRows> = {}): VisibleCaseRows => ({
 });
 
 describe('the snapshot builder (spec 0007, R3)', () => {
+  it('leaves work period labels with the profile, out of the snapshot (ADR-0036)', () => {
+    const built = buildCaseSnapshot(
+      rows({
+        profiles: [
+          {
+            personId: alice,
+            facts: facts({
+              workPeriods: [{ label: 'Clínica', occupation: '2211', start: '2019', end: 'none' }],
+            }),
+            dependenceAnswered: false,
+          },
+        ],
+      }),
+      recordedOn,
+    );
+    expect(built.snapshot.people[0]?.workPeriods).toEqual([
+      { occupation: '2211', start: '2019', end: 'none' },
+    ]);
+  });
+
+  describe('a work period at a business the person owns (ADR-0036)', () => {
+    const company = '5a6b7c8d-9e0f-4a1b-8c2d-4e5f6a7b8c9d';
+    const companyRow = {
+      id: company,
+      ...asset({
+        kind: 'business',
+        value: { amount: 30000000, currency: 'BRL' },
+        valuedAt: '2026-06-30',
+        country: 'BR',
+        operatingSince: '2018-05',
+        employees: 6,
+      }),
+    };
+    const working = (link: string) => [
+      {
+        personId: alice,
+        facts: facts({ workPeriods: [{ relation: 'owner', business: link }] }),
+        dependenceAnswered: false,
+      },
+    ];
+    const owner = (assetId: string, confirmed = true) => ({
+      assetId,
+      personId: alice,
+      share: '1',
+      confirmed,
+    });
+
+    it('links it by the business’s opaque ID, with the business’s details', () => {
+      const { snapshot } = buildCaseSnapshot(
+        rows({ profiles: working(company), assets: [companyRow], owners: [owner(company)] }),
+        recordedOn,
+      );
+      expect(snapshot.people[0]?.workPeriods).toEqual([{ relation: 'owner', business: 'a1' }]);
+      expect(snapshot.assets[0]).toMatchObject({
+        id: 'a1',
+        country: 'BR',
+        operatingSince: '2018-05',
+        employees: 6,
+      });
+    });
+
+    it.each([
+      ['the viewer does not see the business', { assets: [], owners: [] }],
+      [
+        'the person’s share is not confirmed',
+        { assets: [companyRow], owners: [owner(company, false)] },
+      ],
+      [
+        'the asset is no longer a business',
+        { assets: [{ ...houseRow, id: company }], owners: [owner(company)] },
+      ],
+      [
+        'only someone else owns it',
+        { assets: [companyRow], owners: [{ ...owner(company), personId: bruno }] },
+      ],
+    ])('drops the link when %s', (_label, visible) => {
+      const { snapshot } = buildCaseSnapshot(
+        rows({ profiles: working(company), ...visible }),
+        recordedOn,
+      );
+      expect(snapshot.people[0]?.workPeriods).toEqual([{ relation: 'owner' }]);
+    });
+  });
+
   it('replaces UUIDs with opaque IDs and keeps members, people and relationships', () => {
     const built = buildCaseSnapshot(rows(), recordedOn);
     expect(Object.fromEntries(built.personIds)).toEqual({

@@ -2,7 +2,7 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import { indexSnapshot } from '../case/graph.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
 import { addNumbers, hullNumbers, orZero, zeroBound } from '../logic/number.js';
-import { type Truth, and, or } from '../logic/truth.js';
+import type { Truth } from '../logic/truth.js';
 import { type NumberValue, type Value, isKnown } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
 import type { CurrencyPair, FxRate } from '../money/fx.js';
@@ -20,15 +20,13 @@ import {
   type Prepared,
   type VersionContext,
   contextDates,
-  environmentOf,
   prepare,
-  principalFrame,
 } from './context.js';
 import { type Frame, type Trace, evaluate, numberOf, truthOf } from './evaluate.js';
-import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
-import type { Cost, DurationStage, Source } from './route-version.js';
+import { type MissingFact, decisiveFacts, distinct, traceGaps } from './missing.js';
+import { type Cost, type DurationStage, type Source, citations } from './route-version.js';
 import { type StaleSource, staleSources } from './staleness.js';
-import { type Unit, unitEnvironment, unitOf } from './unit.js';
+import { type Unit, throughEdges, unitFrame, unitGaps } from './unit.js';
 
 export type EvaluationStatus =
   'unavailable' | 'not_eligible' | 'missing_information' | 'needs_assessment' | 'eligible';
@@ -139,9 +137,7 @@ export function evaluateVersionTraced(
 ): { readonly evaluation: Evaluation; readonly traces: readonly Trace[] } {
   const prepared = prepare(snapshot, entry, principalId, context);
   const { version } = prepared;
-  const { unit, traces: unitTraces } = unitOf(prepared);
-  const environment = environmentOf(prepared, unitEnvironment(unit));
-  const frame = principalFrame(prepared, environment);
+  const { unit, traces: unitTraces, frame } = unitFrame(prepared);
   const cite = citations(version.sources);
 
   const requirements = version.requirements.map((requirement): RequirementResult => {
@@ -243,11 +239,56 @@ export type RouteEvaluation =
       };
     };
 
+/** The version in effect for a route, as selection and the activation check find it. */
+export type RouteSelection =
+  | { readonly kind: 'no_version' }
+  | { readonly kind: 'pending'; readonly pending: VersionIdentity }
+  | {
+      readonly kind: 'active';
+      readonly entry: CatalogEntry;
+      /** The version selection picks today, which staleness is judged against. */
+      readonly current?: VersionIdentity;
+      readonly newerProposedVersion?: {
+        readonly identity: VersionIdentity;
+        readonly from: CalendarDate;
+      };
+    };
+
 /**
- * Selection, then the activation check, then `evaluateVersion` (spec 0002, R5). The engine never
- * falls back to an older version on its own: a version in effect but not active is reported as
- * pending, and only an admin's rejection brings the older one back.
+ * Selection, then the activation check (spec 0002, R5). The engine never falls back to an older
+ * version on its own: a version in effect but not active is reported as pending, and only an
+ * admin's rejection brings the older one back.
  */
+export function selectRouteVersion(
+  catalog: RouteCatalog,
+  routeId: string,
+  context: Pick<EvaluationContext, 'rulesAsOf' | 'today' | 'states'>,
+): RouteSelection {
+  const identities = catalog.identities(routeId);
+  const selection = selectVersion(identities, context.rulesAsOf, context.states);
+  if (selection === undefined) return { kind: 'no_version' };
+  if (selection.state !== 'active') return { kind: 'pending', pending: selection.identity };
+  const entry = catalog.activeEntry(selection.identity, context.states);
+  // The activation covers one exact content, so an entry for any other refuses to evaluate.
+  if (entry?.identity.routeId !== routeId || !sameIdentity(entry.identity, selection.identity)) {
+    throw new RangeError('The catalog has no entry for the active version selected');
+  }
+  const newer = newerProposedVersion(
+    identities,
+    selection.identity,
+    context.rulesAsOf,
+    context.states,
+  );
+  const current = selectVersion(identities, context.today, context.states)?.identity;
+  return {
+    kind: 'active',
+    entry,
+    ...(current === undefined ? {} : { current }),
+    ...(newer === undefined ? {} : { newerProposedVersion: newer }),
+  };
+}
+
+/** {@link selectRouteVersion}, then `evaluateVersion` on the active version it finds. */
 export function evaluateRoute(
   snapshot: CaseSnapshot,
   catalog: RouteCatalog,
@@ -256,25 +297,13 @@ export function evaluateRoute(
   context: EvaluationContext,
 ): RouteEvaluation {
   contextDates(indexSnapshot(snapshot), context);
-  const identities = catalog.identities(routeId);
-  const selection = selectVersion(identities, context.rulesAsOf, context.states);
-  if (selection === undefined) return { kind: 'no_version', status: 'unavailable', routeId };
-  if (selection.state !== 'active') {
-    return { kind: 'pending', status: 'pending_activation', routeId, pending: selection.identity };
+  const selected = selectRouteVersion(catalog, routeId, context);
+  if (selected.kind === 'no_version') return { kind: 'no_version', status: 'unavailable', routeId };
+  if (selected.kind === 'pending') {
+    return { kind: 'pending', status: 'pending_activation', routeId, pending: selected.pending };
   }
-  const entry = catalog.activeEntry(selection.identity, context.states);
-  // The activation covers one exact content, so an entry for any other refuses to evaluate.
-  if (entry?.identity.routeId !== routeId || !sameIdentity(entry.identity, selection.identity)) {
-    throw new RangeError('The catalog has no entry for the active version selected');
-  }
+  const { entry, current, newerProposedVersion: newer } = selected;
   const evaluation = evaluateVersion(snapshot, entry, principalId, context);
-  const newer = newerProposedVersion(
-    identities,
-    selection.identity,
-    context.rulesAsOf,
-    context.states,
-  );
-  const current = selectVersion(identities, context.today, context.states);
   return {
     kind: 'evaluated',
     status: evaluation.status,
@@ -282,7 +311,7 @@ export function evaluateRoute(
     stale:
       evaluation.staleSources.length > 0 &&
       current !== undefined &&
-      sameIdentity(current.identity, selection.identity),
+      sameIdentity(current, entry.identity),
     ...(newer === undefined ? {} : { newerProposedVersion: newer }),
   };
 }
@@ -298,30 +327,6 @@ function statusOf(
   if (results.includes(false)) return 'not_eligible';
   if (results.includes('unknown')) return 'missing_information';
   return assessments > 0 ? 'needs_assessment' : 'eligible';
-}
-
-function unitGaps(unit: Unit): UnitGaps {
-  const byPerson = new Map(
-    unit.possibleDependents.map((member) => [member.personId, member.missingFacts]),
-  );
-  const markers = unit.missingMarkers.map((missing): MissingFact => ({
-    kind: 'marker',
-    ...missing,
-  }));
-  return {
-    member: (personId) => byPerson.get(personId) ?? [],
-    all: () => [...unit.possibleDependents.flatMap((member) => member.missingFacts), ...markers],
-  };
-}
-
-function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
-  const byId = new Map(sources.map((source) => [source.id, source]));
-  return (ids) =>
-    ids.map((id) => {
-      const source = byId.get(id);
-      if (source === undefined) throw new RangeError('An unchecked source reference');
-      return source;
-    });
 }
 
 interface Priced {
@@ -371,17 +376,16 @@ function costItems(
       continue;
     }
     for (const dependent of [...unit.dependents, ...unit.possibleDependents]) {
-      // A dependent reached by several edges pays once: the cost applies when it applies through
-      // an edge that covers them, and its amount ranges over those edges.
-      const perEdge = dependent.edges.map(({ edge, holds }) => {
-        const priced = price(cost, { ...frame, current: dependent.personId, edge });
-        return { applies: and([holds, priced.condition]), amount: priced.amount };
+      // The amount ranges over the edges the cost applies through.
+      const { applies, perEdge } = throughEdges(frame, dependent, (at) => {
+        const priced = price(cost, at);
+        return { applies: priced.condition, amount: priced.amount };
       });
       const counted = perEdge.filter((entry) => entry.applies !== false);
       const amount = hullNumbers(
         (counted.length > 0 ? counted : perEdge).map((entry) => entry.amount),
       );
-      add(cost, { applies: or(perEdge.map((entry) => entry.applies)), amount }, dependent.personId);
+      add(cost, { applies, amount }, dependent.personId);
     }
   }
   return { items, priced, traces };

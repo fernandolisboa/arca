@@ -1,6 +1,8 @@
 import {
   calendarDateSchema,
   caseIntakeDraftSchema,
+  plainSourceSchema,
+  tagSchema,
   countryCodeSchema,
   decimalSchema,
   durationSchema,
@@ -11,11 +13,15 @@ import {
   isNewReference,
   maxCaseMembers,
   maxCasePeople,
+  markStates,
+  occupationCodeSchema,
   questionFlow,
   questionIds,
   questionSteps,
+  studyFieldCodeSchema,
   sentenceSchema,
   shareScopeSchema,
+  shareScopes,
   startsInPlan,
   storedAssetSchema,
   storedFinancesSchema,
@@ -34,7 +40,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-export { isNewReference, maxCaseMembers, maxCasePeople, startsInPlan };
+export { isNewReference, markStates, maxCaseMembers, maxCasePeople, shareScopes, startsInPlan };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,
@@ -44,7 +50,12 @@ export const CaseProfile = z.strictObject({
 export type CaseProfile = z.infer<typeof CaseProfile>;
 
 const grantees = z.array(z.uuid()).max(maxCaseMembers);
-export const CaseShares = z.strictObject({ profile: grantees, finances: grantees });
+export const CaseShares = z.strictObject({
+  profile: grantees,
+  finances: grantees,
+  /** Read only: who sees the person's document checklist marks (spec #519). */
+  checklist: grantees,
+});
 export type CaseShares = z.infer<typeof CaseShares>;
 
 export const CasePerson = z.object({
@@ -59,10 +70,10 @@ export const CasePerson = z.object({
   /** Null when not written yet, or not shared with the viewer. */
   profile: CaseProfile.nullable(),
   finances: storedFinancesSchema.nullable(),
-  /** The members who see this person's profile and finances; only for people the viewer keeps. */
+  /** The members who see this person's data, by scope; only for people the viewer keeps. */
   shares: CaseShares.nullable(),
   /** What the keeper of a person the viewer does not keep shares with the viewer. */
-  sharedWithMe: z.array(shareScopeSchema).max(2),
+  sharedWithMe: z.array(shareScopeSchema).max(shareScopes.length),
 });
 export type CasePerson = z.infer<typeof CasePerson>;
 
@@ -173,6 +184,10 @@ export const CaseQuestions = z.object({
   /** The pinned countries, and the former states a citizenship may name. */
   countries: z.array(countryCodeSchema),
   formerCountries: z.array(countryCodeSchema),
+  /** The ISCO-08 unit groups a work period may name (ADR-0036); their names come from i18n. */
+  occupations: z.array(occupationCodeSchema),
+  /** The ISCED-F 2013 fields a qualification may name; their names come from i18n. */
+  studyFields: z.array(studyFieldCodeSchema),
 });
 export type CaseQuestions = z.infer<typeof CaseQuestions>;
 
@@ -261,7 +276,7 @@ export const writeCaseFinances = write(
 export const replaceCaseShares = write(
   '/case/people/shares',
   'replaceCaseShares',
-  "Replaces the members who see a person's profile and finances, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
+  "Replaces the members who see a person's profile, finances and document checklist, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
   ReplaceCaseSharesRequest,
 );
 export const addCaseRelationship = write(
@@ -350,6 +365,13 @@ const currency = z.string().regex(/^[A-Z]{3}$/);
 const unitsMoney = z.object({ amount: decimalSchema, currency });
 const sources = z.array(sourceSchema).max(50);
 const people = z.array(z.uuid()).max(maxCasePeople);
+/** A version's title, in the screen's language when it has a translation (ADR-0037). */
+const shownText = z.string().max(400);
+/** The version's own English title, given only when the shown one is a translation. */
+const originalText = z.string().max(200).nullable();
+const unitsRange = z.object({ min: unitsMoney.nullable(), max: unitsMoney.nullable() });
+/** A cost per currency, summed in code: what certainly applies, and what may on top. */
+export const CostTotal = z.object({ currency, certain: unitsRange, possibleExtra: unitsRange });
 
 /** One route for one principal, as `routeResult` in the domain lays it out (spec 0007, R6). */
 export const RouteResult = z.object({
@@ -363,8 +385,13 @@ export const RouteResult = z.object({
     'eligible',
     'pending_activation',
   ]),
-  /** The active version's title and country; null while no version is active. */
-  route: z.object({ title: z.string().max(200), country: countryCodeSchema }).nullable(),
+  /**
+   * The active version's title and country; null while no version is active. A title in the
+   * screen's language carries the version's own English beside it (ADR-0037).
+   */
+  route: z
+    .object({ title: shownText, original: originalText, country: countryCodeSchema })
+    .nullable(),
   version: z
     .object({ number: z.int().min(1), hash: z.string().regex(/^[0-9a-f]{64}$/) })
     .nullable(),
@@ -374,14 +401,25 @@ export const RouteResult = z.object({
   possibleDependents: people,
   unitOpen: z.boolean(),
   requirements: z
-    .array(z.object({ id: z.string(), title: z.string(), result: truth, sources }))
+    .array(
+      z.object({
+        id: z.string(),
+        title: shownText,
+        original: originalText,
+        result: truth,
+        sources,
+      }),
+    )
     .max(50),
-  assessments: z.array(z.object({ id: z.string(), title: z.string(), sources })).max(20),
+  assessments: z
+    .array(z.object({ id: z.string(), title: shownText, original: originalText, sources }))
+    .max(20),
   costs: z
     .array(
       z.object({
         costId: z.string(),
-        title: z.string(),
+        title: shownText,
+        original: originalText,
         appliesTo: z.enum(['principal', 'each_dependent', 'unit']),
         personId: z.uuid().nullable(),
         applies: truth,
@@ -396,13 +434,16 @@ export const RouteResult = z.object({
     .array(
       z.object({
         id: z.string(),
-        title: z.string(),
+        title: shownText,
+        original: originalText,
         min: durationSchema,
         max: durationSchema,
         sources,
       }),
     )
     .max(20),
+  /** The cost per currency, summed in code: what certainly applies, and what may on top. */
+  totals: z.array(CostTotal).max(50),
   /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
   closureSources: sources,
   /** Rates the exchange table lacks; no one in the family can answer them. */
@@ -437,6 +478,181 @@ export const getCaseEvaluations = {
     'Every route evaluated for each member of the case as principal, from what the viewer sees, with only the questions that change an answer; nothing is stored; 60 per hour per session (429 rate_limited); 404 not_found outside a case',
   response: { description: 'The evaluations', schema: CaseEvaluations },
 } as const satisfies RouteDefinition<typeof CaseEvaluations>;
+
+const dependsOn = z
+  .array(z.object({ personId: z.uuid(), question: z.enum(questionIds), kept: z.boolean() }))
+  .max(maxCasePeople * questionIds.length);
+
+/** Where to get a document in a country whose citizenship the person holds (ADR-0039). */
+export const DocumentGuideView = z.object({
+  country: countryCodeSchema,
+  onlineUrl: z
+    .url({ protocol: /^https$/ })
+    .max(2000)
+    .nullable(),
+  /** In the issuing country's currency, as units. */
+  cost: z.object({ min: unitsMoney, max: unitsMoney }).nullable(),
+  leadTime: z
+    .object({ min: durationSchema, max: durationSchema, businessDays: z.boolean() })
+    .nullable(),
+  sources: z.array(plainSourceSchema.pick({ url: true, title: true, verifiedAt: true })).max(5),
+});
+export type DocumentGuideView = z.infer<typeof DocumentGuideView>;
+
+/** A keeper's mark on one item for one person (spec #519). */
+export const ChecklistMarkView = z.object({
+  state: z.enum(markStates),
+  /** A vault document is linked to the item. */
+  linked: z.boolean(),
+  /** The linked document, only for the account that owns it. */
+  vaultDocumentId: z.uuid().nullable(),
+});
+export type ChecklistMarkView = z.infer<typeof ChecklistMarkView>;
+
+/** One document a route version asks for, as it reads for one person or for the unit. */
+export const DocumentItemView = z.object({
+  documentId: slugSchema,
+  title: shownText,
+  original: originalText,
+  /** The open document kind the guides share, such as `birth_certificate`. */
+  kind: tagSchema,
+  /** `unknown` when its condition reads a fact the viewer's case lacks: "may apply". */
+  applies: z.union([z.literal(true), z.literal('unknown')]),
+  /** Null where the sources do not say: Arca does not know, never "not needed". */
+  apostille: z.boolean().nullable(),
+  translation: tagSchema.nullable(),
+  validity: durationSchema.nullable(),
+  note: shownText.nullable(),
+  noteOriginal: originalText,
+  sources,
+  /** For an item that may apply, the questions that would settle it. */
+  dependsOn,
+  /** Empty when no guide covers the kind for the person's citizenships. */
+  guides: z.array(DocumentGuideView).max(10),
+  /** The keeper's mark; null when unmarked or when the viewer may not see the list's marks. */
+  mark: ChecklistMarkView.nullable(),
+});
+export type DocumentItemView = z.infer<typeof DocumentItemView>;
+
+/** Of the items a list shows, how many its keeper marked as had; computed in code. */
+const ChecklistProgress = z.object({ had: z.int().min(0), total: z.int().min(0) });
+
+/** One list's items with what the viewer may do with its marks. */
+const ChecklistList = z.object({
+  /** The viewer keeps the list's person (the principal, for the unit), so marks it. */
+  editable: z.boolean(),
+  /** The viewer keeps the person, or the keeper shared the person's checklist with the viewer. */
+  marksShown: z.boolean(),
+  /** Null when the marks are not shown. */
+  progress: ChecklistProgress.nullable(),
+  items: z.array(DocumentItemView).max(100),
+});
+
+/** Marks a person may hold on one route, past which a new one answers 409 case_limit. */
+export const maxChecklistMarks = 200;
+
+/** Marks the viewer sees on items the version in effect no longer lists. */
+const NoLongerAsked = z
+  .array(
+    z.object({
+      personId: z.uuid(),
+      documentId: slugSchema,
+      /** From the newest earlier version that listed it; null when none did. */
+      title: shownText.nullable(),
+      original: originalText,
+      /** The viewer keeps the person, so may take the mark off. */
+      editable: z.boolean(),
+      mark: ChecklistMarkView,
+    }),
+  )
+  .max(maxCasePeople * maxChecklistMarks);
+
+export const RouteDocuments = z.object({
+  routeId: routeIdSchema,
+  principalId: z.uuid(),
+  /** The version in effect: active, waiting for activation (ADR-0014), or none. */
+  status: z.enum(['active', 'pending_activation', 'unavailable']),
+  route: z
+    .object({ title: shownText, original: originalText, country: countryCodeSchema })
+    .nullable(),
+  version: z.object({ number: z.int().min(1) }).nullable(),
+  newerProposedVersion: z.object({ number: z.int().min(1), from: calendarDateSchema }).nullable(),
+  /**
+   * Null unless a version is active. `not_covered` when it has no document list, so Arca does
+   * not know them yet and every mark is no longer asked; a `listed` one with no items asks for
+   * none.
+   */
+  documents: z
+    .discriminatedUnion('kind', [
+      z.object({ kind: z.literal('not_covered'), noLongerAsked: NoLongerAsked }),
+      z.object({
+        kind: z.literal('listed'),
+        /** The version's list is empty: the route asks for no documents, of anyone. */
+        asksNone: z.boolean(),
+        /** The principal, then dependents, then possible dependents. */
+        people: z
+          .array(
+            ChecklistList.extend({
+              personId: z.uuid(),
+              role: z.enum(['principal', 'dependent', 'possible_dependent']),
+            }),
+          )
+          .max(maxCasePeople),
+        /** What the unit hands in once, such as proof of means, marked on the principal. */
+        unit: ChecklistList,
+        /** Over every list; null when some list's marks are not shown. */
+        progress: ChecklistProgress.nullable(),
+        noLongerAsked: NoLongerAsked,
+      }),
+    ])
+    .nullable(),
+});
+export type RouteDocuments = z.infer<typeof RouteDocuments>;
+
+export const RouteDocumentsQuery = z.object({
+  routeId: routeIdSchema,
+  /** A case member, as the principal whose unit the checklist covers. */
+  principalId: z.uuid(),
+});
+
+export const getRouteDocuments = {
+  method: 'get',
+  path: '/case/documents',
+  operationId: 'getRouteDocuments',
+  summary:
+    "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources, where to get each in a country whose citizenship the person holds, and the marks the viewer may see, with progress and the marks on items no longer asked; 600 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
+  query: RouteDocumentsQuery,
+  response: { description: 'The document checklist', schema: RouteDocuments },
+} as const satisfies RouteDefinition<typeof RouteDocuments>;
+
+export const SetChecklistMarkRequest = z.strictObject({
+  routeId: routeIdSchema,
+  /** A person the viewer keeps; for an item of the unit, its principal. */
+  personId: z.uuid(),
+  documentId: slugSchema,
+  /** Null clears the mark and its link; the vault document stays, under its countries. */
+  mark: z
+    .strictObject({
+      state: z.enum(markStates),
+      /** One of the viewer's own confirmed vault documents; only with `had`. */
+      vaultDocumentId: z.uuid().nullable(),
+    })
+    .refine(({ state, vaultDocumentId }) => vaultDocumentId === null || state === 'had', {
+      message: 'Only a document marked as had links a vault document',
+    })
+    .nullable(),
+});
+export type SetChecklistMarkRequest = z.infer<typeof SetChecklistMarkRequest>;
+
+export const setChecklistMark = {
+  method: 'post',
+  path: '/case/documents/marks',
+  operationId: 'setChecklistMark',
+  summary:
+    "Sets or clears the viewer's mark on one document item of a route, for a person the viewer keeps, keyed on the item's ID; linking one of the viewer's own confirmed vault documents files it under the route's country in the same request and needs the session's vault_unlock window (403 step_up_required); unlinking leaves the document and its countries; the route needs an active version in effect. 300 writes per hour per account (429 rate_limited); 404 not_found outside a case, for a person the viewer does not keep, a route with no active version or a vault document that is not the viewer's; 409 case_limit past 200 marks for a person on one route",
+  body: SetChecklistMarkRequest,
+  response: { description: 'Set', schema: z.object({}) },
+} as const satisfies RouteDefinition;
 
 /** Why a member thinks a requirement may be wrong (spec 0007, R8). */
 export const ruleReportReasons = [
@@ -555,6 +771,8 @@ export const caseRoutes = {
   answerCaseQuestions,
   getCasePlayback,
   getCaseEvaluations,
+  getRouteDocuments,
+  setChecklistMark,
   reportRule,
   draftCaseIntake,
   leaveCase,
@@ -576,4 +794,7 @@ export {
   languageCodes,
   questionFlow,
   questionSteps,
+  bestRouteStatus,
+  routeCountry,
+  routeStatusOrder,
 } from '@arca/domain';

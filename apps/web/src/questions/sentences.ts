@@ -20,10 +20,36 @@ export function sentenceText(
   const list = (items: readonly string[]) =>
     new Intl.ListFormat(language, { type: 'conjunction' }).format(items);
   const when = (
-    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold',
+    key:
+      | 'since'
+      | 'until'
+      | 'in'
+      | 'startSince'
+      | 'from'
+      | 'custodySince'
+      | 'sold'
+      | 'startedIn'
+      | 'completed',
     value?: string,
   ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
+  const issuedIn = (code?: string) =>
+    code === undefined ? '' : t('playback.part.issuedIn', { country: country(code) });
+  const closedTime = (start?: string, end?: string) =>
+    start !== undefined && end !== undefined
+      ? t('playback.part.between', { start: date(start), end: date(end) })
+      : start === undefined
+        ? when('until', end)
+        : when('startedIn', start);
+  const workTime = (start?: string, end?: string) =>
+    end === 'none' ? when('startedIn', start) + t('playback.part.current') : closedTime(start, end);
+  const residenceTime = (start?: string, end?: string) =>
+    end !== 'none'
+      ? closedTime(start, end)
+      : start === undefined
+        ? t('playback.part.untilToday')
+        : t('playback.part.sinceToday', { date: date(start) });
+  const occupation = (code: string) => t(`occupations.${code}` as 'occupations.2211');
   switch (said.kind) {
     case 'profileHidden':
       return t('playback.sentence.profileHidden', { person: name(said.person) });
@@ -95,7 +121,88 @@ export function sentenceText(
         person: name(said.person),
         country: country(said.country),
         sector: t('questions.choice.isicSection', { value: said.sector }),
-        temporary: said.temporary ? t('playback.part.temporary') : '',
+        details: [
+          said.temporary ? t('playback.part.temporary') : '',
+          said.occupation === undefined
+            ? ''
+            : t('playback.part.offerOccupation', {
+                occupation: occupation(said.occupation),
+              }),
+          said.annualSalary === undefined
+            ? ''
+            : t('playback.part.salary', { amount: formatAmount(said.annualSalary, language) }),
+          said.sponsored === undefined
+            ? ''
+            : t('playback.part.sponsored', { sponsored: said.sponsored ? 'yes' : 'no' }),
+        ].join(''),
+      });
+    case 'noQualification':
+      return t('playback.sentence.noQualification', { person: name(said.person) });
+    case 'qualification':
+      return t('playback.sentence.qualification', {
+        person: name(said.person),
+        field:
+          said.field === undefined
+            ? ''
+            : t('playback.part.field', {
+                field: t(`studyFields.${said.field}` as 'studyFields.0912'),
+              }),
+        level:
+          said.level === undefined
+            ? t('playback.part.noLevel')
+            : t('questions.choice.educationLevel', { value: String(said.level) }),
+        details: issuedIn(said.country) + when('completed', said.completed),
+      });
+    case 'noRegistration':
+      return t('playback.sentence.noRegistration', { person: name(said.person) });
+    case 'registration':
+      return t('playback.sentence.registration', {
+        person: name(said.person),
+        occupation:
+          said.occupation === undefined
+            ? t('playback.part.noOccupation')
+            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+        details: issuedIn(said.country) + when('since', said.since),
+      });
+    case 'noWorkPeriod':
+      return t('playback.sentence.noWorkPeriod', { person: name(said.person) });
+    case 'workPeriod':
+      return t('playback.sentence.workPeriod', {
+        person: name(said.person),
+        label: said.label === undefined ? '' : t('playback.part.label', { label: said.label }),
+        occupation:
+          said.occupation === undefined
+            ? t('playback.part.noOccupation')
+            : occupation(said.occupation),
+        details: [
+          said.relation === undefined
+            ? ''
+            : t('playback.part.relation', { relation: said.relation }),
+          said.capacity === undefined
+            ? ''
+            : t('playback.part.capacity', { capacity: said.capacity }),
+          said.fullTime === undefined
+            ? ''
+            : t('playback.part.fullTime', { fullTime: said.fullTime ? 'yes' : 'no' }),
+          said.employerCountry === undefined
+            ? ''
+            : t('playback.part.employerCountry', { country: country(said.employerCountry) }),
+          said.workplaceCountry === undefined
+            ? ''
+            : t('playback.part.workplaceCountry', { country: country(said.workplaceCountry) }),
+          workTime(said.start, said.end),
+          said.atOwnBusiness === true ? t('playback.part.atOwnBusiness') : '',
+        ].join(''),
+      });
+    case 'noResidencePeriod':
+      return t('playback.sentence.noResidencePeriod', { person: name(said.person) });
+    case 'residencePeriod':
+      return t('playback.sentence.residencePeriod', {
+        person: name(said.person),
+        country: country(said.country),
+        basis:
+          said.basis === undefined ? '' : t('playback.part.residenceBasis', { basis: said.basis }),
+        time: residenceTime(said.start, said.end),
       });
     case 'immigrationEvent':
       return t('playback.sentence.immigrationEvent', {
@@ -169,6 +276,17 @@ export function sentenceText(
             ? ''
             : t('playback.part.liquid', { liquid: said.liquid ? 'yes' : 'no' }),
         sold: when('sold', said.sold),
+        business: [
+          said.country === undefined
+            ? ''
+            : t('playback.part.businessCountry', { country: country(said.country) }),
+          said.operatingSince === undefined
+            ? ''
+            : t('playback.part.operatingSince', { date: date(said.operatingSince) }),
+          said.employees === undefined
+            ? ''
+            : t('playback.part.employees', { employees: said.employees }),
+        ].join(''),
       });
   }
 }

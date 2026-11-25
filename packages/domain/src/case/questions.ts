@@ -16,6 +16,9 @@ import {
   isicSections,
   languageLevels,
   parentKinds,
+  residenceBases,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
 import {
   type StoredAsset,
@@ -59,6 +62,9 @@ export const choiceSets = {
   immigrationEvent: immigrationEventKinds,
   parentKind: parentKinds,
   custody: custodies,
+  workRelation: workRelations,
+  workCapacity: workCapacities,
+  residenceBasis: residenceBases,
 } as const;
 export type ChoiceSet = keyof typeof choiceSets;
 
@@ -71,13 +77,25 @@ export type FieldInput =
   | { readonly kind: 'yesNo' }
   | { readonly kind: 'money' }
   /** A share of an asset, more than 0 and at most 1, as a decimal string. */
-  | { readonly kind: 'share' };
+  | { readonly kind: 'share' }
+  /** An ISCO-08 occupation code, picked by its name. */
+  | { readonly kind: 'occupation' }
+  /** A whole number from zero, such as a head count. */
+  | { readonly kind: 'count' }
+  /** One of the businesses the person owns a confirmed share of, by its asset ID. */
+  | { readonly kind: 'business' }
+  /** An ISCED-F 2013 field-of-study code, picked by its name. */
+  | { readonly kind: 'studyField' }
+  /** A short name that tells items apart on screen; kept with the profile, never in the snapshot. */
+  | { readonly kind: 'label' };
 
 export interface QuestionField<Key extends string = string> {
   readonly key: Key;
   readonly input: FieldInput;
   /** Whether "Não sei" may leave it out. */
   readonly optional: boolean;
+  /** Asked only while another field of the item holds this value; otherwise left out. */
+  readonly onlyWhen?: { readonly key: string; readonly value: string };
 }
 
 export type QuestionInput =
@@ -118,6 +136,11 @@ const needed = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: false }) as const;
 const maybe = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: true }) as const;
+const onlyWhen =
+  (key: string, value: string) =>
+  <Field extends QuestionField>(field: Field) =>
+    ({ ...field, onlyWhen: { key, value } }) as const;
+const businessOnly = onlyWhen('kind', 'business');
 const fact = (key: FactKey) => ({ kind: 'fact', key }) as const;
 const marker = <Id extends string>(id: Id, value: ProfileMarker) =>
   ({
@@ -155,6 +178,20 @@ export const questionFlow = [
     target: fact('educationLevel'),
     input: { kind: 'choice', set: 'educationLevel' },
   },
+  {
+    id: 'qualifications',
+    step: 'studies',
+    target: fact('qualifications'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('level', { kind: 'choice', set: 'educationLevel' }),
+        maybe('field', { kind: 'studyField' }),
+        maybe('country', { kind: 'country', formerStates: true }),
+        maybe('completed', partialDate),
+      ],
+    },
+  },
   { id: 'studying', step: 'studies', target: fact('studying'), input: { kind: 'yesNo' } },
   {
     id: 'languages',
@@ -169,6 +206,39 @@ export const questionFlow = [
     },
   },
   {
+    id: 'workPeriods',
+    step: 'work',
+    target: fact('workPeriods'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('label', { kind: 'label' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('relation', { kind: 'choice', set: 'workRelation' }),
+        maybe('capacity', { kind: 'choice', set: 'workCapacity' }),
+        maybe('fullTime', { kind: 'yesNo' }),
+        maybe('employerCountry', { kind: 'country' }),
+        maybe('workplaceCountry', { kind: 'country' }),
+        maybe('start', partialDate),
+        maybe('end', { ...partialDate, none: true }),
+        onlyWhen('relation', 'owner')(maybe('business', { kind: 'business' })),
+      ],
+    },
+  },
+  {
+    id: 'registrations',
+    step: 'work',
+    target: fact('registrations'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('country', { kind: 'country' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('since', partialDate),
+      ],
+    },
+  },
+  {
     id: 'jobOffers',
     step: 'work',
     target: fact('jobOffers'),
@@ -178,6 +248,9 @@ export const questionFlow = [
         needed('country', { kind: 'country' }),
         needed('sector', { kind: 'choice', set: 'isicSection' }),
         needed('temporary', { kind: 'yesNo' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('annualSalary', { kind: 'money' }),
+        maybe('sponsored', { kind: 'yesNo' }),
       ],
     },
   },
@@ -207,6 +280,9 @@ export const questionFlow = [
         needed('valuedAt', { kind: 'date', precision: 'day' }),
         maybe('liquid', { kind: 'yesNo' }),
         maybe('sold', { ...partialDate, none: true }),
+        businessOnly(maybe('country', { kind: 'country' })),
+        businessOnly(maybe('operatingSince', partialDate)),
+        businessOnly(maybe('employees', { kind: 'count' })),
         needed('share', { kind: 'share' }),
       ],
     },
@@ -216,6 +292,20 @@ export const questionFlow = [
     step: 'finances',
     target: { kind: 'assetsMarker' },
     input: { kind: 'complete' },
+  },
+  {
+    id: 'residencePeriods',
+    step: 'history',
+    target: fact('residencePeriods'),
+    input: {
+      kind: 'list',
+      fields: [
+        needed('country', { kind: 'country' }),
+        maybe('basis', { kind: 'choice', set: 'residenceBasis' }),
+        maybe('start', partialDate),
+        maybe('end', { ...partialDate, none: true }),
+      ],
+    },
   },
   {
     id: 'immigrationHistory',
@@ -282,6 +372,10 @@ export interface QuestionState {
 export interface KnownCodes {
   readonly countries: ReadonlySet<string>;
   readonly formerCountries: ReadonlySet<string>;
+  /** The occupation codes of the current occupations classification. */
+  readonly occupations: ReadonlySet<string>;
+  /** The field-of-study codes of the current study-fields classification. */
+  readonly studyFields: ReadonlySet<string>;
 }
 
 const languages: ReadonlySet<string> = new Set(languageCodes);
@@ -330,10 +424,37 @@ const mapList = (input: QuestionInput, value: unknown, money: (value: unknown) =
     ? value.map((item) => mapFields(input.fields, item, money))
     : value;
 
+/**
+ * Whether every occupation and field-of-study code in stored facts is one of the classifications',
+ * for writes that bypass the guided questions.
+ */
+export function classifiedCodesKnown(
+  facts: StoredProfile['facts'],
+  { occupations, studyFields }: Pick<KnownCodes, 'occupations' | 'studyFields'>,
+): boolean {
+  const named = (code: string | undefined, codes: ReadonlySet<string>) =>
+    code === undefined || codes.has(code);
+  return (
+    [
+      ...(facts.workPeriods ?? []),
+      ...(facts.jobOffers ?? []),
+      ...(facts.registrations ?? []),
+    ].every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
+  );
+}
+
+/** Whether every code an answer names is a known one, and every field it fills is one it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
     if (field.kind === 'language') return typeof entry === 'string' && languages.has(entry);
+    if (field.kind === 'occupation') {
+      return typeof entry === 'string' && known.occupations.has(entry);
+    }
+    if (field.kind === 'studyField') {
+      return typeof entry === 'string' && known.studyFields.has(entry);
+    }
     if (field.kind !== 'country') return true;
     return (
       typeof entry === 'string' &&
@@ -347,7 +468,13 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
       value.every(
         (item) =>
           isRecord(item) &&
-          input.fields.every(({ key, input: field }) => fieldKnown(field, item[key])),
+          input.fields.every(
+            ({ key, input: field, onlyWhen }: QuestionField) =>
+              fieldKnown(field, item[key]) &&
+              (onlyWhen === undefined ||
+                item[key] === undefined ||
+                item[onlyWhen.key] === onlyWhen.value),
+          ),
       )
     );
   }

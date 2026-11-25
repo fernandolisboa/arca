@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pl-descent",
+  "texts": [
+    {
+      "en": "Confirmation of Polish citizenship held from birth through a line of Polish parents",
+      "text": "Confirmação da cidadania polonesa que se tem desde o nascimento por uma linha de pais poloneses"
+    },
+    {
+      "en": "A Polish parent or earlier ancestor whose citizenship passed at each birth down the line (the law sets no limit of generations; four are read); only births since 15 August 2012 settle a link",
+      "text": "Pai, mãe ou antepassado polonês cuja cidadania passou a cada nascimento ao longo da linha (a lei não limita gerações; o Arca lê quatro); só nascimentos desde 15 de agosto de 2012 resolvem uma ligação"
+    },
+    {
+      "en": "No loss of Polish citizenship: today only by renouncing it with the President's consent, which can cover the parents' minor child (from 16, if the child agrees); earlier acts had other ways",
+      "text": "Nenhuma perda da cidadania polonesa: hoje, só renunciando a ela com o consentimento do Presidente, o que pode incluir o filho menor dos pais (a partir dos 16, se o filho concordar); leis anteriores tinham outros jeitos"
+    },
+    {
+      "en": "A change in who is found to be a parent, or in a parent's citizenship, counts only within a year of birth; a ruling denying paternity or its acknowledgment counts until adulthood (from 16 by consent)",
+      "text": "Uma mudança em quem é reconhecido como pai ou mãe, ou na cidadania de um dos pais, só conta dentro de um ano do nascimento; uma decisão que nega a paternidade ou o reconhecimento dela conta até a maioridade (a partir dos 16 com consentimento)"
+    },
+    {
+      "en": "Under the 2009 act, a foreign minor fully adopted by a Polish citizen before turning 16 is Polish as from birth; the requirement does not read adoption, so such a link shows as missing information",
+      "text": "Pela lei de 2009, um menor estrangeiro adotado plenamente por cidadão polonês antes dos 16 anos é polonês desde o nascimento; o requisito não lê adoção, então essa ligação aparece como informação faltando"
+    },
+    {
+      "en": "The application, whose form a regulation sets, gives the data of the person and of their parents and grandparents, with documents that prove it, unless getting them meets obstacles hard to overcome",
+      "text": "O pedido, cujo formulário um regulamento fixa, traz os dados da pessoa, dos pais e dos avós, com documentos que provem, salvo se consegui-los encontrar obstáculos difíceis de vencer"
+    },
+    {
+      "en": "The application is filled in in Polish; documents in a foreign language go with a Polish translation made or certified by a sworn translator or a consul (for a fee), unless a treaty says otherwise",
+      "text": "O pedido é preenchido em polonês; documentos em língua estrangeira vão com tradução para o polonês feita ou certificada por tradutor juramentado ou por cônsul (com taxa), salvo se um tratado disser outra coisa"
+    },
+    {
+      "en": "At a consul, as the consulates in Brazil ask: ID shown; full birth record naming the parents if born abroad; civil status record; non-EU papers apostilled or legalized; copies certified by the consul",
+      "text": "Num cônsul, como pedem os consulados no Brasil: documento de identidade apresentado; certidão de nascimento completa com os pais, se nasceu fora; certidão de estado civil; documentos de fora da UE apostilados ou legalizados; cópias certificadas pelo cônsul"
+    },
+    {
+      "en": "With the voivode, as the Pomeranian office asks: ID copy; proof of stamp duty paid; by post, copies certified by a notary or the lawyer acting; civil records made abroad may need Polish registration",
+      "text": "Com o voivoda, como pede o escritório da Pomerânia: cópia do documento de identidade; comprovante do imposto de selo pago; pelo correio, cópias certificadas por tabelião ou pelo advogado; registros civis feitos fora podem precisar de transcrição na Polônia"
+    },
+    {
+      "en": "Living outside Poland, the EU, Switzerland and the EEA's EFTA states, not filing through a consul, with no representative in Poland: name someone there to receive letters, unless served electronically",
+      "text": "Morando fora da Polônia, da UE, da Suíça e dos países da EFTA no EEE, sem pedir por um cônsul e sem representante na Polônia: indicar alguém lá para receber cartas, salvo se a entrega for eletrônica"
+    },
+    {
+      "en": "The voivode of the person's place of residence, or last place of residence, in Poland decides; with neither, the Mazovian voivode",
+      "text": "Decide o voivoda do lugar de residência da pessoa na Polônia, ou do último lugar onde morou lá; sem nenhum dos dois, o voivoda da Mazóvia"
+    },
+    {
+      "en": "A decision can be appealed to the minister responsible for internal affairs, through the voivode who gave it, within 14 days of the day it is delivered",
+      "text": "Cabe recurso da decisão ao ministro responsável pelos assuntos internos, por meio do voivoda que a deu, em até 14 dias da entrega"
+    },
+    {
+      "en": "A parent's application does not cover minor children: each child needs an application of their own",
+      "text": "O pedido de um dos pais não inclui os filhos menores: cada filho precisa de um pedido próprio"
+    },
+    {
+      "en": "Stamp duty on the voivode's decision on confirming Polish citizenship, paid on filing; none if a consul passes the application on or delivers the decision for a fee, or with a poverty aid certificate",
+      "text": "Imposto de selo sobre a decisão do voivoda que confirma a cidadania polonesa, pago ao protocolar; nada se um cônsul encaminhar o pedido ou entregar a decisão mediante taxa, ou com atestado de pobreza"
+    },
+    {
+      "en": "Filing through a consul, open to a person living outside Poland: consular fee of EUR 100, charged in the consulate's currency, in place of the stamp duty; the place of filing is not recorded: possible",
+      "text": "Pedido por um cônsul, aberto a quem mora fora da Polônia: taxa consular de EUR 100, cobrada na moeda do consulado, no lugar do imposto de selo; o lugar do pedido não está anotado; talvez se aplique"
+    },
+    {
+      "en": "Stamp duty on a power of attorney filed in the case; none for a spouse, ascendant, descendant or sibling, or with a poverty aid certificate; whether a representative acts is not recorded: possible",
+      "text": "Imposto de selo sobre uma procuração juntada ao processo; nada para cônjuge, ascendente, descendente ou irmão, ou com atestado de pobreza; se há representante não está anotado; talvez se aplique"
+    },
+    {
+      "en": "Decision on the application, from the day it reaches the deciding voivode; steps with legal time limits of their own, suspensions and delays not the office's fault do not count; extended if justified",
+      "text": "Decisão sobre o pedido, contada do dia em que chega ao voivoda que decide; etapas com prazos legais próprios, suspensões e atrasos que não são culpa do órgão não contam; prorrogável se justificado"
+    }
+  ]
+}

@@ -11,7 +11,8 @@ import {
 import { z } from 'zod';
 import { runVersionCases } from './case-run.js';
 import { type CasesFile, casesFileSchema } from './cases.js';
-import type { Json } from './canonical.js';
+import { classificationPins } from './datasets.js';
+import { type Json, canonicalize } from './canonical.js';
 import {
   type PinnedFileRow,
   type RuleRowReading,
@@ -61,7 +62,7 @@ export const maxProposalProblems = 50;
 const codesFileSchema = z.object({ codes: z.array(z.string()) });
 
 const codesOf = (reading: RuleRowReading, key: string): ReadonlySet<string> => {
-  const parsed = codesFileSchema.safeParse(reading.countryFiles[key]);
+  const parsed = codesFileSchema.safeParse(reading.datasetFiles[key]);
   return new Set(parsed.success ? parsed.data.codes : []);
 };
 
@@ -111,6 +112,31 @@ function targetProblems(
     problems.push(`/officialDomains: The proposed list ${pinKey(list)}`);
   }
   return problems;
+}
+
+/**
+ * Why an update request's checked proposal may not carry its document list: the admin's view of a
+ * version does not show documents yet, so a request keeps the list of the version it updates
+ * exactly, and a new route's first version has none. Only a session review sets one (spec #519).
+ */
+export function documentListProblems(target: ProposalTarget, version: RouteVersion): string[] {
+  if (target.kind === 'new') {
+    return version.documents === undefined ? [] : ['/documents: No document list in a new route'];
+  }
+  const { base } = target;
+  const json = (value: unknown) => (value === undefined ? undefined : canonicalize(value as Json));
+  if (json(version.documents) !== json(base.documents)) {
+    return ['/documents: The document list of the version it updates, unchanged'];
+  }
+  // The kept items must keep what their sources say too: only the verification date may move.
+  const cited = new Set((base.documents ?? []).flatMap((item) => item.sources));
+  const source = (from: RouteVersion, id: string) => {
+    const found = from.sources.find((each) => each.id === id);
+    return found === undefined ? undefined : json({ ...found, verifiedAt: null });
+  };
+  return [...cited]
+    .filter((id) => source(version, id) !== source(base, id))
+    .map((id) => `/sources: Source ${id}, which a kept document cites, unchanged`);
 }
 
 /**
@@ -209,11 +235,15 @@ export async function checkProposal(
       .filter(({ members }) => members.some((member) => !current.has(member)))
       .map(({ id }) => id),
   );
+  const pinnedCodes = Object.fromEntries(
+    classificationPins(version).map(({ name, key }) => [name, codesOf(reading, key)]),
+  );
   problems.push(
     ...checkRouteVersion(
       version,
       { hosts, hostOf: reading.hostOf },
       { current, former, setsWithFormer },
+      pinnedCodes,
     ).map(({ path, message }) => `${path}: ${message}`),
   );
   if (!current.has(version.country))

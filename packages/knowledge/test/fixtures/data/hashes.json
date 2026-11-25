@@ -144,8 +144,24 @@
       "sha256": "9c0b60f8ad6da15a7a3bd0f0e7ab6bdd4a78b38fa6d4db777204434248c485e4"
     },
     {
+      "path": "routes/qr-licensed-professional/1",
+      "sha256": "b26038ba8ef05efde587cb6424445b30e4c3d1a942987854af2b3bc689911b49"
+    },
+    {
       "path": "routes/qr-national-interest/1",
       "sha256": "5b89ee3fd22c4f96d6d3137c47953fc202145a1614624633b2e5f8a893f6cead"
+    },
+    {
+      "path": "routes/qr-legal-residence/1",
+      "sha256": "25a70fdd2bd23307b14902400085a64a379451f454cd14afba1fc04bcaace4cb"
+    },
+    {
+      "path": "routes/qr-remote-work/1",
+      "sha256": "cf44fd5d1217db9ec85bcb293d7312196a30ece30df412f3913fde8d2b23482c"
+    },
+    {
+      "path": "routes/qr-sponsored-job/1",
+      "sha256": "05568b3129e45e3912b53145988f2b79260746351a43f95267918ddaa9d84712"
     },
     {
       "path": "routes/qs-investor/1",
@@ -158,6 +174,10 @@
     {
       "path": "routes/qt-closed/1",
       "sha256": "3d191cf05ded2b0f3be0c2cd6afb6d4c58bfb9329976f4920ace036010797d26"
+    },
+    {
+      "path": "routes/qr-own-business/1",
+      "sha256": "feec72064d4da8b43a2af99a60393bbe6d6d483efc9efeabd6644a9785a19ce2"
     }
   ]
 }

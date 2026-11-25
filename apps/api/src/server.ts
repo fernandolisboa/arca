@@ -1,7 +1,13 @@
 import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
+  departureChecklists,
+  documentGuides,
+  occupationCodes,
   pinnedCountries,
+  studyFieldCodes,
+  createRuleTexts,
+  shippedRuleTexts,
   suggestedRatings,
   versionCasesHash,
 } from '@arca/knowledge';
@@ -34,7 +40,7 @@ import { authService, type AuthService } from './auth/service.js';
 import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
-import { postgresRuleStore } from './knowledge/rule-store.js';
+import { postgresRuleStore, sha256 } from './knowledge/rule-store.js';
 import { updateModelsFor } from './knowledge/update/environment.js';
 import { createUpdateRequests } from './knowledge/update/requests.js';
 import { createVersionReviews } from './knowledge/update/review.js';
@@ -296,7 +302,12 @@ const documentStorage = objectStorageFor(environment);
 async function documentService() {
   const { audit } = await authParts();
   if (documentStorage === undefined) throw new Error('no object store is connected');
-  return createDocuments({ db: connected().db, storage: documentStorage.storage, audit });
+  return createDocuments({
+    db: connected().db,
+    storage: documentStorage.storage,
+    audit,
+    countries: pinnedCountries.countries,
+  });
 }
 
 /** The account's channels on the app_api pool, audited on app_audit. */
@@ -548,6 +559,8 @@ const app = createApp({
             documentService().then((documents) =>
               documents.confirmReplacements(accountId, documentIds),
             ),
+          changeCountry: (accountId, change) =>
+            documentService().then((documents) => documents.changeCountry(accountId, change)),
           delete: (accountId, documentIds) =>
             documentService().then((documents) => documents.delete(accountId, documentIds)),
         },
@@ -558,12 +571,16 @@ const app = createApp({
     audit: lazyAudit,
     today: () => new Date(),
     countries: pinnedCountries,
+    occupations: occupationCodes,
+    studyFields: studyFieldCodes,
     evaluation: {
       rules: rules.engine,
       comparisons: comparisonCatalog,
       ...(suggestedRatings === null
         ? {}
         : { suggestions: comparisonRatingSuggestions(suggestedRatings) }),
+      texts: createRuleTexts(shippedRuleTexts, sha256),
+      guides: documentGuides,
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),
       engineCommit: readEngineCommit(),
@@ -604,6 +621,7 @@ const app = createApp({
   knowledgeVersions,
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   ...(criterionSuggestions === undefined ? {} : { criterionSuggestions }),
+  departureChecklists,
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

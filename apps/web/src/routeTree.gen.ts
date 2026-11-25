@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DepartureRouteImport } from './routes/departure'
 import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as EnrollRouteImport } from './routes/enroll'
 import { Route as FamilyRouteImport } from './routes/family'
@@ -23,7 +24,9 @@ import { Route as RecoverRouteImport } from './routes/recover'
 import { Route as RecoveryKitRouteImport } from './routes/recovery-kit'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as FamilyDocumentsRouteImport } from './routes/family_.documents'
 import { Route as FamilyIntakeRouteImport } from './routes/family_.intake'
+import { Route as FamilyPlanRouteImport } from './routes/family_.plan'
 import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions'
 import { Route as FamilyResultsRouteImport } from './routes/family_.results'
 
@@ -37,6 +40,11 @@ const IndexRoute = IndexRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepartureRoute = DepartureRouteImport.update({
+  id: '/departure',
+  path: '/departure',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevicesRoute = DevicesRouteImport.update({
@@ -94,9 +102,19 @@ const VaultLazyRoute = VaultLazyRouteImport.update({
   path: '/vault',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/vault.lazy').then((d) => d.Route))
+const FamilyDocumentsRoute = FamilyDocumentsRouteImport.update({
+  id: '/family_/documents',
+  path: '/family/documents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FamilyIntakeRoute = FamilyIntakeRouteImport.update({
   id: '/family_/intake',
   path: '/family/intake',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyPlanRoute = FamilyPlanRouteImport.update({
+  id: '/family_/plan',
+  path: '/family/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FamilyQuestionsRoute = FamilyQuestionsRouteImport.update({
@@ -113,6 +131,7 @@ const FamilyResultsRoute = FamilyResultsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -124,13 +143,16 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
+  '/family/documents': typeof FamilyDocumentsRoute
   '/family/intake': typeof FamilyIntakeRoute
+  '/family/plan': typeof FamilyPlanRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -142,7 +164,9 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
+  '/family/documents': typeof FamilyDocumentsRoute
   '/family/intake': typeof FamilyIntakeRoute
+  '/family/plan': typeof FamilyPlanRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
 }
@@ -150,6 +174,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -161,7 +186,9 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sign-in': typeof SignInRoute
   '/vault': typeof VaultLazyRoute
+  '/family_/documents': typeof FamilyDocumentsRoute
   '/family_/intake': typeof FamilyIntakeRoute
+  '/family_/plan': typeof FamilyPlanRoute
   '/family_/questions': typeof FamilyQuestionsRoute
   '/family_/results': typeof FamilyResultsRoute
 }
@@ -170,6 +197,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -181,13 +209,16 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/vault'
+    | '/family/documents'
     | '/family/intake'
+    | '/family/plan'
     | '/family/questions'
     | '/family/results'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -199,13 +230,16 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/vault'
+    | '/family/documents'
     | '/family/intake'
+    | '/family/plan'
     | '/family/questions'
     | '/family/results'
   id:
     | '__root__'
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -217,7 +251,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sign-in'
     | '/vault'
+    | '/family_/documents'
     | '/family_/intake'
+    | '/family_/plan'
     | '/family_/questions'
     | '/family_/results'
   fileRoutesById: FileRoutesById
@@ -225,6 +261,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
+  DepartureRoute: typeof DepartureRoute
   DevicesRoute: typeof DevicesRoute
   EnrollRoute: typeof EnrollRoute
   FamilyRoute: typeof FamilyRoute
@@ -236,7 +273,9 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignInRoute: typeof SignInRoute
   VaultLazyRoute: typeof VaultLazyRoute
+  FamilyDocumentsRoute: typeof FamilyDocumentsRoute
   FamilyIntakeRoute: typeof FamilyIntakeRoute
+  FamilyPlanRoute: typeof FamilyPlanRoute
   FamilyQuestionsRoute: typeof FamilyQuestionsRoute
   FamilyResultsRoute: typeof FamilyResultsRoute
 }
@@ -255,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/departure': {
+      id: '/departure'
+      path: '/departure'
+      fullPath: '/departure'
+      preLoaderRoute: typeof DepartureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/devices': {
@@ -334,11 +380,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VaultLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/family_/documents': {
+      id: '/family_/documents'
+      path: '/family/documents'
+      fullPath: '/family/documents'
+      preLoaderRoute: typeof FamilyDocumentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/family_/intake': {
       id: '/family_/intake'
       path: '/family/intake'
       fullPath: '/family/intake'
       preLoaderRoute: typeof FamilyIntakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family_/plan': {
+      id: '/family_/plan'
+      path: '/family/plan'
+      fullPath: '/family/plan'
+      preLoaderRoute: typeof FamilyPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/family_/questions': {
@@ -361,6 +421,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
+  DepartureRoute: DepartureRoute,
   DevicesRoute: DevicesRoute,
   EnrollRoute: EnrollRoute,
   FamilyRoute: FamilyRoute,
@@ -372,7 +433,9 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignInRoute: SignInRoute,
   VaultLazyRoute: VaultLazyRoute,
+  FamilyDocumentsRoute: FamilyDocumentsRoute,
   FamilyIntakeRoute: FamilyIntakeRoute,
+  FamilyPlanRoute: FamilyPlanRoute,
   FamilyQuestionsRoute: FamilyQuestionsRoute,
   FamilyResultsRoute: FamilyResultsRoute,
 }

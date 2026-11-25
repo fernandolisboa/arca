@@ -44,13 +44,37 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await studies
     .getByLabel('Até onde Ana estudou?')
     .selectOption({ label: 'Graduação: bacharelado, licenciatura ou tecnólogo' });
+  await radio(studies, 'Que formações Ana concluiu?', 'Sim');
+  // A list's items follow its question, so each is found by a field only it has.
+  const degree = studies.getByRole('listitem').filter({ hasText: 'Área de formação' });
+  await degree
+    .getByLabel('Nível')
+    .selectOption({ label: 'Graduação: bacharelado, licenciatura ou tecnólogo' });
+  await pickCountry(degree, 'Área de formação', 'Medicina');
+  await pickCountry(degree, 'País que emitiu o diploma', 'Brasil');
   await radio(studies, 'Ana está estudando agora?', 'Não');
   await radio(studies, 'Que idiomas Ana fala?', 'Sim');
-  await studies.getByLabel('Idioma').selectOption({ label: 'português' });
-  await studies.getByLabel('Nível').selectOption({ label: 'Língua materna' });
+  const spoken = studies.getByRole('listitem').filter({ has: page.getByLabel('Idioma') });
+  await spoken.getByLabel('Idioma').selectOption({ label: 'português' });
+  await spoken.getByLabel('Nível').selectOption({ label: 'Língua materna' });
   await studies.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const work = step(page, 'Trabalho');
+  await radio(work, 'Onde Ana tem registro para exercer a profissão?', 'Nenhum');
+  await radio(work, 'Quais trabalhos Ana tem ou já teve?', 'Sim');
+  await work.getByLabel('Nome para reconhecer este trabalho (opcional)').fill('Cliente dos EUA');
+  await pickCountry(work, 'Ocupação', 'Desenvolvedores de software');
+  await work
+    .getByLabel('Forma de trabalho')
+    .selectOption({ label: 'Prestando serviço (PJ, freelancer ou autônomo para uma empresa)' });
+  await work.getByLabel('Cargo de chefia').selectOption({ label: 'Não sei' });
+  await radio(work, 'É em tempo integral?', 'Sim');
+  await pickCountry(work, 'País da empresa ou do cliente', 'Estados Unidos');
+  await pickCountry(work, 'País de onde trabalha', 'Brasil');
+  const workStart = group(work, 'Desde quando');
+  await workStart.getByLabel('Ano').fill('2022');
+  await workStart.getByLabel('Mês').selectOption({ label: 'março' });
+  await group(work, 'Até quando').getByLabel('Ainda trabalha aqui').check();
   await radio(work, 'Ana tem oferta de emprego em outro país?', 'Nenhum');
   await work.getByRole('button', { name: 'Salvar e continuar' }).click();
 
@@ -78,6 +102,11 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await finances.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const history = step(page, 'Histórico de imigração');
+  await radio(history, 'Em quais países Ana já morou?', 'Sim');
+  await pickCountry(history, 'País', 'Brasil');
+  await history.getByLabel('Situação no país').selectOption({ label: 'Com cidadania do país' });
+  await group(history, 'Desde quando').getByLabel('Ano').fill('1985');
+  await group(history, 'Até quando').getByLabel('Ainda mora lá').check();
   await radio(
     history,
     'Ana já teve visto ou residência em algum país, ou problema com imigração?',
@@ -111,6 +140,20 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
     ana.getByText(/^Renda de Ana: R\$\s9\.000,50 por mês, de trabalho \(Brasil\)\.$/),
   ).toBeVisible();
   await expect(
+    ana.getByText(
+      'Trabalho de Ana (Cliente dos EUA): Desenvolvedores de software, prestando serviço, em tempo integral, empresa ou cliente: Estados Unidos, local de trabalho: Brasil, começou em março de 2022, trabalho atual.',
+    ),
+  ).toBeVisible();
+  await expect(
+    ana.getByText(
+      'Formação de Ana em Medicina (Graduação: bacharelado, licenciatura ou tecnólogo), país: Brasil.',
+    ),
+  ).toBeVisible();
+  await expect(ana.getByText('Registros profissionais de Ana: nenhum.')).toBeVisible();
+  await expect(
+    ana.getByText('Residência de Ana: Brasil, com cidadania, desde 1985 até hoje.'),
+  ).toBeVisible();
+  await expect(
     page
       .getByRole('region', { name: 'Vínculos' })
       .getByText('Ana é mãe ou pai de Criança, filiação biológica.'),
@@ -136,6 +179,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
 
 test('lists every route for the family by its status, with nothing hidden behind it', async ({
   page,
+  isMobile,
 }) => {
   const problems = watchProblems(page);
   await signedIn(page);
@@ -143,14 +187,33 @@ test('lists every route for the family by its status, with nothing hidden behind
   await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Rotas para a família' })).toBeVisible();
   await expect(
-    page.getByRole('heading', { level: 3, name: 'Perguntas que mudam o resultado' }),
+    page.getByRole('heading', { level: 4, name: /^Perguntas que mudam o resultado/ }),
   ).toBeVisible();
-  // Each route shows a status for each member, Ana and her child.
-  const statuses = page.getByText(/como requerente principal/);
-  await expect(statuses.first()).toBeVisible();
-  const routes = await page.locator('main article').count();
-  expect(routes).toBeGreaterThan(0);
-  expect(await statuses.count()).toBe(routes * 2);
+  const caption = 'Rotas da família, com a situação de cada pessoa como requerente principal';
+  // Another test may leave every version but one waiting for activation; those only get a count.
+  const list = page.getByRole(isMobile ? 'list' : 'table', { name: caption });
+  const waiting = page.getByText(/^Ainda sem versão ativa/);
+  await expect(list.or(waiting).first()).toBeVisible();
+  if ((await list.count()) > 0 && isMobile) {
+    // A card per route; the chosen one opens its detail under it.
+    const card = list.getByRole('listitem').first();
+    await card.getByRole('button', { expanded: false }).click();
+    await expect(card.getByText(/como requerente principal/).first()).toBeVisible();
+  } else if ((await list.count()) > 0) {
+    // Each route shows a status for each member, Ana and her child, and the first opens beside.
+    const rows = await list.locator('tbody tr').count();
+    expect(rows).toBeGreaterThan(0);
+    await expect(list.getByRole('button', { name: /como requerente principal/ })).toHaveCount(
+      rows * 2,
+    );
+    await expect(
+      page.getByRole('complementary', { name: 'Detalhes da rota' }).getByRole('heading', {
+        level: 3,
+      }),
+    ).toBeVisible();
+  }
+  // A route no active version names never shows by its ID.
+  await expect(page.locator('main')).not.toContainText('Rota ainda sem versão ativa');
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();

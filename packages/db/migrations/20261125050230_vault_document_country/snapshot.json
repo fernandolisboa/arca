@@ -1,0 +1,396 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "eda68a78-7148-4b26-beab-b1b9020fcade",
+  "prevIds": [
+    "e8e6e1f2-3fc6-49e9-99a4-b09af1df2afe"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|tbl|vault.document_country",
+        "n|tbl|vault.document_country",
+        "e|tbl|vault.document_country",
+        "n|rel|vault.document_country",
+        "n|type|vault.document_country",
+        "n|rel|vault.document_country_pkey"
+      ],
+      "reads": [
+        "n|sch|vault"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "vault",
+        "document_country",
+        "document_country_owner_id_idx"
+      ],
+      "writes": [
+        "s|idx|vault.document_country_owner_id_idx",
+        "n|idx|vault.document_country_owner_id_idx",
+        "e|idx|vault.document_country_owner_id_idx",
+        "n|rel|vault.document_country_owner_id_idx"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|col|vault.document_country.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|fk|vault.document_country.document_country_document_fkey",
+        "n|fk|vault.document_country.document_country_document_fkey",
+        "e|fk|vault.document_country.document_country_document_fkey",
+        "n|con|vault.document_country.document_country_document_fkey"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|vault.document_country.document_id",
+        "n|col|vault.document_country.owner_id",
+        "n|col|vault.document.id",
+        "n|col|vault.document.owner_id",
+        "e|uniqueness|vault.document.id.owner_id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|pol|vault.document_country.document_country_select_own",
+        "n|pol|vault.document_country.document_country_select_own",
+        "e|pol|vault.document_country.document_country_select_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_country"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|pol|vault.document_country.document_country_insert_own",
+        "n|pol|vault.document_country.document_country_insert_own",
+        "e|pol|vault.document_country.document_country_insert_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_country"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|pol|vault.document_country.document_country_delete_own",
+        "n|pol|vault.document_country.document_country_delete_own",
+        "e|pol|vault.document_country.document_country_delete_own"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|role|app_api",
+        "e|rls|vault.document_country"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|pol|vault.document_country.document_country_select_own_by_jobs",
+        "n|pol|vault.document_country.document_country_select_own_by_jobs",
+        "e|pol|vault.document_country.document_country_select_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_country"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "vault",
+        "document_country"
+      ],
+      "writes": [
+        "s|pol|vault.document_country.document_country_delete_own_by_jobs",
+        "n|pol|vault.document_country.document_country_delete_own_by_jobs",
+        "e|pol|vault.document_country.document_country_delete_own_by_jobs"
+      ],
+      "reads": [
+        "n|tbl|vault.document_country",
+        "n|sch|vault",
+        "n|role|app_jobs",
+        "e|rls|vault.document_country"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "name": "document_country",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "country",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_owner_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "owner_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_document_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "document_id",
+          "owner_id"
+        ],
+        "schemaTo": "vault",
+        "tableTo": "document",
+        "columnsTo": [
+          "id",
+          "owner_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_pkey",
+        "columns": [
+          "document_id",
+          "owner_id",
+          "country"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_code",
+        "value": "\"country\" ~ '^[A-Z]{2}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_select_own",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_country\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_insert_own",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "\"vault\".\"document_country\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_delete_own",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "\"vault\".\"document_country\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_select_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_country\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "vault",
+        "table": "document_country",
+        "name": "document_country_delete_own_by_jobs",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_jobs"
+        ],
+        "using": "\"vault\".\"document_country\".\"owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}

@@ -471,12 +471,17 @@ async function memberReportsARequirement(browser: Browser) {
   await signedIn(page);
   await family(page);
   await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
+  // The table opens a route for one member in the panel beside it, its titles in Portuguese.
   await page
-    .getByRole('article', { name: /^EB-5 immigrant investor/ })
-    .getByText('Ver requisitos, custos e prazos')
+    .getByRole('table')
+    .getByRole('button', { name: /^EB-5, investidor imigrante .* como requerente principal/ })
     .first()
     .click();
-  await page.getByRole('button', { name: 'Avisar regra errada' }).first().click();
+  const panel = page.getByRole('complementary', { name: 'Detalhes da rota' });
+  await expect(
+    panel.getByRole('heading', { level: 3, name: /^EB-5, investidor imigrante/ }),
+  ).toBeVisible();
+  await panel.getByRole('button', { name: 'Avisar regra errada' }).first().click();
   const form = page.getByRole('form', { name: 'Avisar regra errada' });
   await form
     .getByRole('group', { name: 'O que parece errado?' })

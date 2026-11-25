@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page, type Request } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   createdPrfCredential,
   newCredential,
@@ -19,6 +18,7 @@ import {
 } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
+import { addFile, expectAccessible, keepSecret, opened, scrypt, setUp } from './vault-steps.js';
 
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
 test.beforeAll(async () => {
@@ -40,41 +40,6 @@ async function openVaultPage(page: Page) {
   await page.goto(`${databaseServer.origin}/`);
   await page.getByRole('link', { name: 'Abrir o cofre' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Cofre' })).toBeVisible();
-}
-
-async function expectAccessible(page: Page) {
-  expect(await new AxeBuilder({ page }).analyze().then(({ violations }) => violations)).toEqual([]);
-}
-
-const opened = (page: Page) => page.getByText(/^O cofre está aberto neste dispositivo\./);
-
-/** Each recovery envelope is an scrypt passphrase file: seconds of work on a busy machine. */
-const scrypt = { timeout: 20_000 };
-
-/** Creates the vault and keeps the secret it shows once, as a person writing it down would. */
-async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
-  const upload = page.waitForRequest(
-    (request) => request.method() === 'POST' && request.url().endsWith('/v1/vault'),
-  );
-  await page.getByRole('button', { name: 'Criar meu cofre' }).click();
-  const secret = await keepSecret(page);
-  return { secret, upload: await upload };
-}
-
-/** Reads the vault secret shown once, checks the page, and confirms it was kept. */
-async function keepSecret(page: Page): Promise<string> {
-  const sheet = page.getByRole('group', { name: 'Segredo de recuperação do cofre' });
-  await expect(sheet).toBeVisible(scrypt);
-  const secret = (await sheet.locator('p').nth(1).innerText()).trim();
-  expect(secret).toMatch(/^[0-9A-Z]{4}( [0-9A-Z]{1,4}){6}$/);
-  await expectAccessible(page);
-  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  await sheet.getByRole('button', { name: 'Copiar o segredo' }).click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(secret);
-  await page.getByLabel('Guardei o segredo num lugar seguro').check();
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(opened(page)).toBeVisible();
-  return secret;
 }
 
 async function signOutAndIn(page: Page, email: string) {
@@ -195,6 +160,81 @@ test('keeps documents encrypted on the server, and changes one only after a vaul
   expect(problems).toEqual([]);
 });
 
+test('files documents under countries: added there, brought from the vault, used in two countries', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const { credential, userId } = await createdPrfCredential(page);
+  const { email } = await seedAccount(credential, userId, { confirmed: true });
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+
+  const add = async (name: string) => {
+    const created = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' && response.url().endsWith('/v1/vault/documents'),
+    );
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Adicionar documento' }).click();
+    await (
+      await chooser
+    ).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.from(`synthetic ${name}`) });
+    await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
+    return (await created).request().postDataJSON() as { country?: string };
+  };
+  const passport = 'passaporte-exemplo.txt';
+  const certificate = 'certidao-exemplo.txt';
+  expect((await add(passport)).country).toBeUndefined();
+
+  await page.getByRole('button', { name: 'Escolher um país' }).click();
+  const picker = page.getByRole('dialog', { name: 'Separar documentos para qual país?' });
+  await picker.getByRole('searchbox').fill('Portugal');
+  await picker.getByRole('button', { name: 'Portugal', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 4, name: 'Portugal' })).toBeVisible();
+  await expect(page.getByText(/^Nenhum documento neste país ainda\./)).toBeVisible();
+
+  // A document added while a country is open starts under it.
+  expect((await add(certificate)).country).toBe('PT');
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  const row = (name: string) => documents.getByRole('listitem').filter({ hasText: name });
+  await expect(row(certificate)).toBeVisible();
+  await expect(row(passport)).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Trazer do cofre' }).click();
+  await page.getByLabel(passport).check();
+  await page.getByRole('button', { name: 'Trazer 1 documento' }).click();
+  await expect(page.getByText('Documentos trazidos do cofre para este país.')).toBeVisible();
+  await expect(row(passport)).toBeVisible();
+  await expectAccessible(page);
+
+  const countries = page.getByRole('navigation', { name: 'Países' });
+  // A country's button reads its name, then how many documents it holds.
+  const shelf = (name: string, count: number) =>
+    countries.getByRole('button', {
+      name: new RegExp(`^${name}\\s*:\\s*${String(count)}\\s+documentos?$`),
+    });
+  await shelf('Todos', 2).click();
+  await expect(shelf('Portugal', 2)).toBeVisible();
+  await row(passport).getByRole('button', { name: 'Usar em outro país' }).click();
+  const another = page.getByRole('dialog', { name: `Usar “${passport}” em qual país?` });
+  await another.getByRole('searchbox').fill('Estados Unidos');
+  await another.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await expect(page.getByText('País adicionado ao documento.')).toBeVisible();
+  await expect(shelf('Estados Unidos', 1)).toBeVisible();
+
+  await row(passport).getByRole('button', { name: 'Tirar Portugal deste documento' }).click();
+  await expect(
+    page.getByText('País tirado do documento. O arquivo continua no cofre.'),
+  ).toBeVisible();
+  await expect(shelf('Portugal', 1)).toBeVisible();
+  await shelf('Estados Unidos', 1).click();
+  await expect(row(passport)).toBeVisible();
+  await expect(row(certificate)).toHaveCount(0);
+  await expectAccessible(page);
+  expect(problems).toEqual([]);
+});
+
 test('shares a document with a linked account and takes the access back', async ({
   page,
   browser,
@@ -266,14 +306,6 @@ test('shares a document with a linked account and takes the access back', async 
   await relativeContext.close();
   expect(problems).toEqual([]);
 });
-
-/** Adds a synthetic text file to the open vault. */
-async function addFile(page: Page, name: string, contents: string) {
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Adicionar documento' }).click();
-  await (await chooser).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.from(contents) });
-  await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
-}
 
 async function downloaded(page: Page, row: ReturnType<Page['getByRole']>) {
   const download = page.waitForEvent('download');

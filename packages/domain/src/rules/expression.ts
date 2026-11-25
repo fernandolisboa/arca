@@ -3,6 +3,8 @@ import { calendarDateSchema } from '../calendar/calendar-date.js';
 import { durationSchema } from '../calendar/duration.js';
 import { currencyCodeSchema } from '../money/currency.js';
 import { type Decimal, decimalSchema, scaledDecimal } from '../money/decimal.js';
+import type { FactKey, PersonRecord } from '../case/facts.js';
+import type { Person } from '../case/snapshot.js';
 import { resolveFactReference } from './fact-reference.js';
 
 /** Identifiers inside knowledge files: requirement, source, cost and country set IDs. */
@@ -25,9 +27,78 @@ export const collectionNames = [
   'unit.dependents',
   'principal.ancestors',
   'lineage.links',
+  'person.workPeriods',
+  'principal.workPeriods',
+  'person.jobOffers',
+  'principal.jobOffers',
+  'person.residencePeriods',
+  'principal.residencePeriods',
+  'person.qualifications',
+  'principal.qualifications',
+  'person.registrations',
+  'principal.registrations',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
+
+/**
+ * The collections over one person's records (ADR-0036): whose records (the person in focus or the
+ * principal), the snapshot list they come from, the record each item binds, and, for records
+ * that last a while, the facts that bound each item's period, which `covers` reads. An absent
+ * list is unknown, `[]` none.
+ */
+const periods = <const List extends keyof Person, const Record extends PersonRecord['kind']>(
+  list: List,
+  record: Record,
+) => ({ list, record, period: { start: `${record}.start`, end: `${record}.end` } }) as const;
+
+const workPeriods = periods('workPeriods', 'workPeriod');
+const residencePeriods = periods('residencePeriods', 'residencePeriod');
+const qualifications = { list: 'qualifications', record: 'qualification' } as const;
+const registrations = { list: 'registrations', record: 'registration' } as const;
+
+const jobOffers = { list: 'jobOffers', record: 'jobOffer' } as const;
+
+export const recordCollections = {
+  'person.workPeriods': { owner: 'current', ...workPeriods },
+  'principal.workPeriods': { owner: 'principal', ...workPeriods },
+  'person.jobOffers': { owner: 'current', ...jobOffers },
+  'principal.jobOffers': { owner: 'principal', ...jobOffers },
+  'person.residencePeriods': { owner: 'current', ...residencePeriods },
+  'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
+  'person.qualifications': { owner: 'current', ...qualifications },
+  'principal.qualifications': { owner: 'principal', ...qualifications },
+  'person.registrations': { owner: 'current', ...registrations },
+  'principal.registrations': { owner: 'principal', ...registrations },
+} as const satisfies Partial<
+  Record<
+    CollectionName,
+    {
+      readonly owner: 'current' | 'principal';
+      readonly list: keyof Person;
+      readonly record: PersonRecord['kind'];
+      readonly period?: { readonly start: FactKey; readonly end: FactKey };
+    }
+  >
+>;
+
+export type RecordCollectionName = keyof typeof recordCollections;
+export type RecordList = (typeof recordCollections)[RecordCollectionName]['list'];
+
+export function isRecordCollection(name: CollectionName): name is RecordCollectionName {
+  return Object.hasOwn(recordCollections, name);
+}
+
+/** The record collections whose items have a period, which `covers` can read. */
+export type PeriodCollectionName = {
+  [Name in RecordCollectionName]: (typeof recordCollections)[Name] extends { period: object }
+    ? Name
+    : never;
+}[RecordCollectionName];
+
+export function isPeriodCollection(name: CollectionName): name is PeriodCollectionName {
+  return isRecordCollection(name) && 'period' in recordCollections[name];
+}
 
 export const maxAncestorGenerations = 4;
 export const maxExpressionDepth = 16;
@@ -85,6 +156,22 @@ export type Expression =
       readonly value: Expression;
       readonly where?: Expression | undefined;
       readonly generations?: number | undefined;
+    }
+  /**
+   * The time the periods of a record collection that meet `where` cover, in the `window` before the
+   * date (`at`, or the date facts are read at; all time without a window), is at least `atLeast`:
+   * in one unbroken stretch when `continuous`, else added up. A period runs from its start through
+   * its end day; touching or overlapping periods join. Added-up time is counted in days against the
+   * days `atLeast` spans back from the date.
+   */
+  | {
+      readonly op: 'covers';
+      readonly over: CollectionName;
+      readonly where?: Expression | undefined;
+      readonly atLeast: string;
+      readonly window?: string | undefined;
+      readonly continuous: boolean;
+      readonly at?: string | undefined;
     };
 
 const safeInteger = z.number().int().min(Number.MIN_SAFE_INTEGER).max(Number.MAX_SAFE_INTEGER);
@@ -120,6 +207,7 @@ export const expressionOperators = [
   'some',
   'every',
   'sum',
+  'covers',
 ] as const satisfies readonly Expression['op'][];
 
 export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
@@ -181,6 +269,15 @@ export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
       where: expressionSchema.optional(),
       generations,
     }),
+    z.strictObject({
+      op: z.literal('covers'),
+      over: z.enum(collectionNames),
+      where: expressionSchema.optional(),
+      atLeast: durationSchema,
+      window: durationSchema.optional(),
+      continuous: z.boolean(),
+      at: referenceDateNameSchema.optional(),
+    }),
   ]),
 );
 
@@ -220,6 +317,8 @@ export function childrenOf(expression: Expression): readonly Expression[] {
       return expression.where === undefined
         ? [expression.value]
         : [expression.value, expression.where];
+    case 'covers':
+      return expression.where === undefined ? [] : [expression.where];
     case 'bool':
     case 'unmodeled':
     case 'int':

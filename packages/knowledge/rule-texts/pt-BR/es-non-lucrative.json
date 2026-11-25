@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "routeId": "es-non-lucrative",
+  "texts": [
+    {
+      "en": "Non-lucrative residence visa for people living on their own means without working",
+      "text": "Visto de residência não lucrativa, para quem vive de recursos próprios sem trabalhar"
+    },
+    {
+      "en": "Principal's passive income of EUR 2,400 monthly plus 600 per dependent (400% and 100% of IPREM), or savings of 28,800 plus 7,200 each; relatives' means or a mix: unsettled; other proofs not counted",
+      "text": "Renda passiva do requerente principal de EUR 2.400 por mês mais 600 por dependente (400% e 100% do IPREM), ou poupança de 28.800 mais 7.200 por dependente; recursos de parentes ou uma mistura: sem definição; outras provas não contam"
+    },
+    {
+      "en": "Not a citizen of Spain, who is no foreigner under the law, nor of another EU or EEA state or of Switzerland, whose citizens live in Spain under EU free movement rules and not on this visa",
+      "text": "Não ser cidadão da Espanha, que pela lei não é estrangeiro, nem de outro país da UE ou do EEE ou da Suíça, cujos cidadãos moram na Espanha pelas regras de livre circulação da UE, e não com este visto"
+    },
+    {
+      "en": "The principal and the family live in Spain without any work or professional activity: the permit does not allow it, and the means must cover living costs with no need for it",
+      "text": "O requerente principal e a família moram na Espanha sem nenhum trabalho ou atividade profissional: a autorização não permite, e os recursos precisam cobrir o custo de vida sem isso"
+    },
+    {
+      "en": "Each applicant: health insurance",
+      "text": "Cada requerente: plano de saúde"
+    },
+    {
+      "en": "Each applicant: not within a period of commitment not to return to Spain, taken on when returning voluntarily to the country of origin",
+      "text": "Cada requerente: não estar num prazo de compromisso de não voltar à Espanha, assumido ao voltar voluntariamente para o país de origem"
+    },
+    {
+      "en": "Each applicant: no threat to public order, security or health; Spain checks its own criminal records and a police report, and a police record alone does not refuse the permit",
+      "text": "Cada requerente: não ser ameaça à ordem pública, à segurança ou à saúde pública; a Espanha confere os próprios registros criminais e um relatório policial, e um registro policial sozinho não leva à recusa"
+    },
+    {
+      "en": "Each applicant aged 18 or over: no criminal record for offences under Spanish law where they lived in the last five years; the law asks it of Spain and earlier countries of residence, with no limit",
+      "text": "Cada requerente com 18 anos ou mais: sem antecedentes criminais por crimes previstos na lei espanhola onde morou nos últimos cinco anos; a lei pede isso da Espanha e dos países onde morou antes, sem limite"
+    },
+    {
+      "en": "Each applicant: not irregularly in Spanish territory",
+      "text": "Cada requerente: não estar em situação irregular no território espanhol"
+    },
+    {
+      "en": "Each applicant: not listed as refusable in the territory of countries with which Spain has an agreement to that effect",
+      "text": "Cada requerente: não constar como pessoa a recusar no território de países com os quais a Espanha tem acordo para isso"
+    },
+    {
+      "en": "Each applicant: a passport or travel document in force, recognized as valid in Spain, valid for at least one year",
+      "text": "Cada requerente: passaporte ou documento de viagem em vigor, reconhecido como válido na Espanha, com validade de pelo menos um ano"
+    },
+    {
+      "en": "Each applicant: a medical certificate showing none of the diseases with serious public health effects under the International Health Regulations of 2005",
+      "text": "Cada requerente: atestado médico de que não tem nenhuma das doenças com efeitos graves para a saúde pública segundo o Regulamento Sanitário Internacional de 2005"
+    },
+    {
+      "en": "Each applicant: no entry ban, no expulsion order (the law has exceptions) or proceeding that may propose one, and no repeat of a refused application with nothing changed; otherwise it is not admitted",
+      "text": "Cada requerente: sem proibição de entrada, sem ordem de expulsão (a lei tem exceções) ou processo que possa propor uma, e sem repetir um pedido recusado sem nada ter mudado; senão, o pedido não é aceito"
+    },
+    {
+      "en": "Each applicant applies at the Spanish consular office of the district they live in, in person or, if the rules allow, by a service provider, a representative or online, and collects the visa in person",
+      "text": "Cada requerente pede no consulado espanhol da região onde mora, pessoalmente ou, se as regras permitirem, por prestador de serviço, representante ou on-line, e retira o visto pessoalmente"
+    },
+    {
+      "en": "Fee for processing the principal's national long-stay visa application; another amount may apply by reciprocity with the applicant's country, which is not checked",
+      "text": "Taxa do pedido de visto nacional de longa duração do requerente principal; outro valor pode valer por reciprocidade com o país do requerente, o que o Arca não confere"
+    },
+    {
+      "en": "Fee for processing each family member's national long-stay visa application; another amount may apply by reciprocity with the applicant's country, which is not checked",
+      "text": "Taxa do pedido de visto nacional de longa duração de cada familiar; outro valor pode valer por reciprocidade com o país do requerente, o que o Arca não confere"
+    },
+    {
+      "en": "Fee for processing the principal's initial non-lucrative temporary residence permit",
+      "text": "Taxa da autorização inicial de residência temporária não lucrativa do requerente principal"
+    },
+    {
+      "en": "Fee for processing each family member's initial non-lucrative temporary residence permit",
+      "text": "Taxa da autorização inicial de residência temporária não lucrativa de cada familiar"
+    },
+    {
+      "en": "Fee for the principal's foreigner identity card (TIE), applied for in person within one month of entering Spain",
+      "text": "Taxa da carteira de identidade de estrangeiro (TIE) do requerente principal, pedida pessoalmente até um mês depois de entrar na Espanha"
+    },
+    {
+      "en": "Fee for each family member's foreigner identity card (TIE), applied for in person within one month of entering Spain",
+      "text": "Taxa da carteira de identidade de estrangeiro (TIE) de cada familiar, pedida pessoalmente até um mês depois de entrar na Espanha"
+    },
+    {
+      "en": "Decision on the residence permit, counted from the receipt of the consulate's communication; with no answer within one month the application is taken as refused",
+      "text": "Decisão sobre a autorização de residência, contada do recebimento da comunicação do consulado; sem resposta em um mês, o pedido é considerado recusado"
+    },
+    {
+      "en": "Decision and issue of the visa by the consulate, counted from its receipt of the favourable decision on the permit",
+      "text": "Decisão e emissão do visto pelo consulado, contadas do recebimento da decisão favorável sobre a autorização"
+    },
+    {
+      "en": "Collecting the visa, counted from the notification that it was granted; an applicant who does not collect it in time is taken to have given it up",
+      "text": "Retirada do visto, contada do aviso de que foi concedido; quem não retira no prazo é considerado desistente"
+    },
+    {
+      "en": "Application in person for the foreigner identity card (TIE), counted from the entry into Spain",
+      "text": "Pedido pessoal da carteira de identidade de estrangeiro (TIE), contado da entrada na Espanha"
+    },
+    {
+      "en": "Initial non-lucrative temporary residence permit",
+      "text": "Autorização inicial de residência temporária não lucrativa"
+    },
+    {
+      "en": "Each renewed permit, unless a long-term residence permit is due",
+      "text": "Cada autorização renovada, salvo se couber a autorização de residência de longa duração"
+    }
+  ]
+}

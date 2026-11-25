@@ -22,6 +22,8 @@ beforeAll(async () => {
     audit: auditLog(testDatabase.auditDb),
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'IT', 'PT', 'US'], formerCountries: [] },
+    occupations: ['2211', '2512'],
+    studyFields: ['0613', '0912'],
     evaluation: {
       rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,

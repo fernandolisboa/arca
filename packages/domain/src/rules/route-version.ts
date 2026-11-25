@@ -23,7 +23,7 @@ const sourceIds = z.array(slugSchema).min(1).max(20);
 /** A reference to an exact version of another knowledge file. */
 export const pinSchema = z.strictObject({ id: slugSchema, number: versionNumberSchema });
 
-const sourceUrlSchema = z.string().max(2000).startsWith('https://');
+export const sourceUrlSchema = z.string().max(2000).startsWith('https://');
 
 /** The most pages one machine-readable address may name with a range. */
 export const maxAddressPages = 10;
@@ -110,14 +110,40 @@ export const dependentRuleSchema = z.strictObject({
   sources: sourceIds,
 });
 
+/** Who an item is for, as the unit holds them: the principal, each dependent, or the unit once. */
+export const appliesToSchema = z.enum(['principal', 'each_dependent', 'unit']);
+
+/** A free lowercase tag, never an enumeration in code. */
+export const tagSchema = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/);
+
 export const costSchema = z.strictObject({
   id: slugSchema,
   title: text,
-  /** A free tag such as `fee` or `proof_of_means`; never an enumeration in code. */
-  kind: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/),
+  /** A free tag such as `fee` or `proof_of_means`. */
+  kind: tagSchema,
   amount: expressionSchema,
-  appliesTo: z.enum(['principal', 'each_dependent', 'unit']),
+  appliesTo: appliesToSchema,
   condition: expressionSchema.optional(),
+  sources: sourceIds,
+});
+
+/**
+ * One document a route asks for (spec #519). `kind` names what the document is, such as
+ * `birth_certificate`, and is shared with the document guides. `translation` is a free tag, today
+ * `none`, `certified` or `sworn`. `validity` is how recent the document must be, counted from
+ * its issuance. Apostille, translation and validity are set only where a source states them, so
+ * an absent one means the sources do not say.
+ */
+export const documentItemSchema = z.strictObject({
+  id: slugSchema,
+  title: text,
+  kind: tagSchema,
+  appliesTo: appliesToSchema,
+  condition: expressionSchema.optional(),
+  apostille: z.boolean().optional(),
+  translation: tagSchema.optional(),
+  validity: durationSchema.optional(),
+  note: text.optional(),
   sources: sourceIds,
 });
 
@@ -162,6 +188,10 @@ export const routeVersionSchema = z
     closureSources: sourceIds.optional(),
     countries: pinSchema,
     formerCountries: pinSchema,
+    /** The occupations file (ISCO-08 unit groups), pinned when a rule reads an occupation code. */
+    occupations: pinSchema.optional(),
+    /** The study-fields file (ISCED-F 2013), pinned when a rule reads a field-of-study code. */
+    studyFields: pinSchema.optional(),
     countrySets: z.array(pinSchema).max(20),
     officialDomains: z.array(pinSchema).min(1).max(10),
     requirements: z.array(requirementSchema).max(50),
@@ -169,6 +199,11 @@ export const routeVersionSchema = z
     dependents: z.array(dependentRuleSchema).max(20),
     costs: z.array(costSchema).max(50),
     durations: z.array(durationStageSchema).max(20),
+    /**
+     * The documents the route asks for. Absent means the knowledge base does not cover them yet;
+     * empty means the route asks for none.
+     */
+    documents: z.array(documentItemSchema).max(100).optional(),
   })
   .refine((version) => version.corrects === undefined || version.corrects < version.number, {
     message: 'A correction names a lower version number',
@@ -188,6 +223,19 @@ export type Assessment = z.infer<typeof assessmentSchema>;
 export type DependentRule = z.infer<typeof dependentRuleSchema>;
 export type Cost = z.infer<typeof costSchema>;
 export type DurationStage = z.infer<typeof durationStageSchema>;
+export type DocumentItem = z.infer<typeof documentItemSchema>;
+export type AppliesTo = z.infer<typeof appliesToSchema>;
+
+/** Resolves a checked version's source IDs to its sources. */
+export function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
+  const byId = new Map(sources.map((source) => [source.id, source]));
+  return (ids) =>
+    ids.map((id) => {
+      const source = byId.get(id);
+      if (source === undefined) throw new RangeError('An unchecked source reference');
+      return source;
+    });
+}
 export type Pin = z.infer<typeof pinSchema>;
 
 /** A versioned country set, such as treaty countries, with the files it pins. */

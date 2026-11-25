@@ -1,11 +1,15 @@
+import { createHash } from 'node:crypto';
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type CalendarDate,
+  compareDates,
   maxKnowledgeJsonDepth,
   parseCalendarDate,
   sourceUrls,
+  departureChecklistsSchema,
+  documentGuidesSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
@@ -13,6 +17,12 @@ import { parseJsonSubset } from '@arca/scripts/json';
 import type { Json } from '../src/canonical.ts';
 import { parseComparisons, parseEntries } from '../src/entries.ts';
 import { caseSummaries } from '../src/cases.ts';
+import {
+  type RuleTextFile,
+  ruleTextFileSchema,
+  ruleTextLocale,
+  shipRuleTexts,
+} from '../src/rule-texts.ts';
 import type { RuleRows, VersionCases } from '../src/rule-rows.ts';
 import { contentHash } from './content-hash.ts';
 import { checkHashes } from './hashes.ts';
@@ -33,17 +43,34 @@ export interface CatalogParts {
   readonly officialDomains: readonly BuiltOfficialDomains[];
   readonly countries: PinnedCountries;
   readonly cases: readonly VersionCases[];
-  /** The countries and former-countries files, keyed `<kind>/<id>/<number>` as a hash pins them. */
-  readonly countryFiles: Readonly<Record<string, Json>>;
+  /**
+   * The countries, former-countries, occupations and study-fields files, keyed
+   * `<kind>/<id>/<number>` as a hash pins them.
+   */
+  readonly datasetFiles: Readonly<Record<string, Json>>;
   /** The rows the import writes to the database (ADR-0031). */
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
   readonly suggestedRatings?: Json | null;
+  /** The highest-numbered departure checklists file (ADR-0038), or null when there is none. */
+  readonly departureChecklists?: Json | null;
+  /** The highest-numbered document guides file (ADR-0039), or null when there is none. */
+  readonly documentGuides?: Json | null;
+  /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
+  readonly ruleTexts?: Json;
 }
 
 export interface KnowledgeBuild extends CatalogParts {
   readonly issues: readonly Issue[];
 }
+
+/** The repository's datasets, which route versions pin and which stay in the repository (ADR-0031). */
+const datasetKinds: ReadonlySet<FileKind> = new Set([
+  'countries',
+  'former-countries',
+  'occupations',
+  'study-fields',
+]);
 
 const casesPath = /^routes\/([a-z0-9-]+\/[1-9][0-9]*)\.cases\.json$/;
 
@@ -105,9 +132,9 @@ export async function buildKnowledge(
     officialDomains: validated.officialDomains,
     countries: validated.countries,
     cases: versionCases(casesByVersion, validated.hashes),
-    countryFiles: Object.fromEntries(
+    datasetFiles: Object.fromEntries(
       raw.files
-        .filter(({ kind }) => kind === 'countries' || kind === 'former-countries')
+        .filter(({ kind }) => datasetKinds.has(kind))
         .map(({ kind, id, number, json }) => [`${kind}/${id}/${String(number)}`, json]),
     ),
     rows: {
@@ -179,14 +206,17 @@ export function catalogModule({
 }
 
 /**
- * The runtime module, which the API ships: the pinned countries, the countries files a route
+ * The runtime module, which the API ships: the pinned countries, the dataset files a route
  * version's hash covers, and the comparison versions with the hosts of their sources.
  */
 export function runtimeModule({
   countries = { countries: [], formerCountries: [] },
-  countryFiles = {},
+  datasetFiles = {},
   comparisons = [],
   suggestedRatings = null,
+  departureChecklists = null,
+  documentGuides = null,
+  ruleTexts = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
     indicators.flatMap((indicator) => indicator.sources.flatMap(sourceUrls)),
@@ -194,19 +224,25 @@ export function runtimeModule({
   return [
     generatedNote,
     exportedJson('countryData', countries),
-    exportedJson('countryFileData', countryFiles),
+    exportedJson('datasetFileData', datasetFiles),
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
+    exportedJson('departureChecklistData', departureChecklists),
+    exportedJson('documentGuideData', documentGuides),
+    exportedJson('ruleTextData', ruleTexts),
     '',
   ].join('\n');
 }
 
 /**
- * The highest-numbered suggested ratings file in `dir` (ADR-0035), named `<number>.json`, checked
- * against its schema and its own number; null when the directory holds none.
+ * The highest-numbered file in `dir`, named `<number>.json`, checked against its schema and its own
+ * number; null when the directory holds none.
  */
-export async function readSuggestedRatings(dir: string): Promise<Json | null> {
+async function readLatestNumbered(
+  dir: string,
+  schema: { parse: (json: Json) => { number: number } },
+): Promise<Json | null> {
   const names = await readdir(dir).catch((error: unknown) => {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw error;
@@ -217,17 +253,81 @@ export async function readSuggestedRatings(dir: string): Promise<Json | null> {
     .sort((a, b) => b - a);
   const [latest] = numbers;
   if (latest === undefined) return null;
-  const json = parseJsonSubset(
-    await readKnowledgeFile(join(dir, `${String(latest)}.json`)),
-    maxKnowledgeJsonDepth,
-  );
-  const parsed = suggestedRatingsSchema.parse(json);
-  if (parsed.number !== latest) {
+  const file = join(dir, `${String(latest)}.json`);
+  const json = parseJsonSubset(await readKnowledgeFile(file), maxKnowledgeJsonDepth);
+  const { number } = schema.parse(json);
+  if (number !== latest) {
+    throw new Error(`${file} carries number ${String(number)}`);
+  }
+  return json;
+}
+
+/** The highest-numbered suggested ratings file in `dir` (ADR-0035), or null. */
+export const readSuggestedRatings = (dir: string) =>
+  readLatestNumbered(dir, suggestedRatingsSchema);
+
+/**
+ * The highest-numbered file in `dir` of official sources (ADR-0038), or null; a source verified
+ * after `today` fails the build, as route sources do.
+ */
+async function readLatestSourced(
+  dir: string,
+  schema: { parse: (json: Json) => { number: number; sources: readonly SourceDate[] } },
+  name: string,
+  today: CalendarDate,
+): Promise<Json | null> {
+  const json = await readLatestNumbered(dir, schema);
+  if (json === null) return null;
+  const late = schema
+    .parse(json)
+    .sources.filter(({ verifiedAt }) => compareDates(verifiedAt, today) > 0);
+  if (late.length > 0) {
     throw new Error(
-      `suggested-ratings/${String(latest)}.json carries number ${String(parsed.number)}`,
+      `${name} sources verified after ${today}: ${late.map(({ id }) => id).join(', ')}`,
     );
   }
   return json;
+}
+
+interface SourceDate {
+  readonly id: string;
+  readonly verifiedAt: CalendarDate;
+}
+
+/** The highest-numbered departure checklists file in `dir` (ADR-0038), or null. */
+export const readDepartureChecklists = (dir: string, today: CalendarDate = todayUtc()) =>
+  readLatestSourced(dir, departureChecklistsSchema, 'departure checklist', today);
+
+/** The highest-numbered document guides file in `dir` (ADR-0039), or null. */
+export const readDocumentGuides = (dir: string, today: CalendarDate = todayUtc()) =>
+  readLatestSourced(dir, documentGuidesSchema, 'document guide', today);
+
+/**
+ * Every route's texts in `dir` (ADR-0037), one `<route-id>.json` a route, each checked against its
+ * schema, its file name and for a title written twice; none when the directory is missing.
+ */
+export async function readRuleTexts(dir: string): Promise<RuleTextFile[]> {
+  const names = await readdir(dir).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
+  });
+  const files: RuleTextFile[] = [];
+  for (const name of names.sort()) {
+    const routeId = /^([a-z0-9-]+)\.json$/.exec(name)?.[1];
+    if (routeId === undefined) throw new Error(`rule-texts: ${name} is not <route-id>.json`);
+    const json = parseJsonSubset(await readKnowledgeFile(join(dir, name)), maxKnowledgeJsonDepth);
+    const parsed = ruleTextFileSchema.parse(json);
+    if (parsed.routeId !== routeId) {
+      throw new Error(`rule-texts: ${name} carries route ${parsed.routeId}`);
+    }
+    const english = new Set<string>();
+    for (const { en } of parsed.texts) {
+      if (english.has(en)) throw new Error(`rule-texts: ${name} translates "${en}" twice`);
+      english.add(en);
+    }
+    files.push(parsed);
+  }
+  return files;
 }
 
 export function formatIssue(issue: Issue): string {
@@ -257,8 +357,19 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
-  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings }));
+  const [suggestedRatings, departureChecklists, documentGuides, ruleTextFiles] = await Promise.all([
+    readSuggestedRatings(join(packageDir, 'suggested-ratings')),
+    readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
+    readDocumentGuides(join(packageDir, 'document-guides'), today),
+    readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
+  ]);
+  const ruleTexts = shipRuleTexts(ruleTextFiles, (text) =>
+    createHash('sha256').update(text, 'utf8').digest('hex'),
+  );
+  await writeFile(
+    targets.runtime,
+    runtimeModule({ ...parts, suggestedRatings, departureChecklists, documentGuides, ruleTexts }),
+  );
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );

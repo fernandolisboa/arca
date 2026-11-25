@@ -3,6 +3,7 @@ import {
   type SentenceKind,
   caseSnapshotSchema,
   describeCase,
+  labelWorkPeriods,
   parseCalendarDate,
   renamePeople,
   sentenceSchema,
@@ -26,7 +27,39 @@ const snapshot = caseSnapshotSchema.parse({
       educationLevel: 6,
       studying: false,
       languages: [{ language: 'pt', level: 'native' }],
-      jobOffers: [{ country: 'PT', sector: 'J', temporary: false }],
+      jobOffers: [
+        { country: 'PT', sector: 'J', temporary: false },
+        {
+          country: 'GB',
+          sector: 'Q',
+          temporary: false,
+          occupation: '2211',
+          annualSalary: { amount: 6_000_000, currency: 'GBP' },
+          sponsored: true,
+        },
+      ],
+      workPeriods: [
+        {
+          occupation: '2512',
+          relation: 'contractor',
+          capacity: 'other',
+          fullTime: true,
+          employerCountry: 'US',
+          workplaceCountry: 'BR',
+          start: '2021-03',
+          end: 'none',
+        },
+        { occupation: '3512', start: '2015', end: '2021-02' },
+      ],
+      qualifications: [
+        { level: 6, field: '0613', country: 'BR', completed: '2014-12' },
+        { country: 'PT' },
+      ],
+      registrations: [{ country: 'BR', occupation: '2512', since: '2015-01' }],
+      residencePeriods: [
+        { country: 'BR', basis: 'citizen', start: '1985-04', end: 'none' },
+        { country: 'US', end: '2009-12' },
+      ],
       immigrationHistory: [{ country: 'US', kind: 'visa_refusal', date: '2018' }],
       financiallyDependentOn: [],
       incomes: [
@@ -40,6 +73,10 @@ const snapshot = caseSnapshotSchema.parse({
       citizenships: [],
       languages: [],
       jobOffers: [],
+      workPeriods: [],
+      qualifications: [],
+      registrations: [],
+      residencePeriods: [],
       immigrationHistory: [],
       incomes: [],
       financiallyDependentOn: ['p1'],
@@ -98,6 +135,32 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p1', 'jobOffer', { question: 'jobOffers', country: 'PT', sector: 'J', temporary: false }],
     [
       'p1',
+      'workPeriod',
+      {
+        question: 'workPeriods',
+        occupation: '2512',
+        relation: 'contractor',
+        capacity: 'other',
+        fullTime: true,
+        employerCountry: 'US',
+        workplaceCountry: 'BR',
+        start: '2021-03',
+        end: 'none',
+      },
+    ],
+    [
+      'p1',
+      'residencePeriod',
+      {
+        question: 'residencePeriods',
+        country: 'BR',
+        basis: 'citizen',
+        start: '1985-04',
+        end: 'none',
+      },
+    ],
+    [
+      'p1',
       'immigrationEvent',
       { question: 'immigrationHistory', country: 'US', event: 'visa_refusal', date: '2018' },
     ],
@@ -117,6 +180,10 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p2', 'noCitizenship', { question: 'citizenships' }],
     ['p2', 'noLanguage', { question: 'languages' }],
     ['p2', 'noJobOffer', { question: 'jobOffers' }],
+    ['p2', 'noWorkPeriod', { question: 'workPeriods' }],
+    ['p2', 'noQualification', { question: 'qualifications' }],
+    ['p2', 'noRegistration', { question: 'registrations' }],
+    ['p2', 'noResidencePeriod', { question: 'residencePeriods' }],
     ['p2', 'noImmigrationEvent', { question: 'immigrationHistory' }],
     ['p2', 'noIncome', { question: 'incomes' }],
     ['p2', 'dependsOn', { question: 'dependsOn', on: ['p1'] }],
@@ -137,16 +204,145 @@ describe('playing the case back (spec 0007, R5)', () => {
       'citizenships',
       'residenceCountry',
       'educationLevel',
+      'qualifications',
       'studying',
       'languages',
+      'workPeriods',
+      'registrations',
       'jobOffers',
       'dependsOn',
+      'residencePeriods',
       'immigrationHistory',
     ]);
     expect(questions('p4')).toEqual([]);
     expect(said.filter((sentence) => 'person' in sentence && sentence.person === 'p4')).toEqual([
       { kind: 'profileHidden', about: ['p4'], person: 'p4' },
       { kind: 'financesHidden', about: ['p4'], person: 'p4' },
+    ]);
+  });
+
+  it('reads back every work period, in the order recorded, with only what is known', () => {
+    expect(of('p1', 'workPeriod')).toEqual([
+      expect.objectContaining({ occupation: '2512', end: 'none' }),
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: ['p1'],
+        person: 'p1',
+        occupation: '3512',
+        start: '2015',
+        end: '2021-02',
+      },
+    ]);
+  });
+
+  it('reads back every qualification and registration with only what is known', () => {
+    expect(of('p1', 'qualification')).toEqual([
+      {
+        kind: 'qualification',
+        question: 'qualifications',
+        about: ['p1'],
+        person: 'p1',
+        level: 6,
+        field: '0613',
+        country: 'BR',
+        completed: '2014-12',
+      },
+      {
+        kind: 'qualification',
+        question: 'qualifications',
+        about: ['p1'],
+        person: 'p1',
+        country: 'PT',
+      },
+    ]);
+    expect(of('p1', 'registration')).toEqual([
+      {
+        kind: 'registration',
+        question: 'registrations',
+        about: ['p1'],
+        person: 'p1',
+        country: 'BR',
+        occupation: '2512',
+        since: '2015-01',
+      },
+    ]);
+  });
+
+  it('reads back every residence period, in the order recorded, with only what is known', () => {
+    expect(of('p1', 'residencePeriod')).toEqual([
+      expect.objectContaining({ country: 'BR', end: 'none' }),
+      {
+        kind: 'residencePeriod',
+        question: 'residencePeriods',
+        about: ['p1'],
+        person: 'p1',
+        country: 'US',
+        end: '2009-12',
+      },
+    ]);
+  });
+
+  it('labels work periods by their order in each person’s profile', () => {
+    const labelled = labelWorkPeriods(said, (person) =>
+      person === 'p1' ? ['Consultoria', undefined] : [],
+    );
+    expect(
+      labelled.flatMap((sentence) => (sentence.kind === 'workPeriod' ? [sentence.label] : [])),
+    ).toEqual(['Consultoria', undefined]);
+    expect(labelled.filter(({ kind }) => kind !== 'workPeriod')).toEqual(
+      said.filter(({ kind }) => kind !== 'workPeriod'),
+    );
+  });
+
+  it('reads back a business’s details and a work period at it', () => {
+    const owned = caseSnapshotSchema.parse({
+      recordedOn: at,
+      members: ['p1'],
+      people: [
+        { id: 'p1', workPeriods: [{ relation: 'owner', business: 'a1' }, { start: '2010' }] },
+      ],
+      relationships: [],
+      assets: [
+        {
+          id: 'a1',
+          kind: 'business',
+          owners: [{ person: 'p1', share: '1' }],
+          value: { amount: 30000000, currency: 'BRL' },
+          valuedAt: '2026-06-30',
+          country: 'BR',
+          operatingSince: '2018-05',
+          employees: 6,
+        },
+      ],
+    });
+    const back = describeCase(owned, new Map([['p1', seen]]), at);
+    expect(back.filter(({ kind }) => kind === 'workPeriod')).toEqual([
+      expect.objectContaining({ relation: 'owner', atOwnBusiness: true }),
+      expect.not.objectContaining({ atOwnBusiness: true }),
+    ]);
+    expect(back.find(({ kind }) => kind === 'asset')).toMatchObject({
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
+  it('reads a job offer’s salary back in the currency’s units', () => {
+    expect(of('p1', 'jobOffer')).toEqual([
+      expect.objectContaining({ country: 'PT' }),
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: ['p1'],
+        person: 'p1',
+        country: 'GB',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '60000', currency: 'GBP' },
+        sponsored: true,
+      },
     ]);
   });
 

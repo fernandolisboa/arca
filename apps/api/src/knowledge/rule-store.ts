@@ -7,7 +7,7 @@ import {
   type RuleEngineData,
   type RuleRowReading,
   type RuleRows,
-  countryFiles,
+  datasetFiles,
   refusedRows,
   ruleDataFromRows,
   ruleEngineData,
@@ -33,7 +33,9 @@ export interface RuleStore {
 
 export type { RuleEngineData };
 
-const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
+/** A hex SHA-256 of a text's UTF-8. */
+export const sha256 = (text: string): string =>
+  createHash('sha256').update(text, 'utf8').digest('hex');
 
 /**
  * Reads the rule rows on the given pool. Rows are insert-only, so the row counts tell whether
@@ -44,7 +46,7 @@ const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8
  */
 export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore {
   let cached: { counts: string; rows: Promise<RuleRows> } | undefined;
-  const reading: RuleRowReading = { countryFiles, sha256, hostOf };
+  const reading: RuleRowReading = { datasetFiles, sha256, hostOf };
   const parsed = new WeakMap<RuleRows, RuleData>();
 
   const readRows = async (): Promise<RuleRows> => {

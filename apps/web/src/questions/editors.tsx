@@ -7,13 +7,14 @@ import {
   type QuestionInput,
 } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
-import { Button, ChoiceGroup } from '@arca/ui';
+import { Button, ChoiceGroup, SearchPicker } from '@arca/ui';
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CountryField } from '../forms/country-field.js';
 import { dangerLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
+import { formatDateValue } from './format.js';
 import {
   amountText,
   amountValue,
@@ -35,6 +36,32 @@ export interface QuestionContext {
   readonly names: ReadonlyMap<string, string>;
   readonly countries: readonly string[];
   readonly formerCountries: readonly string[];
+  readonly occupations: readonly string[];
+  readonly studyFields: readonly string[];
+  /** The businesses the person owns a confirmed share of, as the assets question lists them. */
+  readonly businesses: readonly Business[];
+}
+
+export interface Business {
+  readonly id: string;
+  readonly country?: string;
+  readonly operatingSince?: string;
+}
+
+/** The businesses among the person's assets, as the assets question answers them. */
+export function businessesOf(assets: unknown): Business[] {
+  if (!Array.isArray(assets)) return [];
+  return assets.filter(isRecord).flatMap((asset) => {
+    const { id, kind, country, operatingSince } = asset;
+    if (kind !== 'business' || typeof id !== 'string') return [];
+    return [
+      {
+        id,
+        ...(typeof country === 'string' ? { country } : {}),
+        ...(typeof operatingSince === 'string' ? { operatingSince } : {}),
+      },
+    ];
+  });
 }
 
 type FieldKey = keyof Messages['questions']['fields'];
@@ -45,9 +72,12 @@ const yesNo = { yes: 'yes', no: 'no', unknown: 'unknown' } as const;
 type YesNo = (typeof yesNo)[keyof typeof yesNo];
 const noneDate = 'none';
 const yearPattern = '\\d{4}';
+// The stored limit of a display name (`displayNameSchema`).
+const labelLength = 80;
 const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+const countPattern = /^[0-9]{1,8}$/;
 
 export function useNames() {
   const { t, i18n } = useTranslation();
@@ -56,6 +86,27 @@ export function useNames() {
   const currencies = new Intl.DisplayNames([i18n.language], { type: 'currency', fallback: 'code' });
   const sorted = (options: { value: string; label: string }[]) =>
     options.sort((left, right) => left.label.localeCompare(right.label, i18n.language));
+  /** A classification's codes by name, under the group their first `prefix` digits name. */
+  const classified = (
+    codes: readonly string[],
+    classification: 'occupations' | 'studyFields',
+    prefix: number,
+  ) => {
+    const named = (key: string, fallback: string) =>
+      i18n.exists(key) ? t(key as 'occupations.2211') : fallback;
+    const groups = classification === 'occupations' ? 'occupationGroups' : 'studyFieldGroups';
+    return Object.entries(
+      Object.groupBy(
+        codes.map((code) => ({ value: code, label: named(`${classification}.${code}`, code) })),
+        ({ value }) => value.slice(0, prefix),
+      ),
+    )
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([group, options = []]) => ({
+        title: named(`${groups}.${group}`, group),
+        options: sorted(options),
+      }));
+  };
   return {
     country: (code: string) => {
       const former = `formerCountries.${code}`;
@@ -71,12 +122,22 @@ export function useNames() {
         value: code,
         label: `${code} · ${currencies.of(code) ?? code}`,
       })),
-    field: (key: string) =>
-      i18n.exists(`questions.fields.${key}`) ? t(`questions.fields.${key as FieldKey}`) : key,
+    // ISCO-08 codes under their major group, the code's first digit.
+    occupationGroups: (codes: readonly string[]) => classified(codes, 'occupations', 1),
+    // ISCED-F 2013 detailed fields under their broad field, the code's first two digits.
+    studyFieldGroups: (codes: readonly string[]) => classified(codes, 'studyFields', 2),
+    field: (key: string, question: string) => {
+      const specific = `questions.fieldFor.${question}.${key}`;
+      if (i18n.exists(specific)) return t(specific as 'questions.fieldFor.assets.country');
+      return i18n.exists(`questions.fields.${key}`)
+        ? t(`questions.fields.${key as FieldKey}`, { question })
+        : key;
+    },
   };
 }
 
 export function FieldEditor({
+  questionId,
   fieldKey,
   label,
   hint,
@@ -86,6 +147,7 @@ export function FieldEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly fieldKey: string;
   readonly label: string;
   readonly hint?: string;
@@ -95,7 +157,7 @@ export function FieldEditor({
   readonly onChange: (value: unknown) => void;
   readonly context: QuestionContext;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const names = useNames();
   const unknownOption = optional ? [{ value: unknownValue, label: t('questions.unknown') }] : [];
   const chosenValue = value === null ? unknownValue : scalar(value);
@@ -176,7 +238,7 @@ export function FieldEditor({
     case 'date':
       return (
         <DateEditor
-          fieldKey={fieldKey}
+          noneLabel={t('questions.date.none', { field: fieldKey, question: questionId })}
           label={label}
           {...(hint === undefined ? {} : { hint })}
           input={input}
@@ -185,8 +247,73 @@ export function FieldEditor({
           onChange={onChange}
         />
       );
+    case 'occupation':
+    case 'studyField': {
+      const [groups, picker] =
+        input.kind === 'occupation'
+          ? [names.occupationGroups(context.occupations), 'occupationPicker' as const]
+          : [names.studyFieldGroups(context.studyFields), 'studyFieldPicker' as const];
+      return (
+        <SearchPicker
+          label={label}
+          {...(hint === undefined ? {} : { hint })}
+          placeholder={t('questions.pick')}
+          value={chosenValue}
+          groups={[...groups, { options: unknownOption }]}
+          labels={{
+            search: t(`questions.${picker}.search`),
+            none: t(`questions.${picker}.none`),
+            clear: t(`questions.${picker}.clear`),
+            close: t(`questions.${picker}.close`),
+          }}
+          layout="list"
+          onChange={choose}
+        />
+      );
+    }
+    case 'label':
+      return (
+        <LabelEditor
+          label={label}
+          hint={t('questions.labelHint')}
+          value={value}
+          onChange={onChange}
+        />
+      );
+    case 'business':
+      return context.businesses.length === 0 ? (
+        <p className="text-small text-muted">{t('questions.business.noneOwned')}</p>
+      ) : (
+        pick(
+          context.businesses.map((business, index) => ({
+            value: business.id,
+            label: t('questions.business.option', {
+              number: index + 1,
+              country: business.country === undefined ? 'none' : names.country(business.country),
+              since:
+                business.operatingSince === undefined
+                  ? 'none'
+                  : formatDateValue(business.operatingSince, i18n.language),
+            }),
+          })),
+        )
+      );
+    case 'count':
+      return (
+        <TextField
+          label={label}
+          {...(hint === undefined ? {} : { hint })}
+          inputMode="numeric"
+          autoComplete="off"
+          value={scalar(value)}
+          onChange={(event) => {
+            const typed = event.currentTarget.value.trim();
+            onChange(typed === '' ? undefined : countPattern.test(typed) ? Number(typed) : typed);
+          }}
+        />
+      );
     case 'money':
-      return <MoneyEditor label={label} value={value} onChange={onChange} />;
+      return <MoneyEditor label={label} value={value} optional={optional} onChange={onChange} />;
     case 'share':
       return (
         <TextField
@@ -205,8 +332,38 @@ export function FieldEditor({
 const yesNoOf = (value: unknown): YesNo | '' =>
   value === true ? yesNo.yes : value === false ? yesNo.no : value === null ? yesNo.unknown : '';
 
+/** A short name, sent without outer spaces; left empty, the item has none. */
+function LabelEditor({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  readonly label: string;
+  readonly hint: string;
+  readonly value: unknown;
+  readonly onChange: (value: unknown) => void;
+}) {
+  const [text, setText] = useState(() => (typeof value === 'string' ? value : ''));
+  return (
+    <TextField
+      label={label}
+      hint={hint}
+      autoComplete="off"
+      maxLength={labelLength}
+      value={text}
+      onChange={(event) => {
+        const typed = event.currentTarget.value;
+        setText(typed);
+        const trimmed = typed.trim();
+        onChange(trimmed === '' ? undefined : trimmed);
+      }}
+    />
+  );
+}
+
 function DateEditor({
-  fieldKey,
+  noneLabel,
   label,
   hint,
   input,
@@ -214,7 +371,7 @@ function DateEditor({
   optional,
   onChange,
 }: {
-  readonly fieldKey: string;
+  readonly noneLabel: string;
   readonly label: string;
   readonly hint?: string;
   readonly input: Extract<FieldInput, { kind: 'date' }>;
@@ -294,7 +451,7 @@ function DateEditor({
       <div className="flex flex-wrap gap-4">
         {input.none === true && (
           <Check
-            label={t('questions.date.none', { field: fieldKey })}
+            label={noneLabel}
             checked={value === noneDate}
             onChange={(checked) => {
               if (checked) onChange(noneDate);
@@ -341,80 +498,121 @@ function Check({
   );
 }
 
+/** An amount and its currency; an optional one left empty is not answered, and may be "Não sei". */
 function MoneyEditor({
   label,
   value,
+  optional,
   onChange,
 }: {
   readonly label: string;
   readonly value: unknown;
+  readonly optional: boolean;
   readonly onChange: (value: unknown) => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();
   const money = isRecord(value) ? value : {};
   const amount = typeof money['amount'] === 'string' ? money['amount'] : '';
-  const currency = typeof money['currency'] === 'string' ? money['currency'] : 'BRL';
+  // An optional amount left empty sends nothing, so the chosen currency is kept here until then.
+  const [chosenCurrency, setCurrency] = useState('BRL');
+  const currency = typeof money['currency'] === 'string' ? money['currency'] : chosenCurrency;
   const [text, setText] = useState(() => amountText(amount));
+  const send = (typed: string, chosen: string) => {
+    onChange(
+      optional && typed.trim() === ''
+        ? undefined
+        : { amount: amountValue(typed), currency: chosen },
+    );
+  };
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="font-medium">{label}</legend>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <TextField
-          label={t('questions.amount')}
-          inputMode="decimal"
-          autoComplete="off"
-          value={text}
-          onChange={(event) => {
-            setText(event.currentTarget.value);
-            onChange({ amount: amountValue(event.currentTarget.value), currency });
+      {value !== null && (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <TextField
+            label={t('questions.amount')}
+            inputMode="decimal"
+            autoComplete="off"
+            value={text}
+            onChange={(event) => {
+              setText(event.currentTarget.value);
+              send(event.currentTarget.value, currency);
+            }}
+          />
+          <SelectField
+            label={t('questions.currency')}
+            value={currency}
+            options={names.currencyOptions()}
+            onChange={(chosen) => {
+              setCurrency(chosen);
+              send(text, chosen);
+            }}
+          />
+        </div>
+      )}
+      {optional && (
+        <Check
+          label={t('questions.unknown')}
+          checked={value === null}
+          onChange={(checked) => {
+            onChange(checked ? null : undefined);
+            if (!checked) setText('');
           }}
         />
-        <SelectField
-          label={t('questions.currency')}
-          value={currency}
-          options={names.currencyOptions()}
-          onChange={(chosen) => {
-            onChange({ amount: amountValue(text), currency: chosen });
-          }}
-        />
-      </div>
+      )}
     </fieldset>
   );
 }
 
 function ItemFields({
+  questionId,
   fields,
   item,
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly fields: readonly QuestionField[];
   readonly item: Record_;
   readonly onChange: (item: Record_) => void;
   readonly context: QuestionContext;
 }) {
   const names = useNames();
+  const asked = (field: QuestionField, values: Record_) =>
+    field.onlyWhen === undefined || values[field.onlyWhen.key] === field.onlyWhen.value;
   return (
     <>
-      {fields.map(({ key, input, optional }) => (
-        <FieldEditor
-          key={key}
-          fieldKey={key}
-          label={names.field(key)}
-          input={input}
-          value={item[key]}
-          optional={optional}
-          context={context}
-          onChange={(next) => {
-            // "Não sei" stays in the draft as null until the step is sent (`sentAnswer`).
-            const rest = Object.fromEntries(
-              Object.entries(item).filter(([field]) => field !== key),
-            );
-            onChange(next === undefined ? rest : { ...rest, [key]: next });
-          }}
-        />
-      ))}
+      {fields
+        .filter((field) => asked(field, item))
+        .map(({ key, input, optional }) => (
+          <FieldEditor
+            key={key}
+            questionId={questionId}
+            fieldKey={key}
+            label={names.field(key, questionId)}
+            input={input}
+            value={item[key]}
+            optional={optional}
+            context={context}
+            onChange={(next) => {
+              // "Não sei" stays in the draft as null until the step is sent (`sentAnswer`).
+              const rest = Object.fromEntries(
+                Object.entries(item).filter(([field]) => field !== key),
+              );
+              const changed = next === undefined ? rest : { ...rest, [key]: next };
+              // A field no longer asked, such as a business's country once the asset is not one, goes.
+              const unasked = new Set(
+                fields.filter((field) => !asked(field, changed)).map((field) => field.key),
+              );
+              onChange(
+                Object.fromEntries(
+                  Object.entries(changed).filter(([field]) => !unasked.has(field)),
+                ),
+              );
+            }}
+          />
+        ))}
     </>
   );
 }
@@ -422,6 +620,7 @@ function ItemFields({
 type ListMode = 'has' | 'none' | 'unknown' | '';
 
 function ListEditor({
+  questionId,
   legend,
   hint,
   fields,
@@ -430,6 +629,7 @@ function ListEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly legend: string;
   readonly hint?: string;
   readonly fields: readonly QuestionField[];
@@ -479,6 +679,7 @@ function ListEditor({
             >
               <p className="font-medium">{t('questions.list.item', { number: index + 1 })}</p>
               <ItemFields
+                questionId={questionId}
                 fields={fields}
                 item={item}
                 context={context}
@@ -516,6 +717,7 @@ function ListEditor({
 }
 
 export function QuestionEditor({
+  questionId,
   input,
   legend,
   hint,
@@ -525,6 +727,7 @@ export function QuestionEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly input: QuestionInput;
   readonly legend: string;
   readonly hint?: string;
@@ -540,6 +743,7 @@ export function QuestionEditor({
     case 'list':
       return (
         <ListEditor
+          questionId={questionId}
           legend={legend}
           {...hinted}
           fields={input.fields}
@@ -577,6 +781,7 @@ export function QuestionEditor({
     case 'relationships':
       return (
         <RelationshipsEditor
+          questionId={questionId}
           legend={legend}
           {...hinted}
           input={input}
@@ -588,6 +793,7 @@ export function QuestionEditor({
     default:
       return (
         <FieldEditor
+          questionId={questionId}
           fieldKey=""
           label={legend}
           {...hinted}
@@ -657,6 +863,7 @@ function PeopleEditor({
 }
 
 function RelationshipsEditor({
+  questionId,
   legend,
   hint,
   input,
@@ -664,6 +871,7 @@ function RelationshipsEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly legend: string;
   readonly hint?: string;
   readonly input: Extract<QuestionInput, { kind: 'relationships' }>;
@@ -694,6 +902,7 @@ function RelationshipsEditor({
         >
           <p className="font-medium">{title(row)}</p>
           <ItemFields
+            questionId={questionId}
             fields={row['kind'] === 'parent' ? input.parent : input.couple}
             item={row}
             context={context}

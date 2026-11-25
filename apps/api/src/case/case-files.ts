@@ -7,8 +7,11 @@ import type {
   CaseView,
   HandOverCasePersonRequest,
   ReportRuleRequest,
+  SetChecklistMarkRequest,
   WriteComparisonPreferencesRequest,
+  WriteFamilyPlanRequest,
 } from '@arca/api-contract/routes';
+import { maxChecklistMarks } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
   AddCasePersonRequest,
@@ -26,15 +29,19 @@ import {
   type ComparisonCatalog,
   type ComparisonPreferences,
   type DecisionStates,
+  type DocumentGuideEntry,
   type HeldAsset,
+  type KnownCodes,
   type RatingSuggestions,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  classifiedCodesKnown,
   comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
+  ownsBusiness,
   maxCaseMembers,
   maxCasePeople,
   nextPreferences,
@@ -43,16 +50,19 @@ import {
   type ShareScope,
   type StoredAsset,
   type StoredRelationship,
+  type MarkState,
   parseCalendarDate,
+  selectRouteVersion,
   shareScopes,
   questionFlow,
   validCaseStructure,
 } from '@arca/domain';
-import type { PinnedCountries } from '@arca/knowledge';
+import type { PinnedCountries, RuleTexts } from '@arca/knowledge';
 import { randomBytes } from 'node:crypto';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
+import { fileUnderCountry, lockOwnDocuments } from '../vault/documents.js';
 import {
   type DestinationComparisonView,
   type EvaluatedAsOf,
@@ -60,7 +70,16 @@ import {
 } from './comparison.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
+import { type RouteDocumentsView, type SeenMark, caseRouteDocuments } from './route-documents.js';
 import { casePlayback } from './playback.js';
+import {
+  type FamilyPlanView,
+  familyPlan,
+  planFitsCase,
+  planRevision,
+  readPlan,
+  savePlan,
+} from './plan.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
@@ -72,6 +91,11 @@ export type CaseWritten =
       readonly ok: false;
       readonly reason: CaseRefusal;
     };
+
+/** A plan write's answer: the plan evaluated, or why it was refused. */
+export type PlanWritten =
+  | { readonly ok: true; readonly view: FamilyPlanView }
+  | { readonly ok: false; readonly reason: 'not_found' | 'case_invalid' | 'plan_changed' };
 
 /** A comparison write's answer: the recomputed comparison, or why it was refused. */
 export type ComparisonWritten =
@@ -149,6 +173,26 @@ export interface CaseFiles {
   /** Every route for each member as principal, from what the viewer sees; null outside a case. */
   readonly evaluations: (accountId: string) => Promise<CaseEvaluationsView | null>;
   /**
+   * One route's document checklist for a member as principal, from what the viewer sees; null
+   * outside a case or for a principal who is not a member.
+   */
+  readonly routeDocuments: (
+    accountId: string,
+    routeId: string,
+    principalId: string,
+  ) => Promise<RouteDocumentsView | null>;
+  /**
+   * Sets or clears the viewer's mark on a route's document item for a person they keep (spec
+   * #519); linking one of their own confirmed vault documents also files it under the route's
+   * country. `not_found` outside a case, for a person the viewer does not keep, a route with no
+   * active version in effect or a document that is not theirs; `case_limit` past
+   * `maxChecklistMarks` on the person's route.
+   */
+  readonly setMark: (
+    accountId: string,
+    request: SetChecklistMarkRequest,
+  ) => Promise<'set' | 'not_found' | 'case_limit'>;
+  /**
    * Reports a requirement of the viewer's own evaluation as possibly wrong (R8); `not_found` when
    * the viewer is in no case or the evaluation holds no such requirement.
    */
@@ -170,6 +214,10 @@ export interface CaseFiles {
     accountId: string,
     request: WriteComparisonPreferencesRequest,
   ) => Promise<ComparisonWritten>;
+  /** The case's family plan, evaluated from what the viewer sees (ADR-0040); null outside a case. */
+  readonly plan: (accountId: string) => Promise<FamilyPlanView | null>;
+  /** Replaces the case's family plan; `case_invalid` when it names what the case does not hold. */
+  readonly writePlan: (accountId: string, request: WriteFamilyPlanRequest) => Promise<PlanWritten>;
   /** Deletes the account's member row, and with it every person it keeps. */
   readonly leave: (accountId: string) => Promise<'left' | 'not_found'>;
 }
@@ -182,6 +230,10 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
+  /** The occupation codes work periods, job offers and registrations may name (ADR-0036). */
+  readonly occupations: readonly string[];
+  /** The field-of-study codes qualifications may name (ADR-0036). */
+  readonly studyFields: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
     readonly rules: () => Promise<{
@@ -192,6 +244,10 @@ export interface CaseFilesSettings {
     readonly comparisons: ComparisonCatalog;
     /** The stars the comparison suggests per country (ADR-0035); none when absent. */
     readonly suggestions?: RatingSuggestions;
+    /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
+    readonly texts?: RuleTexts;
+    /** Where to get each document kind, per issuing country (ADR-0039); none when absent. */
+    readonly guides?: readonly DocumentGuideEntry[];
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */
     readonly today: () => CalendarDate;
@@ -252,6 +308,9 @@ const assetColumns = (asset: StoredAsset) => ({
   valuedAt: asset.valuedAt,
   liquid: asset.liquid ?? null,
   sold: asset.sold ?? null,
+  country: asset.country ?? null,
+  operatingSince: asset.operatingSince ?? null,
+  employees: asset.employees ?? null,
 });
 
 /** Whether a confirmed invite links the two accounts, either way; the identity sees only its own. */
@@ -265,14 +324,38 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
-/** Replaces a person's facts and dependence; dependence names other people of the case. */
+/**
+ * Whether every business a work period newly names is a business the person owns a confirmed
+ * share of. A link already stored stays even once the business is sold or reclassified, so that
+ * another answer still saves; the snapshot leaves such a link out (ADR-0036).
+ */
+function linksOwnedBusinesses(rows: CaseRows, personId: string, facts: StoredProfile['facts']) {
+  const stored = new Set(
+    rows.profiles
+      .find((profile) => profile.personId === personId)
+      ?.facts.workPeriods?.map(({ business }) => business),
+  );
+  return (facts.workPeriods ?? []).every(
+    ({ business }) =>
+      business === undefined || stored.has(business) || ownsBusiness(rows, personId, business),
+  );
+}
+
+/**
+ * Replaces a person's facts and dependence; dependence names other people of the case, every
+ * occupation or field of study a code of its classification, and a work period's business one the
+ * person owns.
+ */
 async function saveProfile(
   tx: Transaction,
   rows: CaseRows,
   personId: string,
   facts: StoredProfile['facts'],
   dependsOn: readonly string[] | null,
+  codes: KnownCodes,
 ) {
+  refuseUnless(classifiedCodesKnown(facts, codes), 'case_invalid');
+  refuseUnless(linksOwnedBusinesses(rows, personId, facts), 'case_invalid');
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
     dependsOn === null ||
@@ -318,7 +401,10 @@ async function insertAsset(tx: Transaction, personId: string, share: string, ass
                            ${fields.amount}::bigint, ${fields.currency},
                            ${fields.valuedAt}::date, ${fields.liquid}::boolean,
                            ${fields.sold}::text) AS id`);
-  refuseUnless((added.rows[0]?.id ?? null) !== null, 'not_found');
+  const id = added.rows[0]?.id ?? null;
+  if (id === null) throw new Refused('not_found');
+  // `add_asset` takes the fields every asset has; a business's own fields follow as an update.
+  if (asset.kind === 'business') await updateAssetRow(tx, id, asset);
 }
 
 async function updateAssetRow(tx: Transaction, assetId: string, asset: StoredAsset) {
@@ -330,7 +416,9 @@ async function updateAssetRow(tx: Transaction, assetId: string, asset: StoredAss
         UPDATE cases.asset
            SET kind = ${fields.kind}, value_amount = ${fields.amount},
                value_currency = ${fields.currency}, valued_at = ${fields.valuedAt}::date,
-               liquid = ${fields.liquid}, sold = ${fields.sold}, updated_at = now()
+               liquid = ${fields.liquid}, sold = ${fields.sold}, country = ${fields.country},
+               operating_since = ${fields.operatingSince}, employees = ${fields.employees},
+               updated_at = now()
          WHERE id = ${assetId} RETURNING id`,
     ),
     'not_found',
@@ -369,16 +457,31 @@ async function saveHeldAssets(
   for (const { id, share } of reshared) await setOwnerShare(tx, id, personId, share);
 }
 
+/**
+ * Before a person changes keeper: a mark's link names the keeper's own vault document, which the
+ * next keeper can neither open nor see. Each mark stays.
+ */
+async function unlinkMarks(tx: Transaction, personId: string) {
+  await tx.execute(sql`
+    UPDATE cases.checklist_mark
+       SET vault_document_id = NULL, vault_owner_id = NULL, updated_at = now()
+     WHERE person_id = ${personId} AND vault_owner_id IS NOT NULL`);
+}
+
 export function createCaseFiles({
   db,
   audit,
   today,
   countries,
+  occupations,
+  studyFields,
   evaluation,
 }: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),
+    occupations: new Set(occupations),
+    studyFields: new Set(studyFields),
   };
   /**
    * Runs one write in the viewer's case under its lock, then records its events once it
@@ -444,6 +547,7 @@ export function createCaseFiles({
         states,
         today,
         engineCommit: evaluation.engineCommit,
+        ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
       });
       return work(tx, rows, evaluated, { states, today, routeIds });
     });
@@ -470,6 +574,14 @@ export function createCaseFiles({
       ...(evaluation.suggestions === undefined ? {} : { suggestions: evaluation.suggestions }),
       ...asOf,
     });
+
+  const planSettings = (catalog: RouteCatalog, states: DecisionStates) => ({
+    catalog,
+    states,
+    today: evaluation.today(),
+    engineCommit: evaluation.engineCommit,
+    ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
+  });
 
   const keptPerson = (rows: CaseRows, personId: string) => {
     const person = rows.people.find((row) => row.id === personId && row.keptByMe);
@@ -539,6 +651,7 @@ export function createCaseFiles({
 
     handOver: (accountId, { personId, accountId: newKeeper }) =>
       write(accountId, async (tx) => {
+        await unlinkMarks(tx, personId);
         const handed = await tx.execute<{ handed: boolean }>(
           sql`SELECT cases.hand_over(${personId}, ${newKeeper}) AS handed`,
         );
@@ -563,6 +676,7 @@ export function createCaseFiles({
           takenOver?.caseMember === true || members(rows) < caseSizeLimits.members,
           'case_limit',
         );
+        if (personId !== null) await unlinkMarks(tx, personId);
         const joined = await tx.execute<{ outcome: string }>(sql`
           SELECT cases.join_case(${request.accountId}, ${personId}::uuid, ${displayName}::text)
                  AS outcome`);
@@ -580,7 +694,7 @@ export function createCaseFiles({
     writeProfile: (accountId, { personId, facts, dependsOn }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        await saveProfile(tx, rows, personId, facts, dependsOn);
+        await saveProfile(tx, rows, personId, facts, dependsOn, known);
         return [];
       }),
 
@@ -709,7 +823,9 @@ export function createCaseFiles({
     questions: (accountId) =>
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined ? null : caseQuestions(rows, countries);
+        return rows === undefined
+          ? null
+          : caseQuestions(rows, countries, { occupations, studyFields });
       }),
 
     playback: (accountId) =>
@@ -720,6 +836,109 @@ export function createCaseFiles({
 
     evaluations: (accountId) =>
       withEvaluations(accountId, (_tx, _rows, evaluated) => Promise.resolve(evaluated)),
+
+    routeDocuments: async (accountId, routeId, principalId) => {
+      const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        if (rows === undefined) return null;
+        const marks = await tx.execute<{
+          person_id: string;
+          document_id: string;
+          state: MarkState;
+          vault_document_id: string | null;
+          vault_owner_id: string | null;
+        }>(sql`
+          SELECT person_id, document_id, state, vault_document_id, vault_owner_id
+            FROM cases.checklist_mark
+           WHERE case_id = ${rows.caseId} AND route_id = ${routeId}
+           ORDER BY person_id, document_id`);
+        const seen: SeenMark[] = marks.rows.map((row) => ({
+          personId: row.person_id,
+          documentId: row.document_id,
+          mark: {
+            state: row.state,
+            linked: row.vault_document_id !== null,
+            // Which document it is stays with its owner, who alone may open it.
+            vaultDocumentId: row.vault_owner_id === accountId ? row.vault_document_id : null,
+          },
+        }));
+        return caseRouteDocuments(
+          rows,
+          routeId,
+          principalId,
+          {
+            catalog,
+            states,
+            today: evaluation.today(),
+            engineCommit: evaluation.engineCommit,
+            guides: evaluation.guides ?? [],
+            ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
+          },
+          seen,
+        );
+      });
+    },
+
+    setMark: async (accountId, { routeId, personId, documentId, mark }) => {
+      let country: string | undefined;
+      if (mark !== null) {
+        const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+        const asOf = evaluation.today();
+        const selected = selectRouteVersion(catalog, routeId, {
+          rulesAsOf: asOf,
+          today: asOf,
+          states,
+        });
+        if (selected.kind !== 'active') return 'not_found';
+        country = selected.entry.version.country;
+      }
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId === undefined) return 'not_found';
+        // One write per case at a time, so the count below holds.
+        await lockCase(tx, caseId);
+        const kept = await one(
+          tx,
+          sql`SELECT FROM cases.person
+               WHERE id = ${personId} AND case_id = ${caseId}
+                 AND keeper_account_id = ${accountId}`,
+        );
+        if (!kept) return 'not_found';
+        if (mark === null) {
+          await tx.execute(sql`
+            DELETE FROM cases.checklist_mark
+             WHERE person_id = ${personId} AND route_id = ${routeId}
+               AND document_id = ${documentId}`);
+          return 'set';
+        }
+        const { state, vaultDocumentId } = mark;
+        if (
+          vaultDocumentId !== null &&
+          !(await lockOwnDocuments(tx, accountId, [vaultDocumentId]))
+        ) {
+          return 'not_found';
+        }
+        const others = await tx.execute<{ count: number }>(sql`
+          SELECT count(*)::int AS count FROM cases.checklist_mark
+           WHERE person_id = ${personId} AND route_id = ${routeId}
+             AND document_id <> ${documentId}`);
+        if ((others.rows[0]?.count ?? 0) >= maxChecklistMarks) return 'case_limit';
+        const owner = vaultDocumentId === null ? null : accountId;
+        await tx.execute(sql`
+          INSERT INTO cases.checklist_mark
+            (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+          VALUES (${caseId}, ${personId}, ${routeId}, ${documentId}, ${state},
+                  ${vaultDocumentId}, ${owner})
+          ON CONFLICT (person_id, route_id, document_id) DO UPDATE
+            SET state = excluded.state, vault_document_id = excluded.vault_document_id,
+                vault_owner_id = excluded.vault_owner_id, updated_at = now()`);
+        if (vaultDocumentId !== null && country !== undefined) {
+          await fileUnderCountry(tx, accountId, [vaultDocumentId], country);
+        }
+        return 'set';
+      });
+    },
 
     reportRule: async (accountId, { routeId, versionNumber, requirementId, reason, note }) => {
       const reported = await withEvaluations(accountId, async (tx, rows, evaluated) => {
@@ -760,7 +979,7 @@ export function createCaseFiles({
           ),
         );
         if (answered.has('fact') || answered.has('marker') || answered.has('dependence')) {
-          await saveProfile(tx, rows, personId, after.facts, after.dependsOn);
+          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known);
         }
         if ((answered.has('incomes') || answered.has('assetsMarker')) && after.finances) {
           await saveFinances(tx, personId, after.finances);
@@ -818,6 +1037,46 @@ export function createCaseFiles({
         },
       );
       return written ?? { ok: false, reason: 'not_found' };
+    },
+
+    plan: async (accountId) => {
+      const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined
+          ? null
+          : familyPlan(rows, await readPlan(tx, rows.caseId), planSettings(catalog, states));
+      });
+    },
+
+    async writePlan(accountId, { revision, moves }) {
+      const [states, { catalog, routeIds }] = await Promise.all([
+        evaluation.states(),
+        evaluation.rules(),
+      ]);
+      type Saved =
+        Exclude<PlanWritten, { ok: true }> | { ok: true; caseId: string; view: FamilyPlanView };
+      const written = await withIdentity(db(), { accountId }, async (tx): Promise<Saved> => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId === undefined) return { ok: false, reason: 'not_found' };
+        await lockCase(tx, caseId);
+        const rows = await readCase(tx, accountId, caseId);
+        if (rows === undefined) return { ok: false, reason: 'not_found' };
+        if (planRevision(await readPlan(tx, caseId)) !== revision) {
+          return { ok: false, reason: 'plan_changed' };
+        }
+        if (!planFitsCase(rows, moves, routeIds)) return { ok: false, reason: 'case_invalid' };
+        await savePlan(tx, caseId, moves);
+        // Read back, so the answer's revision is the one the next write is checked against.
+        const stored = await readPlan(tx, caseId);
+        return { ok: true, caseId, view: familyPlan(rows, stored, planSettings(catalog, states)) };
+      });
+      if (written.ok) {
+        await recordAll(accountId, [
+          event('plan_written', { caseId: written.caseId, moves: moves.length }),
+        ]);
+      }
+      return written.ok ? { ok: true, view: written.view } : written;
     },
 
     async leave(accountId) {

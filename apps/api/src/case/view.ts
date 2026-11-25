@@ -1,7 +1,10 @@
 import type { CaseView } from '@arca/api-contract/routes';
 import { lockKey, type Transaction } from '@arca/db';
 import {
+  type ShareScope,
+  type StoredProfile,
   type VisibleCaseRows,
+  ownsBusiness,
   storedAssetSchema,
   storedFinancesSchema,
   storedProfileFactsSchema,
@@ -28,7 +31,7 @@ export interface CaseRows extends Omit<VisibleCaseRows, 'people' | 'relationship
   readonly shares: readonly {
     readonly personId: string;
     readonly accountId: string;
-    readonly scope: 'profile' | 'finances';
+    readonly scope: ShareScope;
   }[];
 }
 
@@ -98,9 +101,12 @@ export async function readCase(
     valued_at: string;
     liquid: boolean | null;
     sold: string | null;
+    country: string | null;
+    operating_since: string | null;
+    employees: number | null;
   }>(sql`
     SELECT id, kind, value_amount::text AS amount, value_currency AS currency,
-           valued_at::text AS valued_at, liquid, sold
+           valued_at::text AS valued_at, liquid, sold, country, operating_since, employees
       FROM cases.asset WHERE case_id = ${caseId} ORDER BY created_at, id`);
   const owners = await rows<{
     asset_id: string;
@@ -113,7 +119,7 @@ export async function readCase(
   const shares = await rows<{
     person_id: string;
     grantee_account_id: string;
-    scope: 'profile' | 'finances';
+    scope: ShareScope;
   }>(sql`
     SELECT person_id, grantee_account_id, scope FROM cases.share
      WHERE case_id = ${caseId} ORDER BY person_id, scope, grantee_account_id`);
@@ -154,6 +160,9 @@ export async function readCase(
         valuedAt: row.valued_at,
         ...(row.liquid === null ? {} : { liquid: row.liquid }),
         ...(row.sold === null ? {} : { sold: row.sold }),
+        ...(row.country === null ? {} : { country: row.country }),
+        ...(row.operating_since === null ? {} : { operatingSince: row.operating_since }),
+        ...(row.employees === null ? {} : { employees: row.employees }),
       }),
     })),
     owners: owners.map((row) => ({
@@ -176,12 +185,32 @@ export const sharedWith = (rows: CaseRows, accountId: string, personId: string) 
     .filter((row) => row.personId === personId && row.accountId === accountId)
     .map((row) => row.scope);
 
+/**
+ * A profile shown to someone other than its keeper: a work period names its business only while
+ * the viewer sees the person own it, so the profile share alone reveals no asset (ADR-0036).
+ */
+function withVisibleBusinesses(
+  rows: CaseRows,
+  personId: string,
+  facts: StoredProfile['facts'],
+): StoredProfile['facts'] {
+  if (facts.workPeriods === undefined) return facts;
+  return {
+    ...facts,
+    workPeriods: facts.workPeriods.map(({ business, ...period }) =>
+      business !== undefined && ownsBusiness(rows, personId, business)
+        ? { ...period, business }
+        : period,
+    ),
+  };
+}
+
 /** The case as the viewer sees it: what they see, and what they may change (spec 0007, R3). */
 export function caseView(rows: CaseRows, accountId: string): CaseView {
   const kept = new Set(rows.people.filter((person) => person.keptByMe).map(({ id }) => id));
   const me = rows.people.find((person) => person.accountId === accountId);
   if (me === undefined) throw new Error("A member's own person is missing from their case");
-  const grantees = (personId: string, scope: 'profile' | 'finances') =>
+  const grantees = (personId: string, scope: ShareScope) =>
     rows.shares
       .filter((row) => row.personId === personId && row.scope === scope)
       .map((row) => row.accountId);
@@ -201,7 +230,9 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
           profile === undefined
             ? null
             : {
-                facts: profile.facts,
+                facts: kept.has(person.id)
+                  ? profile.facts
+                  : withVisibleBusinesses(rows, person.id, profile.facts),
                 dependsOn: profile.dependenceAnswered
                   ? rows.dependence
                       .filter((row) => row.personId === person.id)
@@ -216,7 +247,11 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
                 assetsRecordedInFull: finances.assetsRecordedInFull,
               },
         shares: person.keptByMe
-          ? { profile: grantees(person.id, 'profile'), finances: grantees(person.id, 'finances') }
+          ? {
+              profile: grantees(person.id, 'profile'),
+              finances: grantees(person.id, 'finances'),
+              checklist: grantees(person.id, 'checklist'),
+            }
           : null,
         sharedWithMe: person.keptByMe ? [] : sharedWith(rows, accountId, person.id),
       };

@@ -18,6 +18,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { document as vaultDocument } from './vault-schema.js';
 
 /**
  * The case (spec 0007, R1): who is in it, the people it describes, their facts and who may see
@@ -41,7 +42,7 @@ const keeps = (personId: unknown): SQL =>
   sql`EXISTS (SELECT 1 FROM ${person} WHERE ${person.id} = ${personId} AND ${isIdentity(person.keeperAccountId)})`;
 
 /** Whether the person's keeper shared that scope of the person with the identity. */
-const sharedWith = (personId: unknown, scope: 'profile' | 'finances'): SQL =>
+const sharedWith = (personId: unknown, scope: (typeof shareScopes)[number]): SQL =>
   sql`EXISTS (SELECT 1 FROM ${share} WHERE ${share.personId} = ${personId} AND ${isIdentity(share.granteeAccountId)} AND ${share.scope} = ${sql.raw(`'${scope}'`)})`;
 
 /** A JSON value of the given type and at most `bytes` long. */
@@ -327,6 +328,12 @@ export const asset = cases.table(
     liquid: boolean('liquid'),
     /** A date, partial or whole, or `none`; absent when unknown. */
     sold: text('sold'),
+    /** A business's seat, as a country code; null otherwise or when unknown. */
+    country: text('country'),
+    /** Since when a business operates, a date partial or whole; null otherwise or when unknown. */
+    operatingSince: text('operating_since'),
+    /** How many people a business employs; null otherwise or when unknown. */
+    employees: integer('employees'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -342,6 +349,16 @@ export const asset = cases.table(
     check(
       'asset_sold',
       sql`${table.sold} = 'none' OR ${table.sold} ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$'`,
+    ),
+    check('asset_country', sql`${table.country} ~ '^([A-Z]{2}|[A-Z]{4})$'`),
+    check(
+      'asset_operating_since',
+      sql`${table.operatingSince} ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$'`,
+    ),
+    check('asset_employees', sql`${table.employees} BETWEEN 0 AND 10000000`),
+    check(
+      'asset_business_fields',
+      sql`${table.kind} = 'business' OR (${table.country} IS NULL AND ${table.operatingSince} IS NULL AND ${table.employees} IS NULL)`,
     ),
     pgPolicy('asset_select_owner_visible', {
       for: 'select',
@@ -463,7 +480,7 @@ export const relationship = cases.table(
   ],
 );
 
-export const shareScopes = ['profile', 'finances'] as const;
+export const shareScopes = ['profile', 'finances', 'checklist'] as const;
 
 /** The keeper lets a member of the case see a person's profile or finances. */
 export const share = cases.table(
@@ -619,5 +636,147 @@ export const comparisonPreferences = cases.table(
       withCheck: isIdentity(table.accountId),
     }),
     ...erasedByJobs('comparison_preferences', table.accountId),
+  ],
+);
+
+/**
+ * One move of the family plan (ADR-0040): in a stage, a member of the case applies for a route as
+ * principal. Every member of the case reads and writes the plan, which holds no facts about
+ * anyone; a write replaces the whole plan. Deleting the principal deletes the move.
+ */
+export const planMove = cases.table(
+  'plan_move',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    caseId: uuid('case_id').notNull(),
+    /** The move's place in the plan as the family last wrote it. */
+    position: integer('position').notNull(),
+    stage: integer('stage').notNull(),
+    routeId: text('route_id').notNull(),
+    principalId: uuid('principal_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    personRow([table.principalId, table.caseId], 'plan_move_principal_fkey'),
+    unique('plan_move_id_case_id_key').on(table.id, table.caseId),
+    unique('plan_move_case_id_position_key').on(table.caseId, table.position),
+    unique('plan_move_case_id_route_id_principal_id_key').on(
+      table.caseId,
+      table.routeId,
+      table.principalId,
+    ),
+    index('plan_move_principal_id_idx').on(table.principalId),
+    check('plan_move_position_range', sql`${table.position} BETWEEN 0 AND 19`),
+    check('plan_move_stage_range', sql`${table.stage} BETWEEN 1 AND 6`),
+    check('plan_move_route_id_shape', sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`),
+    ...memberAccess('plan_move', table.caseId),
+  ],
+);
+
+/** Someone a move of the family plan takes along; deleting the move or the person deletes it. */
+export const planMoveDependent = cases.table(
+  'plan_move_dependent',
+  {
+    moveId: uuid('move_id').notNull(),
+    caseId: uuid('case_id').notNull(),
+    personId: uuid('person_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    primaryKey({ name: 'plan_move_dependent_pkey', columns: [table.moveId, table.personId] }),
+    foreignKey({
+      name: 'plan_move_dependent_move_fkey',
+      columns: [table.moveId, table.caseId],
+      foreignColumns: [planMove.id, planMove.caseId],
+    }).onDelete('cascade'),
+    personRow([table.personId, table.caseId], 'plan_move_dependent_person_fkey'),
+    index('plan_move_dependent_person_id_idx').on(table.personId),
+    ...memberAccess('plan_move_dependent', table.caseId),
+  ],
+);
+
+/** The plan's access: every member of the case reads, adds and deletes its rows; nobody updates. */
+function memberAccess(table: string, caseId: AnyPgColumn) {
+  return [
+    pgPolicy(`${table}_select_member`, { for: 'select', to: 'app_api', using: isMember(caseId) }),
+    pgPolicy(`${table}_insert_member`, {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: isMember(caseId),
+    }),
+    pgPolicy(`${table}_delete_member`, { for: 'delete', to: 'app_api', using: isMember(caseId) }),
+  ];
+}
+
+export const checklistMarkStates = ['had', 'missing'] as const;
+
+/** No linked document, or one the identity owns. */
+const ownLink = (ownerId: unknown): SQL => sql`(${ownerId} IS NULL OR ${isIdentity(ownerId)})`;
+
+/**
+ * A keeper's mark on one document item of a route for one person (spec #519): had or missing,
+ * with an optional vault document of the keeper's own. Keyed on the item's ID, so it survives a
+ * route version that keeps the item. The keeper reads and writes it; a member the keeper shared
+ * the person's checklist with reads it. Deleting the person deletes the mark; deleting the linked
+ * document only clears the link.
+ */
+export const checklistMark = cases.table(
+  'checklist_mark',
+  {
+    caseId: uuid('case_id').notNull(),
+    personId: uuid('person_id').notNull(),
+    routeId: text('route_id').notNull(),
+    documentId: text('document_id').notNull(),
+    state: text('state').notNull(),
+    vaultDocumentId: uuid('vault_document_id'),
+    /** The linked document's owner, who alone sees which document it is. */
+    vaultOwnerId: uuid('vault_owner_id'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'checklist_mark_pkey',
+      columns: [table.personId, table.routeId, table.documentId],
+    }),
+    personRow([table.personId, table.caseId], 'checklist_mark_person_fkey'),
+    foreignKey({
+      name: 'checklist_mark_vault_document_fkey',
+      columns: [table.vaultDocumentId, table.vaultOwnerId],
+      foreignColumns: [vaultDocument.id, vaultDocument.ownerId],
+    }).onDelete('set null'),
+    index('checklist_mark_vault_document_id_idx').on(table.vaultDocumentId),
+    index('checklist_mark_case_route_idx').on(table.caseId, table.routeId),
+    check('checklist_mark_state', inList(table.state, checklistMarkStates)),
+    check(
+      'checklist_mark_route_id_format',
+      sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`,
+    ),
+    check(
+      'checklist_mark_document_id_format',
+      sql`${table.documentId} ~ '^[a-z0-9][a-z0-9-]{0,63}$'`,
+    ),
+    check(
+      'checklist_mark_link',
+      sql`(${table.vaultDocumentId} IS NULL) = (${table.vaultOwnerId} IS NULL) AND (${table.vaultDocumentId} IS NULL OR ${table.state} = 'had')`,
+    ),
+    pgPolicy('checklist_mark_select_keeper_or_shared', {
+      for: 'select',
+      to: 'app_api',
+      using: sql`${keeps(table.personId)} OR ${sharedWith(table.personId, 'checklist')}`,
+    }),
+    // The keeper links only their own vault document; a link a former keeper made is only cleared.
+    pgPolicy('checklist_mark_insert_keeper', {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: sql`${keeps(table.personId)} AND ${ownLink(table.vaultOwnerId)}`,
+    }),
+    pgPolicy('checklist_mark_update_keeper', {
+      for: 'update',
+      to: 'app_api',
+      using: keeps(table.personId),
+      withCheck: sql`${keeps(table.personId)} AND ${ownLink(table.vaultOwnerId)}`,
+    }),
+    ...keeperWrites('checklist_mark', table.personId, ['delete']),
   ],
 );

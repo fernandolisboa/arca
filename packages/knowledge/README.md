@@ -7,6 +7,8 @@ The knowledge base as data: route versions, country sets, official-domain lists 
 ```text
 data/countries/<n>.json                     current country codes (generated, R7)
 data/former-countries/<n>.json              former states, ISO 3166-3 (R7)
+data/occupations/<n>.json                   ISCO-08 unit groups, the occupation codes (ADR-0036)
+data/study-fields/<n>.json                  ISCED-F 2013 four-digit fields, the field-of-study codes (ADR-0036)
 data/official-domains/<id>/<n>.json         official source hosts per country or body
 data/country-sets/<id>/<n>.json             versioned country sets
 data/routes/<route-id>/<n>.json             one file per route version
@@ -15,6 +17,9 @@ data/indicators/<id>/<n>.json               country indicators for the destinati
 data/comparisons/<id>/<n>.json              comparison versions: criteria and the indicators they pin
 data/hashes.json                            committed content hashes, append-only
 suggested-ratings/<n>.json                  the comparison's suggested stars per country (ADR-0035); not rules, no activation
+departure-checklists/<n>.json               what to do when leaving a country, with official sources (ADR-0038); no activation
+document-guides/<n>.json                    where to get each document kind in its issuing country, with official sources (ADR-0039); no activation; none until researched
+rule-texts/pt-BR/<route-id>.json            route version titles in Portuguese, keyed by their English (ADR-0037); not rules, no activation
 scripts/                                    load, validate, hash and write the catalog; generate countries
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
 src/                                        the runtime entry; pure, no I/O
@@ -37,7 +42,7 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources and their machine-readable addresses (`machineReadableUrl`, an optional data address of the same text, on an official source only) sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
 4. Hashes each route version, country set, country indicator and comparison version: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
-6. Writes `src/generated/catalog.ts` (route data) and `src/generated/runtime.ts` (what the API ships), with the highest-numbered `suggested-ratings/<n>.json` checked against `suggestedRatingsSchema`; a new suggested ratings file is a new number, and `test/suggested-ratings-bands.test.ts` recomputes its stars from their values ([ADR-0035](../../docs/adr/0035-suggested-ratings.md)). Any issue fails the build and deletes both modules, so no tool keeps serving an earlier catalog.
+6. Writes `src/generated/catalog.ts` (route data) and `src/generated/runtime.ts` (what the API ships), with the highest-numbered `suggested-ratings/<n>.json` checked against `suggestedRatingsSchema`; a new suggested ratings file is a new number, and `test/suggested-ratings-bands.test.ts` recomputes its stars from their values ([ADR-0035](../../docs/adr/0035-suggested-ratings.md)), and the highest-numbered `departure-checklists/<n>.json` checked against `departureChecklistsSchema` ([ADR-0038](../../docs/adr/0038-departure-checklists.md)), and the highest-numbered `document-guides/<n>.json` checked against `documentGuidesSchema` ([ADR-0039](../../docs/adr/0039-document-guides.md)), and every `rule-texts/pt-BR/<route-id>.json`, checked against `ruleTextFileSchema`, its file name and for a title translated twice ([ADR-0037](../../docs/adr/0037-rule-texts-in-the-screens-language.md)). Any issue fails the build and deletes both modules, so no tool keeps serving an earlier catalog.
 
 ## The import into the database
 
@@ -54,6 +59,17 @@ An official-domain list pins nothing, so its hash is the same `{ version, pinned
 `data/countries/<n>.json` is generated, never written by hand. `pnpm --filter @arca/knowledge countries:generate` runs `scripts/generate-countries.ts`, which only a maintainer runs and never `pnpm check` or the build. It checks the vendored CLDR file and license against the pins in `scripts/countries.ts`, keeps every alpha-2 region CLDR lists except the exclusions there (`XK` stays), and writes the next numbered file. It fails on any code that is neither excluded, admitted nor in the previous countries file, and on any code of the previous file the release drops unless it is withdrawn, so a new CLDR release's changes are classified in `reclassification` (in `scripts/countries.ts`) by a reviewed change first. A new release is vendored after its entry is approved in `.github/policy/vendored.json`; then update the pins and regenerate.
 
 `data/former-countries/<n>.json` lists ISO 3166-3 codes, with sources; their names live in the i18n catalogs (`formerCountries`), because `Intl.DisplayNames` names only current countries. A test in `@arca/i18n` fails when a code has no name. User-assigned codes `QM` to `QZ` (except `QO` and `QU`) are for test fixtures only, and the real build rejects them.
+
+## Classifications
+
+Occupations and fields of study are codes from two official classifications ([ADR-0036](../../docs/adr/0036-case-records-and-classifications.md)), each a numbered file like the countries file: `{ "schemaVersion": 1, "id", "number", "classification", "sources", "codes" }`, with the codes sorted.
+
+- `data/occupations/<n>.json`: the 436 ISCO-08 unit groups, from the ILO's [ISCO-08 structure and definitions](https://www.ilo.org/ilostat-files/ISCO/newdocs-08-2021/ISCO-08/ISCO-08%20EN%20Structure%20and%20definitions.xlsx) workbook (the rows of level 4).
+- `data/study-fields/<n>.json`: the 148 four-digit ISCED-F 2013 fields, from Eurostat's [code list `ISCEDF13`, version 2.3](https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/codelist/ESTAT/ISCEDF13/2.3?format=TSV&lang=en) (the codes `F` plus four digits, without the `F`; the aggregates such as `F0113_0114` are Eurostat's, not the classification's).
+
+A route version pins one in `occupations` or `studyFields` only when a rule reads such a code; its hash then covers the file, and validation refuses a code the pinned file lacks and a code read with no pin. Each code's pt-BR label lives in `@arca/i18n` (`occupations`, `studyFields`, and the groups the picker shows them under), and its test fails on a code without one.
+
+To refresh one when the source publishes a new list: download the source into an empty directory of its own and treat it as untrusted data (export the workbook to CSV with a tool already at hand, never run its macros, and add no parser dependency without an ADR), take the codes as above, write them sorted as the next numbered file with the source's `verifiedAt`, run the build, and give `test/classifications.test.ts` the new file's counts and the SHA-256 of its codes joined by newlines; then add a label for every new code. Files already on `main` never change, so versions that pin them keep their codes.
 
 ## Comparison data
 
@@ -109,7 +125,7 @@ Every route version ships with `<n>.cases.json` beside it, and `test/cases` runs
 ```
 
 - A case has a `family` from `eval/families/<id>/<n>.json`, pinned by the hash of its bytes, or an inline `snapshot`. Families are synthetic and never change, which `knowledge-immutable` enforces: extending one is a new number. Optional: `factsAsOf`, `referenceDates` (`{ "filingDate": "2026-09-01" }`) and `fx`.
-- `missingFacts` are written as the runner prints them: `<fact>@<person>`, with ` edge <edge>` or ` line <ids>` when the fact is read across one; `relationship <edge>`; `marker <marker>@<person>`.
+- `missingFacts` are written as the runner prints them: `<fact>@<person>`, with ` edge <edge>` or ` line <ids>` when the fact is read across one; `relationship <edge>`; `marker <marker>@<person>`; `records <list>@<person>` for a list of records left unanswered.
 - Coverage, from the results: every requirement is true, false and unknown at least once; every dependent rule includes someone and, on its own, excludes someone (unless its condition cannot be false: the literal `true`, `unmodeled`, an `any` with such an operand, an `all` of them, or the `not` of a condition that cannot be true); a rule whose condition cannot be true (`unmodeled`, an `all` with such an operand, an `any` of them, or the `not` of a condition that cannot be false) makes someone possible instead of including anyone; an open version reaches `eligible` (`needs_assessment` when it has assessments), `not_eligible` and `missing_information`; a closed one, `unavailable`.
 - Cases in `data` are append-only (fixture cases are test code and change with the engine in review). When a change to `packages/domain/src` changes a result, add a case with `supersedes` and `reason` that differs only in `expected`; the runner skips the case it replaces.
 
@@ -119,7 +135,7 @@ A source is stale when it was verified more than 90 days before the context's `t
 
 ## Runtime entry points
 
-- `@arca/knowledge` exports `ruleDataFromRows`, which reads rule rows into the versions whose hashes still hold, and `createRouteCatalog`, the `RouteCatalog` the engine reads over them: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active. It also exports `countryFiles`, `comparisonCatalog` and `pinnedCountries`.
+- `@arca/knowledge` exports `ruleDataFromRows`, which reads rule rows into the versions whose hashes still hold, and `createRouteCatalog`, the `RouteCatalog` the engine reads over them: every version's identity, and a full entry only for an exact identity (route, number and content hash) whose decision state is active. It also exports `datasetFiles`, `comparisonCatalog` and `pinnedCountries`.
 - `@arca/knowledge/bundled` exports the rules as `data` holds them (`bundledRuleData`, `routeCatalog`, `routeIds`), for tests and tools. The API never imports it; a test of the Nitro build checks that no route version reaches the server bundle.
 - `@arca/knowledge/display` exports `createDisplayCatalog(rules)`, every version whatever its state, for the activation screen only.
 - `@arca/knowledge/reproduction` exports `createReproductionLookup(entries)`, which ignores decision states so an old evaluation stays reproducible. Modules and folders named `reproduction` are reserved for it: lint allows importing them only in the cases runner (`test/cases`), the reproduction path (`src/reproduction`, `test/reproduction`) and the lookup's own test, and those files may not re-export it with `export … from` (passing it on any other way is for review to catch). Inside this package only the entry points read the generated modules.

@@ -1,7 +1,21 @@
-import type { FactType } from '../case/facts.js';
+import {
+  type Classification,
+  type FactType,
+  type PersonRecord,
+  classifications,
+  isRecordKind,
+} from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
-import { type CollectionName, type Expression, maxExpressionDepth, depth } from './expression.js';
+import {
+  type CollectionName,
+  type Expression,
+  depth,
+  isPeriodCollection,
+  isRecordCollection,
+  maxExpressionDepth,
+  recordCollections,
+} from './expression.js';
 import { type FactTarget, resolveFactReference } from './fact-reference.js';
 
 /** A version that reads an age states how a 29 February birthday counts (spec 0002, R2). */
@@ -17,10 +31,12 @@ export type ExpressionType =
   | { readonly kind: 'set'; readonly domain: TokenDomain; readonly values?: readonly string[] };
 
 /**
- * Countries, the values of a catalog enumeration, or a literal whose domain its use decides.
- * `former-country` also admits ISO 3166-3 former states; a `country` fact admits current ones only.
+ * Countries, the codes of a pinned classification, the values of a catalog enumeration, or a
+ * literal whose domain its use decides. `former-country` also admits ISO 3166-3 former states; a
+ * `country` fact admits current ones only.
  */
-export type TokenDomain = 'country' | 'former-country' | 'literal' | readonly string[];
+export type TokenDomain =
+  'country' | 'former-country' | Classification | 'literal' | readonly string[];
 
 /** Where an expression sits, which decides the facts and collections it may read. */
 export interface CheckScope {
@@ -34,6 +50,8 @@ export interface CheckScope {
   readonly lineage?: 'ancestor' | 'link';
   /** Inside a collection, where only `lineage.links` (inside ancestors) may nest. */
   readonly nested?: boolean;
+  /** Inside a record collection: the record each item is, whose facts it may read. */
+  readonly record?: PersonRecord['kind'];
 }
 
 export interface CheckContext {
@@ -49,7 +67,17 @@ export interface CheckContext {
   readonly formerCountries: ReadonlySet<string>;
   /** IDs of the pinned country sets with a member outside the pinned countries file. */
   readonly formerCountrySets: ReadonlySet<string>;
+  /** Codes of each classification file the version pins; a classification it does not pin is absent. */
+  readonly classifications?: PinnedClassifications;
 }
+
+/** The codes of the classification files a route version pins, by the name of each pin. */
+export type PinnedClassifications = Readonly<Partial<Record<Classification, ReadonlySet<string>>>>;
+
+const classificationLabels: Readonly<Record<Classification, string>> = {
+  occupations: 'Occupation',
+  studyFields: 'Field-of-study',
+};
 
 export interface CheckIssue {
   readonly path: string;
@@ -216,6 +244,24 @@ class Checker {
         if (value === undefined) return undefined;
         return value.kind === 'number' ? value : this.fail(path, 'sum takes a number');
       }
+      case 'covers': {
+        if (!this.declared(expression.at, path)) return undefined;
+        if (!isPeriodCollection(expression.over)) {
+          return this.fail(path, 'covers reads a collection of periods');
+        }
+        if (![expression.atLeast, expression.window ?? 'P1D'].every(isPositive)) {
+          return this.fail(path, 'covers needs a time and a window longer than zero');
+        }
+        const inner = this.collection(expression.over, undefined, scope, path);
+        if (inner === undefined) return undefined;
+        if (
+          expression.where !== undefined &&
+          !this.allBoolean([[expression.where, at('where')]], inner)
+        ) {
+          return undefined;
+        }
+        return boolean;
+      }
     }
   }
 
@@ -235,7 +281,17 @@ class Checker {
     if (resolved.definition.readsAge === true && !this.context.leapDayBirthday) {
       return this.fail(path, ageNeedsLeapDay);
     }
-    return typeOf(resolved.definition.type, this.context.currency);
+    const { type } = resolved.definition;
+    if (
+      (type.kind === 'code' || type.kind === 'codes') &&
+      this.context.classifications?.[type.classification] === undefined
+    ) {
+      return this.fail(
+        path,
+        `${classificationLabels[type.classification]} codes need the version to pin ${type.classification}`,
+      );
+    }
+    return typeOf(type, this.context.currency);
   }
 
   private collection(
@@ -252,6 +308,15 @@ class Checker {
     if ((over === 'principal.ancestors') !== (generations !== undefined)) {
       this.fail(path, 'generations is given for principal.ancestors, and only there');
       return undefined;
+    }
+    if (isRecordCollection(over)) {
+      const { owner, record } = recordCollections[over];
+      if (owner === 'current' && !scope.current) {
+        this.fail(path, `${over} cannot be read here`);
+        return undefined;
+      }
+      // `person.*` reads the records' owner; the unit stays reachable, edges and lines do not.
+      return { current: true, unit: scope.unit, edge: false, nested: true, record };
     }
     switch (over) {
       case 'unit.members':
@@ -312,7 +377,9 @@ class Checker {
         ? (tokens.values ?? []).every((value) =>
             isCountryDomain(domain)
               ? this.knownCountry(domain, value)
-              : domain === 'literal' || domain.includes(value),
+              : isClassification(domain)
+                ? this.context.classifications?.[domain]?.has(value) === true
+                : domain === 'literal' || domain.includes(value),
           )
         : fitsDomain(domain, tokens.domain);
     if (!fits) this.fail(path, 'The values are outside the domain of the fact');
@@ -365,6 +432,7 @@ class Checker {
 }
 
 function reachable(target: FactTarget, scope: CheckScope): boolean {
+  if (isRecordKind(target)) return scope.record === target;
   switch (target) {
     case 'principal':
       return true;
@@ -400,6 +468,10 @@ function typeOf(type: FactType, currency: CurrencyCode): ExpressionType {
       return { kind: 'token', domain: type.values };
     case 'enum-list':
       return { kind: 'list', domain: type.values };
+    case 'code':
+      return { kind: 'token', domain: type.classification };
+    case 'codes':
+      return { kind: 'list', domain: type.classification };
   }
 }
 
@@ -411,6 +483,10 @@ function isCountryDomain(domain: TokenDomain): domain is 'country' | 'former-cou
   return domain === 'country' || domain === 'former-country';
 }
 
+function isClassification(domain: TokenDomain): domain is Classification {
+  return (classifications as readonly TokenDomain[]).includes(domain);
+}
+
 /** Whether values of the `values` domain can be values of the `target` domain. */
 function fitsDomain(target: TokenDomain, values: TokenDomain): boolean {
   if (isCountryDomain(target) && isCountryDomain(values)) {
@@ -419,3 +495,5 @@ function fitsDomain(target: TokenDomain, values: TokenDomain): boolean {
   if (typeof target === 'string' || typeof values === 'string') return target === values;
   return target.length === values.length && target.every((value) => values.includes(value));
 }
+
+const isPositive = (duration: string) => /[1-9]/.test(duration);

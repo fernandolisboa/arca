@@ -200,6 +200,35 @@ export const document = vault.table(
   ],
 );
 
+/**
+ * A document country: a destination the owner files a document under. Only the owner's identity
+ * reaches these rows, so an account the document is shared with never reads them.
+ */
+export const documentCountry = vault.table(
+  'document_country',
+  {
+    documentId: uuid('document_id').notNull(),
+    ownerId: uuid('owner_id').notNull(),
+    country: text('country').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // The owner is in the key so that a uniqueness check never tells another account a country.
+    primaryKey({
+      name: 'document_country_pkey',
+      columns: [table.documentId, table.ownerId, table.country],
+    }),
+    foreignKey({
+      name: 'document_country_document_fkey',
+      columns: [table.documentId, table.ownerId],
+      foreignColumns: [document.id, document.ownerId],
+    }).onDelete('cascade'),
+    check('document_country_code', sql`${table.country} ~ '^[A-Z]{2}$'`),
+    index('document_country_owner_id_idx').on(table.ownerId),
+    ...ownRowPolicies('document_country', table.ownerId, ['select', 'insert', 'delete']),
+  ],
+);
+
 /** The most accounts one document is shared with (spec 0005, R4). */
 export const maxDocumentRecipients = 16;
 

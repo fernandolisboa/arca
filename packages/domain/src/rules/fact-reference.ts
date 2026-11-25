@@ -1,4 +1,11 @@
-import { type FactDefinition, type FactKey, factCatalog, isFactKey } from '../case/facts.js';
+import {
+  type FactDefinition,
+  type FactKey,
+  factCatalog,
+  isFactKey,
+  isRecordKind,
+  recordKinds,
+} from '../case/facts.js';
 
 /** Who a fact reference binds to in an expression (spec 0002, R3). */
 export const factTargets = [
@@ -9,6 +16,7 @@ export const factTargets = [
   'firstEdge',
   'lineage',
   'ancestor',
+  ...recordKinds,
 ] as const;
 export type FactTarget = (typeof factTargets)[number];
 
@@ -32,6 +40,7 @@ export function resolveFactReference(reference: string): ResolvedFact | undefine
   if (head === 'person') return lookup(reference, 'current');
   if (head === 'unit') return lookup(reference, 'unit');
   if (head === 'edge') return lookup(reference, 'edge');
+  if (head !== undefined && isRecordKind(head)) return lookup(reference, head);
   if (head === 'firstEdge') {
     const resolved = lookup(`edge.${tail}`, 'firstEdge');
     return resolved?.definition.readsLinkedPerson === true ? undefined : resolved;

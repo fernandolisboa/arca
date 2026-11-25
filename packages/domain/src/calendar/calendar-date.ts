@@ -93,6 +93,16 @@ export function tryAddDuration(date: CalendarDate, duration: Duration): Calendar
   return shifted === undefined ? undefined : tryAddDays(shifted, days);
 }
 
+/** Goes back years, then months, clamping to the month's last day, then days, as `subtract` does. */
+export function trySubtractDuration(
+  date: CalendarDate,
+  duration: Duration,
+): CalendarDate | undefined {
+  const { years, months, days } = durationParts(duration);
+  const shifted = tryAddMonths(date, -(years * 12 + months));
+  return shifted === undefined ? undefined : tryAddDays(shifted, -days);
+}
+
 export function tryAddMonths(date: CalendarDate, months: number): CalendarDate | undefined {
   const { year, month, day } = dateParts(date);
   const monthIndex = year * 12 + (month - 1) + months;

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "routeId": "dk-pay-limit",
+  "texts": [
+    {
+      "en": "Danish residence and work permit under the Pay Limit Scheme: a job offer with annual pay of at least DKK 552,000 (2026)",
+      "text": "Autorização de residência e trabalho na Dinamarca pelo Pay Limit Scheme: oferta de emprego com salário anual de pelo menos DKK 552.000 (2026)"
+    },
+    {
+      "en": "Not a citizen of Denmark, another Nordic country, an EU or EEA state or Switzerland: they live and work in Denmark without this permit",
+      "text": "Não ser cidadão da Dinamarca, de outro país nórdico, de um país da UE ou do EEE, nem da Suíça: esses moram e trabalham na Dinamarca sem esta autorização"
+    },
+    {
+      "en": "A job offer in Denmark with annual pay of at least the pay limit: DKK 400,000 in the act, adjusted each year for wage growth; DKK 552,000 for 2026 as SIRI publishes it",
+      "text": "Oferta de emprego na Dinamarca com salário anual de pelo menos o piso: DKK 400.000 na lei, reajustado todo ano pelo aumento dos salários; DKK 552.000 em 2026, como a SIRI publica"
+    },
+    {
+      "en": "Employment of at least 30 hours a week",
+      "text": "Emprego de pelo menos 30 horas por semana"
+    },
+    {
+      "en": "Pay goes into a Danish bank account in the principal's own name, opened within 180 days of entry or of the permit by someone who does not yet hold a permit of at least 180 days",
+      "text": "O salário cai numa conta bancária dinamarquesa em nome do próprio requerente principal, aberta até 180 dias depois da entrada ou da autorização por quem ainda não tem autorização de pelo menos 180 dias"
+    },
+    {
+      "en": "Pay and employment terms not inferior to the Danish standards of the professional field",
+      "text": "Salário e condições de trabalho não inferiores aos padrões dinamarqueses da área profissional"
+    },
+    {
+      "en": "No permit for a job in a lawful labour dispute, where the actual employment is presumed not to match the application nor meet the conditions, or where the offer mainly serves to obtain residence",
+      "text": "Não há autorização para emprego em greve legal, quando se presume que o emprego real não bate com o pedido nem cumpre as condições, ou quando a oferta serve principalmente para obter residência"
+    },
+    {
+      "en": "Neither the principal nor the family members with permits through them receive assistance under the Active Social Policy Act",
+      "text": "Nem o requerente principal nem os familiares com autorização por meio dele recebem assistência pela Lei de Política Social Ativa"
+    },
+    {
+      "en": "Family members live at the same address as the principal and receive no assistance under the Active Social Policy Act",
+      "text": "Os familiares moram no mesmo endereço do requerente principal e não recebem assistência pela Lei de Política Social Ativa"
+    },
+    {
+      "en": "Where the job needs a Danish authorisation, such as a doctor's, the authorisation, or a temporary one for adaptation and training, held before the permit is granted",
+      "text": "Quando o emprego exige autorização dinamarquesa, como a de médico, essa autorização, ou uma temporária para adaptação e treinamento, precisa existir antes da concessão"
+    },
+    {
+      "en": "The permit is conditional on no family member with a permit through the principal having that permit revoked more than once for lack of a required work permit",
+      "text": "A autorização depende de nenhum familiar com autorização por meio do requerente principal ter tido essa autorização revogada mais de uma vez por falta da autorização de trabalho exigida"
+    },
+    {
+      "en": "A spouse's marriage or registered partnership must be one Danish law recognises: legal where made, both present and 18 or more then, not of convenience, not against fundamental legal principles",
+      "text": "O casamento ou parceria registrada do cônjuge precisa ser reconhecido pela lei dinamarquesa: válido onde foi feito, os dois presentes e com 18 anos ou mais na época, não de fachada, não contrário a princípios jurídicos fundamentais"
+    },
+    {
+      "en": "As a general rule, the employment agreement is with a company registered in Denmark; exceptions exist, such as a foreign company providing services in Denmark",
+      "text": "Em regra, o contrato de trabalho é com uma empresa registrada na Dinamarca; há exceções, como uma empresa estrangeira que presta serviços na Dinamarca"
+    },
+    {
+      "en": "A child coming with only one of two parents who share custody needs the other parent's consent; a parent with sole custody documents it",
+      "text": "Uma criança que vem só com um dos pais, quando os dois têm a guarda, precisa do consentimento do outro; quem tem a guarda sozinho comprova isso"
+    },
+    {
+      "en": "Fee for the Pay Limit Scheme permit application: DKK 6,810, the amount set for 1 January to 31 December 2026",
+      "text": "Taxa do pedido de autorização pelo Pay Limit Scheme: DKK 6.810, valor fixado para 1º de janeiro a 31 de dezembro de 2026"
+    },
+    {
+      "en": "Fee for each accompanying family member's permit application: DKK 3,080, the amount set for 1 January to 31 December 2026",
+      "text": "Taxa do pedido de autorização de cada familiar que acompanha: DKK 3.080, valor fixado para 1º de janeiro a 31 de dezembro de 2026"
+    },
+    {
+      "en": "SIRI's processing of the application: normally 1 month, up to 3 months if further information is needed",
+      "text": "Análise do pedido pela SIRI: normalmente 1 mês, até 3 meses se precisar de mais informações"
+    },
+    {
+      "en": "Permit valid for the period of the employment; for an employment of 4 years or more, normally 4 years, then extended; never beyond 3 months before the passport expires",
+      "text": "Autorização válida pelo período do emprego; para emprego de 4 anos ou mais, normalmente 4 anos, depois prorrogada; nunca além de 3 meses antes do vencimento do passaporte"
+    },
+    {
+      "en": "SIRI's processing of an accompanying family member's application: normally 2 months, up to 3 months if further information is needed",
+      "text": "Análise do pedido de um familiar que acompanha pela SIRI: normalmente 2 meses, até 3 meses se precisar de mais informações"
+    }
+  ]
+}

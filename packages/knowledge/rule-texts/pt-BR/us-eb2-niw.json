@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb2-niw",
+  "texts": [
+    {
+      "en": "EB-2 national interest waiver: advanced degree or exceptional ability, no job offer needed (permanent residence)",
+      "text": "EB-2 com dispensa por interesse nacional: diploma avançado ou habilidade excepcional, sem precisar de oferta de emprego (residência permanente)"
+    },
+    {
+      "en": "A professional with a U.S. advanced degree or foreign equivalent (a bachelor's plus 5 years' progressive experience after it counts; a doctorate if the field requires one), or exceptional ability",
+      "text": "Profissional com diploma avançado dos EUA ou equivalente estrangeiro (vale bacharelado mais 5 anos de experiência progressiva depois dele; doutorado se a área exigir), ou com habilidade excepcional"
+    },
+    {
+      "en": "Exceptional ability, if claimed: expertise well above the ordinary in the sciences, arts or business, shown by 3 of 6 kinds of evidence or comparable evidence; a degree or license alone is not enough",
+      "text": "Habilidade excepcional, se alegada: domínio bem acima do comum em ciências, artes ou negócios, mostrado por 3 de 6 tipos de prova ou prova equivalente; diploma ou licença sozinhos não bastam"
+    },
+    {
+      "en": "Waiving the job offer, and with it the labor certification, is in the national interest of the United States, as the agency deems it",
+      "text": "Dispensar a oferta de emprego, e com ela a certificação trabalhista, é do interesse nacional dos Estados Unidos, a critério do órgão"
+    },
+    {
+      "en": "Form I-140 immigrant petition fee; with the waiver no employer is needed, and the rule lets an applicant claiming exceptional ability file it for themselves",
+      "text": "Taxa da petição de imigrante Form I-140; com a dispensa não é preciso empregador, e a norma deixa quem alega habilidade excepcional protocolar por conta própria"
+    },
+    {
+      "en": "Asylum Program Fee paid with every Form I-140; USD 300 for a small employer, a firm or individual with 25 or fewer full-time employees in the U.S.; whether a self-petitioner counts is unconfirmed",
+      "text": "Asylum Program Fee paga com todo Form I-140; USD 300 para pequeno empregador, empresa ou pessoa com até 25 funcionários em tempo integral nos EUA; não está confirmado se quem pede por conta própria conta como um"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for the principal, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para o requerente principal, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for each accompanying family member, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+    },
+    {
+      "en": "USCIS immigrant fee for the principal, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para o requerente principal, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para cada familiar que acompanha, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "Form I-485 to adjust status, for the principal, when the family lives in the U.S. in a status that allows adjusting there instead of a visa abroad",
+      "text": "Form I-485 para ajuste de status, para o requerente principal, quando a família mora nos EUA num status que permite o ajuste lá, em vez do visto no exterior"
+    },
+    {
+      "en": "Form I-485 to adjust status, for each family member living in the U.S. with the principal (USD 950 for a child under 14 filing with a parent)",
+      "text": "Form I-485 para ajuste de status, para cada familiar que mora nos EUA com o requerente principal (USD 950 para filho menor de 14 anos que pede junto com um dos pais)"
+    }
+  ]
+}

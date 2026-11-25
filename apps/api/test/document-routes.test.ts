@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
   maxDocumentBatch,
   maxDocumentBytes,
@@ -12,6 +12,7 @@ import type { SignedIn } from '../src/auth/service.js';
 import type { StepUpService } from '../src/auth/step-up.js';
 import type { CanonicalAction } from '../src/auth/step-up-encoding.js';
 import type {
+  CountryChanged,
   DocumentCreated,
   DocumentRequests,
   ReplacementStarted,
@@ -70,6 +71,7 @@ function setup({
   approved = true,
   replaced = { uploads: [{ documentId, upload: { via: 'vercel_blob', pathname } }] },
   deleted = true,
+  countryChanged = 'changed',
   memoryObjects,
 }: {
   unlocked?: boolean;
@@ -82,6 +84,7 @@ function setup({
   approved?: boolean;
   replaced?: ReplacementStarted;
   deleted?: boolean;
+  countryChanged?: CountryChanged;
   memoryObjects?: MemoryObjectStorage;
 } = {}) {
   const calls: unknown[] = [];
@@ -111,7 +114,7 @@ function setup({
     },
     list: (accountId, after) => {
       calls.push(['list', accountId, after]);
-      return Promise.resolve({ documents: [], next: null });
+      return Promise.resolve({ documents: [], next: null, countries: ['PT', 'US'] });
     },
     downloadUrl: (accountId, id) => {
       calls.push(['downloadUrl', accountId, id]);
@@ -126,6 +129,10 @@ function setup({
       return Promise.resolve({
         results: ids.map((id) => ({ documentId: id, outcome: 'replaced' as const })),
       });
+    },
+    changeCountry: (accountId, change) => {
+      calls.push(['changeCountry', accountId, change]);
+      return Promise.resolve(countryChanged);
     },
     delete: (accountId, ids) => {
       calls.push(['delete', accountId, ids]);
@@ -192,6 +199,7 @@ describe('creating a document (spec 0005, R4)', () => {
     [{ allowed: false }, 429, 'rate_limited'],
     [{ created: 'no_vault' as const }, 404, 'not_found'],
     [{ created: 'over_quota' as const }, 409, 'document_quota'],
+    [{ created: 'unknown_country' as const }, 400, 'invalid_request'],
   ])('answers %o with %i', async (options, status, code) => {
     const response = await setup(options).call('POST', '/vault/documents', createBody);
     expect(response.status).toBe(status);
@@ -207,10 +215,67 @@ describe('creating a document (spec 0005, R4)', () => {
     ['no label', { ...createBody, label: '' }],
     ['a label that is not whole bytes', { ...createBody, label: 'AAAAA' }],
     ['a label over 32 KiB', { ...createBody, label: 'A'.repeat(43_692) }],
+    ['a country that is not a code', { ...createBody, country: 'Portugal' }],
   ])('refuses %s', async (_, body) => {
     const { call, calls } = setup();
     expect((await call('POST', '/vault/documents', body)).status).toBe(400);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('document countries', () => {
+  const change = { documentIds: [documentId, otherDocument], country: 'PT', filed: true };
+
+  it('creates a document under the country the request names', async () => {
+    const { call, calls } = setup();
+    const body = { ...createBody, country: 'PT' };
+    expect((await call('POST', '/vault/documents', body)).status).toBe(200);
+    expect(calls).toEqual([['create', owner.accountId, body]]);
+  });
+
+  it('files documents under a country with the vault open, counted by its own limit', async () => {
+    const { call, calls, limited, spent } = setup();
+    const response = await call('POST', '/vault/documents/countries', change);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({});
+    expect(calls).toEqual([['changeCountry', owner.accountId, change]]);
+    expect(limited).toEqual(['document_countries_account']);
+    expect(spent).toEqual([]);
+  });
+
+  it.each([
+    [{ unlocked: false }, 403, 'step_up_required'],
+    [{ allowed: false }, 429, 'rate_limited'],
+    [{ countryChanged: 'not_found' as const }, 404, 'not_found'],
+    [{ countryChanged: 'unknown_country' as const }, 400, 'invalid_request'],
+  ])('answers %o with %i', async (options, status, code) => {
+    const response = await setup(options).call('POST', '/vault/documents/countries', change);
+    expect(response.status).toBe(status);
+    expect(await errorOf(response)).toBe(code);
+  });
+
+  it.each([
+    ['no document', { ...change, documentIds: [] }],
+    ['a document twice', { ...change, documentIds: [documentId, documentId] }],
+    [
+      'more documents than a batch holds',
+      { ...change, documentIds: Array.from({ length: maxDocumentBatch + 1 }, () => randomUUID()) },
+    ],
+    ['a country that is not a code', { ...change, country: 'pt' }],
+    ['no answer on filing or taking out', { documentIds: change.documentIds, country: 'PT' }],
+    ['an extra field', { ...change, countries: ['US'] }],
+  ])('refuses %s', async (_, body) => {
+    const { call, calls } = setup();
+    expect((await call('POST', '/vault/documents/countries', body)).status).toBe(400);
+    expect(calls).toEqual([]);
+  });
+
+  it('leaves a locked vault and a limited account without a change', async () => {
+    for (const options of [{ unlocked: false }, { allowed: false }]) {
+      const { call, calls } = setup(options);
+      await call('POST', '/vault/documents/countries', change);
+      expect(calls).toEqual([]);
+    }
   });
 });
 

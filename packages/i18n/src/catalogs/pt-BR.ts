@@ -1,3 +1,8 @@
+import { departure } from './pt-BR-departure.js';
+import { documentGuide } from './pt-BR-document-guides.js';
+import { occupationGroups, occupations } from './pt-BR-occupations.js';
+import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
+
 /**
  * The pt-BR catalog, in ICU message format. Domain terms use the labels in CONTEXT.md.
  */
@@ -21,6 +26,7 @@ export const ptBR = {
       family: 'Família',
       vault: 'Cofre',
       compare: 'Comparar',
+      departure: 'Saída',
       knowledge: 'Regras',
       settings: 'Configurações',
     },
@@ -324,6 +330,12 @@ export const ptBR = {
         body: 'Coloque quem vai com você. Depois responda às perguntas, e o Arca mostra as rotas que servem para a família.',
       },
     },
+    departure: {
+      screen: {
+        title: 'O que resolver antes de ir',
+        body: 'Cada item traz a página oficial de onde saiu. Abra a fonte antes de agir: prazos e regras mudam.',
+      },
+    },
     compare: {
       screen: {
         title: 'Monte a sua ordem',
@@ -605,8 +617,11 @@ export const ptBR = {
     hasAccount: 'Participante do caso',
     noAccount: 'Sem conta',
     sharedWithMe:
-      '{what, select, both {Você vê os dados e as finanças.} profile {Você vê os dados.} finances {Você vê as finanças.} other {Você não vê os dados nem as finanças.}}',
-    whoSees: 'Quem vê os dados: {profile}. Quem vê as finanças: {finances}.',
+      '{count, plural, =0 {Você não vê os dados, as finanças nem a lista de documentos.} other {Você vê {what}.}}',
+    scope:
+      '{scope, select, profile {os dados} finances {as finanças} other {a lista de documentos}}',
+    whoSees:
+      'Quem vê os dados: {profile}. Quem vê as finanças: {finances}. Quem vê a lista de documentos: {checklist}.',
     nobody: 'só você',
     actions: {
       sharing: 'Compartilhamento',
@@ -631,6 +646,7 @@ export const ptBR = {
       lead: 'Ninguém vê nada até você marcar. Dá para mudar quando quiser.',
       profile: 'Dados pessoais, como estudos, trabalho e idiomas',
       finances: 'Finanças, como renda e bens',
+      checklist: 'Lista de documentos, com o que já foi juntado (só para ver)',
       save: 'Salvar compartilhamento',
     },
     handOver: {
@@ -712,9 +728,9 @@ export const ptBR = {
       title: 'Novidades na família',
       joined: '{name} entrou no caso.',
       granted:
-        '{scope, select, profile {Agora você vê os dados de {name}.} other {Agora você vê as finanças de {name}.}}',
+        '{scope, select, profile {Agora você vê os dados de {name}.} finances {Agora você vê as finanças de {name}.} other {Agora você vê a lista de documentos de {name}.}}',
       revoked:
-        '{scope, select, profile {Você não vê mais os dados de {name}.} other {Você não vê mais as finanças de {name}.}}',
+        '{scope, select, profile {Você não vê mais os dados de {name}.} finances {Você não vê mais as finanças de {name}.} other {Você não vê mais a lista de documentos de {name}.}}',
       decide:
         'Em Compartilhamento, escolha o que a pessoa que entrou pode ver das pessoas de quem você cuida.',
       done: 'Entendi',
@@ -764,16 +780,17 @@ export const ptBR = {
       yearFormat: 'Use os quatro números do ano, como 1985.',
       months:
         '{month, select, 01 {janeiro} 02 {fevereiro} 03 {março} 04 {abril} 05 {maio} 06 {junho} 07 {julho} 08 {agosto} 09 {setembro} 10 {outubro} 11 {novembro} 12 {dezembro} other {}}',
-      none: '{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}',
+      none: '{question, select, workPeriods {Ainda trabalha aqui} residencePeriods {Ainda mora lá} other {{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}}}',
     },
     amount: 'Valor',
     currency: 'Moeda',
     formerCountries: 'Países que não existem mais',
     fields: {
-      country: 'País',
+      country:
+        '{question, select, qualifications {País que emitiu o diploma} registrations {País do registro} other {País}}',
       acquired: 'Desde quando',
       lost: 'Até quando',
-      basis: 'Como conseguiu',
+      basis: '{question, select, residencePeriods {Situação no país} other {Como conseguiu}}',
       language: 'Idioma',
       level: 'Nível',
       sector: 'Área',
@@ -792,6 +809,47 @@ export const ptBR = {
       parentKind: 'Filiação',
       custody: 'Guarda',
       custodyStart: 'Guarda desde quando',
+      label: 'Nome para reconhecer este trabalho (opcional)',
+      occupation: 'Ocupação',
+      relation: 'Forma de trabalho',
+      capacity: 'Cargo de chefia',
+      fullTime: 'É em tempo integral?',
+      employerCountry: 'País da empresa ou do cliente',
+      workplaceCountry: 'País de onde trabalha',
+      field: 'Área de formação',
+      completed: 'Quando concluiu',
+      since: 'Desde quando',
+      annualSalary: 'Salário bruto por ano',
+      sponsored: 'A empresa vai patrocinar o visto?',
+      operatingSince: 'Funciona desde quando',
+      employees: 'Quantos funcionários tem',
+      business: 'Qual das suas empresas',
+    },
+    /** A field's label where one question needs other words than the rest. */
+    fieldFor: {
+      assets: {
+        country: 'País da sede da empresa',
+      },
+    },
+    business: {
+      option:
+        'Empresa {number}{country, select, none {} other { · {country}}}{since, select, none {} other { · desde {since}}}',
+      noneOwned:
+        'Para ligar este trabalho à sua empresa, anote a empresa em Finanças, na pergunta sobre bens.',
+    },
+    labelHint:
+      'Só aparece para quem vê os dados desta pessoa, como “Hospital” ou “Cliente dos EUA”.',
+    occupationPicker: {
+      search: 'Buscar ocupação',
+      none: 'Nenhuma ocupação com esse nome',
+      clear: 'Limpar a ocupação',
+      close: 'Fechar a lista de ocupações',
+    },
+    studyFieldPicker: {
+      search: 'Buscar área de formação',
+      none: 'Nenhuma área com esse nome',
+      clear: 'Limpar a área de formação',
+      close: 'Fechar a lista de áreas de formação',
     },
     choice: {
       citizenshipBasis:
@@ -811,6 +869,12 @@ export const ptBR = {
       parentKind: '{value, select, biological {Biológica} adoptive {Adotiva} other {}}',
       custody:
         '{value, select, full {Guarda total} shared {Guarda compartilhada} none {Sem guarda} other {}}',
+      workRelation:
+        '{value, select, employee {Com carteira ou contrato de trabalho} contractor {Prestando serviço (PJ, freelancer ou autônomo para uma empresa)} self_employed {Por conta própria, para vários clientes} owner {Na própria empresa, como dono ou sócio} other {}}',
+      workCapacity:
+        '{value, select, executive {Diretoria ou alta gestão} manager {Gerência ou coordenação de equipe} other {Sem cargo de chefia}}',
+      residenceBasis:
+        '{value, select, citizen {Com cidadania do país} permanent_residence {Com residência permanente} temporary_residence {Com visto ou residência temporária} other {Outra situação, como turista}}',
     },
     asked: {
       birthDate: 'Quando {name} nasceu?',
@@ -819,9 +883,13 @@ export const ptBR = {
       educationLevel: 'Até onde {name} estudou?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
+      qualifications: 'Que formações {name} concluiu?',
+      workPeriods: 'Quais trabalhos {name} tem ou já teve?',
+      registrations: 'Onde {name} tem registro para exercer a profissão?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
       incomes: 'Quanto {name} recebe por mês?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
+      residencePeriods: 'Em quais países {name} já morou?',
       assets: 'Quais bens {name} tem?',
       allAssets: 'Esses são todos os bens de {name}?',
       immigrationHistory:
@@ -838,6 +906,16 @@ export const ptBR = {
       educationLevel: 'Vale o último curso que concluiu.',
       incomes: 'Anote cada fonte de renda separadamente.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
+      qualifications:
+        'Anote cada curso concluído, como técnico, graduação, especialização, mestrado ou doutorado. O país é o da escola que emitiu o diploma.',
+      registrations:
+        'É a inscrição em conselho ou ordem, como CRM, CREA ou OAB. Anote um registro por país.',
+      workPeriods:
+        'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
+      jobOffers:
+        'Se souber, anote a ocupação, o salário por ano e se a empresa vai patrocinar o visto. Algumas rotas exigem um salário a partir de certo valor ou o patrocínio da empresa. O salário aparece para quem vê os dados pessoais desta pessoa.',
+      residencePeriods:
+        'Anote cada país, incluindo o país onde mora hoje, e cada mudança de situação no mesmo país. Algumas rotas pedem anos de residência legal.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
     },
@@ -926,9 +1004,17 @@ export const ptBR = {
       studying: '{person} {studying, select, yes {está} other {não está}} estudando agora.',
       language: 'Idioma de {person}: {language} ({level}).',
       noLanguage: 'Idiomas de {person}: nenhum.',
-      jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{temporary}.',
+      jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{details}.',
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
+      workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
+      noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
+      qualification: 'Formação de {person}{field} ({level}){details}.',
+      noQualification: 'Formações de {person}: nenhuma.',
+      registration: 'Registro profissional de {person}: {occupation}{details}.',
+      noRegistration: 'Registros profissionais de {person}: nenhum.',
       immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
+      residencePeriod: 'Residência de {person}: {country}{basis}{time}.',
+      noResidencePeriod: 'Países onde {person} morou: nenhum anotado.',
       noImmigrationEvent: 'Imigração de {person}: nenhum visto, residência ou problema.',
       dependsOn: '{person} depende do dinheiro de {people}.',
       independent: '{person} não depende do dinheiro de ninguém do caso.',
@@ -942,7 +1028,7 @@ export const ptBR = {
       coupleEnded:
         '{first} e {second} {couple, select, spouse {foram casados} other {viveram em união estável}}{start} até {end}.',
       parent: '{parent} é mãe ou pai de {child}{since}{details}.',
-      asset: '{asset} de {owners}: {value} em {valuedAt}{liquid}{sold}.',
+      asset: '{asset} de {owners}: {value} em {valuedAt}{liquid}{sold}{business}.',
     },
     part: {
       age: ' ({min, plural, =0 {menos de 1 ano} one {# ano} other {# anos}})',
@@ -956,6 +1042,35 @@ export const ptBR = {
       from: ' de {date}',
       custodySince: ', guarda desde {date}',
       temporary: ', temporária',
+      offerOccupation: ', ocupação: {occupation}',
+      salary: ', salário de {amount} por ano',
+      sponsored:
+        ', {sponsored, select, yes {com patrocínio da empresa para o visto} other {sem patrocínio da empresa para o visto}}',
+      label: ' ({label})',
+      noOccupation: 'ocupação não informada',
+      noLevel: 'nível não informado',
+      field: ' em {field}',
+      issuedIn: ', país: {country}',
+      completed: ', concluída em {date}',
+      relation:
+        ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} owner {na própria empresa} other {}}',
+      capacity:
+        ', {capacity, select, executive {na diretoria} manager {em cargo de gerência} other {sem cargo de chefia}}',
+      fullTime: ', {fullTime, select, yes {em tempo integral} other {em tempo parcial}}',
+      employerCountry: ', empresa ou cliente: {country}',
+      workplaceCountry: ', local de trabalho: {country}',
+      between: ', de {start} a {end}',
+      startedIn: ', começou em {date}',
+      current: ', trabalho atual',
+      atOwnBusiness: ', na empresa listada nos bens',
+      businessCountry: ', sede: {country}',
+      operatingSince: ', funcionando desde {date}',
+      employees:
+        ', {employees, plural, =0 {sem funcionários} one {# funcionário} other {# funcionários}}',
+      residenceBasis:
+        ', {basis, select, citizen {com cidadania} permanent_residence {com residência permanente} temporary_residence {com visto ou residência temporária} other {em outra situação}}',
+      sinceToday: ', desde {date} até hoje',
+      untilToday: ', até hoje',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:
         ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
@@ -970,6 +1085,7 @@ export const ptBR = {
     title: 'Rotas para a família',
     lead: 'O Arca compara as regras de cada rota com o que está anotado no caso, usando as regras em vigor em {date}.',
     open: 'Ver as rotas para a família',
+    addToPlan: 'Pôr no plano da família',
     signIn: 'Entre para ver as rotas para a família.',
     noCase: 'Comece o caso na área da família para ver as rotas.',
     loadFailure: 'Não conseguimos avaliar as rotas agora.',
@@ -983,9 +1099,33 @@ export const ptBR = {
     decides: '{n, plural, one {Pode mudar # resultado} other {Pode mudar # resultados}}',
     answer: 'Responder',
     askKeeper: 'Peça para quem cuida dos dados de {name} responder: {question}',
-    otherRoutes: 'Outras rotas',
-    unnamedRoute: 'Rota ainda sem versão ativa ({id})',
+    searchLabel: 'Buscar país ou rota',
+    noMatch: 'Nenhuma rota combina com a busca.',
+    tableCaption: 'Rotas da família, com a situação de cada pessoa como requerente principal',
+    routeColumn: 'Rota',
+    openCell: '{route}, {name} como requerente principal:',
+    routesTitle: 'Rotas por pessoa',
+    detailTitle: 'Detalhes da rota',
+    pickRoute: 'Escolha uma rota na tabela para ver os detalhes.',
+    unnamed: 'Ainda sem versão ativa, e por isso fora da lista: {routes}.',
+    unnamedCountry: '{country} ({n, plural, one {# rota} other {# rotas}})',
+    unnamedAdmin: 'Ver na tela de ativação',
+    principalTabs: 'Quem pede como requerente principal',
     principal: '{name} como requerente principal',
+    familyTitle: 'Quem vai junto',
+    totalTitle: 'Total em dinheiro',
+    totalExtra: 'Pode haver mais {amount}.',
+    totalExtraUnknown: 'Pode haver outros custos, de valor ainda indefinido.',
+    totalHow:
+      'Soma das taxas e dos valores exigidos, como um investimento, para esta família nesta rota. Não inclui câmbio, advogado nem viagem.',
+    totalShort: '{amount}{more, select, yes { ou mais} other {}}',
+    totalMaybeOnly: 'talvez haja custo',
+    noCosts: 'Nenhum custo anotado nesta rota.',
+    translatedNote: 'Textos traduzidos pelo Arca. Na dúvida, vale a fonte oficial.',
+    showOriginal: 'Mostrar também o texto original em inglês',
+    original: 'Original: {text}',
+    durationsLead:
+      'Cada prazo vale para uma etapa. Eles não somam: alguns são espera e outros são validade.',
     status:
       '{status, select, eligible {Elegível} unavailable {Indisponível} not_eligible {Não elegível} missing_information {Faltam informações} needs_assessment {Depende de critério subjetivo} pending_activation {Versão aguardando ativação} other {Situação desconhecida}}',
     stale:
@@ -1062,6 +1202,159 @@ export const ptBR = {
       reason: 'Motivo: {reason}',
     },
   },
+  /** The family plan (ADR-0040): each person's route, who goes along, and who goes first. */
+  plan: {
+    title: 'Plano da família',
+    lead: 'Escolha a rota de cada pessoa, quem vai junto e quem vai primeiro. O Arca confere cada mudança com as regras em vigor em {date}, contando só quem vai nela.',
+    open: 'Montar o plano da família',
+    signIn: 'Entre para ver o plano da família.',
+    noCase: 'Comece o caso na área da família para montar o plano.',
+    loadFailure: 'Não conseguimos carregar o plano agora.',
+    tooMany: 'Você abriu esta tela muitas vezes na última hora. Espere um pouco e tente de novo.',
+    retry: 'Tentar de novo',
+    back: 'Voltar para a área da família',
+    add: 'Adicionar mudança',
+    shared: 'Todo mundo que participa do caso vê e edita este plano.',
+    empty: 'O plano ainda está vazio. Comece por quem vai primeiro.',
+    stage: 'Etapa {n}',
+    stageFirst: 'Quem vai primeiro',
+    stageLater: 'Depois da etapa {previous}',
+    principal: '{name} pede o visto',
+    takes: 'leva {names}',
+    takesNobody: 'sem acompanhantes',
+    alreadyThere: '{name} já vai na etapa {stage}.',
+    noVersion: 'Rota sem versão ativa',
+    notCovered:
+      'Esta rota não leva {names}. Tire quem ficou de fora desta mudança ou escolha outra rota.',
+    maybeCovered:
+      'Ainda não dá para saber se esta rota leva {names}. As perguntas na tela de rotas resolvem isso.',
+    coverage:
+      '{coverage, select, covered {A rota leva junto.} possible {Ainda não dá para saber se a rota leva junto.} unknown {A rota não tem versão em vigor, então ainda não dá para saber.} other {A rota não leva junto.}}',
+    details: 'Ver detalhes',
+    documents: 'Lista de documentos da rota',
+    edit: 'Editar',
+    remove: 'Tirar do plano',
+    closeDetail: 'Fechar detalhes',
+    sideTitle: 'Detalhes da mudança',
+    summaryTitle: 'Resumo do plano',
+    totalTitle: 'Total em dinheiro do plano',
+    noTotal: 'Nenhum custo anotado ainda',
+    totalHow:
+      'Soma dos totais de cada mudança, contando só quem vai em cada uma. Não inclui câmbio, advogado nem viagem.',
+    peopleTitle: 'Quem já está no plano',
+    allPlanned: 'Todo mundo do caso já tem uma etapa.',
+    unplanned: 'Ainda sem etapa: {names}.',
+    saveFailure:
+      '{reason, select, changed {Alguém alterou o plano enquanto você editava. Já carregamos o plano atualizado: confira e salve de novo.} invalid {O plano cita alguém que não está mais no caso ou repete uma rota para a mesma pessoa. Recarregue a tela e tente de novo.} limited {Você salvou muitas vezes na última hora. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar o plano agora. Tente de novo.}}',
+    guideTitle: 'Como montar o plano',
+    guideMoves:
+      'Cada mudança é um pedido de visto: uma pessoa pede e leva junto quem a rota aceita. O Arca avalia a rota só com quem vai naquela mudança, então a renda exigida e as taxas mudam conforme o grupo.',
+    guideStages:
+      'As etapas dizem a ordem. Quem vai primeiro fica na etapa 1, e quem vai depois entra numa etapa seguinte.',
+    reunionTitle: 'Reagrupamento familiar',
+    reunion:
+      'Para levar alguém depois, crie numa etapa seguinte uma mudança em que quem já mora lá pede o visto e leva quem vai. O tempo de residência sai dos períodos de residência anotados no caso. Se o país tiver uma rota de reagrupamento familiar, ela aparece na lista de rotas.',
+    editor: {
+      title: '{editing, select, yes {Editar mudança} other {Nova mudança}}',
+      principal: 'Quem pede o visto',
+      principalHint: 'A pessoa que a rota avalia como requerente principal.',
+      route: 'Rota',
+      routeOption: '{country} · {route}',
+      pick: 'Escolha',
+      statusNow: 'Situação hoje, com a família toda:',
+      taken: 'Essa pessoa já tem esta rota no plano.',
+      stage: 'Etapa',
+      stageHint: 'A etapa 1 é de quem vai primeiro.',
+      together: 'Quem vai junto',
+      togetherHint:
+        'Marque só quem vai nesta mudança. Quem for depois pode entrar numa etapa seguinte.',
+      save: 'Salvar no plano',
+      saving: 'Salvando…',
+      cancel: 'Cancelar',
+    },
+  },
+  /** A route's document checklist (spec #519): what each person hands in, with its sources. */
+  checklist: {
+    title: 'Lista de documentos',
+    open: 'Ver a lista de documentos',
+    lead: '{name} como requerente principal. Antes de juntar cada documento, confira a fonte oficial: ela vale mais que este resumo.',
+    signIn: 'Entre para ver os documentos.',
+    noCase: 'Comece o caso na área da família para ver os documentos.',
+    missing: 'Esta lista não existe mais. Volte para as rotas e escolha de novo.',
+    loadFailure: 'Não conseguimos montar a lista de documentos agora.',
+    tooMany: 'Você abriu esta tela muitas vezes na última hora. Espere um pouco e tente de novo.',
+    retry: 'Tentar de novo',
+    loading: 'Montando a lista…',
+    back: 'Voltar para as rotas',
+    unavailable: 'Esta rota não tem uma regra em vigor no Arca.',
+    pending:
+      'A regra desta rota está aguardando ativação. A lista de documentos aparece quando ela for ativada.',
+    newerVersion:
+      'Uma versão nova desta regra vale a partir de {date} e ainda aguarda ativação. A lista pode mudar.',
+    notCovered:
+      'O Arca ainda não sabe quais documentos esta rota pede. A lista aparece depois que a regra for pesquisada nos sites oficiais.',
+    noneAsked: 'Esta rota não pede nenhum documento.',
+    noneApply: 'Nenhum documento desta rota vale para esta família agora.',
+    peopleTabs: 'De quem é a lista',
+    role: '{role, select, principal {Requerente principal} dependent {Dependente} possible_dependent {Possível dependente} other {Família toda}}',
+    possibleNote:
+      'Ainda não dá para saber se esta pessoa entra na rota. Se entrar, estes são os documentos dela.',
+    unitTitle: 'Família toda',
+    unitLead: 'Entregues uma vez só, valendo para todos.',
+    count: '{n, plural, =0 {Nenhum documento} one {# documento} other {# documentos}}',
+    nothingHere: 'Nada a entregar aqui.',
+    mayApply: 'Pode ser pedido',
+    dependsOn: 'Para saber, falta responder:',
+    dependsOnSource:
+      'Depende de uma informação que o Arca ainda não pergunta. Confira na fonte oficial.',
+    answer: 'Responder',
+    askKeeper: 'Peça para quem cuida dos dados de {name}: {question}',
+    apostille: 'Apostila: {value, select, yes {precisa} no {não precisa} other {o Arca não sabe}}',
+    translation:
+      'Tradução: {value, select, sworn {juramentada} certified {certificada} none {não precisa} unknown {o Arca não sabe} other {confira na fonte}}',
+    validity: 'Validade: {duration} a partir da emissão',
+    validityUnknown: 'Validade: o Arca não sabe',
+    guideTitle: 'Onde tirar ({country})',
+    guideUnknown: 'O Arca ainda não sabe onde tirar este documento.',
+    cost: 'Custo: {amount}',
+    leadTime: 'Prazo: de {min} a {max}{business, select, yes {, em dias úteis} other {}}',
+    leadTimeExact: 'Prazo: {duration}{business, select, yes {, em dias úteis} other {}}',
+    online: 'Pedir pela internet',
+    routeProgress: 'Documentos que a família já tem',
+    listProgress: 'Já tem',
+    progressValue: '{had} de {total}',
+    mark: {
+      group: 'Você já tem “{title}”?',
+      had: 'Já tenho',
+      missing: 'Falta',
+      state: '{state, select, had {Já tem} other {Falta}}',
+      linked: 'No cofre: {name}',
+      linkedUnnamed: 'Ligado a um documento do cofre. Abra o cofre para ver qual.',
+      linkedElsewhere: 'Ligado a um documento que não está no seu cofre.',
+      linkedHere: 'Tem um documento do cofre ligado',
+      unlink: 'Desligar',
+      openVault: 'Abra o cofre para ligar um documento a este item',
+      vaultEmpty: 'Seu cofre ainda não tem documentos.',
+      toVault: 'Guardar um documento',
+      linkLabel: 'Ligar um documento do cofre',
+      linkHint: 'Ele passa a aparecer também em {country}, no cofre.',
+      linkPlaceholder: 'Escolha um documento',
+      link: 'Ligar',
+      hidden: 'Só quem cuida dos dados de {name} vê o que já foi juntado.',
+      failure:
+        '{reason, select, not_found {Não deu para salvar. A pessoa, a regra ou o documento mudou. Atualize a página.} case_limit {Esta pessoa já tem marcações demais nesta rota. Tire as que não precisa mais.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas mudanças em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar desta vez. Tente de novo.}}',
+    },
+    noLongerAsked: {
+      title: 'Não são mais pedidos',
+      lead: 'A regra mudou e não pede mais estes documentos. As marcações ficaram guardadas aqui. Tire as que não precisar.',
+      untitled: 'Documento que a regra não pede mais',
+      clear: 'Tirar marcação',
+    },
+  },
+  /** Leaving a country (ADR-0038): what to do, and the documents that trace the money. */
+  departure,
+  /** Where to get each document kind, per issuing country (ADR-0039). */
+  documentGuide,
   /** Comparar destinos (ADR-0026): one adult's own ranking of the countries that have a route. */
   compare: {
     title: 'Comparar destinos',
@@ -1703,6 +1996,11 @@ export const ptBR = {
       firstEdge: 'do primeiro vínculo do caminho',
       lineage: 'do elo da linha de ascendência',
       ancestor: 'do ascendente',
+      workPeriod: 'do trabalho',
+      qualification: 'da formação',
+      registration: 'do registro profissional',
+      jobOffer: 'da oferta de emprego',
+      residencePeriod: 'do período de residência',
     },
     fact: {
       person: {
@@ -1740,14 +2038,66 @@ export const ptBR = {
         childBirthDate: 'nascimento do filho',
         citizenshipsAtChildBirth: 'cidadanias no nascimento do filho',
       },
+      qualification: {
+        level: 'nível',
+        field: 'área de formação',
+        country: 'país que emitiu',
+        completed: 'conclusão',
+      },
+      registration: {
+        country: 'país do registro',
+        occupation: 'ocupação',
+        since: 'data do registro',
+      },
+      workPeriod: {
+        employerCountry: 'país da empresa',
+        workplaceCountry: 'país de onde a pessoa atua',
+        relation: 'forma de contratação',
+        occupation: 'ocupação',
+        capacity: 'cargo de chefia',
+        fullTime: 'tempo integral',
+        start: 'início',
+        end: 'fim',
+        business: {
+          country: 'país da empresa própria',
+          operatingSince: 'início das atividades da empresa própria',
+          employees: 'funcionários da empresa própria',
+        },
+      },
+      jobOffer: {
+        country: 'país da oferta',
+        sector: 'área da oferta',
+        temporary: 'oferta temporária',
+        occupation: 'ocupação da oferta',
+        annualSalary: 'salário bruto por ano',
+        sponsored: 'patrocínio da empresa para o visto',
+      },
+      residencePeriod: {
+        country: 'país',
+        basis: 'situação legal',
+        start: 'início',
+        end: 'fim',
+      },
     },
     collection: {
       unit: {
         members: 'as pessoas da unidade',
         dependents: 'os dependentes da unidade',
       },
+      person: {
+        workPeriods: 'os trabalhos da pessoa avaliada',
+        qualifications: 'as formações da pessoa avaliada',
+        registrations: 'os registros profissionais da pessoa avaliada',
+        jobOffers: 'as ofertas de emprego da pessoa avaliada',
+        residencePeriods: 'os períodos de residência da pessoa avaliada',
+      },
       principal: {
         ancestors: 'os ascendentes do requerente principal',
+        workPeriods: 'os trabalhos do requerente principal',
+        qualifications: 'as formações do requerente principal',
+        registrations: 'os registros profissionais do requerente principal',
+        jobOffers: 'as ofertas de emprego do requerente principal',
+        residencePeriods: 'os períodos de residência do requerente principal',
       },
       lineage: {
         links: 'os elos da linha de ascendência',
@@ -1793,6 +2143,8 @@ export const ptBR = {
       some: 'Pelo menos um item, entre {over}{generations},',
       every: 'Cada item, entre {over}{generations},',
       sum: 'Soma, entre {over}{generations},',
+      covers:
+        '{continuous, select, true {Pelo menos {atLeast} sem interrupção} other {Pelo menos {atLeast} no total}}{windowed, select, true { nos últimos {window}} other {}}, entre {over},',
     },
     where: 'em que:',
     ofValue: 'do valor:',
@@ -1956,7 +2308,34 @@ export const ptBR = {
         unlinked: 'alguém que não está mais conectado a você',
         confirmState: 'Conferi, pode usar esta lista',
       },
-      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} moved {Pronto, seus documentos já usam a chave nova.} opened {A chave antiga está aberta neste dispositivo.} other {Pronto.}}',
+      /** Document countries: the destinations an owner files documents under, as a label. */
+      countries: {
+        label: 'Países',
+        lead: 'Separe os documentos pelo país de destino. O mesmo documento pode ficar em mais de um país, e o arquivo fica guardado uma vez só.',
+        all: 'Todos',
+        allTitle: 'Todos os documentos',
+        unfiled: 'Sem país',
+        tally: '{count, plural, one {documento} other {documentos}}',
+        choose: 'Escolher um país',
+        chooseLabel: 'Separar documentos para qual país?',
+        countryLead:
+          'O que você adicionar aqui já entra neste país. Um documento que serve para outro país também pode ficar nos dois.',
+        emptyCountry:
+          'Nenhum documento neste país ainda. Adicione um novo ou traga um que já está no cofre.',
+        emptyUnfiled: 'Todos os documentos do cofre já estão em algum país.',
+        bring: 'Trazer do cofre',
+        bringLegend: 'Marque os documentos do cofre que você também vai usar neste país.',
+        bringNone: 'Todos os seus documentos já estão neste país.',
+        bringLimit: 'Dá para trazer até {count} documentos de cada vez.',
+        bringSubmit:
+          '{count, plural, =0 {Trazer} one {Trazer 1 documento} other {Trazer # documentos}}',
+        bringCancel: 'Cancelar',
+        of: 'Países deste documento',
+        remove: 'Tirar {country} deste documento',
+        useIn: 'Usar em outro país',
+        useInLabel: 'Usar “{name}” em qual país?',
+      },
+      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} moved {Pronto, seus documentos já usam a chave nova.} opened {A chave antiga está aberta neste dispositivo.} brought {Documentos trazidos do cofre para este país.} filed {País adicionado ao documento.} unfiled {País tirado do documento. O arquivo continua no cofre.} other {Pronto.}}',
       failure:
         '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} not_shared {O compartilhamento não foi salvo. Alguém pode ter perdido a conexão com você. Atualize a página e tente de novo.} sharing_invalid {Compartilhar está desligado porque a lista de compartilhamento não confere.} nothing_retained {Este cofre não tem chave antiga para abrir.} wrong_secret {Esse segredo não abre a chave antiga. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     },
@@ -2225,6 +2604,7 @@ export const ptBR = {
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',
+      vaultDocumentCountries: 'Países em que você separou seus documentos',
       vaultDocumentReplacements: 'Novas versões de documentos ainda não confirmadas',
       vaultDiscardedObjects: 'Arquivos de documentos apagados, aguardando a limpeza diária',
       vaultEnvelopes: 'Envelopes do cofre',
@@ -2242,6 +2622,7 @@ export const ptBR = {
       caseAssets: 'Bens',
       caseRelationships: 'Vínculos familiares',
       caseShares: 'Com quem você compartilhou dados',
+      checklistMarks: 'O que você marcou nas listas de documentos',
       ruleReports: 'Avisos de regra errada que você enviou',
       correctionRequests: 'Pedidos de correção de regra que você enviou',
       correctionSources: 'Links, textos e arquivos dos seus pedidos de correção',
@@ -2251,6 +2632,8 @@ export const ptBR = {
       aiKeys: 'Quando você salvou ou removeu uma chave de API de IA',
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
+      planMoves: 'As mudanças do plano da família em que a pessoa vai como requerente principal',
+      planMoveDependents: 'As mudanças do plano da família em que a pessoa vai junto',
     },
   },
   /** The country picker: a search over the countries, each with its flag. */
@@ -2297,4 +2680,8 @@ export const ptBR = {
     YUCS: 'Iugoslávia',
     ZRCD: 'Zaire',
   },
+  occupationGroups,
+  occupations,
+  studyFieldGroups,
+  studyFields,
 } as const;

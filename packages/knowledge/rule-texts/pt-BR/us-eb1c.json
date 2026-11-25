@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb1c",
+  "texts": [
+    {
+      "en": "EB-1C multinational manager or executive: employer petition, no labor certification (permanent residence)",
+      "text": "EB-1C, gerente ou executivo de multinacional: petição do empregador, sem certificação trabalhista (residência permanente)"
+    },
+    {
+      "en": "Employed abroad for at least 1 year, in the 3 years before the petition or before entering the U.S. to work for the same employer, as a manager or executive by the firm or its affiliate or subsidiary",
+      "text": "Trabalhou no exterior por pelo menos 1 ano, nos 3 anos antes da petição ou antes de entrar nos EUA para trabalhar para o mesmo empregador, como gerente ou executivo da empresa ou de sua coligada ou subsidiária"
+    },
+    {
+      "en": "The U.S. employer is the same employer as the one abroad, or its subsidiary or affiliate, and is multinational: it or a related entity does business in the U.S. and at least one other country",
+      "text": "O empregador nos EUA é o mesmo do exterior, ou sua subsidiária ou coligada, e é multinacional: ele ou uma entidade ligada faz negócios nos EUA e em pelo menos mais um país"
+    },
+    {
+      "en": "The U.S. employer has been doing business for at least 1 year when it files, so an office opened on an L-1A must first run for a year",
+      "text": "O empregador nos EUA faz negócios há pelo menos 1 ano quando protocola, então um escritório aberto com L-1A precisa funcionar um ano antes"
+    },
+    {
+      "en": "The U.S. employer offers, in a statement describing the duties, a job that is primarily managerial or executive; no labor certification is needed",
+      "text": "O empregador nos EUA oferece, numa declaração que descreve as funções, um cargo principalmente gerencial ou executivo; não é preciso certificação trabalhista"
+    },
+    {
+      "en": "Form I-140 immigrant petition fee, paid by the U.S. employer that files it",
+      "text": "Taxa da petição de imigrante Form I-140, paga pelo empregador nos EUA que a protocola"
+    },
+    {
+      "en": "Asylum Program Fee paid with every Form I-140 (USD 300 for a small employer, none for a nonprofit)",
+      "text": "Asylum Program Fee paga com todo Form I-140 (USD 300 para pequeno empregador, nada para entidade sem fins lucrativos)"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for the principal, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para o requerente principal, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for each accompanying family member, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+    },
+    {
+      "en": "USCIS immigrant fee for the principal, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para o requerente principal, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para cada familiar que acompanha, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "Form I-485 to adjust status, for the principal, when the family lives in the U.S. in a status that allows adjusting there instead of a visa abroad",
+      "text": "Form I-485 para ajuste de status, para o requerente principal, quando a família mora nos EUA num status que permite o ajuste lá, em vez do visto no exterior"
+    },
+    {
+      "en": "Form I-485 to adjust status, for each family member living in the U.S. with the principal (USD 950 for a child under 14 filing with a parent)",
+      "text": "Form I-485 para ajuste de status, para cada familiar que mora nos EUA com o requerente principal (USD 950 para filho menor de 14 anos que pede junto com um dos pais)"
+    }
+  ]
+}

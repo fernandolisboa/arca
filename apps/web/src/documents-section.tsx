@@ -4,20 +4,33 @@ import { WrongRecoverySecret } from '@arca/vault';
 import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { useId, useRef, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FlagLead } from './country-flag.js';
+import { BringFromVault, CountryRail, DocumentCountryChips } from './country-shelves.js';
+import {
+  allDocuments,
+  countryShelves,
+  documentsToBring,
+  inView,
+  unfiledDocuments,
+  type CountryView,
+} from './document-countries.js';
 import {
   addDocument,
   deleteDocument,
   DocumentNotOpened,
   documentsQuery,
   DocumentTooLarge,
+  fileUnderCountry,
   ReplacementRefused,
   saveDocument,
   type OpenedDocument,
 } from './documents.js';
+import type { CountryOptionGroup } from './forms/country-field.js';
 import { recoveryCodeInput } from './forms/inputs.js';
 import { TextField } from './forms/text-field.js';
 import { dangerLinkClass, textLinkClass } from './forms/text-link.js';
 import { filePicking, passkeys } from './platform.js';
+import { useNames } from './questions/editors.js';
 import { commonFailure, type CommonFailure } from './requests.js';
 import { SharePanel } from './share-panel.js';
 import {
@@ -33,7 +46,17 @@ import { NothingRetained, openRetained, type SecretNeeded } from './vault.js';
 import { vaultDevice } from './vault-device.js';
 import type { UnlockedVault } from './vault-session.js';
 
-type Done = 'added' | 'saved' | 'deleted' | 'shared' | 'confirmed' | 'moved' | 'opened';
+type Done =
+  | 'added'
+  | 'saved'
+  | 'deleted'
+  | 'shared'
+  | 'confirmed'
+  | 'moved'
+  | 'opened'
+  | 'brought'
+  | 'filed'
+  | 'unfiled';
 type DocumentFailure =
   | CommonFailure
   | 'too_large'
@@ -201,6 +224,14 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
   const [waiting, setWaiting] = useState(false);
   const [outcome, setOutcome] = useState<{ done: Done } | { failure: DocumentFailure }>();
   const statusRef = useRef<HTMLParagraphElement>(null);
+  const names = useNames();
+  const [view, setView] = useState<CountryView>(allDocuments);
+  const [bringing, setBringing] = useState(false);
+  const country = view === allDocuments || view === unfiledDocuments ? undefined : view;
+  const show = (next: CountryView) => {
+    setView(next);
+    setBringing(false);
+  };
 
   const change = (run: () => Promise<boolean>, done: Done, refresh: boolean) => {
     setOutcome(undefined);
@@ -234,7 +265,7 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       async () => {
         const [file] = await picker.pick();
         if (file === undefined) return false;
-        await addDocument(passkeys, vault, file, t('vault.documents.fallbackName'));
+        await addDocument(passkeys, vault, file, t('vault.documents.fallbackName'), country);
         return true;
       },
       'added',
@@ -250,12 +281,27 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
         ? t('vault.documents.done', { done: outcome.done })
         : failureMessage(outcome.failure);
 
-  const documentNames = names(documents.data ?? []);
-  const stale = (documents.data ?? []).filter(
+  const opened = documents.data?.opened ?? [];
+  const documentNames = namesOf(opened);
+  const stale = opened.filter(
     ({ document, stale: old }) => old && document.ownerId === vault.accountId,
   );
-  const unopened =
-    vault.retained.length === 0 && (documents.data ?? []).some(({ label }) => label === undefined);
+  const unopened = vault.retained.length === 0 && opened.some(({ label }) => label === undefined);
+  const shelves = countryShelves(opened, view);
+  const shown = inView(opened, view);
+  const countryGroups: readonly CountryOptionGroup[] = [
+    { options: names.countryOptions(documents.data?.countries ?? []) },
+  ];
+  const file = (documentIds: readonly string[], code: string, filed: boolean, done: Done) => {
+    change(
+      async () => {
+        await fileUnderCountry(passkeys, documentIds, code, filed);
+        return true;
+      },
+      done,
+      true,
+    );
+  };
 
   const move = () => {
     if (sharing.data === undefined) return;
@@ -275,13 +321,6 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
       <h3 id="documents-title" className="text-title font-medium">
         {t('vault.documents.title')}
       </h3>
-      {filePicking === undefined ? (
-        <p className="text-muted">{t('vault.documents.cannotPick')}</p>
-      ) : (
-        <Button disabled={waiting} aria-busy={waiting} onClick={add}>
-          {t('vault.documents.add')}
-        </Button>
-      )}
       <p
         ref={statusRef}
         role="status"
@@ -321,73 +360,159 @@ export function DocumentsSection({ vault }: { readonly vault: UnlockedVault }) {
           </Button>
         </div>
       )}
-      {documents.isSuccess &&
-        (documents.data.length === 0 ? (
-          <p className="text-muted">{t('vault.documents.empty')}</p>
-        ) : (
-          <ul aria-label={t('vault.documents.title')} className="flex w-full flex-col gap-3">
-            {documents.data.map((opened) => (
-              <DocumentRow
-                key={opened.document.id}
-                opened={opened}
-                names={documentNames}
-                own={opened.document.ownerId === vault.accountId}
+      {documents.isSuccess && (
+        <div className="grid w-full grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+          <CountryRail
+            shelves={shelves}
+            view={view}
+            countryName={names.country}
+            groups={countryGroups}
+            onView={show}
+          />
+          <div className="flex min-w-0 flex-col items-start gap-3">
+            <h4 className="font-medium">
+              {country === undefined ? (
+                t(
+                  view === allDocuments
+                    ? 'vault.documents.countries.allTitle'
+                    : 'vault.documents.countries.unfiled',
+                )
+              ) : (
+                <>
+                  <FlagLead code={country} />
+                  {names.country(country)}
+                </>
+              )}
+            </h4>
+            <p className="max-w-prose text-muted">
+              {t(
+                country === undefined
+                  ? 'vault.documents.countries.lead'
+                  : 'vault.documents.countries.countryLead',
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {filePicking === undefined ? (
+                <p className="text-muted">{t('vault.documents.cannotPick')}</p>
+              ) : (
+                <Button disabled={waiting} aria-busy={waiting} onClick={add}>
+                  {t('vault.documents.add')}
+                </Button>
+              )}
+              {country !== undefined && !bringing && (
+                <button
+                  type="button"
+                  disabled={waiting}
+                  className={textLinkClass}
+                  onClick={() => {
+                    setBringing(true);
+                  }}
+                >
+                  {t('vault.documents.countries.bring')}
+                </button>
+              )}
+            </div>
+            {country !== undefined && bringing && (
+              <BringFromVault
+                candidates={documentsToBring(opened, country, vault.accountId).flatMap(
+                  ({ document, label }) =>
+                    label === undefined ? [] : [{ id: document.id, name: label.name }],
+                )}
                 disabled={waiting}
-                onSave={() => {
-                  change(
-                    async () => {
-                      await saveDocument(passkeys, vault, opened);
-                      return true;
-                    },
-                    'saved',
-                    false,
-                  );
+                onBring={(documentIds) => {
+                  setBringing(false);
+                  file(documentIds, country, true, 'brought');
                 }}
-                sharing={sharing}
-                onShare={(chosen, accepted) => {
-                  if (sharing.data === undefined) return;
-                  const current = sharing.data;
-                  change(
-                    async () => {
-                      await shareDocument(passkeys, vault, current, opened, chosen, accepted);
-                      return true;
-                    },
-                    'shared',
-                    true,
-                  );
-                }}
-                onConfirmState={() => {
-                  if (sharing.data === undefined) return;
-                  const { view } = sharing.data;
-                  change(
-                    async () => {
-                      await confirmSharingState(passkeys, vault, view);
-                      return true;
-                    },
-                    'confirmed',
-                    true,
-                  );
-                }}
-                onDelete={() => {
-                  change(
-                    async () => {
-                      await deleteDocument(passkeys, opened.document.id);
-                      return true;
-                    },
-                    'deleted',
-                    true,
-                  );
+                onCancel={() => {
+                  setBringing(false);
                 }}
               />
-            ))}
-          </ul>
-        ))}
+            )}
+            {shown.length === 0 ? (
+              <p className="text-muted">
+                {t(
+                  country !== undefined
+                    ? 'vault.documents.countries.emptyCountry'
+                    : view === unfiledDocuments
+                      ? 'vault.documents.countries.emptyUnfiled'
+                      : 'vault.documents.empty',
+                )}
+              </p>
+            ) : (
+              <ul
+                aria-label={t('vault.documents.title')}
+                className="grid w-full gap-3 2xl:grid-cols-2"
+              >
+                {shown.map((opened) => (
+                  <DocumentRow
+                    key={opened.document.id}
+                    opened={opened}
+                    names={documentNames}
+                    countryName={names.country}
+                    countryGroups={countryGroups}
+                    onCountry={(code, filed) => {
+                      file([opened.document.id], code, filed, filed ? 'filed' : 'unfiled');
+                    }}
+                    own={opened.document.ownerId === vault.accountId}
+                    disabled={waiting}
+                    onSave={() => {
+                      change(
+                        async () => {
+                          await saveDocument(passkeys, vault, opened);
+                          return true;
+                        },
+                        'saved',
+                        false,
+                      );
+                    }}
+                    sharing={sharing}
+                    onShare={(chosen, accepted) => {
+                      if (sharing.data === undefined) return;
+                      const current = sharing.data;
+                      change(
+                        async () => {
+                          await shareDocument(passkeys, vault, current, opened, chosen, accepted);
+                          return true;
+                        },
+                        'shared',
+                        true,
+                      );
+                    }}
+                    onConfirmState={() => {
+                      if (sharing.data === undefined) return;
+                      const { view } = sharing.data;
+                      change(
+                        async () => {
+                          await confirmSharingState(passkeys, vault, view);
+                          return true;
+                        },
+                        'confirmed',
+                        true,
+                      );
+                    }}
+                    onDelete={() => {
+                      change(
+                        async () => {
+                          await deleteDocument(passkeys, opened.document.id);
+                          return true;
+                        },
+                        'deleted',
+                        true,
+                      );
+                    }}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
 
 /** Each opened document's name by ID, for the rolled-back sharing list. */
-const names = (opened: readonly OpenedDocument[]): ReadonlyMap<string, string> =>
+const namesOf = (opened: readonly OpenedDocument[]): ReadonlyMap<string, string> =>
   new Map(
     opened.flatMap(({ document, label }) =>
       label === undefined ? [] : [[document.id, label.name] as const],
@@ -400,6 +525,9 @@ function DocumentRow({
   own,
   disabled,
   sharing,
+  countryName,
+  countryGroups,
+  onCountry,
   onSave,
   onShare,
   onConfirmState,
@@ -409,6 +537,9 @@ function DocumentRow({
   readonly names: ReadonlyMap<string, string>;
   readonly own: boolean;
   readonly disabled: boolean;
+  readonly countryName: (code: string) => string;
+  readonly countryGroups: readonly CountryOptionGroup[];
+  readonly onCountry: (country: string, filed: boolean) => void;
   readonly sharing: UseQueryResult<Sharing>;
   readonly onSave: () => void;
   readonly onShare: (chosen: ReadonlySet<string>, accepted: ReadonlySet<string>) => void;
@@ -442,6 +573,15 @@ function DocumentRow({
       ) : (
         <p className="text-small text-muted">{t('vault.documents.sharedWithYou')}</p>
       )}
+      <DocumentCountryChips
+        countries={document.countries}
+        name={label?.name ?? t('vault.documents.unnamed')}
+        editable={own}
+        disabled={disabled}
+        countryName={countryName}
+        groups={countryGroups}
+        onChange={onCountry}
+      />
       <div className="flex flex-wrap gap-x-6">
         {label !== undefined && (
           <button

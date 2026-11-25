@@ -1,20 +1,32 @@
-import { type Duration, durationParts, durationUnits } from '../calendar/duration.js';
+import { orderedDurationRange } from '../calendar/duration.js';
+import { classifications } from '../case/facts.js';
 import type { CurrencyCode } from '../money/currency.js';
 import {
   type CheckContext,
   type CheckIssue,
   type CheckScope,
+  type PinnedClassifications,
   ageNeedsLeapDay,
   checkExpression,
 } from './check.js';
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import { type CountrySet, type RouteVersion, type Source, routeCountry } from './route-version.js';
+import {
+  type AppliesTo,
+  type CountrySet,
+  type RouteVersion,
+  type Source,
+  routeCountry,
+} from './route-version.js';
 
 const requirementScope: CheckScope = { current: true, unit: true, edge: false };
 const dependentScope: CheckScope = { current: true, unit: false, edge: true, firstEdge: true };
 const lastEdgeScope: CheckScope = { current: true, unit: false, edge: true };
 const perDependentScope: CheckScope = { current: true, unit: true, edge: true };
+
+/** What a cost or document item may read: the dependent and their edge only when it is per dependent. */
+const itemScope = (appliesTo: AppliesTo): CheckScope =>
+  appliesTo === 'each_dependent' ? perDependentScope : requirementScope;
 
 /** The longest path whose condition may read `firstEdge.*`. */
 export const maxFirstEdgeSteps = 2;
@@ -111,12 +123,14 @@ export function checkOfficialSources(
 /**
  * Checks what the schema cannot (spec 0002, R4): references between parts of the version, source
  * kinds, the shape of a closed version, and every expression against the fact catalog. Returns
- * the issues; none means valid.
+ * the issues; none means valid. `pinnedCodes` holds the codes of the classification files the
+ * version pins, read only for the ones it pins.
  */
 export function checkRouteVersion(
   version: RouteVersion,
   official: OfficialHosts,
   countries: PinnedCountries,
+  pinnedCodes: PinnedClassifications = {},
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
@@ -136,6 +150,7 @@ export function checkRouteVersion(
     ['dependents', version.dependents.map((entry) => entry.id)],
     ['costs', version.costs.map((entry) => entry.id)],
     ['durations', version.durations.map((entry) => entry.id)],
+    ['documents', (version.documents ?? []).map((entry) => entry.id)],
     ['countrySets', version.countrySets.map((pin) => pin.id)],
   ] as const) {
     if (new Set(ids).size !== ids.length) issue(`/${kind}`, 'IDs are unique');
@@ -153,10 +168,14 @@ export function checkRouteVersion(
       version.requirements.length +
         version.assessments.length +
         version.dependents.length +
-        version.costs.length >
+        version.costs.length +
+        (version.documents?.length ?? 0) >
       0
     ) {
-      issue('', 'A closed version has no requirements, assessments, dependents or costs');
+      issue(
+        '',
+        'A closed version has no requirements, assessments, dependents, costs or documents',
+      );
     }
     if (version.closureSources === undefined)
       issue('/closureSources', 'A closure cites its sources');
@@ -184,6 +203,14 @@ export function checkRouteVersion(
     countries: countries.current,
     formerCountries: countries.former,
     formerCountrySets: countries.setsWithFormer,
+    // Only what the version pins: a code read under a classification it does not pin is refused.
+    classifications: Object.fromEntries(
+      classifications.flatMap((name) =>
+        version[name] === undefined || pinnedCodes[name] === undefined
+          ? []
+          : [[name, pinnedCodes[name]]],
+      ),
+    ),
   };
   const expressions: Expression[] = [];
   const expect = (
@@ -239,15 +266,22 @@ export function checkRouteVersion(
   });
   version.costs.forEach((cost, index) => {
     const path = `/costs/${String(index)}`;
-    const scope = cost.appliesTo === 'each_dependent' ? perDependentScope : requirementScope;
+    const scope = itemScope(cost.appliesTo);
     cites(`${path}/sources`, cost.sources);
     expect(cost.amount, scope, `${path}/amount`, { kind: 'number', currency: version.currency });
     if (cost.condition !== undefined) expect(cost.condition, scope, `${path}/condition`, condition);
   });
+  version.documents?.forEach((document, index) => {
+    const path = `/documents/${String(index)}`;
+    cites(`${path}/sources`, document.sources);
+    if (document.condition !== undefined) {
+      expect(document.condition, itemScope(document.appliesTo), `${path}/condition`, condition);
+    }
+  });
   version.durations.forEach((stage, index) => {
     const path = `/durations/${String(index)}`;
     cites(`${path}/sources`, stage.sources);
-    if (!orderedRange(stage.min, stage.max)) {
+    if (!orderedDurationRange(stage.min, stage.max)) {
       issue(path, 'A duration range uses one unit and its minimum is not above its maximum');
     }
   });
@@ -257,12 +291,4 @@ export function checkRouteVersion(
     issue('', `A version has at most ${String(maxNodesPerVersion)} expression nodes`);
   }
   return issues;
-}
-
-function orderedRange(min: Duration, max: Duration): boolean {
-  const units = new Set([...durationUnits(min), ...durationUnits(max)]);
-  if (units.size !== 1) return false;
-  const [unit] = units;
-  if (unit === undefined) return false;
-  return durationParts(min)[unit] <= durationParts(max)[unit];
 }

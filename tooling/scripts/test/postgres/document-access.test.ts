@@ -63,6 +63,11 @@ beforeAll(async () => {
       [shared, owner, unshared, strangers, hash, objectKey(), objectKey(), stranger, objectKey()],
     );
     await client.query(
+      `INSERT INTO vault.document_country (document_id, owner_id, country)
+       VALUES ($1, $2, 'PT'), ($1, $2, 'US')`,
+      [shared, owner],
+    );
+    await client.query(
       `INSERT INTO vault.document_recipient (document_id, document_owner_id, recipient_id)
        VALUES ($1, $2, $3)`,
       [shared, owner, friend],
@@ -86,6 +91,7 @@ const tables = {
     'created_at',
     'confirmed_at',
   ],
+  'vault.document_country': ['document_id', 'owner_id', 'country', 'created_at'],
   'vault.document_recipient': ['document_id', 'document_owner_id', 'recipient_id', 'created_at'],
   'vault.document_replacement': [
     'document_id',
@@ -200,6 +206,11 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
         UPDATE: ['size', 'sha256', 'object_key', 'label', 'confirmed_at'],
         DELETE: ['*'],
       },
+      'vault.document_country': {
+        SELECT: tables['vault.document_country'],
+        INSERT: ['document_id', 'owner_id', 'country'],
+        DELETE: ['*'],
+      },
       'vault.document_recipient': {
         SELECT: tables['vault.document_recipient'],
         INSERT: ['document_id', 'document_owner_id', 'recipient_id'],
@@ -226,6 +237,7 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       account: { USAGE: ['*'] },
       'account.link': readAndDelete('account.link'),
       'vault.document': readAndDelete('vault.document'),
+      'vault.document_country': readAndDelete('vault.document_country'),
       'vault.document_recipient': readAndDelete('vault.document_recipient'),
       'vault.document_replacement': readAndDelete('vault.document_replacement'),
       'vault.discarded_object': readAndDelete('vault.discarded_object'),
@@ -240,6 +252,7 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       account: {},
       'account.link': {},
       'vault.document': {},
+      'vault.document_country': {},
       'vault.document_recipient': {},
       'vault.document_replacement': {},
       'vault.discarded_object': {},
@@ -484,6 +497,81 @@ describe('the documents and account links access matrix (spec 0005, R4)', () => 
       ).toEqual([]);
       expect(await as('app_jobs', friend, documents)).toEqual([]);
       expect(await as('app_jobs', stranger, documents)).toEqual([strangers]);
+    });
+  });
+
+  describe('document countries', () => {
+    const countries = (client: pg.Client) =>
+      column(
+        client,
+        `SELECT document_id || '>' || country AS value FROM vault.document_country ORDER BY 1`,
+      );
+    const file = (documentId: string, documentOwner: string, country: string) =>
+      [
+        `INSERT INTO vault.document_country (document_id, owner_id, country) VALUES ($1, $2, $3)`,
+        [documentId, documentOwner, country],
+      ] as [string, unknown[]];
+
+    it("shows a document's countries to its owner only, never to an account it is shared with", async () => {
+      expect(await as('app_api', owner, countries)).toEqual([`${shared}>PT`, `${shared}>US`]);
+      expect(await as('app_api', friend, countries)).toEqual([]);
+      expect(await as('app_api', stranger, countries)).toEqual([]);
+      expect(await as('app_api', undefined, countries)).toEqual([]);
+    });
+
+    it('lets only the owner file a document under a country or take it off', async () => {
+      expect(
+        await as('app_api', owner, async (client) => {
+          await client.query(...file(unshared, owner, 'BR'));
+          await client.query(`DELETE FROM vault.document_country WHERE country = 'PT'`);
+          return countries(client);
+        }),
+      ).toEqual([`${shared}>US`, `${unshared}>BR`].sort());
+      await expect(
+        as('app_api', friend, (client) => client.query(...file(shared, owner, 'BR'))),
+      ).rejects.toThrow(/row-level security/);
+      // Naming itself as the owner of a document shared with it fails the composite key.
+      await expect(
+        as('app_api', friend, (client) => client.query(...file(shared, friend, 'BR'))),
+      ).rejects.toThrow(/document_country_document_fkey/);
+      // Even for a country the owner filed it under, so no error tells which countries those are.
+      await expect(
+        as('app_api', friend, (client) => client.query(...file(shared, friend, 'PT'))),
+      ).rejects.toThrow(/document_country_document_fkey/);
+      const remove = (client: pg.Client) =>
+        client.query(`DELETE FROM vault.document_country`).then(({ rowCount }) => rowCount);
+      expect(await as('app_api', friend, remove)).toBe(0);
+      expect(await as('app_api', stranger, remove)).toBe(0);
+    });
+
+    it('refuses a country that is not a code, and the same country twice', async () => {
+      for (const country of ['Portugal', 'pt', 'P,', 'BRA']) {
+        await expect(
+          as('app_api', owner, (client) => client.query(...file(unshared, owner, country))),
+        ).rejects.toThrow(/document_country_code/);
+      }
+      await expect(
+        as('app_api', owner, (client) => client.query(...file(shared, owner, 'PT'))),
+      ).rejects.toThrow(/document_country_pkey/);
+    });
+
+    it("goes with its document, and lets app_jobs erase only the owner's", async () => {
+      const left = await withClient(adminTarget(database), async (client) => {
+        await client.query('BEGIN');
+        try {
+          await client.query(`DELETE FROM vault.document WHERE id = $1`, [shared]);
+          return await countries(client);
+        } finally {
+          await client.query('ROLLBACK');
+        }
+      });
+      expect(left).toEqual([]);
+      const erase = (client: pg.Client) =>
+        client.query(`DELETE FROM vault.document_country`).then(({ rowCount }) => rowCount);
+      expect(await as('app_jobs', friend, erase)).toBe(0);
+      expect(await as('app_jobs', stranger, erase)).toBe(0);
+      expect(await as('app_jobs', owner, countries)).toEqual([`${shared}>PT`, `${shared}>US`]);
+      expect(await as('app_jobs', owner, erase)).toBe(2);
     });
   });
 

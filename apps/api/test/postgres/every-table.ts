@@ -134,6 +134,10 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [sharedId, sharerId, accountId],
     );
     await insert(
+      `INSERT INTO vault.document_country (document_id, owner_id, country) VALUES ($1, $2, 'PT')`,
+      [ownedId, accountId],
+    );
+    await insert(
       `INSERT INTO vault.document_replacement
          (document_id, owner_id, size, sha256, object_key, label, recipients)
        VALUES ($1, $2, 512, $3, $4, decode('01', 'hex'), '{}')`,
@@ -213,6 +217,13 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO cases.share (case_id, person_id, grantee_account_id, scope) VALUES ($1, $2, $3, 'profile')`,
       [caseId, childId, sharerId],
     );
+    // The relative's keeper marks the same item, so the export holds only the account's mark.
+    await insert(
+      `INSERT INTO cases.checklist_mark
+         (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+       VALUES ($1, $2, 'pt-d7', 'passport', 'had', $3, $4), ($1, $5, 'pt-d7', 'passport', 'missing', NULL, NULL)`,
+      [caseId, childId, ownedId, accountId, relativeId],
+    );
     await insert(
       `INSERT INTO cases.asset (id, case_id, kind, value_amount, value_currency, valued_at)
        VALUES ($1, $2, 'cash', 1000, 'BRL', '2026-01-01')`,
@@ -250,6 +261,16 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
     await insert(
       `INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`,
       [correctionId],
+    );
+    const moveId = randomUUID();
+    await insert(
+      `INSERT INTO cases.plan_move (id, case_id, position, stage, route_id, principal_id)
+       VALUES ($1, $2, 0, 1, 'qm-sample', $3)`,
+      [moveId, caseId, selfId],
+    );
+    await insert(
+      `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+      [moveId, caseId, childId],
     );
     await insert(
       `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)

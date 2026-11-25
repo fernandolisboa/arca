@@ -70,6 +70,40 @@ describe('decisiveQuestions (spec 0007, R6)', () => {
     ]);
   });
 
+  it('asks an unanswered list of records, and a fact of one of its items, as the list question', () => {
+    const unanswered: MissingFact = { kind: 'records', personId: 'p1', list: 'workPeriods' };
+    const start: MissingFact = { kind: 'fact', reference: 'workPeriod.start', personId: 'p1' };
+    expect(
+      decisiveQuestions(
+        [{ missingFacts: [unanswered] }, { missingFacts: [start] }],
+        new Set(['p1']),
+      ),
+    ).toEqual([{ personId: 'p1', question: 'workPeriods', decides: 2, kept: true }]);
+  });
+
+  it('asks a business fact of a work period as the work periods, which link it, and the assets, which describe it', () => {
+    const since: MissingFact = {
+      kind: 'fact',
+      reference: 'workPeriod.business.operatingSince',
+      personId: 'p1',
+    };
+    expect(decisiveQuestions([{ missingFacts: [since] }], new Set(['p1']))).toEqual([
+      { personId: 'p1', question: 'workPeriods', decides: 1, kept: true },
+      { personId: 'p1', question: 'assets', decides: 1, kept: true },
+    ]);
+  });
+
+  it('asks unanswered residence periods, and a fact of one of them, as the residence question', () => {
+    const unanswered: MissingFact = { kind: 'records', personId: 'p1', list: 'residencePeriods' };
+    const basis: MissingFact = { kind: 'fact', reference: 'residencePeriod.basis', personId: 'p1' };
+    expect(
+      decisiveQuestions(
+        [{ missingFacts: [unanswered] }, { missingFacts: [basis] }],
+        new Set(['p1']),
+      ),
+    ).toEqual([{ personId: 'p1', question: 'residencePeriods', decides: 2, kept: true }]);
+  });
+
   it("asks a lineage fact about the child of the next person in the line, not the ancestor's", () => {
     const line = ['grandparent', 'parent', 'p1'];
     const read = (reference: string): MissingFact => ({
@@ -149,6 +183,17 @@ describe('routeResult (spec 0007, R6)', () => {
       true,
     ]);
     expect(shown.costs[0]?.min).toEqual({ amount: '100', currency: 'EUR' });
+    // The principal's fee is certain; a family member not yet recorded may owe theirs on top.
+    expect(shown.totals).toMatchObject([
+      {
+        currency: 'EUR',
+        certain: {
+          min: { amount: '100', currency: 'EUR' },
+          max: { amount: '100', currency: 'EUR' },
+        },
+        possibleExtra: { max: null },
+      },
+    ]);
     expect(decisiveQuestions([shown], new Set(['p1'])).length).toBeGreaterThan(0);
   });
 

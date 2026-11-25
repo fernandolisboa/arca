@@ -15,12 +15,19 @@ import {
   countryCodeSchema,
   coupleEdgeSchema,
   custodies,
+  educationLevelSchema,
   immigrationEventKinds,
   incomeKinds,
   isicSections,
   languageLevels,
+  occupationCodeSchema,
   parentKinds,
+  studyFieldCodeSchema,
+  residenceBases,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
+import { displayNameSchema } from './storage.js';
 
 /**
  * The case read back as sentences (spec 0007, R5): each a kind and typed values, never text, so
@@ -54,17 +61,59 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
   }),
   sentence('noCitizenship', { person }),
   sentence('residence', { person, country: countryCodeSchema }),
-  sentence('education', { person, level: z.number().int().min(0).max(8) }),
+  sentence('education', { person, level: educationLevelSchema }),
   sentence('studying', { person, studying: z.boolean() }),
   sentence('language', { person, language: z.string(), level: z.enum(languageLevels) }),
   sentence('noLanguage', { person }),
+  sentence('qualification', {
+    person,
+    level: educationLevelSchema.optional(),
+    field: studyFieldCodeSchema.optional(),
+    country: countryCodeSchema.optional(),
+    completed: dateValueSchema.optional(),
+  }),
+  sentence('noQualification', { person }),
   sentence('jobOffer', {
     person,
     country: countryCodeSchema,
     sector: z.enum(isicSections as [string, ...string[]]),
     temporary: z.boolean(),
+    occupation: occupationCodeSchema.optional(),
+    annualSalary: amountSchema.optional(),
+    sponsored: z.boolean().optional(),
   }),
   sentence('noJobOffer', { person }),
+  sentence('workPeriod', {
+    person,
+    /** The person's own name for the work period, added by whoever sees their profile; never a model's. */
+    label: displayNameSchema.optional(),
+    occupation: occupationCodeSchema.optional(),
+    relation: z.enum(workRelations).optional(),
+    capacity: z.enum(workCapacities).optional(),
+    fullTime: z.boolean().optional(),
+    employerCountry: countryCodeSchema.optional(),
+    workplaceCountry: countryCodeSchema.optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNone.optional(),
+    /** At a business the person owns, which the assets describe. */
+    atOwnBusiness: z.literal(true).optional(),
+  }),
+  sentence('noWorkPeriod', { person }),
+  sentence('registration', {
+    person,
+    country: countryCodeSchema.optional(),
+    occupation: occupationCodeSchema.optional(),
+    since: dateValueSchema.optional(),
+  }),
+  sentence('noRegistration', { person }),
+  sentence('residencePeriod', {
+    person,
+    country: countryCodeSchema,
+    basis: z.enum(residenceBases).optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNone.optional(),
+  }),
+  sentence('noResidencePeriod', { person }),
   sentence('immigrationEvent', {
     person,
     country: countryCodeSchema,
@@ -103,6 +152,9 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     owners: z.array(z.strictObject({ person, share: decimalSchema })).min(1),
     liquid: z.boolean().optional(),
     sold: dateOrNone.optional(),
+    country: countryCodeSchema.optional(),
+    operatingSince: dateValueSchema.optional(),
+    employees: z.number().int().min(0).optional(),
   }),
 ]);
 
@@ -174,6 +226,17 @@ function describePerson(
   for (const { id: question, scope, key } of factQuestions) {
     if (!visible[scope]) continue;
     const ask = { question, about, person: id };
+    /** A list read back: unanswered when absent, one sentence for none, else one per item. */
+    const records = <Item>(
+      items: readonly Item[] | undefined,
+      none:
+        'noWorkPeriod' | 'noResidencePeriod' | 'noQualification' | 'noRegistration' | 'noJobOffer',
+      each: (item: Item) => Sentence,
+    ) => {
+      if (items === undefined) unanswered(question);
+      else if (items.length === 0) said.push({ kind: none, ...ask });
+      else said.push(...items.map(each));
+    };
     switch (key) {
       case 'birthDate':
         if (subject.birthDate === undefined) unanswered(question);
@@ -213,11 +276,42 @@ function describePerson(
           for (const spoken of subject.languages)
             said.push({ kind: 'language', ...ask, ...spoken });
         break;
+      case 'workPeriods':
+        records(subject.workPeriods, 'noWorkPeriod', ({ business, ...period }) => ({
+          kind: 'workPeriod',
+          ...ask,
+          ...period,
+          ...(business === undefined ? {} : { atOwnBusiness: true }),
+        }));
+        break;
+      case 'qualifications':
+        records(subject.qualifications, 'noQualification', (held) => ({
+          kind: 'qualification',
+          ...ask,
+          ...held,
+        }));
+        break;
+      case 'registrations':
+        records(subject.registrations, 'noRegistration', (held) => ({
+          kind: 'registration',
+          ...ask,
+          ...held,
+        }));
+        break;
       case 'jobOffers':
-        if (subject.jobOffers === undefined) unanswered(question);
-        else if (subject.jobOffers.length === 0) said.push({ kind: 'noJobOffer', ...ask });
-        else
-          for (const offer of subject.jobOffers) said.push({ kind: 'jobOffer', ...ask, ...offer });
+        records(subject.jobOffers, 'noJobOffer', ({ annualSalary, ...offer }) => ({
+          kind: 'jobOffer',
+          ...ask,
+          ...offer,
+          ...(annualSalary === undefined ? {} : { annualSalary: decimalAmount(annualSalary) }),
+        }));
+        break;
+      case 'residencePeriods':
+        records(subject.residencePeriods, 'noResidencePeriod', (period) => ({
+          kind: 'residencePeriod',
+          ...ask,
+          ...period,
+        }));
         break;
       case 'immigrationHistory':
         if (subject.immigrationHistory === undefined) unanswered(question);
@@ -307,7 +401,17 @@ export function describeCase(
     };
   });
   const assets = snapshot.assets.map(
-    ({ kind, value, valuedAt, owners, liquid, sold }): Sentence => ({
+    ({
+      kind,
+      value,
+      valuedAt,
+      owners,
+      liquid,
+      sold,
+      country,
+      operatingSince,
+      employees,
+    }): Sentence => ({
       kind: 'asset',
       question: 'assets',
       about: owners.map((owner) => owner.person),
@@ -317,9 +421,30 @@ export function describeCase(
       owners: owners.map((owner) => ({ person: owner.person, share: owner.share })),
       ...optional('liquid', liquid),
       ...optional('sold', sold),
+      ...optional('country', country),
+      ...optional('operatingSince', operatingSince),
+      ...optional('employees', employees),
     }),
   );
   return [...people, ...relationships, ...assets];
+}
+
+/**
+ * The sentences with each work period's label, which the snapshot leaves out: `labels` gives a
+ * person's labels in the order of their work periods, as the profile stores them.
+ */
+export function labelWorkPeriods(
+  sentences: readonly Sentence[],
+  labels: (personId: string) => readonly (string | undefined)[],
+): Sentence[] {
+  const seen = new Map<string, number>();
+  return sentences.map((said) => {
+    if (said.kind !== 'workPeriod') return said;
+    const index = seen.get(said.person) ?? 0;
+    seen.set(said.person, index + 1);
+    const label = labels(said.person)[index];
+    return label === undefined ? said : { ...said, label };
+  });
 }
 
 /** The sentences with every person ID renamed, such as the snapshot's opaque IDs to the case's. */

@@ -89,6 +89,12 @@ async function openLabel(
   return { label: kept, stale: kept !== undefined };
 }
 
+/** The open vault's documents and the countries one may be filed under. */
+export interface VaultDocuments {
+  readonly opened: readonly OpenedDocument[];
+  readonly countries: readonly string[];
+}
+
 /**
  * Every document the account owns or receives, with its label opened on this device; the names
  * stay in memory only while the vault is open.
@@ -96,19 +102,23 @@ async function openLabel(
 export function documentsQuery(vault: UnlockedVault) {
   return queryOptions({
     queryKey: ['documents', vault.accountId, vault.recipient, vault.retained.length],
-    queryFn: async (): Promise<OpenedDocument[]> => {
+    queryFn: async (): Promise<VaultDocuments> => {
       const documents: VaultDocument[] = [];
+      const countries: string[] = [];
       let after: string | undefined;
       do {
         const page = await reach(
           api.call(routes.listDocuments, after === undefined ? {} : { after }),
         );
         documents.push(...page.documents);
+        // Every page carries the same dataset, so the last one read stands for all.
+        countries.splice(0, countries.length, ...page.countries);
         after = page.next ?? undefined;
       } while (after !== undefined);
-      return Promise.all(
+      const opened = await Promise.all(
         documents.map(async (document) => ({ document, ...(await openLabel(vault, document)) })),
       );
+      return { opened, countries };
     },
     gcTime: 0,
     networkMode: 'always',
@@ -138,13 +148,15 @@ const send = (upload: ObjectUpload, ciphertext: Uint8Array<ArrayBuffer>) =>
 
 /**
  * Encrypts a file on this device to the owner's own recipient, seals its name and type the same
- * way, then creates the document, uploads the ciphertext and confirms it (spec 0005, R4).
+ * way, then creates the document, under `country` when one is given, uploads the ciphertext and
+ * confirms it (spec 0005, R4).
  */
 export async function addDocument(
   passkeys: Passkeys,
   vault: UnlockedVault,
   file: File,
   fallbackName: string,
+  country?: string,
 ) {
   if (file.size > maxDocumentBytes) throw new DocumentTooLarge();
   const recipients = [vault.recipient];
@@ -163,6 +175,7 @@ export async function addDocument(
       size: ciphertext.length,
       sha256: base64url(sha256),
       label: base64url(label),
+      ...(country === undefined ? {} : { country }),
     }),
   );
   await send(upload, ciphertext);
@@ -205,6 +218,22 @@ export async function saveDocument(
   // Never the label's type: a blob URL has this page's origin, and a label can be forged, so the
   // file is always a download and its extension picks the program that opens it.
   saveFile(label.name, new Blob([plaintext], { type: 'application/octet-stream' }));
+}
+
+/**
+ * Files up to `maxDocumentBatch` of the account's documents under a country, or takes them out of
+ * it, all of them or none. The countries are a label the owner organizes by, so the open vault is
+ * enough, with no step-up.
+ */
+export async function fileUnderCountry(
+  passkeys: Passkeys,
+  documentIds: readonly string[],
+  country: string,
+  filed: boolean,
+) {
+  await inVaultWindow(passkeys, () =>
+    api.call(routes.changeDocumentCountry, { documentIds: [...documentIds], country, filed }),
+  );
 }
 
 /** Deletes one of the account's documents after a `vault_write` step-up for exactly it. */

@@ -9,6 +9,7 @@ import {
   confirmDocumentUpload,
   confirmInvite,
   confirmReplacements,
+  changeDocumentCountry,
   createDocument,
   createInvite,
   deleteDocuments,
@@ -45,7 +46,11 @@ import {
   removeNotificationChannel,
   forgetPushChannel,
   CaseEvaluations,
+  RouteDocuments,
+  RouteDocumentsQuery,
   DestinationComparison,
+  FamilyPlan,
+  planRoutes,
   adminRoutes,
   caseRoutes,
   comparisonRoutes,
@@ -81,6 +86,7 @@ import {
   stepUpNonceHeader,
   StepUpOptionsRequest,
   stepUpVerify,
+  DepartureChecklists,
   type ErrorResponse,
   type RouteDefinition,
 } from '@arca/api-contract/routes';
@@ -135,7 +141,12 @@ import type { NotificationChannels } from './notification/channels.js';
 import { isP256PublicKey } from './notification/push.js';
 import type { CaseFiles, CaseWritten } from './case/case-files.js';
 import type { CaseIntake } from './case/intake.js';
-import { type DecisionKind, type DecisionSubject, releasable } from '@arca/domain';
+import {
+  type DecisionKind,
+  type DecisionSubject,
+  type DepartureChecklistView,
+  releasable,
+} from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
 import type { DecisionOutcome, DecisionTarget, KnowledgeDecisions } from './knowledge/decisions.js';
 import type { Corrections } from './knowledge/corrections.js';
@@ -250,6 +261,8 @@ export interface AppDependencies {
    * answers 503 `suggestions_unavailable` and the ready suggestions keep working.
    */
   readonly criterionSuggestions?: CriterionSuggestions;
+  /** What to do when leaving a country, from the repository's reviewed file (ADR-0038). */
+  readonly departureChecklists?: readonly DepartureChecklistView[];
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
@@ -341,6 +354,7 @@ export type ErrorCode =
   | 'case_exists'
   | 'case_limit'
   | 'case_invalid'
+  | 'plan_changed'
   | 'too_many_push_channels'
   | 'not_admin'
   | 'owner_list_admin'
@@ -493,6 +507,7 @@ export function createApp({
   knowledgeVersions,
   ruleSummaries,
   criterionSuggestions,
+  departureChecklists = [],
   ruleReports,
   corrections,
   aiSettings,
@@ -1206,6 +1221,7 @@ export function createApp({
       current.accountId,
       createDocument.body.parse(await c.req.json()),
     );
+    if (outcome === 'unknown_country') return fail(c, 'invalid_request', 400);
     if (outcome === 'no_vault') return fail(c, 'not_found', 404);
     if (outcome === 'over_quota') return fail(c, 'document_quota', 409);
     return c.json(outcome, 200);
@@ -1290,10 +1306,36 @@ export function createApp({
     return outcome === 'not_found' ? fail(c, 'not_found', 404) : c.json({}, 200);
   });
 
+  // A document's countries are its owner's organizing label, changed with the vault open.
+  v1.openapi(openApiRoutes.changeDocumentCountry, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const limited = await overLimit(c, authLimits, documentLimits.countries, current.accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await documents.changeCountry(
+      current.accountId,
+      changeDocumentCountry.body.parse(await c.req.json()),
+    );
+    if (outcome === 'unknown_country') return fail(c, 'invalid_request', 400);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    return c.json({}, 200);
+  });
+
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
   const caseAccount = async (
     c: Context<AppEnv>,
-    counted: 'write' | 'playback' | 'evaluations' | 'comparison' | 'reports' | false,
+    counted:
+      | 'write'
+      | 'playback'
+      | 'evaluations'
+      | 'documents'
+      | 'comparison'
+      | 'plan'
+      | 'reports'
+      | false,
   ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
@@ -1441,6 +1483,32 @@ export function createApp({
       ? fail(c, 'not_found', 404)
       : c.json(CaseEvaluations.parse(evaluations), 200);
   });
+  v1.openapi(openApiRoutes.getRouteDocuments, async (c) => {
+    const account = await caseAccount(c, 'documents');
+    if ('refused' in account) return account.refused;
+    const { routeId, principalId } = RouteDocumentsQuery.parse(c.req.query());
+    const documents = await account.cases.routeDocuments(
+      account.current.accountId,
+      routeId,
+      principalId,
+    );
+    return documents === null
+      ? fail(c, 'not_found', 404)
+      : c.json(RouteDocuments.parse(documents), 200);
+  });
+  // A mark is case data; linking reads the vault, so it needs the vault open like filing does.
+  v1.openapi(openApiRoutes.setChecklistMark, async (c) => {
+    const account = await caseAccount(c, 'write');
+    if ('refused' in account) return account.refused;
+    const request = caseRoutes.setChecklistMark.body.parse(await c.req.json());
+    if (request.mark?.vaultDocumentId != null && !(await unlocked(account.current))) {
+      return fail(c, 'step_up_required', 403);
+    }
+    const outcome = await account.cases.setMark(account.current.accountId, request);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'case_limit') return fail(c, 'case_limit', 409);
+    return c.json({}, 200);
+  });
   v1.openapi(openApiRoutes.getComparison, async (c) => {
     const account = await caseAccount(c, 'comparison');
     if ('refused' in account) return account.refused;
@@ -1448,6 +1516,26 @@ export function createApp({
     return comparison === null
       ? fail(c, 'not_found', 404)
       : c.json(DestinationComparison.parse(comparison), 200);
+  });
+  v1.openapi(openApiRoutes.getFamilyPlan, async (c) => {
+    const account = await caseAccount(c, 'plan');
+    if ('refused' in account) return account.refused;
+    const plan = await account.cases.plan(account.current.accountId);
+    return plan === null ? fail(c, 'not_found', 404) : c.json(FamilyPlan.parse(plan), 200);
+  });
+  v1.openapi(openApiRoutes.writeFamilyPlan, async (c) => {
+    const account = await caseAccount(c, 'write');
+    if ('refused' in account) return account.refused;
+    const request = planRoutes.writeFamilyPlan.body.parse(await c.req.json());
+    const outcome = await account.cases.writePlan(account.current.accountId, request);
+    if (outcome.ok) return c.json(FamilyPlan.parse(outcome.view), 200);
+    return outcome.reason === 'not_found'
+      ? fail(c, 'not_found', 404)
+      : fail(c, outcome.reason, 409);
+  });
+  v1.openapi(openApiRoutes.getDepartureChecklists, async (c) => {
+    if ((await signedIn(c)) === null) return unauthorized(c);
+    return c.json(DepartureChecklists.parse({ checklists: departureChecklists }), 200);
   });
   v1.openapi(openApiRoutes.writeComparisonPreferences, async (c) => {
     const account = await caseAccount(c, 'write');

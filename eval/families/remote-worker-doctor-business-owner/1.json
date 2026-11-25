@@ -1,0 +1,270 @@
+{
+  "recordedOn": "2026-11-01",
+  "members": [
+    "p1",
+    "p2",
+    "p3"
+  ],
+  "people": [
+    {
+      "id": "p1",
+      "birthDate": "1988-07-19",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1988-07-19",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 6,
+      "languages": [
+        {
+          "language": "pt",
+          "level": "native"
+        },
+        {
+          "language": "en",
+          "level": "C1"
+        }
+      ],
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 650000,
+            "currency": "USD"
+          },
+          "sourceCountry": "US"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "workPeriods": [
+        {
+          "employerCountry": "US",
+          "workplaceCountry": "BR",
+          "relation": "contractor",
+          "occupation": "2512",
+          "capacity": "other",
+          "fullTime": true,
+          "start": "2023-02-06",
+          "end": "none"
+        },
+        {
+          "employerCountry": "BR",
+          "workplaceCountry": "BR",
+          "relation": "employee",
+          "occupation": "2512",
+          "capacity": "manager",
+          "fullTime": true,
+          "start": "2017-03",
+          "end": "2023-01-31"
+        }
+      ],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p2",
+      "birthDate": "1986-02-03",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1986-02-03",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 7,
+      "languages": [
+        {
+          "language": "pt",
+          "level": "native"
+        },
+        {
+          "language": "es",
+          "level": "B2"
+        }
+      ],
+      "incomes": [
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 2400000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "workPeriods": [
+        {
+          "employerCountry": "BR",
+          "workplaceCountry": "BR",
+          "relation": "employee",
+          "occupation": "2211",
+          "capacity": "other",
+          "fullTime": false,
+          "start": "2014-03",
+          "end": "none"
+        },
+        {
+          "employerCountry": "BR",
+          "workplaceCountry": "BR",
+          "relation": "self_employed",
+          "occupation": "2211",
+          "fullTime": false,
+          "start": "2016",
+          "end": "none"
+        }
+      ],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "parents",
+        "assets"
+      ]
+    },
+    {
+      "id": "p3",
+      "birthDate": "1955-10-28",
+      "citizenships": [
+        {
+          "country": "BR",
+          "acquired": "1955-10-28",
+          "lost": "none",
+          "basis": "birth"
+        }
+      ],
+      "residenceCountry": "BR",
+      "educationLevel": 3,
+      "languages": [
+        {
+          "language": "pt",
+          "level": "native"
+        }
+      ],
+      "incomes": [
+        {
+          "kind": "passive",
+          "monthly": {
+            "amount": 780000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        },
+        {
+          "kind": "active",
+          "monthly": {
+            "amount": 450000,
+            "currency": "BRL"
+          },
+          "sourceCountry": "BR"
+        }
+      ],
+      "immigrationHistory": [],
+      "jobOffers": [],
+      "workPeriods": [
+        {
+          "employerCountry": "BR",
+          "workplaceCountry": "BR",
+          "relation": "owner",
+          "occupation": "1420",
+          "capacity": "manager",
+          "fullTime": false,
+          "start": "2009-05",
+          "end": "none"
+        },
+        {
+          "employerCountry": "BR",
+          "workplaceCountry": "BR",
+          "relation": "employee",
+          "occupation": "4311",
+          "capacity": "other",
+          "fullTime": true,
+          "start": "1976",
+          "end": "2008"
+        }
+      ],
+      "financiallyDependentOn": [],
+      "studying": false,
+      "recordedInFull": [
+        "spouses",
+        "partners",
+        "children",
+        "assets"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "spouse",
+      "people": [
+        "p1",
+        "p2"
+      ],
+      "start": "2015-09-12",
+      "end": "none"
+    },
+    {
+      "kind": "parent",
+      "parent": "p3",
+      "child": "p2",
+      "parentKind": "biological"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "kind": "business",
+      "owners": [
+        {
+          "person": "p3",
+          "share": "1"
+        }
+      ],
+      "value": {
+        "amount": 42000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-06-30",
+      "liquid": false,
+      "sold": "none"
+    },
+    {
+      "id": "a2",
+      "kind": "cash",
+      "owners": [
+        {
+          "person": "p1",
+          "share": "0.5"
+        },
+        {
+          "person": "p2",
+          "share": "0.5"
+        }
+      ],
+      "value": {
+        "amount": 18000000,
+        "currency": "BRL"
+      },
+      "valuedAt": "2026-10-31",
+      "liquid": true,
+      "sold": "none"
+    }
+  ]
+}
