@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-licensed-professional",
+  "number": 1,
+  "title": "Fixture: a licensed doctor with a medical degree",
+  "country": "QR",
+  "tags": ["fixture", "work"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "occupations": {
+    "id": "occupations",
+    "number": 1
+  },
+  "studyFields": {
+    "id": "study-fields",
+    "number": 1
+  },
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "medical-degree",
+      "title": "A degree in medicine at master's level or above, awarded in Brazil",
+      "expression": {
+        "op": "some",
+        "over": "principal.qualifications",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "gte",
+              "left": {
+                "op": "fact",
+                "key": "qualification.level"
+              },
+              "right": {
+                "op": "int",
+                "value": 7
+              }
+            },
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "qualification.field"
+              },
+              "right": {
+                "op": "token",
+                "value": "0912"
+              }
+            },
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "qualification.country"
+              },
+              "right": {
+                "op": "token",
+                "value": "BR"
+              }
+            }
+          ]
+        }
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "medical-licence",
+      "title": "A licence to practise as a medical doctor in Brazil",
+      "expression": {
+        "op": "some",
+        "over": "principal.registrations",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "registration.country"
+              },
+              "right": {
+                "op": "token",
+                "value": "BR"
+              }
+            },
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "registration.occupation"
+              },
+              "right": {
+                "op": "token",
+                "value": "2211"
+              }
+            }
+          ]
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

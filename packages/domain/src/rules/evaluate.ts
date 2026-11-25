@@ -574,6 +574,10 @@ function recordsOf(person: Person, kind: RecordKind): readonly PersonRecord[] | 
       return person.jobOffers?.map((value) => ({ kind, value }));
     case 'residencePeriod':
       return person.residencePeriods?.map((value) => ({ kind, value }));
+    case 'qualification':
+      return person.qualifications?.map((value) => ({ kind, value }));
+    case 'registration':
+      return person.registrations?.map((value) => ({ kind, value }));
   }
 }
 

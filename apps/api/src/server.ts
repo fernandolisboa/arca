@@ -4,6 +4,7 @@ import {
   departureChecklists,
   occupationCodes,
   pinnedCountries,
+  studyFieldCodes,
   createRuleTexts,
   shippedRuleTexts,
   suggestedRatings,
@@ -570,6 +571,7 @@ const app = createApp({
     today: () => new Date(),
     countries: pinnedCountries,
     occupations: occupationCodes,
+    studyFields: studyFieldCodes,
     evaluation: {
       rules: rules.engine,
       comparisons: comparisonCatalog,
