@@ -26,7 +26,7 @@ export const recognition = {
     },
     'es-documents': {
       title: 'Diploma e histórico traduzidos e apostilados',
-      body: 'Diploma e histórico com tradução oficial para o espanhol, legalizados e apostilados. O histórico mostra a duração oficial do curso e a carga horária de cada disciplina. Se mais de 15% dos créditos vieram de outra faculdade, como disciplinas feitas no exterior, junte o certificado dela. Inclua a prova de que você pode exercer no país do diploma (no Brasil, o registro no CRM).',
+      body: 'Diploma e histórico com tradução oficial para o espanhol, legalizados e apostilados. O histórico mostra a duração oficial do curso e a carga horária de cada disciplina. Se mais de 15% dos créditos foram aproveitados de outra faculdade, junte o certificado dela. Inclua a prova de que você pode exercer no país do diploma (no Brasil, o registro no CRM).',
     },
     'es-homologation': {
       title: 'Pedir a homologação ao Ministério',
@@ -86,7 +86,7 @@ export const recognition = {
     },
     'us-residency-visa': {
       title: 'Residência e visto J-1',
-      body: 'A residência médica é feita num programa de graduate medical education. No J-1, a ECFMG é a única patrocinadora e emite o DS-2019. É preciso uma declaração do governo brasileiro de que o país precisa da sua especialidade e o compromisso de voltar ao fim do treinamento. Cônjuge e filhos menores solteiros podem ir com J-2.',
+      body: 'A residência médica é feita num programa de graduate medical education. No J-1, a ECFMG é a única patrocinadora e emite o DS-2019. É preciso uma declaração do governo do país da sua nacionalidade ou da sua última residência permanente (para quem vem do Brasil, o governo brasileiro) de que o país precisa da sua especialidade e o compromisso de voltar ao fim do treinamento. Cônjuge e filhos menores solteiros podem ir com J-2.',
     },
     'us-step-3-license': {
       title: 'Step 3 e licença do estado',
