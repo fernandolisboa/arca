@@ -1,4 +1,4 @@
-import { type Duration, durationParts, durationUnits } from '../calendar/duration.js';
+import { orderedDurationRange } from '../calendar/duration.js';
 import { classifications } from '../case/facts.js';
 import type { CurrencyCode } from '../money/currency.js';
 import {
@@ -281,7 +281,7 @@ export function checkRouteVersion(
   version.durations.forEach((stage, index) => {
     const path = `/durations/${String(index)}`;
     cites(`${path}/sources`, stage.sources);
-    if (!orderedRange(stage.min, stage.max)) {
+    if (!orderedDurationRange(stage.min, stage.max)) {
       issue(path, 'A duration range uses one unit and its minimum is not above its maximum');
     }
   });
@@ -291,12 +291,4 @@ export function checkRouteVersion(
     issue('', `A version has at most ${String(maxNodesPerVersion)} expression nodes`);
   }
   return issues;
-}
-
-function orderedRange(min: Duration, max: Duration): boolean {
-  const units = new Set([...durationUnits(min), ...durationUnits(max)]);
-  if (units.size !== 1) return false;
-  const [unit] = units;
-  if (unit === undefined) return false;
-  return durationParts(min)[unit] <= durationParts(max)[unit];
 }
