@@ -439,6 +439,17 @@ async function saveHeldAssets(
   for (const { id, share } of reshared) await setOwnerShare(tx, id, personId, share);
 }
 
+/**
+ * Before a person changes keeper: a mark's link names the keeper's own vault document, which the
+ * next keeper can neither open nor see. Each mark stays.
+ */
+async function unlinkMarks(tx: Transaction, personId: string) {
+  await tx.execute(sql`
+    UPDATE cases.checklist_mark
+       SET vault_document_id = NULL, vault_owner_id = NULL, updated_at = now()
+     WHERE person_id = ${personId} AND vault_owner_id IS NOT NULL`);
+}
+
 export function createCaseFiles({
   db,
   audit,
@@ -614,11 +625,7 @@ export function createCaseFiles({
 
     handOver: (accountId, { personId, accountId: newKeeper }) =>
       write(accountId, async (tx) => {
-        // A link names the keeper's own vault document, which the next keeper can neither open nor see.
-        await tx.execute(sql`
-          UPDATE cases.checklist_mark
-             SET vault_document_id = NULL, vault_owner_id = NULL, updated_at = now()
-           WHERE person_id = ${personId} AND vault_owner_id IS NOT NULL`);
+        await unlinkMarks(tx, personId);
         const handed = await tx.execute<{ handed: boolean }>(
           sql`SELECT cases.hand_over(${personId}, ${newKeeper}) AS handed`,
         );
@@ -643,6 +650,7 @@ export function createCaseFiles({
           takenOver?.caseMember === true || members(rows) < caseSizeLimits.members,
           'case_limit',
         );
+        if (personId !== null) await unlinkMarks(tx, personId);
         const joined = await tx.execute<{ outcome: string }>(sql`
           SELECT cases.join_case(${request.accountId}, ${personId}::uuid, ${displayName}::text)
                  AS outcome`);

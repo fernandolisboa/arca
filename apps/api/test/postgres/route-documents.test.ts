@@ -675,4 +675,20 @@ describe('checklist marks (spec #519)', () => {
       handed.people[1]?.items.find(({ documentId }) => documentId === 'birth-certificate')?.mark,
     ).toEqual({ state: 'had', linked: false, vaultDocumentId: null });
   });
+
+  it('drops the link, not the mark, when the person joins with their own account', async () => {
+    const { ana, people } = await family();
+    const own = await vaultDocument(ana);
+    await files.setMark(
+      ana,
+      mark(people.child, 'birth-certificate', { state: 'had', vaultDocumentId: own }),
+    );
+    const child = await account();
+    await admin(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [ana, child]);
+    viewOf(await files.addMember(ana, { accountId: child, personId: people.child }));
+    const joined = listedOf(await read(child, people.ana));
+    expect(
+      joined.people[1]?.items.find(({ documentId }) => documentId === 'birth-certificate')?.mark,
+    ).toEqual({ state: 'had', linked: false, vaultDocumentId: null });
+  });
 });
