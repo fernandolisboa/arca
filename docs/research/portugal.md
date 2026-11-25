@@ -25,7 +25,7 @@ Every version uses the 2026 guaranteed minimum monthly wage (RMMG), EUR 920 (Dec
 
 ## Family reunification
 
-Checked on 2026-11-05 against the consolidated Lei n.º 23/2007: the two-year wait is article 98.º, n.º 1, as amended by Lei n.º 61/2025, with the exceptions of n.º 3. Adult children qualify only when they are incapable (article 99.º, n.º 1, b) or study in Portugal (n.º 1, d), except for holders under article 90.º-A. Not yet a route version. The wait is now expressible (#513): `covers` over `principal.residencePeriods`, where `residencePeriod.country` is `PT` and `residencePeriod.basis` a residence permit, `atLeast` `P2Y`, `continuous` as the article reads; whether the article 98.º, n.º 3 exceptions apply stays an assessment.
+Checked on 2026-11-05 against the consolidated Lei n.º 23/2007: the two-year wait is article 98.º, n.º 1, as amended by Lei n.º 61/2025, with the exceptions of n.º 3. Adult children qualify only when they are incapable (article 99.º, n.º 1, b) or study in Portugal (n.º 1, d), except for holders under article 90.º-A. Not yet a route version. Since #513 the wait can be expressed as `covers` over `principal.residencePeriods` where `residencePeriod.country` is `PT` and `residencePeriod.basis` is `permanent_residence` or `temporary_residence`, with `atLeast` `P2Y`; whether the stretch must be continuous, and how the n.º 3 exceptions apply, is still to be read from article 98.º when the route version is written.
 
 | Fact | Source |
 | --- | --- |

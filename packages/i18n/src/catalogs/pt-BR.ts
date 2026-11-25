@@ -842,7 +842,7 @@ export const ptBR = {
       workCapacity:
         '{value, select, executive {Diretoria ou alta gestão} manager {Gerência ou coordenação de equipe} other {Sem cargo de chefia}}',
       residenceBasis:
-        '{value, select, citizen {Com cidadania do país} permanent_residence {Com residência permanente} temporary_residence {Com visto ou residência temporária} other {Outra situação, como turista ou sem documentos}}',
+        '{value, select, citizen {Com cidadania do país} permanent_residence {Com residência permanente} temporary_residence {Com visto ou residência temporária} other {Outra situação, como turista}}',
     },
     asked: {
       birthDate: 'Quando {name} nasceu?',
@@ -875,7 +875,7 @@ export const ptBR = {
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       residencePeriods:
-        'Anote cada país, incluindo o Brasil, e cada mudança de situação no mesmo país. Algumas rotas pedem anos de residência legal.',
+        'Anote cada país, incluindo o país onde mora hoje, e cada mudança de situação no mesmo país. Algumas rotas pedem anos de residência legal.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
     },

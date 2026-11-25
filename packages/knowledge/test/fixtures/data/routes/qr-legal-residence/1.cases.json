@@ -2,6 +2,38 @@
   "schemaVersion": 1,
   "cases": [
     {
+      "id": "family-returned-after-residence-abroad",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 2,
+        "sha256": "fbe2e8d9a86e8a15127769a3b60c9c6e06a5ba1aadc5fb8d7dd1da0240ff7b5f"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "family-never-lived-abroad",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 2,
+        "sha256": "fbe2e8d9a86e8a15127769a3b60c9c6e06a5ba1aadc5fb8d7dd1da0240ff7b5f"
+      },
+      "principal": "p2",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
       "id": "two-full-years",
       "snapshot": {
         "recordedOn": "2026-11-01",

@@ -125,6 +125,10 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
       { kind: 'residencePeriod', ...ana, country: 'US', basis: 'other', end: '2009-12' },
       'Residência de Ana: Estados Unidos, em outra situação, até dezembro de 2009.',
     ],
+    [
+      { kind: 'residencePeriod', ...ana, country: 'PT', start: '2020' },
+      'Residência de Ana: Portugal, começou em 2020.',
+    ],
     [{ kind: 'noResidencePeriod', ...ana }, 'Países onde Ana morou: nenhum anotado.'],
     [
       { kind: 'immigrationEvent', ...ana, country: 'US', event: 'visa_refusal', date: '2018' },

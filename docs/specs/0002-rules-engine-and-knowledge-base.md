@@ -206,7 +206,7 @@ Pure functions in `packages/domain/src/rules`, with no I/O and no model calls. T
   - two corrections of the same version, the newer one dated earlier, which validation rejects;
   - a version without `corrects` dated before an existing correction (v1 in January, v2 correcting v1 in March, v3 in February), which validation rejects, and its accepted form, v3 correcting v2 in February;
   - a correction of a rejected correction, which still removes the original.
-- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; a large three-generation family of six adults; and a remote contractor, a part-time doctor and a retired business owner with work periods (#509). All values are invented and mirror no real person's ages, dates or holdings.
+- **Synthetic families** in `eval/families/`: a single person; a couple with young children; divorced parents with shared custody; dependent elderly parents; a previous visa refusal; assets held by an ex-spouse; a large three-generation family of six adults; and a remote contractor, a part-time doctor and a retired business owner with work periods (#509), whose number 2 adds residence periods (#513). All values are invented and mirror no real person's ages, dates or holdings.
 
 ### R9. Staleness
 
