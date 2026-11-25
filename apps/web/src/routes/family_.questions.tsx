@@ -172,6 +172,7 @@ function Answering({
     names,
     countries: questions.countries,
     formerCountries: questions.formerCountries,
+    occupations: questions.occupations,
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">
@@ -300,6 +301,7 @@ function StepForm({
         return (
           <QuestionEditor
             key={asked.id}
+            questionId={asked.id}
             input={definition.input}
             legend={t(`questions.asked.${asked.id}`, { name })}
             {...(i18n.exists(hintKey) ? { hint: t(`questions.hint.${asked.id as Hinted}`) } : {})}

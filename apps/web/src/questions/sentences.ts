@@ -20,10 +20,18 @@ export function sentenceText(
   const list = (items: readonly string[]) =>
     new Intl.ListFormat(language, { type: 'conjunction' }).format(items);
   const when = (
-    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold',
+    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold' | 'startedIn',
     value?: string,
   ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
+  const workTime = (start?: string, end?: string) =>
+    end === 'none'
+      ? when('startedIn', start) + t('playback.part.current')
+      : start !== undefined && end !== undefined
+        ? t('playback.part.between', { start: date(start), end: date(end) })
+        : start === undefined
+          ? when('until', end)
+          : when('startedIn', start);
   switch (said.kind) {
     case 'profileHidden':
       return t('playback.sentence.profileHidden', { person: name(said.person) });
@@ -96,6 +104,35 @@ export function sentenceText(
         country: country(said.country),
         sector: t('questions.choice.isicSection', { value: said.sector }),
         temporary: said.temporary ? t('playback.part.temporary') : '',
+      });
+    case 'noWorkPeriod':
+      return t('playback.sentence.noWorkPeriod', { person: name(said.person) });
+    case 'workPeriod':
+      return t('playback.sentence.workPeriod', {
+        person: name(said.person),
+        label: said.label === undefined ? '' : t('playback.part.label', { label: said.label }),
+        occupation:
+          said.occupation === undefined
+            ? t('playback.part.noOccupation')
+            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+        details: [
+          said.relation === undefined
+            ? ''
+            : t('playback.part.relation', { relation: said.relation }),
+          said.capacity === undefined
+            ? ''
+            : t('playback.part.capacity', { capacity: said.capacity }),
+          said.fullTime === undefined
+            ? ''
+            : t('playback.part.fullTime', { fullTime: said.fullTime ? 'yes' : 'no' }),
+          said.employerCountry === undefined
+            ? ''
+            : t('playback.part.employerCountry', { country: country(said.employerCountry) }),
+          said.workplaceCountry === undefined
+            ? ''
+            : t('playback.part.workplaceCountry', { country: country(said.workplaceCountry) }),
+          workTime(said.start, said.end),
+        ].join(''),
       });
     case 'immigrationEvent':
       return t('playback.sentence.immigrationEvent', {

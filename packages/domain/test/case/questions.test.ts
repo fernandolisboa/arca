@@ -30,6 +30,7 @@ const parenthood = 'ad9e8f7a-6b5c-4d4e-8f1a-0b9c8d7e6f5a';
 const known = {
   countries: new Set(['BR', 'PT', 'US', 'IT']),
   formerCountries: new Set(['YUCS']),
+  occupations: new Set(['2211', '2512']),
 };
 
 const empty: QuestionState = {
@@ -165,6 +166,31 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     });
     expect(answerOf(question('birthDate'), applied.state)).toBe('1985-04');
     expect(answerOf(question('studying'), applied.state)).toBeUndefined();
+  });
+
+  it('saves work periods with their label, leaving out what is not known', () => {
+    const periods = [
+      {
+        label: 'Clínica',
+        occupation: '2211',
+        relation: 'employee',
+        capacity: 'manager',
+        fullTime: false,
+        employerCountry: 'BR',
+        workplaceCountry: 'BR',
+        start: '2019-03',
+        end: 'none',
+      },
+      { occupation: '2512', relation: 'contractor', start: '2012', end: '2019-02' },
+    ];
+    const applied = apply(empty, { workPeriods: periods });
+    expect(applied.ok && applied.state.facts).toEqual({ workPeriods: periods });
+    if (!applied.ok) return;
+    expect(answerOf(question('workPeriods'), applied.state)).toEqual(periods);
+    const none = apply(applied.state, { workPeriods: [] });
+    expect(none.ok && none.state.facts).toEqual({ workPeriods: [] });
+    const unknown = apply(applied.state, { workPeriods: null });
+    expect(unknown.ok && unknown.state.facts).toEqual({});
   });
 
   it('takes "Não sei" as leaving the fact out', () => {
@@ -343,6 +369,10 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['a former state where only current countries go', { residenceCountry: 'YUCS' }],
     ['a language outside ISO 639-1', { languages: [{ language: 'xx', level: 'B2' }] }],
     ['a choice outside its set', { educationLevel: 9 }],
+    ['an occupation outside the classification', { workPeriods: [{ occupation: '9999' }] }],
+    ['a work period that ends before it starts', { workPeriods: [{ start: '2020', end: '2019' }] }],
+    ['a label with outer spaces', { workPeriods: [{ label: ' Clínica' }] }],
+    ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
     [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },

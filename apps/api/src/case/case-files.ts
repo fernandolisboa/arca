@@ -182,6 +182,8 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
+  /** The occupation codes work periods may name (ADR-0036). */
+  readonly occupations: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
     readonly rules: () => Promise<{
@@ -267,14 +269,24 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
-/** Replaces a person's facts and dependence; dependence names other people of the case. */
+/**
+ * Replaces a person's facts and dependence; dependence names other people of the case, and a work
+ * period's occupation a code of the occupations classification.
+ */
 async function saveProfile(
   tx: Transaction,
   rows: CaseRows,
   personId: string,
   facts: StoredProfile['facts'],
   dependsOn: readonly string[] | null,
+  occupations: ReadonlySet<string>,
 ) {
+  refuseUnless(
+    (facts.workPeriods ?? []).every(
+      ({ occupation }) => occupation === undefined || occupations.has(occupation),
+    ),
+    'case_invalid',
+  );
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
     dependsOn === null ||
@@ -376,11 +388,13 @@ export function createCaseFiles({
   audit,
   today,
   countries,
+  occupations,
   evaluation,
 }: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),
+    occupations: new Set(occupations),
   };
   /**
    * Runs one write in the viewer's case under its lock, then records its events once it
@@ -583,7 +597,7 @@ export function createCaseFiles({
     writeProfile: (accountId, { personId, facts, dependsOn }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        await saveProfile(tx, rows, personId, facts, dependsOn);
+        await saveProfile(tx, rows, personId, facts, dependsOn, known.occupations);
         return [];
       }),
 
@@ -712,7 +726,7 @@ export function createCaseFiles({
     questions: (accountId) =>
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined ? null : caseQuestions(rows, countries);
+        return rows === undefined ? null : caseQuestions(rows, countries, occupations);
       }),
 
     playback: (accountId) =>
@@ -763,7 +777,7 @@ export function createCaseFiles({
           ),
         );
         if (answered.has('fact') || answered.has('marker') || answered.has('dependence')) {
-          await saveProfile(tx, rows, personId, after.facts, after.dependsOn);
+          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known.occupations);
         }
         if ((answered.has('incomes') || answered.has('assetsMarker')) && after.finances) {
           await saveFinances(tx, personId, after.finances);

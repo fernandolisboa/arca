@@ -49,6 +49,10 @@ function nodeLabel(words: KnowledgeWords, node: Node): string {
     currency: text(node['currency']),
     duration: typeof node['duration'] === 'string' ? words.duration(node['duration']) : '',
     over: typeof node['over'] === 'string' ? words.collection(node['over']) : '',
+    atLeast: typeof node['atLeast'] === 'string' ? words.duration(node['atLeast']) : '',
+    window: typeof node['window'] === 'string' ? words.duration(node['window']) : '',
+    windowed: String(typeof node['window'] === 'string'),
+    continuous: String(node['continuous'] === true),
     generations:
       typeof generations === 'number' ? words.t('knowledge.generations', { generations }) : '',
   });

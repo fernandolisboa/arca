@@ -30,9 +30,12 @@ import {
   type CountryCode,
   type Person,
   type Relationship,
+  type WorkPeriod,
   custodies,
   isicSections,
   parentKinds,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
 
 /** What every fact of one evaluation reads besides the person it is about. */
@@ -65,12 +68,22 @@ export interface LineageBinding {
   readonly position: number;
 }
 
-/** Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage. */
+/** One of a person's records, inside a record collection such as `person.workPeriods`. */
+export interface PersonRecord {
+  readonly kind: 'workPeriod';
+  readonly value: WorkPeriod;
+}
+
+/**
+ * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
+ * one of the person's records.
+ */
 export interface FactBinding {
   readonly environment: FactEnvironment;
   readonly personId: string;
   readonly edge?: Relationship;
   readonly lineage?: LineageBinding;
+  readonly record?: PersonRecord;
 }
 
 export interface Derived {
@@ -87,9 +100,10 @@ export interface Derived {
 /**
  * What a fact is about: a person (the principal, a candidate dependent, a member inside a
  * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
- * candidate was reached by, or the line from an ancestor to the principal.
+ * candidate was reached by, the line from an ancestor to the principal, or one work period inside
+ * a work-period collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage';
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | 'workPeriod';
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -310,11 +324,7 @@ export const factCatalog = {
     scope: 'edge',
     derive: (binding) => {
       const edge = edgeOf(binding);
-      if (edge.kind === 'parent' || edge.end === undefined) return dateFact(undefined);
-      if (edge.end !== 'none') return dateFact(edge.end);
-      const unknown = unknownDate();
-      const recordedOn = binding.environment.snapshot.snapshot.recordedOn;
-      return { value: { ...unknown, min: tryAddDays(recordedOn, 1) ?? unknown.max } };
+      return endFact(edge.kind === 'parent' ? undefined : edge.end, binding.environment);
     },
   },
   /** Whether the candidate depends financially on the person they were reached from. */
@@ -360,6 +370,50 @@ export const factCatalog = {
       return { value: citizenshipsDuring(person(binding.environment, binding.personId), during) };
     },
   },
+  /** Where the employer or main client is seated. */
+  'workPeriod.employerCountry': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).employerCountry) }),
+  },
+  /** Where the person physically works from. */
+  'workPeriod.workplaceCountry': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).workplaceCountry) }),
+  },
+  'workPeriod.relation': {
+    type: { kind: 'enum', values: workRelations },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).relation) }),
+  },
+  'workPeriod.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).occupation) }),
+  },
+  /** The role the person says they had; a route's legal definition stays an assessment. */
+  'workPeriod.capacity': {
+    type: { kind: 'enum', values: workCapacities },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).capacity) }),
+  },
+  'workPeriod.fullTime': {
+    type: { kind: 'boolean' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: booleanValue(workPeriodOf(binding).fullTime ?? 'unknown') }),
+  },
+  'workPeriod.start': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => dateFact(workPeriodOf(binding).start),
+  },
+  /** The last day worked; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'workPeriod.end': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => endFact(workPeriodOf(binding).end, binding.environment),
+  },
 } as const satisfies Record<string, FactDefinition>;
 
 export type FactKey = keyof typeof factCatalog;
@@ -384,6 +438,14 @@ function person(environment: FactEnvironment, id: string): Person {
 
 function dateFact(value: DateValue | undefined): Derived {
   return { value: value === undefined ? unknownDate() : { type: 'date', ...dateRange(value) } };
+}
+
+/** An end that may not have come: `"none"` holds as of `recordedOn`, so the end is later. */
+function endFact(end: DateValue | 'none' | undefined, environment: FactEnvironment): Derived {
+  if (end !== 'none') return dateFact(end);
+  const unknown = unknownDate();
+  const recordedOn = environment.snapshot.snapshot.recordedOn;
+  return { value: { ...unknown, min: tryAddDays(recordedOn, 1) ?? unknown.max } };
 }
 
 const relationshipMarkers: Record<CoupleKind, CompletenessMarker> = {
@@ -676,6 +738,13 @@ class MoneySum {
 function edgeOf(binding: FactBinding): Relationship {
   if (binding.edge === undefined) throw new RangeError('An edge fact outside a dependent rule');
   return binding.edge;
+}
+
+function workPeriodOf(binding: FactBinding): WorkPeriod {
+  if (binding.record?.kind !== 'workPeriod') {
+    throw new RangeError('A work-period fact outside a work-period collection');
+  }
+  return binding.record.value;
 }
 
 function otherEnd(edge: Relationship, id: string): string {

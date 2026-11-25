@@ -11,6 +11,7 @@ import {
   isNewReference,
   maxCaseMembers,
   maxCasePeople,
+  occupationCodeSchema,
   questionFlow,
   questionIds,
   questionSteps,
@@ -173,6 +174,8 @@ export const CaseQuestions = z.object({
   /** The pinned countries, and the former states a citizenship may name. */
   countries: z.array(countryCodeSchema),
   formerCountries: z.array(countryCodeSchema),
+  /** The ISCO-08 unit groups a work period may name (ADR-0036); their names come from i18n. */
+  occupations: z.array(occupationCodeSchema),
 });
 export type CaseQuestions = z.infer<typeof CaseQuestions>;
 

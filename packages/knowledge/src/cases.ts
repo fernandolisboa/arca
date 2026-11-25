@@ -56,7 +56,8 @@ export type CasesFile = z.infer<typeof casesFileSchema>;
 /**
  * A missing fact as a cases file writes it, and as reviewers read it: `<fact>@<person>`, with
  * ` edge <edge>` or ` line <ancestor>>…>principal` when read across one; `relationship <edge>`;
- * `marker <marker>@<person>`. Cases files only gain entries, so this format never changes.
+ * `marker <marker>@<person>`; `records <list>@<person>`. Cases files only gain entries, so this
+ * format never changes.
  */
 export function describeMissingFact(fact: MissingFact): string {
   switch (fact.kind) {
@@ -71,6 +72,8 @@ export function describeMissingFact(fact: MissingFact): string {
       return `relationship ${describeEdge(fact.edge)}`;
     case 'marker':
       return `marker ${fact.marker}@${fact.personId}`;
+    case 'records':
+      return `records ${fact.list}@${fact.personId}`;
   }
 }
 

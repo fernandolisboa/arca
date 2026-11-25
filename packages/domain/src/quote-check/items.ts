@@ -90,6 +90,10 @@ export function expressionValues(expression: Expression): CheckValue[] {
       case 'since':
         values.push(...durationValues(node.duration as Duration));
         break;
+      case 'covers':
+        values.push(...durationValues(node.atLeast as Duration));
+        if (node.window !== undefined) values.push(...durationValues(node.window as Duration));
+        break;
       default:
         break;
     }
