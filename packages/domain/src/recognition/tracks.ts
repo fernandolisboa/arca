@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   type CaseSnapshot,
   countryCodeSchema,
+  isHeld,
   occupationCodeSchema,
   studyFieldCodeSchema,
 } from '../case/snapshot.js';
@@ -134,7 +135,9 @@ export function recognitionHolders(
         ...(person.registrations ?? []),
       ].flatMap(({ occupation }) => occupation ?? []),
     ),
-    fields: new Set((person.qualifications ?? []).flatMap(({ field }) => field ?? [])),
+    fields: new Set(
+      (person.qualifications ?? []).filter(isHeld).flatMap(({ field }) => field ?? []),
+    ),
   }));
   return tracks.map(({ id, occupations, studyFields }) => ({
     trackId: id,

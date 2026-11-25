@@ -116,6 +116,9 @@ const openStep = (person: PersonQuestions): QuestionStep =>
 const answeredIn = (questions: readonly { readonly answer?: unknown }[]) =>
   questions.filter((question) => answered(question.answer)).length;
 
+type Direction = 'next' | 'back';
+const backValue: Direction = 'back';
+
 const personClass =
   'flex min-h-touch items-center gap-2 rounded-control border border-line px-3 font-medium transition-colors hover:bg-soft aria-[current]:border-primary aria-[current]:bg-primary aria-[current]:text-on-primary sm:border-transparent';
 
@@ -258,7 +261,10 @@ function Answering({
             />
           </div>
         </div>
-        <ol className="grid grid-cols-6 gap-2 max-lg:hidden">
+        <ol
+          className="grid gap-2 max-lg:hidden"
+          style={{ gridTemplateColumns: `repeat(${String(person.steps.length)}, minmax(0, 1fr))` }}
+        >
           {person.steps.map(({ id, questions: asked }) => {
             const done = asked.length > 0 && answeredIn(asked) === asked.length;
             return (
@@ -292,15 +298,9 @@ function Answering({
         steps={person.steps.length}
         context={context}
         next={person.steps[at + 1]?.id}
-        {...(at > 0
-          ? {
-              onBack: () => {
-                go(person.steps[at - 1]?.id ?? current.id);
-              },
-            }
-          : {})}
-        onSaved={() => {
-          const next = person.steps[at + 1];
+        first={at === 0}
+        onSaved={(direction) => {
+          const next = person.steps[direction === 'back' ? at - 1 : at + 1];
           if (next !== undefined) setStep(next.id);
           setSaved(true);
         }}
@@ -320,7 +320,7 @@ function StepForm({
   steps,
   context,
   next,
-  onBack,
+  first,
   onSaved,
 }: {
   readonly name: string;
@@ -329,8 +329,9 @@ function StepForm({
   readonly steps: number;
   readonly context: QuestionContext;
   readonly next: QuestionStep | undefined;
-  readonly onBack?: () => void;
-  readonly onSaved: () => void;
+  readonly first: boolean;
+  /** After the step is saved, by the button that sent it: on to the next step, or back. */
+  readonly onSaved: (direction: Direction) => void;
 }) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -348,6 +349,8 @@ function StepForm({
       aria-label={t(`questions.steps.${step.id}`)}
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const direction: Direction =
+          event.nativeEvent.submitter?.getAttribute('value') === backValue ? 'back' : 'next';
         setFailure(undefined);
         setPending(true);
         writeCase(passkeys, routes.answerCaseQuestions, {
@@ -363,7 +366,7 @@ function StepForm({
               queryClient.invalidateQueries({ queryKey: caseQuestionsQuery.queryKey }),
               queryClient.invalidateQueries({ queryKey: casePlaybackQuery.queryKey }),
             ]);
-            onSaved();
+            onSaved(direction);
           })
           .catch((error: unknown) => {
             setFailure(caseFailure(error));
@@ -412,23 +415,27 @@ function StepForm({
       </div>
       <div className="sticky bottom-[var(--shell-bottom,0px)] z-10 flex flex-wrap items-center gap-3 rounded-b-card border-t border-line bg-soft px-4 py-3 md:px-6">
         <p
-          role="status"
           className={`text-small max-sm:w-full sm:mr-auto ${failure === undefined && !pending ? 'text-muted max-sm:sr-only' : 'text-ink'}`}
         >
-          {pending
-            ? t('family.saving')
-            : failure === undefined
-              ? t('questions.position', {
-                  position,
-                  steps,
-                  answered: answeredIn(step.questions),
-                  total: step.questions.length,
-                })
-              : t('questions.failure', { reason: failure })}
+          <span role="status">
+            {pending
+              ? t('family.saving')
+              : failure === undefined
+                ? ''
+                : t('questions.failure', { reason: failure })}
+          </span>
+          {!pending &&
+            failure === undefined &&
+            t('questions.position', {
+              position,
+              steps,
+              answered: answeredIn(step.questions),
+              total: step.questions.length,
+            })}
         </p>
-        {onBack !== undefined && (
+        {!first && (
           <span className="max-sm:shrink-0">
-            <Button type="button" variant="secondary" onClick={onBack}>
+            <Button type="submit" value={backValue} variant="secondary" disabled={pending}>
               {t('questions.previous')}
             </Button>
           </span>

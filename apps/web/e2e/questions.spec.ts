@@ -65,12 +65,12 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await dropped
     .getByLabel('Tipo de curso')
     .selectOption({ label: 'Pós-graduação: especialização, MBA ou mestrado' });
-  await radio(dropped, 'Situação', 'Não concluiu');
+  await radio(dropped, 'Situação', 'Não concluído');
   await expect(dropped.getByRole('group', { name: 'Quando concluiu' })).toHaveCount(0);
   await dropped.getByRole('button', { name: 'Pronto' }).click();
   await expect(
     group(studies, courses).getByText(
-      'Pós-graduação: especialização, MBA ou mestrado · Não concluiu',
+      'Pós-graduação: especialização, MBA ou mestrado · Não concluído',
     ),
   ).toBeVisible();
   await radio(studies, 'Ana está estudando agora?', 'Não');
@@ -137,7 +137,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
 
   const relatives = step(page, 'Família');
   const children = group(relatives, 'Esses são todos os filhos de Ana?');
-  await expect(children.getByText('Anotados: Criança.')).toBeVisible();
+  await expect(children.getByText('Anotados: Criança.').first()).toBeVisible();
   await children.getByRole('radio', { name: 'Sim, são todos' }).check();
   await radio(relatives, 'Filiação', 'Biológica');
   await relatives.getByRole('button', { name: 'Salvar', exact: true }).click();

@@ -449,7 +449,7 @@ export function classifiedCodesKnown(
   );
 }
 
-/** Whether every code an answer names is a known one, and every field it fills is one it asks. */
+/** Whether every code an answer names is a known one, and every list item fills the fields it needs and only those it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
@@ -473,13 +473,16 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
       value.every(
         (item) =>
           isRecord(item) &&
-          input.fields.every(
-            ({ key, input: field, onlyWhen }: QuestionField) =>
-              fieldKnown(field, item[key]) &&
-              (onlyWhen === undefined ||
-                item[key] === undefined ||
-                item[onlyWhen.key] === onlyWhen.value),
-          ),
+          (item['dropped'] === true ||
+            input.fields.every(
+              ({ key, input: field, onlyWhen, optional }: QuestionField) =>
+                fieldKnown(field, item[key]) &&
+                (onlyWhen === undefined
+                  ? optional || item[key] !== undefined
+                  : item[onlyWhen.key] === onlyWhen.value
+                    ? optional || item[key] !== undefined
+                    : item[key] === undefined),
+            )),
       )
     );
   }

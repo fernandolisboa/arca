@@ -150,7 +150,7 @@ export function sentenceText(
         level:
           said.level === undefined
             ? t('playback.part.noLevel')
-            : t('questions.choice.educationLevel', { value: String(said.level) }),
+            : t('questions.choice.qualificationLevel', { value: String(said.level) }),
         details:
           (said.status === undefined ? '' : t('playback.part.status', { status: said.status })) +
           issuedIn(said.country) +

@@ -779,7 +779,7 @@ export const ptBR = {
     pick: 'Escolha uma opção',
     list: {
       add: '+ {question, select, citizenships {Adicionar cidadania} qualifications {Adicionar curso} languages {Adicionar idioma} workPeriods {Adicionar trabalho} registrations {Adicionar registro} jobOffers {Adicionar oferta} incomes {Adicionar renda} assets {Adicionar bem} residencePeriods {Adicionar país} immigrationHistory {Adicionar visto ou ocorrência} other {Adicionar}}',
-      none: '{question, select, citizenships {Nenhuma cidadania} qualifications {Não fez nenhum} languages {Nenhum idioma} workPeriods {Nunca trabalhou} registrations {Não tem registro} jobOffers {Não tem oferta} incomes {Não tem renda} assets {Não tem bens} residencePeriods {Nenhum país} immigrationHistory {Nunca teve} other {Nenhum}}',
+      none: '{question, select, citizenships {Nenhuma cidadania} qualifications {Nenhum curso} languages {Nenhum idioma} workPeriods {Nunca trabalhou} registrations {Não tem registro} jobOffers {Não tem oferta} incomes {Não tem renda} residencePeriods {Nenhum país} immigrationHistory {Nunca teve} other {Nenhum}}',
       or: 'ou',
       change: 'Mudar',
       edit: 'Editar',
@@ -883,11 +883,11 @@ export const ptBR = {
       citizenshipBasis:
         '{value, select, birth {Nascimento} descent {Descendência} naturalization {Naturalização} marriage {Casamento} investment {Investimento} other {Outro jeito}}',
       qualificationLevel:
-        '{value, select, 3 {Ensino médio técnico} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
+        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio técnico} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
       qualificationStatus:
-        '{value, select, completed {Concluído} studying {Cursando} incomplete {Não concluiu} other {}}',
+        '{value, select, completed {Concluído} studying {Em andamento} incomplete {Não concluído} other {}}',
       educationLevel:
-        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Mestrado ou especialização} 8 {Doutorado} other {}}',
+        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
       languageLevel:
         '{value, select, A1 {A1, iniciante} A2 {A2, básico} B1 {B1, intermediário} B2 {B2, intermediário avançado} C1 {C1, avançado} C2 {C2, domínio pleno} native {Língua materna} other {}}',
       isicSection:

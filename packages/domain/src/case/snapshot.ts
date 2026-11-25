@@ -183,24 +183,31 @@ export const maxRegistrations = 20;
 export const qualificationStatuses = ['completed', 'studying', 'incomplete'] as const;
 export type QualificationStatus = (typeof qualificationStatuses)[number];
 
+/** Whether the person holds the qualification: finished, or recorded before the status existed. */
+export const isHeld = ({
+  status,
+}: {
+  readonly status?: QualificationStatus | undefined;
+}): boolean => status === undefined || status === 'completed';
+
 /**
  * A qualification (ADR-0036): its level, field of study, the country of the school, whether it was
  * finished and when. Only a finished one is held: rules never read a course still being taken or
  * left unfinished.
  */
-export const qualificationSchema = z.strictObject({
-  level: educationLevelSchema.optional(),
-  field: studyFieldCodeSchema.optional(),
-  country: countryCodeSchema.optional(),
-  status: z.enum(qualificationStatuses).optional(),
-  completed: dateValueSchema.optional(),
-});
+export const qualificationSchema = z
+  .strictObject({
+    level: educationLevelSchema.optional(),
+    field: studyFieldCodeSchema.optional(),
+    country: countryCodeSchema.optional(),
+    status: z.enum(qualificationStatuses).optional(),
+    completed: dateValueSchema.optional(),
+  })
+  .refine((course) => course.completed === undefined || isHeld(course), {
+    message: 'Only a finished course has a completion date',
+  });
 
 export type Qualification = z.infer<typeof qualificationSchema>;
-
-/** Whether the person holds the qualification: finished, or recorded before the status existed. */
-export const isHeld = ({ status }: Qualification): boolean =>
-  status === undefined || status === 'completed';
 
 /** A professional registration (ADR-0036): the occupation, the country it is held in, since when. */
 export const registrationSchema = z.strictObject({

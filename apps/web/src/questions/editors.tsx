@@ -127,7 +127,7 @@ export function useNames() {
       return [
         {
           title: commonTitle,
-          options: named.filter(({ value }) => commonLanguages.includes(value)),
+          options: commonLanguages.flatMap((code) => named.filter(({ value }) => value === code)),
         },
         { options: sorted(named.filter(({ value }) => !commonLanguages.includes(value))) },
       ];
@@ -238,7 +238,16 @@ export function FieldEditor({
         />
       );
     case 'choice': {
-      const values: readonly (string | number)[] = choiceSets[input.set];
+      const offered: readonly (string | number)[] = choiceSets[input.set];
+      // A value saved before the set narrowed, such as an old course's level, stays shown.
+      const values =
+        (typeof value === 'string' || typeof value === 'number') && !offered.includes(value)
+          ? [value, ...offered]
+          : offered;
+      const choiceOptions = values.map((choice) => {
+        const named: string = t(`questions.choice.${input.set}`, { value: String(choice) });
+        return { value: String(choice), label: named === '' ? String(choice) : named };
+      });
       if (values.length <= fewChoices) {
         return (
           <ChoiceGroup
@@ -246,13 +255,7 @@ export function FieldEditor({
             legendHidden={labelHidden}
             legend={label}
             {...(hint === undefined ? {} : { description: hint })}
-            choices={[
-              ...values.map((choice) => ({
-                value: String(choice),
-                label: t(`questions.choice.${input.set}`, { value: String(choice) }),
-              })),
-              ...unknownOption,
-            ]}
+            choices={[...choiceOptions, ...unknownOption]}
             value={chosenValue}
             onChange={(chosen) => {
               onChange(values.find((choice) => String(choice) === chosen) ?? null);
@@ -267,13 +270,7 @@ export function FieldEditor({
           {...(hint === undefined ? {} : { hint })}
           placeholder={t('questions.pick')}
           value={value === null ? unknownValue : scalar(value)}
-          options={[
-            ...values.map((choice) => ({
-              value: String(choice),
-              label: t(`questions.choice.${input.set}`, { value: String(choice) }),
-            })),
-            ...unknownOption,
-          ]}
+          options={[...choiceOptions, ...unknownOption]}
           onChange={(chosen) => {
             const found = values.find((choice) => String(choice) === chosen);
             onChange(found ?? (chosen === unknownValue ? null : undefined));
@@ -473,12 +470,21 @@ function DateEditor({
   const months = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
   const days = Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, '0'));
   return (
-    <fieldset className="flex flex-col gap-2" aria-labelledby={legendId}>
+    <fieldset
+      className="flex flex-col gap-2"
+      aria-labelledby={legendId}
+      {...(hint === undefined ? {} : { 'aria-describedby': `${legendId}-hint` })}
+    >
       <legend id={legendId} className={labelHidden ? 'sr-only' : 'font-medium'}>
         {label}
       </legend>
       {hint !== undefined && (
-        <p className={labelHidden ? 'sr-only' : '-mt-1 text-small text-muted'}>{hint}</p>
+        <p
+          id={`${legendId}-hint`}
+          className={labelHidden ? 'sr-only' : '-mt-1 text-small text-muted'}
+        >
+          {hint}
+        </p>
       )}
       {value !== null && value !== noneDate && (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -714,10 +720,11 @@ function useItemSummary(questionId: string, fields: readonly QuestionField[]) {
         return typeof value === 'string' ? names.country(value) : undefined;
       case 'language':
         return typeof value === 'string' ? names.language(value) : undefined;
-      case 'choice':
-        return typeof value === 'string' || typeof value === 'number'
-          ? t(`questions.choice.${input.set}`, { value: String(value) })
-          : undefined;
+      case 'choice': {
+        if (typeof value !== 'string' && typeof value !== 'number') return undefined;
+        const named: string = t(`questions.choice.${input.set}`, { value: String(value) });
+        return named === '' ? undefined : named;
+      }
       case 'occupation':
         return typeof value === 'string' && i18n.exists(`occupations.${value}`)
           ? t(`occupations.${value}` as 'occupations.2211')
@@ -814,11 +821,19 @@ function ListEditor({
   // A list that cannot be "Não sei", such as assets, always reads as a list: empty is nothing yet.
   const settled = canBeUnknown && (value === null || (Array.isArray(value) && items.length === 0));
   return (
-    <fieldset className="flex flex-col gap-3" aria-labelledby={legendId}>
+    <fieldset
+      className="flex flex-col gap-3"
+      aria-labelledby={legendId}
+      {...(hint === undefined ? {} : { 'aria-describedby': `${legendId}-hint` })}
+    >
       <legend id={legendId} className="sr-only">
         {legend}
       </legend>
-      {hint !== undefined && <p className="sr-only">{hint}</p>}
+      {hint !== undefined && (
+        <p id={`${legendId}-hint`} className="sr-only">
+          {hint}
+        </p>
+      )}
       {items.length > 0 && (
         <ol className="flex flex-col gap-2">
           {items.map((item, index) => {
@@ -853,7 +868,9 @@ function ListEditor({
                         onClick={() => {
                           setKeys(keys.filter((_, at) => at !== index));
                           toggle(key, false);
-                          onChange(items.filter((_, at) => at !== index));
+                          const left = items.filter((_, at) => at !== index);
+                          // Removing the last row leaves the question open, never "none".
+                          onChange(left.length === 0 ? undefined : left);
                         }}
                       >
                         {t('questions.list.remove')}
@@ -861,6 +878,7 @@ function ListEditor({
                       <Button
                         type="button"
                         variant="secondary"
+                        disabled={lacksNeeded(fields, item)}
                         onClick={() => {
                           toggle(key, false);
                         }}
@@ -995,7 +1013,12 @@ export function QuestionEditor({
           inline
           legendHidden
           legend={legend}
-          before={<p className="text-muted">{listed}</p>}
+          description={listed}
+          before={
+            <p aria-hidden className="text-muted">
+              {listed}
+            </p>
+          }
           choices={[
             { value: 'yes', label: t('questions.complete.yes') },
             { value: 'no', label: t('questions.complete.no') },
@@ -1112,6 +1135,7 @@ function RelationshipsEditor({
   readonly context: QuestionContext;
 }) {
   const { t } = useTranslation();
+  const hintId = useId();
   const rows = Array.isArray(value) ? value.filter(isRecord) : [];
   const name = (id: unknown) => (typeof id === 'string' ? (context.names.get(id) ?? '') : '');
   const title = (row: Record_) => {
@@ -1123,9 +1147,16 @@ function RelationshipsEditor({
       : t('questions.relation.childOf', { name: name(row['from']) });
   };
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset
+      className="flex flex-col gap-3"
+      {...(hint === undefined ? {} : { 'aria-describedby': hintId })}
+    >
       <legend className="sr-only">{legend}</legend>
-      {hint !== undefined && <p className="sr-only">{hint}</p>}
+      {hint !== undefined && (
+        <p id={hintId} className="sr-only">
+          {hint}
+        </p>
+      )}
       {rows.length === 0 && <p className="text-muted">{t('questions.noRelationships')}</p>}
       {rows.map((row) => (
         <div

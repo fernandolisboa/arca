@@ -216,8 +216,9 @@ describe('answering the guided questions (spec 0007, R4)', () => {
   });
 
   it('refuses a qualification above the education level, either way round', () => {
-    expect(apply(empty, { educationLevel: 6, qualifications: [{ level: 7 }] }).ok).toBe(false);
-    const held = apply(empty, { educationLevel: 7, qualifications: [{ level: 7 }] });
+    const master = [{ level: 7, status: 'completed' }];
+    expect(apply(empty, { educationLevel: 6, qualifications: master }).ok).toBe(false);
+    const held = apply(empty, { educationLevel: 7, qualifications: master });
     if (!held.ok) throw new Error('refused');
     expect(apply(held.state, { educationLevel: 6 }).ok).toBe(false);
     expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
