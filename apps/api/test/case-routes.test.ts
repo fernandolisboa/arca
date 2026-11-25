@@ -39,7 +39,7 @@ const view: CaseView = {
       keptByMe: true,
       profile: null,
       finances: null,
-      shares: { profile: [], finances: [] },
+      shares: { profile: [], finances: [], checklist: [] },
       sharedWithMe: [],
     },
   ],
@@ -83,9 +83,9 @@ const writes: readonly [string, unknown, string, unknown][] = [
   ],
   [
     '/case/people/shares',
-    { personId: child, profile: [relative], finances: [] },
+    { personId: child, profile: [relative], finances: [], checklist: [] },
     'replaceShares',
-    { personId: child, profile: [relative], finances: [] },
+    { personId: child, profile: [relative], finances: [], checklist: [] },
   ],
   [
     '/case/relationships',

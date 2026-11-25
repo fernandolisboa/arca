@@ -7,8 +7,10 @@ import type {
   CaseView,
   HandOverCasePersonRequest,
   ReportRuleRequest,
+  SetChecklistMarkRequest,
   WriteComparisonPreferencesRequest,
 } from '@arca/api-contract/routes';
+import { maxChecklistMarks } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
   AddCasePersonRequest,
@@ -46,7 +48,9 @@ import {
   type ShareScope,
   type StoredAsset,
   type StoredRelationship,
+  type MarkState,
   parseCalendarDate,
+  selectRouteVersion,
   shareScopes,
   questionFlow,
   validCaseStructure,
@@ -63,7 +67,7 @@ import {
 } from './comparison.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
-import { type RouteDocumentsView, caseRouteDocuments } from './route-documents.js';
+import { type RouteDocumentsView, type SeenMark, caseRouteDocuments } from './route-documents.js';
 import { casePlayback } from './playback.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
@@ -161,6 +165,17 @@ export interface CaseFiles {
     routeId: string,
     principalId: string,
   ) => Promise<RouteDocumentsView | null>;
+  /**
+   * Sets or clears the viewer's mark on a route's document item for a person they keep (spec
+   * #519); linking one of their own confirmed vault documents also files it under the route's
+   * country. `not_found` outside a case, for a person the viewer does not keep, a route with no
+   * active version in effect or a document that is not theirs; `case_limit` past
+   * `maxChecklistMarks` on the person's route.
+   */
+  readonly setMark: (
+    accountId: string,
+    request: SetChecklistMarkRequest,
+  ) => Promise<'set' | 'not_found' | 'case_limit'>;
   /**
    * Reports a requirement of the viewer's own evaluation as possibly wrong (R8); `not_found` when
    * the viewer is in no case or the evaluation holds no such requirement.
@@ -758,16 +773,110 @@ export function createCaseFiles({
       const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
       return withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined
-          ? null
-          : caseRouteDocuments(rows, routeId, principalId, {
-              catalog,
-              states,
-              today: evaluation.today(),
-              engineCommit: evaluation.engineCommit,
-              guides: evaluation.guides ?? [],
-              ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
-            });
+        if (rows === undefined) return null;
+        const marks = await tx.execute<{
+          person_id: string;
+          document_id: string;
+          state: MarkState;
+          vault_document_id: string | null;
+          vault_owner_id: string | null;
+        }>(sql`
+          SELECT person_id, document_id, state, vault_document_id, vault_owner_id
+            FROM cases.checklist_mark
+           WHERE case_id = ${rows.caseId} AND route_id = ${routeId}
+           ORDER BY person_id, document_id`);
+        const seen: SeenMark[] = marks.rows.map((row) => ({
+          personId: row.person_id,
+          documentId: row.document_id,
+          mark: {
+            state: row.state,
+            linked: row.vault_document_id !== null,
+            // Which document it is stays with its owner, who alone may open it.
+            vaultDocumentId: row.vault_owner_id === accountId ? row.vault_document_id : null,
+          },
+        }));
+        return caseRouteDocuments(
+          rows,
+          routeId,
+          principalId,
+          {
+            catalog,
+            states,
+            today: evaluation.today(),
+            engineCommit: evaluation.engineCommit,
+            guides: evaluation.guides ?? [],
+            ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
+          },
+          seen,
+        );
+      });
+    },
+
+    setMark: async (accountId, { routeId, personId, documentId, mark }) => {
+      let country: string | undefined;
+      if (mark !== null) {
+        const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+        const asOf = evaluation.today();
+        const selected = selectRouteVersion(catalog, routeId, {
+          rulesAsOf: asOf,
+          today: asOf,
+          states,
+        });
+        if (selected.kind !== 'active') return 'not_found';
+        country = selected.entry.version.country;
+      }
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId === undefined) return 'not_found';
+        // One write per case at a time, so the count below holds.
+        await lockCase(tx, caseId);
+        const kept = await one(
+          tx,
+          sql`SELECT FROM cases.person
+               WHERE id = ${personId} AND case_id = ${caseId}
+                 AND keeper_account_id = ${accountId}`,
+        );
+        if (!kept) return 'not_found';
+        if (mark === null) {
+          await tx.execute(sql`
+            DELETE FROM cases.checklist_mark
+             WHERE person_id = ${personId} AND route_id = ${routeId}
+               AND document_id = ${documentId}`);
+          return 'set';
+        }
+        const { state, vaultDocumentId } = mark;
+        if (
+          vaultDocumentId !== null &&
+          !(await one(
+            tx,
+            sql`SELECT FROM vault.document
+                 WHERE id = ${vaultDocumentId} AND owner_id = ${accountId}
+                   AND confirmed_at IS NOT NULL`,
+          ))
+        ) {
+          return 'not_found';
+        }
+        const others = await tx.execute<{ count: number }>(sql`
+          SELECT count(*)::int AS count FROM cases.checklist_mark
+           WHERE person_id = ${personId} AND route_id = ${routeId}
+             AND document_id <> ${documentId}`);
+        if ((others.rows[0]?.count ?? 0) >= maxChecklistMarks) return 'case_limit';
+        const owner = vaultDocumentId === null ? null : accountId;
+        await tx.execute(sql`
+          INSERT INTO cases.checklist_mark
+            (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+          VALUES (${caseId}, ${personId}, ${routeId}, ${documentId}, ${state},
+                  ${vaultDocumentId}, ${owner})
+          ON CONFLICT (person_id, route_id, document_id) DO UPDATE
+            SET state = excluded.state, vault_document_id = excluded.vault_document_id,
+                vault_owner_id = excluded.vault_owner_id, updated_at = now()`);
+        if (vaultDocumentId !== null && country !== undefined) {
+          await tx.execute(sql`
+            INSERT INTO vault.document_country (document_id, owner_id, country)
+            VALUES (${vaultDocumentId}, ${accountId}, ${country})
+            ON CONFLICT DO NOTHING`);
+        }
+        return 'set';
       });
     },
 

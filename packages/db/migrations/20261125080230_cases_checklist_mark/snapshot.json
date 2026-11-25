@@ -1,0 +1,543 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "892dc1d5-f960-48c9-bdd2-b17d40aff6a9",
+  "prevIds": [
+    "5c5d8e61-269e-41e9-8df5-9755dda67b8b"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|tbl|cases.checklist_mark",
+        "n|tbl|cases.checklist_mark",
+        "e|tbl|cases.checklist_mark",
+        "n|rel|cases.checklist_mark",
+        "n|type|cases.checklist_mark",
+        "n|rel|cases.checklist_mark_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "checklist_mark",
+        "checklist_mark_vault_document_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.checklist_mark_vault_document_id_idx",
+        "n|idx|cases.checklist_mark_vault_document_id_idx",
+        "e|idx|cases.checklist_mark_vault_document_id_idx",
+        "n|rel|cases.checklist_mark_vault_document_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|col|cases.checklist_mark.vault_document_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|fk|cases.checklist_mark.checklist_mark_person_fkey",
+        "n|fk|cases.checklist_mark.checklist_mark_person_fkey",
+        "e|fk|cases.checklist_mark.checklist_mark_person_fkey",
+        "n|con|cases.checklist_mark.checklist_mark_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.checklist_mark.person_id",
+        "n|col|cases.checklist_mark.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|fk|cases.checklist_mark.checklist_mark_vault_document_fkey",
+        "n|fk|cases.checklist_mark.checklist_mark_vault_document_fkey",
+        "e|fk|cases.checklist_mark.checklist_mark_vault_document_fkey",
+        "n|con|cases.checklist_mark.checklist_mark_vault_document_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|tbl|vault.document",
+        "n|sch|vault",
+        "n|col|cases.checklist_mark.vault_document_id",
+        "n|col|cases.checklist_mark.vault_owner_id",
+        "n|col|vault.document.id",
+        "n|col|vault.document.owner_id",
+        "e|uniqueness|vault.document.id.owner_id"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "cases",
+        "share"
+      ],
+      "writes": [
+        "s|ck|cases.share.share_scope"
+      ],
+      "reads": [
+        "n|tbl|cases.share",
+        "n|sch|cases",
+        "n|col|cases.share.scope",
+        "e|col|cases.share.scope"
+      ],
+      "sqlHash": "e49117cc97a86a19"
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|pol|cases.checklist_mark.checklist_mark_select_keeper_or_shared",
+        "n|pol|cases.checklist_mark.checklist_mark_select_keeper_or_shared",
+        "e|pol|cases.checklist_mark.checklist_mark_select_keeper_or_shared"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.checklist_mark"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|pol|cases.checklist_mark.checklist_mark_insert_keeper",
+        "n|pol|cases.checklist_mark.checklist_mark_insert_keeper",
+        "e|pol|cases.checklist_mark.checklist_mark_insert_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.checklist_mark"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|pol|cases.checklist_mark.checklist_mark_update_keeper",
+        "n|pol|cases.checklist_mark.checklist_mark_update_keeper",
+        "e|pol|cases.checklist_mark.checklist_mark_update_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.checklist_mark"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "checklist_mark"
+      ],
+      "writes": [
+        "s|pol|cases.checklist_mark.checklist_mark_delete_keeper",
+        "n|pol|cases.checklist_mark.checklist_mark_delete_keeper",
+        "e|pol|cases.checklist_mark.checklist_mark_delete_keeper"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.checklist_mark"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "checklist_mark",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "document_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "state",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "vault_document_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "vault_owner_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_vault_document_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "vault_document_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_vault_document_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "vault_document_id",
+          "vault_owner_id"
+        ],
+        "schemaTo": "vault",
+        "tableTo": "document",
+        "columnsTo": [
+          "id",
+          "owner_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_pkey",
+        "columns": [
+          "person_id",
+          "route_id",
+          "document_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_state",
+        "value": "\"state\" IN ('had', 'missing')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_route_id_format",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_document_id_format",
+        "value": "\"document_id\" ~ '^[a-z0-9][a-z0-9-]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_link",
+        "value": "(\"vault_document_id\" IS NULL) = (\"vault_owner_id\" IS NULL) AND (\"vault_document_id\" IS NULL OR \"state\" = 'had')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_select_keeper_or_shared",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) OR EXISTS (SELECT 1 FROM \"cases\".\"share\" WHERE \"cases\".\"share\".\"person_id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"share\".\"grantee_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid AND \"cases\".\"share\".\"scope\" = 'checklist')",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_insert_keeper",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) AND (\"cases\".\"checklist_mark\".\"vault_owner_id\" IS NULL OR \"cases\".\"checklist_mark\".\"vault_owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_update_keeper",
+        "as": "PERMISSIVE",
+        "for": "UPDATE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid) AND (\"cases\".\"checklist_mark\".\"vault_owner_id\" IS NULL OR \"cases\".\"checklist_mark\".\"vault_owner_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_delete_keeper",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "EXISTS (SELECT 1 FROM \"cases\".\"person\" WHERE \"cases\".\"person\".\"id\" = \"cases\".\"checklist_mark\".\"person_id\" AND \"cases\".\"person\".\"keeper_account_id\" = nullif(current_setting('app.account_id', true), '')::uuid)",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"cases\",\"share\",\"share_scope\"]",
+      "set": {
+        "value": "\"scope\" IN ('profile', 'finances', 'checklist')"
+      }
+    }
+  ]
+}

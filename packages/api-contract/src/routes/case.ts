@@ -13,6 +13,7 @@ import {
   isNewReference,
   maxCaseMembers,
   maxCasePeople,
+  markStates,
   occupationCodeSchema,
   questionFlow,
   questionIds,
@@ -20,6 +21,7 @@ import {
   studyFieldCodeSchema,
   sentenceSchema,
   shareScopeSchema,
+  shareScopes,
   startsInPlan,
   storedAssetSchema,
   storedFinancesSchema,
@@ -38,7 +40,7 @@ import type { RouteDefinition } from './index.js';
  * exist; 409 case_limit says only that a limit is reached, never what a hidden row holds.
  */
 
-export { isNewReference, maxCaseMembers, maxCasePeople, startsInPlan };
+export { isNewReference, markStates, maxCaseMembers, maxCasePeople, shareScopes, startsInPlan };
 
 export const CaseProfile = z.strictObject({
   facts: storedProfileFactsSchema,
@@ -48,7 +50,12 @@ export const CaseProfile = z.strictObject({
 export type CaseProfile = z.infer<typeof CaseProfile>;
 
 const grantees = z.array(z.uuid()).max(maxCaseMembers);
-export const CaseShares = z.strictObject({ profile: grantees, finances: grantees });
+export const CaseShares = z.strictObject({
+  profile: grantees,
+  finances: grantees,
+  /** Read only: who sees the person's document checklist marks (spec #519). */
+  checklist: grantees,
+});
 export type CaseShares = z.infer<typeof CaseShares>;
 
 export const CasePerson = z.object({
@@ -63,10 +70,10 @@ export const CasePerson = z.object({
   /** Null when not written yet, or not shared with the viewer. */
   profile: CaseProfile.nullable(),
   finances: storedFinancesSchema.nullable(),
-  /** The members who see this person's profile and finances; only for people the viewer keeps. */
+  /** The members who see this person's data, by scope; only for people the viewer keeps. */
   shares: CaseShares.nullable(),
   /** What the keeper of a person the viewer does not keep shares with the viewer. */
-  sharedWithMe: z.array(shareScopeSchema).max(2),
+  sharedWithMe: z.array(shareScopeSchema).max(shareScopes.length),
 });
 export type CasePerson = z.infer<typeof CasePerson>;
 
@@ -269,7 +276,7 @@ export const writeCaseFinances = write(
 export const replaceCaseShares = write(
   '/case/people/shares',
   'replaceCaseShares',
-  "Replaces the members who see a person's profile and finances, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
+  "Replaces the members who see a person's profile, finances and document checklist, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
   ReplaceCaseSharesRequest,
 );
 export const addCaseRelationship = write(
@@ -490,6 +497,16 @@ export const DocumentGuideView = z.object({
 });
 export type DocumentGuideView = z.infer<typeof DocumentGuideView>;
 
+/** A keeper's mark on one item for one person (spec #519). */
+export const ChecklistMarkView = z.object({
+  state: z.enum(markStates),
+  /** A vault document is linked to the item. */
+  linked: z.boolean(),
+  /** The linked document, only for the account that owns it. */
+  vaultDocumentId: z.uuid().nullable(),
+});
+export type ChecklistMarkView = z.infer<typeof ChecklistMarkView>;
+
 /** One document a route version asks for, as it reads for one person or for the unit. */
 export const DocumentItemView = z.object({
   documentId: slugSchema,
@@ -510,8 +527,24 @@ export const DocumentItemView = z.object({
   dependsOn,
   /** Empty when no guide covers the kind for the person's citizenships. */
   guides: z.array(DocumentGuideView).max(10),
+  /** The keeper's mark; null when unmarked or when the viewer may not see the list's marks. */
+  mark: ChecklistMarkView.nullable(),
 });
 export type DocumentItemView = z.infer<typeof DocumentItemView>;
+
+/** Of the items a list shows, how many its keeper marked as had; computed in code. */
+const ChecklistProgress = z.object({ had: z.int().min(0), total: z.int().min(0) });
+
+/** One list's items with what the viewer may do with its marks. */
+const ChecklistList = z.object({
+  /** The viewer keeps the list's person (the principal, for the unit), so marks it. */
+  editable: z.boolean(),
+  /** The viewer keeps the person, or the keeper shared the person's checklist with the viewer. */
+  marksShown: z.boolean(),
+  /** Null when the marks are not shown. */
+  progress: ChecklistProgress.nullable(),
+  items: z.array(DocumentItemView).max(100),
+});
 
 export const RouteDocuments = z.object({
   routeId: routeIdSchema,
@@ -537,15 +570,31 @@ export const RouteDocuments = z.object({
         /** The principal, then dependents, then possible dependents. */
         people: z
           .array(
-            z.object({
+            ChecklistList.extend({
               personId: z.uuid(),
               role: z.enum(['principal', 'dependent', 'possible_dependent']),
-              items: z.array(DocumentItemView).max(100),
             }),
           )
           .max(maxCasePeople),
-        /** What the unit hands in once, such as proof of means. */
-        unit: z.array(DocumentItemView).max(100),
+        /** What the unit hands in once, such as proof of means, marked on the principal. */
+        unit: ChecklistList,
+        /** Over every list; null when some list's marks are not shown. */
+        progress: ChecklistProgress.nullable(),
+        /** Marks the viewer sees on items the version in effect no longer lists. */
+        noLongerAsked: z
+          .array(
+            z.object({
+              personId: z.uuid(),
+              documentId: slugSchema,
+              /** From the newest earlier version that listed it; null when none did. */
+              title: shownText.nullable(),
+              original: originalText,
+              /** The viewer keeps the person, so may take the mark off. */
+              editable: z.boolean(),
+              mark: ChecklistMarkView,
+            }),
+          )
+          .max(maxCasePeople * 200),
       }),
     ])
     .nullable(),
@@ -563,10 +612,42 @@ export const getRouteDocuments = {
   path: '/case/documents',
   operationId: 'getRouteDocuments',
   summary:
-    "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources and where to get each in a country whose citizenship the person holds; nothing is stored; 120 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
+    "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources, where to get each in a country whose citizenship the person holds, and the marks the viewer may see, with progress and the marks on items no longer asked; 600 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
   query: RouteDocumentsQuery,
   response: { description: 'The document checklist', schema: RouteDocuments },
 } as const satisfies RouteDefinition<typeof RouteDocuments>;
+
+/** Marks a person may hold on one route, past which a new one answers 409 case_limit. */
+export const maxChecklistMarks = 200;
+
+export const SetChecklistMarkRequest = z.strictObject({
+  routeId: routeIdSchema,
+  /** A person the viewer keeps; for an item of the unit, its principal. */
+  personId: z.uuid(),
+  documentId: slugSchema,
+  /** Null clears the mark and its link; the vault document stays, under its countries. */
+  mark: z
+    .strictObject({
+      state: z.enum(markStates),
+      /** One of the viewer's own confirmed vault documents; only with `had`. */
+      vaultDocumentId: z.uuid().nullable(),
+    })
+    .refine(({ state, vaultDocumentId }) => vaultDocumentId === null || state === 'had', {
+      message: 'Only a document marked as had links a vault document',
+    })
+    .nullable(),
+});
+export type SetChecklistMarkRequest = z.infer<typeof SetChecklistMarkRequest>;
+
+export const setChecklistMark = {
+  method: 'post',
+  path: '/case/documents/marks',
+  operationId: 'setChecklistMark',
+  summary:
+    "Sets or clears the viewer's mark on one document item of a route, for a person the viewer keeps, keyed on the item's ID; linking one of the viewer's own confirmed vault documents files it under the route's country in the same request and needs the session's vault_unlock window (403 step_up_required); unlinking leaves the document and its countries; the route needs an active version in effect. 300 writes per hour per account (429 rate_limited); 404 not_found outside a case, for a person the viewer does not keep, a route with no active version or a vault document that is not the viewer's; 409 case_limit past 200 marks for a person on one route",
+  body: SetChecklistMarkRequest,
+  response: { description: 'Set', schema: z.object({}) },
+} as const satisfies RouteDefinition;
 
 /** Why a member thinks a requirement may be wrong (spec 0007, R8). */
 export const ruleReportReasons = [
@@ -686,6 +767,7 @@ export const caseRoutes = {
   getCasePlayback,
   getCaseEvaluations,
   getRouteDocuments,
+  setChecklistMark,
   reportRule,
   draftCaseIntake,
   leaveCase,

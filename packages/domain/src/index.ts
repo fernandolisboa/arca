@@ -340,6 +340,7 @@ export {
   evaluateRoute,
   evaluateVersion,
   evaluateVersionTraced,
+  selectRouteVersion,
 } from './rules/engine.js';
 export {
   type DocumentChecklist,
@@ -349,6 +350,15 @@ export {
   documentChecklist,
   routeDocuments,
 } from './rules/documents.js';
+export {
+  type ChecklistProgress,
+  type DroppedItem,
+  type MarkState,
+  droppedItems,
+  listProgress,
+  markStates,
+  routeProgress,
+} from './rules/checklist-marks.js';
 export { type StaleSource, staleAfterDays, staleSources } from './rules/staleness.js';
 export { type Trace } from './rules/evaluate.js';
 export { type MissingFact } from './rules/missing.js';

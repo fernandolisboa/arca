@@ -6767,11 +6767,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -6781,10 +6790,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -8236,11 +8246,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -8250,10 +8269,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -9711,11 +9731,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -9725,10 +9754,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -11191,11 +11221,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -11205,10 +11244,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -12661,11 +12701,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -12675,10 +12724,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -14136,11 +14186,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -14150,10 +14209,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -15634,11 +15694,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -15648,10 +15717,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -17727,11 +17797,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -17741,10 +17820,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -19412,11 +19492,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -19426,10 +19515,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -19931,7 +20021,7 @@
     "/case/people/shares": {
       "post": {
         "operationId": "replaceCaseShares",
-        "summary": "Replaces the members who see a person's profile and finances, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
+        "summary": "Replaces the members who see a person's profile, finances and document checklist, for a person the viewer keeps; 409 case_invalid for an account that is not another member",
         "requestBody": {
           "required": true,
           "content": {
@@ -19955,6 +20045,14 @@
                     },
                     "maxItems": 30
                   },
+                  "checklist": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "maxItems": 30
+                  },
                   "personId": {
                     "type": "string",
                     "format": "uuid"
@@ -19963,6 +20061,7 @@
                 "required": [
                   "profile",
                   "finances",
+                  "checklist",
                   "personId"
                 ],
                 "additionalProperties": false
@@ -20900,11 +20999,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -20914,10 +21022,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -22495,11 +22604,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -22509,10 +22627,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -23965,11 +24084,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -23979,10 +24107,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -25674,11 +25803,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -25688,10 +25826,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -27378,11 +27517,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -27392,10 +27540,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -28848,11 +28997,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -28862,10 +29020,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -30328,11 +30487,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -30342,10 +30510,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -31803,11 +31972,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -31817,10 +31995,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -33278,11 +33457,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -33292,10 +33480,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -34956,11 +35145,20 @@
                                       "format": "uuid"
                                     },
                                     "maxItems": 30
+                                  },
+                                  "checklist": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "maxItems": 30
                                   }
                                 },
                                 "required": [
                                   "profile",
-                                  "finances"
+                                  "finances",
+                                  "checklist"
                                 ],
                                 "additionalProperties": false
                               },
@@ -34970,10 +35168,11 @@
                                   "type": "string",
                                   "enum": [
                                     "profile",
-                                    "finances"
+                                    "finances",
+                                    "checklist"
                                   ]
                                 },
-                                "maxItems": 2
+                                "maxItems": 3
                               }
                             },
                             "required": [
@@ -39112,7 +39311,7 @@
     "/case/documents": {
       "get": {
         "operationId": "getRouteDocuments",
-        "summary": "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources and where to get each in a country whose citizenship the person holds; nothing is stored; 120 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
+        "summary": "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources, where to get each in a country whose citizenship the person holds, and the marks the viewer may see, with progress and the marks on items no longer asked; 600 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
         "parameters": [
           {
             "schema": {
@@ -39253,16 +39452,30 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "personId": {
-                                    "type": "string",
-                                    "format": "uuid"
+                                  "editable": {
+                                    "type": "boolean"
                                   },
-                                  "role": {
-                                    "type": "string",
-                                    "enum": [
-                                      "principal",
-                                      "dependent",
-                                      "possible_dependent"
+                                  "marksShown": {
+                                    "type": "boolean"
+                                  },
+                                  "progress": {
+                                    "type": [
+                                      "object",
+                                      "null"
+                                    ],
+                                    "properties": {
+                                      "had": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      },
+                                      "total": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "had",
+                                      "total"
                                     ]
                                   },
                                   "items": {
@@ -39557,6 +39770,36 @@
                                             ]
                                           },
                                           "maxItems": 10
+                                        },
+                                        "mark": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "state": {
+                                              "type": "string",
+                                              "enum": [
+                                                "had",
+                                                "missing"
+                                              ]
+                                            },
+                                            "linked": {
+                                              "type": "boolean"
+                                            },
+                                            "vaultDocumentId": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ],
+                                              "format": "uuid"
+                                            }
+                                          },
+                                          "required": [
+                                            "state",
+                                            "linked",
+                                            "vaultDocumentId"
+                                          ]
                                         }
                                       },
                                       "required": [
@@ -39572,31 +39815,454 @@
                                         "noteOriginal",
                                         "sources",
                                         "dependsOn",
-                                        "guides"
+                                        "guides",
+                                        "mark"
                                       ]
                                     },
                                     "maxItems": 100
+                                  },
+                                  "personId": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "role": {
+                                    "type": "string",
+                                    "enum": [
+                                      "principal",
+                                      "dependent",
+                                      "possible_dependent"
+                                    ]
                                   }
                                 },
                                 "required": [
+                                  "editable",
+                                  "marksShown",
+                                  "progress",
+                                  "items",
                                   "personId",
-                                  "role",
-                                  "items"
+                                  "role"
                                 ]
                               },
                               "maxItems": 60
                             },
                             "unit": {
+                              "type": "object",
+                              "properties": {
+                                "editable": {
+                                  "type": "boolean"
+                                },
+                                "marksShown": {
+                                  "type": "boolean"
+                                },
+                                "progress": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "had": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "total": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    }
+                                  },
+                                  "required": [
+                                    "had",
+                                    "total"
+                                  ]
+                                },
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "documentId": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                      },
+                                      "title": {
+                                        "type": "string",
+                                        "maxLength": 400
+                                      },
+                                      "original": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "maxLength": 200
+                                      },
+                                      "kind": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                                      },
+                                      "applies": {
+                                        "anyOf": [
+                                          {
+                                            "type": "boolean",
+                                            "enum": [
+                                              true
+                                            ]
+                                          },
+                                          {
+                                            "type": "string",
+                                            "enum": [
+                                              "unknown"
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "apostille": {
+                                        "type": [
+                                          "boolean",
+                                          "null"
+                                        ]
+                                      },
+                                      "translation": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                                      },
+                                      "validity": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                      },
+                                      "note": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "maxLength": 400
+                                      },
+                                      "noteOriginal": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "maxLength": 200
+                                      },
+                                      "sources": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string",
+                                              "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                            },
+                                            "url": {
+                                              "type": "string",
+                                              "maxLength": 2000
+                                            },
+                                            "title": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 200
+                                            },
+                                            "kind": {
+                                              "type": "string",
+                                              "enum": [
+                                                "official",
+                                                "secondary"
+                                              ]
+                                            },
+                                            "verifiedAt": {
+                                              "type": "string",
+                                              "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                            },
+                                            "machineReadableUrl": {
+                                              "type": "string",
+                                              "maxLength": 2000,
+                                              "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "url",
+                                            "title",
+                                            "kind",
+                                            "verifiedAt"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 50
+                                      },
+                                      "dependsOn": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "personId": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
+                                            "question": {
+                                              "type": "string",
+                                              "enum": [
+                                                "birthDate",
+                                                "citizenships",
+                                                "residenceCountry",
+                                                "educationLevel",
+                                                "qualifications",
+                                                "studying",
+                                                "languages",
+                                                "workPeriods",
+                                                "registrations",
+                                                "jobOffers",
+                                                "incomes",
+                                                "dependsOn",
+                                                "assets",
+                                                "allAssets",
+                                                "residencePeriods",
+                                                "immigrationHistory",
+                                                "allSpouses",
+                                                "allPartners",
+                                                "allChildren",
+                                                "allParents",
+                                                "relationships"
+                                              ]
+                                            },
+                                            "kept": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "required": [
+                                            "personId",
+                                            "question",
+                                            "kept"
+                                          ]
+                                        },
+                                        "maxItems": 1260
+                                      },
+                                      "guides": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "onlineUrl": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ],
+                                              "maxLength": 2000,
+                                              "format": "uri"
+                                            },
+                                            "cost": {
+                                              "type": [
+                                                "object",
+                                                "null"
+                                              ],
+                                              "properties": {
+                                                "min": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "amount": {
+                                                      "type": "string",
+                                                      "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                                    },
+                                                    "currency": {
+                                                      "type": "string",
+                                                      "pattern": "^[A-Z]{3}$"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "amount",
+                                                    "currency"
+                                                  ]
+                                                },
+                                                "max": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "amount": {
+                                                      "type": "string",
+                                                      "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                                    },
+                                                    "currency": {
+                                                      "type": "string",
+                                                      "pattern": "^[A-Z]{3}$"
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "amount",
+                                                    "currency"
+                                                  ]
+                                                }
+                                              },
+                                              "required": [
+                                                "min",
+                                                "max"
+                                              ]
+                                            },
+                                            "leadTime": {
+                                              "type": [
+                                                "object",
+                                                "null"
+                                              ],
+                                              "properties": {
+                                                "min": {
+                                                  "type": "string",
+                                                  "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                                },
+                                                "max": {
+                                                  "type": "string",
+                                                  "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                                },
+                                                "businessDays": {
+                                                  "type": "boolean"
+                                                }
+                                              },
+                                              "required": [
+                                                "min",
+                                                "max",
+                                                "businessDays"
+                                              ]
+                                            },
+                                            "sources": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "url": {
+                                                    "type": "string",
+                                                    "maxLength": 2000
+                                                  },
+                                                  "title": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 200
+                                                  },
+                                                  "verifiedAt": {
+                                                    "type": "string",
+                                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "url",
+                                                  "title",
+                                                  "verifiedAt"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              "maxItems": 5
+                                            }
+                                          },
+                                          "required": [
+                                            "country",
+                                            "onlineUrl",
+                                            "cost",
+                                            "leadTime",
+                                            "sources"
+                                          ]
+                                        },
+                                        "maxItems": 10
+                                      },
+                                      "mark": {
+                                        "type": [
+                                          "object",
+                                          "null"
+                                        ],
+                                        "properties": {
+                                          "state": {
+                                            "type": "string",
+                                            "enum": [
+                                              "had",
+                                              "missing"
+                                            ]
+                                          },
+                                          "linked": {
+                                            "type": "boolean"
+                                          },
+                                          "vaultDocumentId": {
+                                            "type": [
+                                              "string",
+                                              "null"
+                                            ],
+                                            "format": "uuid"
+                                          }
+                                        },
+                                        "required": [
+                                          "state",
+                                          "linked",
+                                          "vaultDocumentId"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "documentId",
+                                      "title",
+                                      "original",
+                                      "kind",
+                                      "applies",
+                                      "apostille",
+                                      "translation",
+                                      "validity",
+                                      "note",
+                                      "noteOriginal",
+                                      "sources",
+                                      "dependsOn",
+                                      "guides",
+                                      "mark"
+                                    ]
+                                  },
+                                  "maxItems": 100
+                                }
+                              },
+                              "required": [
+                                "editable",
+                                "marksShown",
+                                "progress",
+                                "items"
+                              ]
+                            },
+                            "progress": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "had": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "total": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "had",
+                                "total"
+                              ]
+                            },
+                            "noLongerAsked": {
                               "type": "array",
                               "items": {
                                 "type": "object",
                                 "properties": {
+                                  "personId": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
                                   "documentId": {
                                     "type": "string",
                                     "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
                                   },
                                   "title": {
-                                    "type": "string",
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
                                     "maxLength": 400
                                   },
                                   "original": {
@@ -39606,304 +40272,56 @@
                                     ],
                                     "maxLength": 200
                                   },
-                                  "kind": {
-                                    "type": "string",
-                                    "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                                  "editable": {
+                                    "type": "boolean"
                                   },
-                                  "applies": {
-                                    "anyOf": [
-                                      {
-                                        "type": "boolean",
-                                        "enum": [
-                                          true
-                                        ]
-                                      },
-                                      {
+                                  "mark": {
+                                    "type": "object",
+                                    "properties": {
+                                      "state": {
                                         "type": "string",
                                         "enum": [
-                                          "unknown"
+                                          "had",
+                                          "missing"
                                         ]
+                                      },
+                                      "linked": {
+                                        "type": "boolean"
+                                      },
+                                      "vaultDocumentId": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ],
+                                        "format": "uuid"
                                       }
+                                    },
+                                    "required": [
+                                      "state",
+                                      "linked",
+                                      "vaultDocumentId"
                                     ]
-                                  },
-                                  "apostille": {
-                                    "type": [
-                                      "boolean",
-                                      "null"
-                                    ]
-                                  },
-                                  "translation": {
-                                    "type": [
-                                      "string",
-                                      "null"
-                                    ],
-                                    "pattern": "^[a-z][a-z0-9_]{0,39}$"
-                                  },
-                                  "validity": {
-                                    "type": [
-                                      "string",
-                                      "null"
-                                    ],
-                                    "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
-                                  },
-                                  "note": {
-                                    "type": [
-                                      "string",
-                                      "null"
-                                    ],
-                                    "maxLength": 400
-                                  },
-                                  "noteOriginal": {
-                                    "type": [
-                                      "string",
-                                      "null"
-                                    ],
-                                    "maxLength": 200
-                                  },
-                                  "sources": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "id": {
-                                          "type": "string",
-                                          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
-                                        },
-                                        "url": {
-                                          "type": "string",
-                                          "maxLength": 2000
-                                        },
-                                        "title": {
-                                          "type": "string",
-                                          "minLength": 1,
-                                          "maxLength": 200
-                                        },
-                                        "kind": {
-                                          "type": "string",
-                                          "enum": [
-                                            "official",
-                                            "secondary"
-                                          ]
-                                        },
-                                        "verifiedAt": {
-                                          "type": "string",
-                                          "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
-                                        },
-                                        "machineReadableUrl": {
-                                          "type": "string",
-                                          "maxLength": 2000,
-                                          "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
-                                        }
-                                      },
-                                      "required": [
-                                        "id",
-                                        "url",
-                                        "title",
-                                        "kind",
-                                        "verifiedAt"
-                                      ],
-                                      "additionalProperties": false
-                                    },
-                                    "maxItems": 50
-                                  },
-                                  "dependsOn": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "personId": {
-                                          "type": "string",
-                                          "format": "uuid"
-                                        },
-                                        "question": {
-                                          "type": "string",
-                                          "enum": [
-                                            "birthDate",
-                                            "citizenships",
-                                            "residenceCountry",
-                                            "educationLevel",
-                                            "qualifications",
-                                            "studying",
-                                            "languages",
-                                            "workPeriods",
-                                            "registrations",
-                                            "jobOffers",
-                                            "incomes",
-                                            "dependsOn",
-                                            "assets",
-                                            "allAssets",
-                                            "residencePeriods",
-                                            "immigrationHistory",
-                                            "allSpouses",
-                                            "allPartners",
-                                            "allChildren",
-                                            "allParents",
-                                            "relationships"
-                                          ]
-                                        },
-                                        "kept": {
-                                          "type": "boolean"
-                                        }
-                                      },
-                                      "required": [
-                                        "personId",
-                                        "question",
-                                        "kept"
-                                      ]
-                                    },
-                                    "maxItems": 1260
-                                  },
-                                  "guides": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "country": {
-                                          "type": "string",
-                                          "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
-                                        },
-                                        "onlineUrl": {
-                                          "type": [
-                                            "string",
-                                            "null"
-                                          ],
-                                          "maxLength": 2000,
-                                          "format": "uri"
-                                        },
-                                        "cost": {
-                                          "type": [
-                                            "object",
-                                            "null"
-                                          ],
-                                          "properties": {
-                                            "min": {
-                                              "type": "object",
-                                              "properties": {
-                                                "amount": {
-                                                  "type": "string",
-                                                  "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
-                                                },
-                                                "currency": {
-                                                  "type": "string",
-                                                  "pattern": "^[A-Z]{3}$"
-                                                }
-                                              },
-                                              "required": [
-                                                "amount",
-                                                "currency"
-                                              ]
-                                            },
-                                            "max": {
-                                              "type": "object",
-                                              "properties": {
-                                                "amount": {
-                                                  "type": "string",
-                                                  "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
-                                                },
-                                                "currency": {
-                                                  "type": "string",
-                                                  "pattern": "^[A-Z]{3}$"
-                                                }
-                                              },
-                                              "required": [
-                                                "amount",
-                                                "currency"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "min",
-                                            "max"
-                                          ]
-                                        },
-                                        "leadTime": {
-                                          "type": [
-                                            "object",
-                                            "null"
-                                          ],
-                                          "properties": {
-                                            "min": {
-                                              "type": "string",
-                                              "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
-                                            },
-                                            "max": {
-                                              "type": "string",
-                                              "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
-                                            },
-                                            "businessDays": {
-                                              "type": "boolean"
-                                            }
-                                          },
-                                          "required": [
-                                            "min",
-                                            "max",
-                                            "businessDays"
-                                          ]
-                                        },
-                                        "sources": {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "object",
-                                            "properties": {
-                                              "url": {
-                                                "type": "string",
-                                                "maxLength": 2000
-                                              },
-                                              "title": {
-                                                "type": "string",
-                                                "minLength": 1,
-                                                "maxLength": 200
-                                              },
-                                              "verifiedAt": {
-                                                "type": "string",
-                                                "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
-                                              }
-                                            },
-                                            "required": [
-                                              "url",
-                                              "title",
-                                              "verifiedAt"
-                                            ],
-                                            "additionalProperties": false
-                                          },
-                                          "maxItems": 5
-                                        }
-                                      },
-                                      "required": [
-                                        "country",
-                                        "onlineUrl",
-                                        "cost",
-                                        "leadTime",
-                                        "sources"
-                                      ]
-                                    },
-                                    "maxItems": 10
                                   }
                                 },
                                 "required": [
+                                  "personId",
                                   "documentId",
                                   "title",
                                   "original",
-                                  "kind",
-                                  "applies",
-                                  "apostille",
-                                  "translation",
-                                  "validity",
-                                  "note",
-                                  "noteOriginal",
-                                  "sources",
-                                  "dependsOn",
-                                  "guides"
+                                  "editable",
+                                  "mark"
                                 ]
                               },
-                              "maxItems": 100
+                              "maxItems": 12000
                             }
                           },
                           "required": [
                             "kind",
                             "asksNone",
                             "people",
-                            "unit"
+                            "unit",
+                            "progress",
+                            "noLongerAsked"
                           ]
                         },
                         {
@@ -39921,6 +40339,110 @@
                     "newerProposedVersion",
                     "documents"
                   ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case/documents/marks": {
+      "post": {
+        "operationId": "setChecklistMark",
+        "summary": "Sets or clears the viewer's mark on one document item of a route, for a person the viewer keeps, keyed on the item's ID; linking one of the viewer's own confirmed vault documents files it under the route's country in the same request and needs the session's vault_unlock window (403 step_up_required); unlinking leaves the document and its countries; the route needs an active version in effect. 300 writes per hour per account (429 rate_limited); 404 not_found outside a case, for a person the viewer does not keep, a route with no active version or a vault document that is not the viewer's; 409 case_limit past 200 marks for a person on one route",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "routeId": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "documentId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                  },
+                  "mark": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "had",
+                          "missing"
+                        ]
+                      },
+                      "vaultDocumentId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "uuid"
+                      }
+                    },
+                    "required": [
+                      "state",
+                      "vaultDocumentId"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "routeId",
+                  "personId",
+                  "documentId",
+                  "mark"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
                 }
               }
             }

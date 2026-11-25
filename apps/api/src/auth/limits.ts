@@ -76,7 +76,7 @@ export const caseLimits = {
   write: { name: 'case_write_account', limit: 300, windowSeconds: hour },
   playback: { name: 'case_playback_session', limit: 60, windowSeconds: hour },
   evaluations: { name: 'case_evaluations_session', limit: 60, windowSeconds: hour },
-  documents: { name: 'case_documents_session', limit: 120, windowSeconds: hour },
+  documents: { name: 'case_documents_session', limit: 600, windowSeconds: hour },
   comparison: { name: 'case_comparison_session', limit: 60, windowSeconds: hour },
   reports: { name: 'rule_report_account', limit: 20, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;

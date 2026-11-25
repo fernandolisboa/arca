@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page, type Request } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   createdPrfCredential,
   newCredential,
@@ -19,6 +18,7 @@ import {
 } from './postgres/accounts.js';
 import { reportViolations, watchProblems } from './problems.js';
 import { databaseServer } from './servers.js';
+import { addFile, expectAccessible, keepSecret, opened, scrypt, setUp } from './vault-steps.js';
 
 test.skip(!databaseServer.enabled, 'needs ARCA_E2E_DATABASE and a Postgres (see README)');
 test.beforeAll(async () => {
@@ -40,41 +40,6 @@ async function openVaultPage(page: Page) {
   await page.goto(`${databaseServer.origin}/`);
   await page.getByRole('link', { name: 'Abrir o cofre' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Cofre' })).toBeVisible();
-}
-
-async function expectAccessible(page: Page) {
-  expect(await new AxeBuilder({ page }).analyze().then(({ violations }) => violations)).toEqual([]);
-}
-
-const opened = (page: Page) => page.getByText(/^O cofre está aberto neste dispositivo\./);
-
-/** Each recovery envelope is an scrypt passphrase file: seconds of work on a busy machine. */
-const scrypt = { timeout: 20_000 };
-
-/** Creates the vault and keeps the secret it shows once, as a person writing it down would. */
-async function setUp(page: Page): Promise<{ secret: string; upload: Request }> {
-  const upload = page.waitForRequest(
-    (request) => request.method() === 'POST' && request.url().endsWith('/v1/vault'),
-  );
-  await page.getByRole('button', { name: 'Criar meu cofre' }).click();
-  const secret = await keepSecret(page);
-  return { secret, upload: await upload };
-}
-
-/** Reads the vault secret shown once, checks the page, and confirms it was kept. */
-async function keepSecret(page: Page): Promise<string> {
-  const sheet = page.getByRole('group', { name: 'Segredo de recuperação do cofre' });
-  await expect(sheet).toBeVisible(scrypt);
-  const secret = (await sheet.locator('p').nth(1).innerText()).trim();
-  expect(secret).toMatch(/^[0-9A-Z]{4}( [0-9A-Z]{1,4}){6}$/);
-  await expectAccessible(page);
-  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  await sheet.getByRole('button', { name: 'Copiar o segredo' }).click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(secret);
-  await page.getByLabel('Guardei o segredo num lugar seguro').check();
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(opened(page)).toBeVisible();
-  return secret;
 }
 
 async function signOutAndIn(page: Page, email: string) {
@@ -343,13 +308,6 @@ test('shares a document with a linked account and takes the access back', async 
 });
 
 /** Adds a synthetic text file to the open vault. */
-async function addFile(page: Page, name: string, contents: string) {
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Adicionar documento' }).click();
-  await (await chooser).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.from(contents) });
-  await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
-}
-
 async function downloaded(page: Page, row: ReturnType<Page['getByRole']>) {
   const download = page.waitForEvent('download');
   await row.getByRole('button', { name: 'Baixar' }).click();

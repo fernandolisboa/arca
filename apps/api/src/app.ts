@@ -1485,6 +1485,19 @@ export function createApp({
       ? fail(c, 'not_found', 404)
       : c.json(RouteDocuments.parse(documents), 200);
   });
+  // A mark is case data; linking reads the vault, so it needs the vault open like filing does.
+  v1.openapi(openApiRoutes.setChecklistMark, async (c) => {
+    const account = await caseAccount(c, 'write');
+    if ('refused' in account) return account.refused;
+    const request = caseRoutes.setChecklistMark.body.parse(await c.req.json());
+    if (request.mark?.vaultDocumentId != null && !(await unlocked(account.current))) {
+      return fail(c, 'step_up_required', 403);
+    }
+    const outcome = await account.cases.setMark(account.current.accountId, request);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    if (outcome === 'case_limit') return fail(c, 'case_limit', 409);
+    return c.json({}, 200);
+  });
   v1.openapi(openApiRoutes.getComparison, async (c) => {
     const account = await caseAccount(c, 'comparison');
     if ('refused' in account) return account.refused;

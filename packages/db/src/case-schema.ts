@@ -18,6 +18,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { document as vaultDocument } from './vault-schema.js';
 
 /**
  * The case (spec 0007, R1): who is in it, the people it describes, their facts and who may see
@@ -41,7 +42,7 @@ const keeps = (personId: unknown): SQL =>
   sql`EXISTS (SELECT 1 FROM ${person} WHERE ${person.id} = ${personId} AND ${isIdentity(person.keeperAccountId)})`;
 
 /** Whether the person's keeper shared that scope of the person with the identity. */
-const sharedWith = (personId: unknown, scope: 'profile' | 'finances'): SQL =>
+const sharedWith = (personId: unknown, scope: (typeof shareScopes)[number]): SQL =>
   sql`EXISTS (SELECT 1 FROM ${share} WHERE ${share.personId} = ${personId} AND ${isIdentity(share.granteeAccountId)} AND ${share.scope} = ${sql.raw(`'${scope}'`)})`;
 
 /** A JSON value of the given type and at most `bytes` long. */
@@ -463,7 +464,7 @@ export const relationship = cases.table(
   ],
 );
 
-export const shareScopes = ['profile', 'finances'] as const;
+export const shareScopes = ['profile', 'finances', 'checklist'] as const;
 
 /** The keeper lets a member of the case see a person's profile or finances. */
 export const share = cases.table(
@@ -619,5 +620,77 @@ export const comparisonPreferences = cases.table(
       withCheck: isIdentity(table.accountId),
     }),
     ...erasedByJobs('comparison_preferences', table.accountId),
+  ],
+);
+
+export const checklistMarkStates = ['had', 'missing'] as const;
+
+/** No linked document, or one the identity owns. */
+const ownLink = (ownerId: unknown): SQL => sql`(${ownerId} IS NULL OR ${isIdentity(ownerId)})`;
+
+/**
+ * A keeper's mark on one document item of a route for one person (spec #519): had or missing,
+ * with an optional vault document of the keeper's own. Keyed on the item's ID, so it survives a
+ * route version that keeps the item. The keeper reads and writes it; a member the keeper shared
+ * the person's checklist with reads it. Deleting the person deletes the mark; deleting the linked
+ * document only clears the link.
+ */
+export const checklistMark = cases.table(
+  'checklist_mark',
+  {
+    caseId: uuid('case_id').notNull(),
+    personId: uuid('person_id').notNull(),
+    routeId: text('route_id').notNull(),
+    documentId: text('document_id').notNull(),
+    state: text('state').notNull(),
+    vaultDocumentId: uuid('vault_document_id'),
+    /** The linked document's owner, who alone sees which document it is. */
+    vaultOwnerId: uuid('vault_owner_id'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    primaryKey({
+      name: 'checklist_mark_pkey',
+      columns: [table.personId, table.routeId, table.documentId],
+    }),
+    personRow([table.personId, table.caseId], 'checklist_mark_person_fkey'),
+    foreignKey({
+      name: 'checklist_mark_vault_document_fkey',
+      columns: [table.vaultDocumentId, table.vaultOwnerId],
+      foreignColumns: [vaultDocument.id, vaultDocument.ownerId],
+    }).onDelete('set null'),
+    index('checklist_mark_vault_document_id_idx').on(table.vaultDocumentId),
+    check('checklist_mark_state', inList(table.state, checklistMarkStates)),
+    check(
+      'checklist_mark_route_id_format',
+      sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`,
+    ),
+    check(
+      'checklist_mark_document_id_format',
+      sql`${table.documentId} ~ '^[a-z0-9][a-z0-9-]{0,63}$'`,
+    ),
+    check(
+      'checklist_mark_link',
+      sql`(${table.vaultDocumentId} IS NULL) = (${table.vaultOwnerId} IS NULL) AND (${table.vaultDocumentId} IS NULL OR ${table.state} = 'had')`,
+    ),
+    pgPolicy('checklist_mark_select_keeper_or_shared', {
+      for: 'select',
+      to: 'app_api',
+      using: sql`${keeps(table.personId)} OR ${sharedWith(table.personId, 'checklist')}`,
+    }),
+    // The keeper links only their own vault document; a link a former keeper made is only cleared.
+    pgPolicy('checklist_mark_insert_keeper', {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: sql`${keeps(table.personId)} AND ${ownLink(table.vaultOwnerId)}`,
+    }),
+    pgPolicy('checklist_mark_update_keeper', {
+      for: 'update',
+      to: 'app_api',
+      using: keeps(table.personId),
+      withCheck: sql`${keeps(table.personId)} AND ${ownLink(table.vaultOwnerId)}`,
+    }),
+    ...keeperWrites('checklist_mark', table.personId, ['delete']),
   ],
 );

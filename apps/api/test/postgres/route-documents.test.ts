@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import {
   type CatalogEntry,
   type DecisionStates,
@@ -10,7 +10,7 @@ import {
   routeVersionSchema,
 } from '@arca/domain';
 import { comparisonCatalog } from '@arca/knowledge';
-import { RouteDocuments } from '@arca/api-contract/routes';
+import { RouteDocuments, maxChecklistMarks } from '@arca/api-contract/routes';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditLog } from '../../src/audit/log.js';
 import { type CaseFiles, type CaseWritten, createCaseFiles } from '../../src/case/case-files.js';
@@ -288,7 +288,7 @@ describe('a route’s document checklist (spec #519)', () => {
       applies: 'unknown',
       dependsOn: [{ personId: people.child, question: 'studying', kept: true }],
     });
-    expect(unit.map(({ documentId }) => documentId)).toEqual(['bank-statement']);
+    expect(unit.items.map(({ documentId }) => documentId)).toEqual(['bank-statement']);
   });
 
   it('reads apart a route with no document list, one that asks for none and one whose items do not apply', async () => {
@@ -306,7 +306,7 @@ describe('a route’s document checklist (spec #519)', () => {
       people.ana,
       filesWith([none], new Map([[identityKey(none.identity), 'active']])),
     );
-    expect(empty.documents).toMatchObject({ kind: 'listed', asksNone: true, unit: [] });
+    expect(empty.documents).toMatchObject({ kind: 'listed', asksNone: true, unit: { items: [] } });
     expect(empty.documents?.kind === 'listed' && empty.documents.people[1]?.items).toEqual([]);
     const pensionOnly = fixtureEntry({
       number: 3,
@@ -317,7 +317,11 @@ describe('a route’s document checklist (spec #519)', () => {
       people.ana,
       filesWith([pensionOnly], new Map([[identityKey(pensionOnly.identity), 'active']])),
     );
-    expect(noneApply.documents).toMatchObject({ kind: 'listed', asksNone: false, unit: [] });
+    expect(noneApply.documents).toMatchObject({
+      kind: 'listed',
+      asksNone: false,
+      unit: { items: [] },
+    });
     expect(
       noneApply.documents?.kind === 'listed' &&
         noneApply.documents.people.flatMap(({ items }) => items),
@@ -376,5 +380,276 @@ describe('a route’s document checklist (spec #519)', () => {
       true,
     );
     expect(await read(bruno, brunoPerson)).toMatchObject({ status: 'active' });
+  });
+});
+
+/** A confirmed vault document of the account's, as the vault's own tests seed one. */
+async function vaultDocument(accountId: string, confirmed = true) {
+  const [row] = await admin<{ id: string }>(
+    `INSERT INTO vault.document (owner_id, type_key, size, sha256, object_key, label, confirmed_at)
+     VALUES ($1, 'other', 1, $2, 'documents/' || gen_random_uuid(), decode('01', 'hex'),
+             CASE WHEN $3 THEN now() END)
+     RETURNING id`,
+    [accountId, randomBytes(32), confirmed],
+  );
+  return row?.id ?? '';
+}
+
+const countriesOf = async (documentId: string) =>
+  (
+    await admin<{ country: string }>(
+      `SELECT country FROM vault.document_country WHERE document_id = $1 ORDER BY country`,
+      [documentId],
+    )
+  ).map(({ country }) => country);
+
+const mark = (
+  personId: string,
+  documentId: string,
+  value: { state: 'had' | 'missing'; vaultDocumentId: string | null } | null,
+) => ({ routeId: 'qm-documents', personId, documentId, mark: value });
+
+function listedOf(checklist: RouteDocuments) {
+  if (checklist.documents?.kind !== 'listed') throw new Error('a listed checklist');
+  return checklist.documents;
+}
+
+describe('checklist marks (spec #519)', () => {
+  it('sets, reads and clears a mark, with progress per person and for the route', async () => {
+    const { ana, people } = await family();
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.ana, 'passport', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('set');
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.child, 'birth-certificate', { state: 'missing', vaultDocumentId: null }),
+      ),
+    ).toBe('set');
+    // The unit's items are marked on the principal.
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.ana, 'bank-statement', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('set');
+    const marked = listedOf(await read(ana, people.ana));
+    expect(marked.people[0]).toMatchObject({
+      editable: true,
+      marksShown: true,
+      progress: { had: 1, total: 1 },
+      items: [
+        { documentId: 'passport', mark: { state: 'had', linked: false, vaultDocumentId: null } },
+      ],
+    });
+    expect(marked.people[1]?.progress).toEqual({ had: 0, total: 2 });
+    expect(marked.people[1]?.items.map(({ mark: shown }) => shown?.state ?? null)).toEqual([
+      'missing',
+      null,
+    ]);
+    expect(marked.unit).toMatchObject({ editable: true, progress: { had: 1, total: 1 } });
+    expect(marked.progress).toEqual({ had: 2, total: 4 });
+    expect(marked.noLongerAsked).toEqual([]);
+
+    expect(await files.setMark(ana, mark(people.ana, 'passport', null))).toBe('set');
+    const cleared = listedOf(await read(ana, people.ana));
+    expect(cleared.people[0]?.items[0]?.mark).toBeNull();
+    expect(cleared.progress).toEqual({ had: 1, total: 4 });
+  });
+
+  it('links only a confirmed document of the keeper’s, filing it under the route’s country; unlinking keeps it', async () => {
+    const { ana, people } = await family();
+    const own = await vaultDocument(ana);
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.child, 'birth-certificate', { state: 'had', vaultDocumentId: own }),
+      ),
+    ).toBe('set');
+    expect(await countriesOf(own)).toEqual(['PT']);
+    const linked = listedOf(await read(ana, people.ana));
+    expect(linked.people[1]?.items[0]?.mark).toEqual({
+      state: 'had',
+      linked: true,
+      vaultDocumentId: own,
+    });
+
+    // Linking it again, or to another item, files it once.
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.ana, 'passport', { state: 'had', vaultDocumentId: own }),
+      ),
+    ).toBe('set');
+    expect(await countriesOf(own)).toEqual(['PT']);
+
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.child, 'birth-certificate', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('set');
+    expect(await files.setMark(ana, mark(people.ana, 'passport', null))).toBe('set');
+    expect(await countriesOf(own)).toEqual(['PT']);
+    expect(await admin(`SELECT id FROM vault.document WHERE id = $1`, [own])).toHaveLength(1);
+
+    const pending = await vaultDocument(ana, false);
+    const someoneElses = await vaultDocument(await account());
+    for (const vaultDocumentId of [pending, someoneElses, randomUUID()]) {
+      expect(
+        await files.setMark(ana, mark(people.ana, 'passport', { state: 'had', vaultDocumentId })),
+      ).toBe('not_found');
+    }
+    expect(await countriesOf(someoneElses)).toEqual([]);
+  });
+
+  it('clears the link, not the mark, when the linked document is deleted', async () => {
+    const { ana, people } = await family();
+    const own = await vaultDocument(ana);
+    await files.setMark(ana, mark(people.ana, 'passport', { state: 'had', vaultDocumentId: own }));
+    await admin(`DELETE FROM vault.document WHERE id = $1`, [own]);
+    expect(listedOf(await read(ana, people.ana)).people[0]?.items[0]?.mark).toEqual({
+      state: 'had',
+      linked: false,
+      vaultDocumentId: null,
+    });
+  });
+
+  it('refuses a person the viewer does not keep, a route with no active version and a mark past the limit', async () => {
+    const { ana, people } = await family();
+    const other = await family();
+    expect(
+      await files.setMark(
+        ana,
+        mark(other.people.ana, 'passport', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('not_found');
+    expect(await files.setMark(ana, mark(other.people.ana, 'passport', null))).toBe('not_found');
+    expect(await files.setMark(await account(), mark(people.ana, 'passport', null))).toBe(
+      'not_found',
+    );
+    const pending = filesWith([listed], new Map());
+    expect(
+      await pending.setMark(
+        ana,
+        mark(people.ana, 'passport', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('not_found');
+    expect(
+      await files.setMark(ana, {
+        ...mark(people.ana, 'passport', { state: 'had', vaultDocumentId: null }),
+        routeId: 'qm-other',
+      }),
+    ).toBe('not_found');
+
+    await admin(
+      `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
+       SELECT p.case_id, p.id, 'qm-documents', 'item-' || n, 'missing'
+         FROM cases.person p, generate_series(1, $2) n WHERE p.id = $1`,
+      [people.ana, maxChecklistMarks],
+    );
+    expect(
+      await files.setMark(
+        ana,
+        mark(people.ana, 'passport', { state: 'had', vaultDocumentId: null }),
+      ),
+    ).toBe('case_limit');
+    // A mark already there still changes.
+    expect(
+      await files.setMark(ana, mark(people.ana, 'item-1', { state: 'had', vaultDocumentId: null })),
+    ).toBe('set');
+  });
+
+  it('keeps a mark through a version that keeps its item, and lists it as no longer asked once one drops it', async () => {
+    const { ana, people } = await family();
+    await files.setMark(ana, mark(people.ana, 'passport', { state: 'had', vaultDocumentId: null }));
+    await files.setMark(
+      ana,
+      mark(people.child, 'enrollment', { state: 'missing', vaultDocumentId: null }),
+    );
+    const kept = fixtureEntry({ number: 2, effectiveFrom: '2026-01-01' });
+    const dropped = fixtureEntry({
+      number: 3,
+      effectiveFrom: '2026-06-01',
+      documents: fixtureVersion.documents.filter(({ id }) => id !== 'enrollment'),
+    });
+    const states = (entries: readonly CatalogEntry[]) =>
+      new Map(entries.map(({ identity }) => [identityKey(identity), 'active' as const]));
+    const second = listedOf(
+      await read(ana, people.ana, filesWith([listed, kept], states([listed, kept]))),
+    );
+    expect(second.people[0]?.items[0]?.mark?.state).toBe('had');
+    expect(second.noLongerAsked).toEqual([]);
+
+    const all = [listed, kept, dropped];
+    const third = listedOf(await read(ana, people.ana, filesWith(all, states(all))));
+    expect(third.people[0]?.items[0]?.mark?.state).toBe('had');
+    expect(third.people[1]?.items.map(({ documentId }) => documentId)).toEqual([
+      'birth-certificate',
+    ]);
+    expect(third.noLongerAsked).toEqual([
+      {
+        personId: people.child,
+        documentId: 'enrollment',
+        title: 'School enrollment',
+        original: null,
+        editable: true,
+        mark: { state: 'missing', linked: false, vaultDocumentId: null },
+      },
+    ]);
+  });
+
+  it('shows marks to a member the keeper shared the checklist with, read only, and to no one else', async () => {
+    const { ana, people } = await family();
+    const own = await vaultDocument(ana);
+    await files.setMark(
+      ana,
+      mark(people.child, 'birth-certificate', { state: 'had', vaultDocumentId: own }),
+    );
+    const bruno = await account();
+    await admin(`INSERT INTO account.link (inviter_id, invitee_id) VALUES ($1, $2)`, [ana, bruno]);
+    viewOf(await files.addMember(ana, { accountId: bruno, displayName: 'Bruno' }));
+
+    const hidden = listedOf(await read(bruno, people.ana));
+    expect(
+      hidden.people.map(({ editable, marksShown, progress }) => ({
+        editable,
+        marksShown,
+        progress,
+      })),
+    ).toEqual([
+      { editable: false, marksShown: false, progress: null },
+      { editable: false, marksShown: false, progress: null },
+    ]);
+    expect(hidden.progress).toBeNull();
+    expect(
+      hidden.people.flatMap(({ items }) => items).every(({ mark: shown }) => shown === null),
+    ).toBe(true);
+
+    viewOf(
+      await files.replaceShares(ana, {
+        personId: people.child,
+        profile: [],
+        finances: [],
+        checklist: [bruno],
+      }),
+    );
+    const shared = listedOf(await read(bruno, people.ana));
+    expect(shared.people[1]).toMatchObject({ editable: false, marksShown: true });
+    // Bruno sees that a document is linked, never which one.
+    expect(
+      shared.people[1]?.items.find(({ documentId }) => documentId === 'birth-certificate')?.mark,
+    ).toEqual({
+      state: 'had',
+      linked: true,
+      vaultDocumentId: null,
+    });
+    expect(shared.people[0]?.marksShown).toBe(false);
+    expect(await files.setMark(bruno, mark(people.child, 'birth-certificate', null))).toBe(
+      'not_found',
+    );
   });
 });

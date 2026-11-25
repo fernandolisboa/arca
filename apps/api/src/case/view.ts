@@ -1,6 +1,7 @@
 import type { CaseView } from '@arca/api-contract/routes';
 import { lockKey, type Transaction } from '@arca/db';
 import {
+  type ShareScope,
   type VisibleCaseRows,
   storedAssetSchema,
   storedFinancesSchema,
@@ -28,7 +29,7 @@ export interface CaseRows extends Omit<VisibleCaseRows, 'people' | 'relationship
   readonly shares: readonly {
     readonly personId: string;
     readonly accountId: string;
-    readonly scope: 'profile' | 'finances';
+    readonly scope: ShareScope;
   }[];
 }
 
@@ -113,7 +114,7 @@ export async function readCase(
   const shares = await rows<{
     person_id: string;
     grantee_account_id: string;
-    scope: 'profile' | 'finances';
+    scope: ShareScope;
   }>(sql`
     SELECT person_id, grantee_account_id, scope FROM cases.share
      WHERE case_id = ${caseId} ORDER BY person_id, scope, grantee_account_id`);
@@ -181,7 +182,7 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
   const kept = new Set(rows.people.filter((person) => person.keptByMe).map(({ id }) => id));
   const me = rows.people.find((person) => person.accountId === accountId);
   if (me === undefined) throw new Error("A member's own person is missing from their case");
-  const grantees = (personId: string, scope: 'profile' | 'finances') =>
+  const grantees = (personId: string, scope: ShareScope) =>
     rows.shares
       .filter((row) => row.personId === personId && row.scope === scope)
       .map((row) => row.accountId);
@@ -216,7 +217,11 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
                 assetsRecordedInFull: finances.assetsRecordedInFull,
               },
         shares: person.keptByMe
-          ? { profile: grantees(person.id, 'profile'), finances: grantees(person.id, 'finances') }
+          ? {
+              profile: grantees(person.id, 'profile'),
+              finances: grantees(person.id, 'finances'),
+              checklist: grantees(person.id, 'checklist'),
+            }
           : null,
         sharedWithMe: person.keptByMe ? [] : sharedWith(rows, accountId, person.id),
       };
