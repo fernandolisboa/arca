@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { matchesSearch } from '../src/patterns/field.js';
-import { SearchPicker, foundGroups } from '../src/patterns/search-picker.js';
+import { SearchPickButton, SearchPicker, foundGroups } from '../src/patterns/search-picker.js';
 
 const groups = [
   {
@@ -100,5 +100,26 @@ describe('SearchPicker', () => {
     expect(render('')).toContain(
       '<ul class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">',
     );
+  });
+});
+
+describe('SearchPickButton', () => {
+  const button = { label: 'Usar em qual país?', text: 'Usar em outro país' };
+
+  it('names its picker with the label and builds no option until it opens', () => {
+    const html = renderToStaticMarkup(
+      <SearchPickButton
+        label={button.label}
+        className="link"
+        groups={groups}
+        labels={labels}
+        onPick={() => undefined}
+      >
+        {button.text}
+      </SearchPickButton>,
+    );
+    expect(html).toContain(`aria-haspopup="dialog" class="link">${button.text}</button>`);
+    expect(html).toContain(`aria-label="${button.label}"`);
+    expect(html).not.toContain('aria-pressed');
   });
 });

@@ -139,7 +139,8 @@ function PickerDialog({
       dialogRef.current?.showModal();
     },
   }));
-  const found = foundGroups(groups, search, matches);
+  const shown = open || !lazy;
+  const found = shown ? foundGroups(groups, search, matches) : [];
   const [first] = found.flatMap(({ options }) => options);
 
   const pick = (picked: string) => {
@@ -212,7 +213,7 @@ function PickerDialog({
           className="-mx-1 flex min-h-0 flex-col gap-3 overflow-y-auto px-1 pb-1"
           onKeyDown={walk}
         >
-          {(open || !lazy) && (
+          {shown && (
             <>
               {(clearLabel !== undefined || value !== '') && search.trim() === '' && (
                 <button
