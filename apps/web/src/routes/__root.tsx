@@ -15,8 +15,9 @@ import { TourGuide } from '../tour/guide.js';
 export const Route = createRootRoute({ component: Root });
 
 /** Only pages that exist get an item (spec 0006, R8); the list grows as features land. */
+const homePath = '/';
 const destinations = [
-  { id: 'home', to: '/', icon: 'home', adminOnly: false },
+  { id: 'home', to: homePath, icon: 'home', adminOnly: false },
   { id: 'family', to: '/family', icon: 'family', adminOnly: false },
   { id: 'compare', to: '/compare', icon: 'countries', adminOnly: false },
   { id: 'vault', to: '/vault', icon: 'vault', adminOnly: false },
@@ -25,7 +26,7 @@ const destinations = [
 const settingsPage = { id: 'settings', to: '/settings', icon: 'settings' } as const;
 
 function ShellLink({ href, ...props }: ShellLinkProps) {
-  return <Link to={href} {...props} />;
+  return <Link to={href} activeOptions={{ exact: true }} {...props} />;
 }
 
 function Root() {
@@ -57,6 +58,7 @@ function Root() {
     <>
       <AppShell
         title={<h1 className="truncate font-display text-title">{t('app.name')}</h1>}
+        homeHref={homePath}
         skipToContentLabel={t('shell.skipToContent')}
         items={items}
         settings={{
@@ -83,6 +85,7 @@ function Root() {
           accountGroup: t('shell.accountGroup'),
           collapseMenu: t('shell.collapseMenu'),
           expandMenu: t('shell.expandMenu'),
+          home: t('shell.home'),
         }}
         link={ShellLink}
       >

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
+  defaultLayout,
   horizontalOverflow,
   isWide,
   layoutName,
@@ -288,6 +289,31 @@ test.describe('floating dock', () => {
     const stored = await page.evaluate(() => localStorage.getItem('arca.appearance'));
     expect(JSON.parse(stored ?? '{}')).toMatchObject({ v: 1, axes: { dockEdge: 'right' } });
   });
+});
+
+test.describe('the mark and the name', () => {
+  const side = { narrow: 'menu', wide: 'side', edge: 'bottom' };
+  const cases = [
+    ['the phone menu', 390, defaultLayout, {}],
+    ['a phone fixed dock', 390, { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' }, {}],
+    ['a phone floating dock', 390, { narrow: 'floating-dock', wide: 'top', edge: 'left' }, {}],
+    ['the top bar', 1280, defaultLayout, {}],
+    ['the wide menu', 1280, { narrow: 'menu', wide: 'menu', edge: 'bottom' }, {}],
+    ['the side column', 1280, side, {}],
+    ['the collapsed side column', 1280, side, { navCollapse: 'collapsed' }],
+  ] as const;
+  for (const [name, width, layout, extra] of cases) {
+    test(`lead to the home page in ${name}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page, layout, { path: '/settings', extra });
+      const brand = page.getByRole('link', { name: 'Arca', exact: true });
+      await expect(brand).toHaveAttribute('title', 'Página inicial');
+      expect(await smallestNavTarget(page)).toBeGreaterThanOrEqual(44);
+      await brand.focus();
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(/\/$/);
+    });
+  }
 });
 
 test('skips the view transition on the first load and uses it on a page change', async ({
