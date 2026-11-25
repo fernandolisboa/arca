@@ -22,7 +22,10 @@ Conditions: the criminal record reads `person.ageYears` from 16; the authorizati
 
 ## Rounds
 
-(Filled in after the adversarial rounds.)
+Two adversarial rounds: one reviewer checked every item, its quotes, its pt-BR text and the two new guide entries against the texts; one looked for missing or out-of-date documents.
+
+- Round 1: 5 findings on the items, 2 on gaps. Fixed: `family-means` quoted article 24.º-B, n.º 1, whole from 2022, with a point a) that Decreto Regulamentar n.º 1/2024 rewrote, and now quotes point b) alone; `family-ties` claimed the "accompanies" context its 2024 quote does not hold, and is now "Proof of the family ties"; the article 4.º quote now runs to its end, with both exceptions; the D8 income text in pt-BR said "salários mínimos", read in Brazil as Brazil's, and now says Portugal's "remunerações mínimas mensais garantidas"; the tax residence wording now names the gov.br account level its page asks for. Two findings went to the leftover list with their reason: the age of 18 for the minor's authorization (7) and the other parent's consent (5). Not changed: the CPLP exemption, already leftover 3; the termo de responsabilidade, the kinship examination of article 13.º and the accommodation field of article 11.º, none of them a document every applicant hands in.
+- Round 2 read those fixes and leftovers 3, 5 and 7 and found nothing wrong. Two pt-BR wordings changed after it, from it and the repository's standards reviewer, checked only by the session and the tests: the D8 income text ("no valor de pelo menos quatro") and the insurance note ("contratar esse seguro").
 
 The quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-pt-documents`, in `apps/api`), passed in the session on 2026-11-25 UTC.
 
@@ -38,5 +41,5 @@ The quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-pt-documents`, in `a
 8. **Lei n.º 23/2007, article 52.º, n.º 1, g),** asks for a minor's parental authorization only when no one with parental responsibilities goes along; the regulation's article 12.º, n.º 5, asks for it on every minor's application, and the item follows the regulation.
 9. **Brazil's guide does not cover** the visa form, photographs, travel insurance, the minor's authorization, proof of passive income, the proof of means, work contracts, income evidence or the family ties: no Brazilian office issues them as such, or no official page read says where.
 10. **Amendments.** The gazette search for "Decreto Regulamentar n.º 84/2007" and "Portaria n.º 1563/2007" returned no act after Decreto Regulamentar n.º 1/2024; the 2026-11-20 review read the amending lists up to Diário da República n.º 218/2026 of 2026-11-10.
-11. **The 2027 minimum wage** ([#220](https://github.com/fernandolisboa/arca/issues/220)) is now version 9 of both routes, from 2027-01-01, and keeps version 8's documents.
+11. **The 2027 minimum wage** ([#220](https://github.com/fernandolisboa/arca/issues/220)) is not stored yet: it will be version 9 of both routes, from 2027-01-01, and must keep version 8's documents.
 12. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
