@@ -48,7 +48,7 @@ import {
   questionFlow,
   validCaseStructure,
 } from '@arca/domain';
-import type { PinnedCountries } from '@arca/knowledge';
+import type { PinnedCountries, RuleTexts } from '@arca/knowledge';
 import { randomBytes } from 'node:crypto';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
@@ -194,6 +194,8 @@ export interface CaseFilesSettings {
     readonly comparisons: ComparisonCatalog;
     /** The stars the comparison suggests per country (ADR-0035); none when absent. */
     readonly suggestions?: RatingSuggestions;
+    /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
+    readonly texts?: RuleTexts;
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */
     readonly today: () => CalendarDate;
@@ -458,6 +460,7 @@ export function createCaseFiles({
         states,
         today,
         engineCommit: evaluation.engineCommit,
+        ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
       });
       return work(tx, rows, evaluated, { states, today, routeIds });
     });

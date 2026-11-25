@@ -155,6 +155,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
 
 test('lists every route for the family by its status, with nothing hidden behind it', async ({
   page,
+  isMobile,
 }) => {
   const problems = watchProblems(page);
   await signedIn(page);
@@ -162,14 +163,33 @@ test('lists every route for the family by its status, with nothing hidden behind
   await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
   await expect(page.getByRole('heading', { level: 2, name: 'Rotas para a família' })).toBeVisible();
   await expect(
-    page.getByRole('heading', { level: 3, name: 'Perguntas que mudam o resultado' }),
+    page.getByRole('heading', { level: 4, name: /^Perguntas que mudam o resultado/ }),
   ).toBeVisible();
-  // Each route shows a status for each member, Ana and her child.
-  const statuses = page.getByText(/como requerente principal/);
-  await expect(statuses.first()).toBeVisible();
-  const routes = await page.locator('main article').count();
-  expect(routes).toBeGreaterThan(0);
-  expect(await statuses.count()).toBe(routes * 2);
+  const caption = 'Rotas da família, com a situação de cada pessoa como requerente principal';
+  // Another test may leave every version but one waiting for activation; those only get a count.
+  const list = page.getByRole(isMobile ? 'list' : 'table', { name: caption });
+  const waiting = page.getByText(/^Ainda sem versão ativa/);
+  await expect(list.or(waiting).first()).toBeVisible();
+  if ((await list.count()) > 0 && isMobile) {
+    // A card per route; the chosen one opens its detail under it.
+    const card = list.getByRole('listitem').first();
+    await card.getByRole('button', { expanded: false }).click();
+    await expect(card.getByText(/como requerente principal/).first()).toBeVisible();
+  } else if ((await list.count()) > 0) {
+    // Each route shows a status for each member, Ana and her child, and the first opens beside.
+    const rows = await list.locator('tbody tr').count();
+    expect(rows).toBeGreaterThan(0);
+    await expect(list.getByRole('button', { name: /como requerente principal/ })).toHaveCount(
+      rows * 2,
+    );
+    await expect(
+      page.getByRole('complementary', { name: 'Detalhes da rota' }).getByRole('heading', {
+        level: 3,
+      }),
+    ).toBeVisible();
+  }
+  // A route no active version names never shows by its ID.
+  await expect(page.locator('main')).not.toContainText('Rota ainda sem versão ativa');
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();

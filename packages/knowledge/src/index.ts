@@ -8,8 +8,10 @@ import {
   comparisonData,
   countryData,
   datasetFileData,
+  ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
+import { shippedRuleTextsSchema } from './rule-texts.js';
 
 export { createRouteCatalog } from './catalog.js';
 export {
@@ -50,6 +52,11 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 /** The stars the comparison suggests per country (ADR-0035), or null when the repository has none. */
 export const suggestedRatings =
   suggestedRatingData === null ? null : suggestedRatingsSchema.parse(suggestedRatingData);
+
+export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
+
+/** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */
+export const shippedRuleTexts = shippedRuleTextsSchema.parse(ruleTextData);
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z

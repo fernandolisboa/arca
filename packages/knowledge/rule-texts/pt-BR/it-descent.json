@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "routeId": "it-descent",
+  "texts": [
+    {
+      "en": "Italian citizenship by descent (iure sanguinis) for someone born abroad with no application or court claim filed, and no appointment given, by 27 March 2025",
+      "text": "Cidadania italiana por descendência (iure sanguinis) para quem nasceu fora da Itália e não tinha pedido ou ação judicial protocolados, nem agendamento marcado, até 27 de março de 2025"
+    },
+    {
+      "en": "Child of an Italian parent, and either a parent or grandparent holds, or held at death, only Italian citizenship (art. 3-bis c) or the child holds no other; other exceptions not recorded: possible",
+      "text": "Filho de pai ou mãe italianos, e um dos pais ou avós tem, ou tinha ao morrer, só a cidadania italiana (art. 3-bis c), ou o filho não tem outra; outras exceções não estão anotadas; talvez se aplique"
+    },
+    {
+      "en": "The person has not lost Italian citizenship themselves: until 15 August 1992, for example by freely taking a foreign citizenship while living abroad; since then, for example by renouncing it",
+      "text": "A pessoa não perdeu a cidadania italiana: até 15 de agosto de 1992, por exemplo, ao tomar livremente outra cidadania morando fora; depois disso, por exemplo, ao renunciar a ela"
+    },
+    {
+      "en": "A link through a mother to a child born before 1 January 1948: the law of the time passed citizenship through the father, and consulates and municipalities accept a maternal link only after that date",
+      "text": "Uma ligação pela mãe a um filho nascido antes de 1º de janeiro de 1948: a lei da época passava a cidadania pelo pai, e consulados e prefeituras só aceitam a ligação pela mãe depois dessa data"
+    },
+    {
+      "en": "An adult applying through a consulate needs a place in its yearly number: until 31 December 2028, no more than the recognition procedures it concluded in 2025, and never fewer than 100",
+      "text": "Um adulto que pede pelo consulado precisa de uma vaga na cota anual dele: até 31 de dezembro de 2028, no máximo os processos de reconhecimento que ele concluiu em 2025, e nunca menos de 100"
+    },
+    {
+      "en": "A minor living abroad, child of a citizen already recognized: the consulate of the district may recognize the citizenship; the yearly limit and the EUR 600 consular fee are for adults only",
+      "text": "Um menor que mora fora, filho de cidadão já reconhecido: o consulado da região pode reconhecer a cidadania; a cota anual e a taxa consular de EUR 600 são só para adultos"
+    },
+    {
+      "en": "Someone who goes to court must state and prove that no cause of non-acquisition or loss of citizenship applies; oaths and witness evidence are not admitted, save where the law provides",
+      "text": "Quem vai à Justiça precisa alegar e provar que nenhuma causa de não aquisição ou de perda da cidadania se aplica; juramento e prova testemunhal não são aceitos, salvo onde a lei prevê"
+    },
+    {
+      "en": "Someone living abroad who goes to court: the case is assigned by the municipality where the Italian father, mother or ancestor was born",
+      "text": "Quem mora fora e vai à Justiça: o processo é distribuído pela comuna onde nasceu o pai, a mãe ou o antepassado italiano"
+    },
+    {
+      "en": "Fee, one per path: an adult's request, EUR 600 through a consulate or up to EUR 600 at a municipality that charges; in court, EUR 600 for each claimant of any age; the path is not recorded: possible",
+      "text": "Taxa, uma por caminho: pedido de adulto, EUR 600 pelo consulado ou até EUR 600 numa comuna que cobra; na Justiça, EUR 600 por autor de qualquer idade; o caminho não está anotado; talvez se aplique"
+    },
+    {
+      "en": "Decision on an adult's application made through a consulate, within the legal time limit",
+      "text": "Decisão sobre o pedido de um adulto feito pelo consulado, dentro do prazo legal"
+    },
+    {
+      "en": "An adult living abroad applies by post, at their own cost, with the documents in paper originals and proof of the fee, to a central office of the Foreign Ministry, no longer to a consulate",
+      "text": "Um adulto que mora fora pede pelo correio, por conta própria, com os documentos originais em papel e a prova da taxa, a um escritório central do Ministério das Relações Exteriores, e não mais a um consulado"
+    },
+    {
+      "en": "The central office writes only electronically: a notice counts as given once sent to the e-mail address in the application; returning the originals of a rejected application is at the applicant's cost",
+      "text": "O escritório central só se comunica por meio eletrônico: um aviso conta como dado quando enviado ao e-mail do pedido; devolver os originais de um pedido recusado fica por conta de quem pediu"
+    },
+    {
+      "en": "In 2029 and 2030 the central office takes, per year, no more applications than those for which consulates collected the fee in 2025, so an application needs a place in that number",
+      "text": "Em 2029 e 2030 o escritório central aceita, por ano, no máximo tantos pedidos quantos os consulados cobraram taxa em 2025, então um pedido precisa de vaga nesse número"
+    },
+    {
+      "en": "A minor living abroad, child of a citizen already recognized: the consulate of the district, not the central office, may recognize the citizenship; the EUR 600 fee is for adults only",
+      "text": "Um menor que mora fora, filho de cidadão já reconhecido: o consulado da região, e não o escritório central, pode reconhecer a cidadania; a taxa de EUR 600 é só para adultos"
+    },
+    {
+      "en": "Fee, one per path: an adult's request, EUR 600 at the central office or up to EUR 600 at a municipality that charges; in court, EUR 600 for each claimant of any age; path not recorded: possible",
+      "text": "Taxa, uma por caminho: pedido de adulto, EUR 600 no escritório central ou até EUR 600 numa comuna que cobra; na Justiça, EUR 600 por autor de qualquer idade; caminho não anotado; talvez se aplique"
+    },
+    {
+      "en": "Decision on an adult's application, sent to the Foreign Ministry's central office or received by a consulate before 2029, within the legal time limit",
+      "text": "Decisão sobre o pedido de um adulto, enviado ao escritório central do Ministério das Relações Exteriores ou recebido por um consulado antes de 2029, dentro do prazo legal"
+    }
+  ]
+}

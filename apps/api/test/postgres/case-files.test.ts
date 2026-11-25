@@ -43,6 +43,7 @@ beforeAll(async () => {
       states: () => Promise.resolve(activeStates),
       today: () => parseCalendarDate('2026-11-06'),
       engineCommit: 'test',
+      texts: (routeId, english) => (routeId === 'pt-d7' ? `Tradução: ${english}` : undefined),
     },
   });
 });
@@ -1000,6 +1001,15 @@ describe('evaluating the case (spec 0007, R6)', () => {
     expect(new Set(byAlice.results.map(({ principalId }) => principalId))).toEqual(
       new Set(members),
     );
+    // A translated title keeps the version's English beside it; an untranslated one has none.
+    const d7 = byAlice.results.find(({ routeId }) => routeId === 'pt-d7');
+    expect(d7?.route?.title).toBe(`Tradução: ${d7?.route?.original ?? ''}`);
+    expect(
+      d7?.requirements.every(({ title, original }) => title === `Tradução: ${original ?? ''}`),
+    ).toBe(true);
+    const eb5 = byAlice.results.find(({ routeId }) => routeId === 'us-eb5');
+    expect(eb5?.route?.original).toBeNull();
+    expect(eb5?.totals.map(({ currency }) => currency)).toContain('USD');
     for (const result of byAlice.results) {
       expect(result.status).not.toBe('pending_activation');
       expect(result.route?.title).toBeTruthy();

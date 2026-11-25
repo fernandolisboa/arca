@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,12 @@ import { parseJsonSubset } from '@arca/scripts/json';
 import type { Json } from '../src/canonical.ts';
 import { parseComparisons, parseEntries } from '../src/entries.ts';
 import { caseSummaries } from '../src/cases.ts';
+import {
+  type RuleTextFile,
+  ruleTextFileSchema,
+  ruleTextLocale,
+  shipRuleTexts,
+} from '../src/rule-texts.ts';
 import type { RuleRows, VersionCases } from '../src/rule-rows.ts';
 import { contentHash } from './content-hash.ts';
 import { checkHashes } from './hashes.ts';
@@ -42,6 +49,8 @@ export interface CatalogParts {
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
   readonly suggestedRatings?: Json | null;
+  /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
+  readonly ruleTexts?: Json;
 }
 
 export interface KnowledgeBuild extends CatalogParts {
@@ -198,6 +207,7 @@ export function runtimeModule({
   datasetFiles = {},
   comparisons = [],
   suggestedRatings = null,
+  ruleTexts = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
     indicators.flatMap((indicator) => indicator.sources.flatMap(sourceUrls)),
@@ -209,6 +219,7 @@ export function runtimeModule({
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
+    exportedJson('ruleTextData', ruleTexts),
     '',
   ].join('\n');
 }
@@ -241,6 +252,34 @@ export async function readSuggestedRatings(dir: string): Promise<Json | null> {
   return json;
 }
 
+/**
+ * Every route's texts in `dir` (ADR-0037), one `<route-id>.json` a route, each checked against its
+ * schema, its file name and for a title written twice; none when the directory is missing.
+ */
+export async function readRuleTexts(dir: string): Promise<RuleTextFile[]> {
+  const names = await readdir(dir).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+    throw error;
+  });
+  const files: RuleTextFile[] = [];
+  for (const name of names.sort()) {
+    const routeId = /^([a-z0-9-]+)\.json$/.exec(name)?.[1];
+    if (routeId === undefined) throw new Error(`rule-texts: ${name} is not <route-id>.json`);
+    const json = parseJsonSubset(await readKnowledgeFile(join(dir, name)), maxKnowledgeJsonDepth);
+    const parsed = ruleTextFileSchema.parse(json);
+    if (parsed.routeId !== routeId) {
+      throw new Error(`rule-texts: ${name} carries route ${parsed.routeId}`);
+    }
+    const english = new Set<string>();
+    for (const { en } of parsed.texts) {
+      if (english.has(en)) throw new Error(`rule-texts: ${name} translates "${en}" twice`);
+      english.add(en);
+    }
+    files.push(parsed);
+  }
+  return files;
+}
+
 export function formatIssue(issue: Issue): string {
   return `${issue.file}${issue.path === undefined ? '' : ` ${issue.path}`}: ${issue.message}`;
 }
@@ -269,7 +308,11 @@ async function main(): Promise<void> {
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
   const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
-  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings }));
+  const ruleTexts = shipRuleTexts(
+    await readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
+    (text) => createHash('sha256').update(text, 'utf8').digest('hex'),
+  );
+  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings, ruleTexts }));
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );

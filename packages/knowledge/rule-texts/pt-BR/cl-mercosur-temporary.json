@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cl-mercosur-temporary",
+  "texts": [
+    {
+      "en": "Chilean temporary residence for nationals of the Mercosur Residence Agreement states (Argentina, Bolivia, Brazil, Paraguay, Uruguay)",
+      "text": "Residência temporária no Chile para nacionais dos países do Acordo de Residência do Mercosul (Argentina, Bolívia, Brasil, Paraguai, Uruguai)"
+    },
+    {
+      "en": "National by origin of Argentina, Bolivia, Brazil, Paraguay or Uruguay, or naturalized there for five years or more",
+      "text": "Nacional de origem da Argentina, Bolívia, Brasil, Paraguai ou Uruguai, ou naturalizado lá há cinco anos ou mais"
+    },
+    {
+      "en": "When family members apply as dependents, the principal signs a notarized sworn statement to bear their costs and shows enough means by the Social Development and Family Ministry's indicators",
+      "text": "Quando familiares pedem como dependentes, o requerente principal assina declaração juramentada em cartório de que vai arcar com os custos deles e mostra recursos suficientes pelos indicadores do Ministério do Desenvolvimento Social e Família"
+    },
+    {
+      "en": "Adults show a criminal record certificate from the country of origin or where they lived in the last 5 years, attached within 60 days of issue; the origin country's is valid 60 days at most",
+      "text": "Adultos apresentam certidão de antecedentes criminais do país de origem ou de onde moraram nos últimos 5 anos, anexada até 60 dias depois de emitida; a do país de origem vale no máximo 60 dias"
+    },
+    {
+      "en": "Fee in US dollars, paid in pesos at the official rate: Argentina 250, Brazil 100, Paraguay 288, Uruguay 65; Bolivia none since a 2023-09 agreement (before: 149 in the table, 90 charged); minors exempt",
+      "text": "Taxa em dólares americanos, paga em pesos pelo câmbio oficial: Argentina 250, Brasil 100, Paraguai 288, Uruguai 65; Bolívia nada desde um acordo de 09/2023 (antes: 149 na tabela, 90 cobrados); menores isentos"
+    },
+    {
+      "en": "Applied for from abroad only, online on the migration service's digital procedures portal; family members apply as dependents the same way",
+      "text": "Só se pede de fora do Chile, on-line, no portal de trâmites digitais do serviço de migrações; familiares pedem como dependentes do mesmo jeito"
+    },
+    {
+      "en": "Passport valid for a year or more from the application (a Bolivian may use a valid identity card); a recent photo; foreign papers apostilled or legalized, and translated unless in Spanish or English",
+      "text": "Passaporte válido por um ano ou mais a partir do pedido (um boliviano pode usar carteira de identidade válida); foto recente; documentos estrangeiros apostilados ou legalizados, e traduzidos se não estiverem em espanhol ou inglês"
+    },
+    {
+      "en": "Dependents prove the tie (marriage or cohabitation proof, birth certificate); a child under 18 also needs a parent's notarized care statement, and a stepchild the couple's union proof",
+      "text": "Dependentes provam o vínculo (prova de casamento ou de convivência, certidão de nascimento); filho menor de 18 anos também precisa de declaração de cuidado do pai ou da mãe em cartório, e enteado, da prova da união do casal"
+    },
+    {
+      "en": "USD 15 for each dependent of 18 or over, the fee table's flat fee for a dependent, paid in pesos at the official rate; minors exempt; possible for a Bolivian, whose fee a 2023 agreement waived",
+      "text": "USD 15 por dependente de 18 anos ou mais, a taxa fixa da tabela para dependente, paga em pesos pelo câmbio oficial; menores isentos; talvez se aplique a um boliviano, cuja taxa um acordo de 2023 dispensou"
+    },
+    {
+      "en": "Mercosur temporary residence: up to two years",
+      "text": "Residência temporária do Mercosul: até dois anos"
+    }
+  ]
+}
