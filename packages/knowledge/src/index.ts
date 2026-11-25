@@ -4,6 +4,8 @@ import {
   countryCodeSchema,
   departureChecklistViews,
   departureChecklistsSchema,
+  documentGuideEntries,
+  documentGuidesSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { z } from 'zod';
@@ -14,6 +16,7 @@ import {
   countryData,
   datasetFileData,
   departureChecklistData,
+  documentGuideData,
   ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
@@ -69,6 +72,16 @@ export const departureChecklists =
 
 /** The SHA-256 of the catalog wording the departure file's sources were checked against. */
 export const departureWordingSha256 = departureFile?.wordingSha256 ?? null;
+
+const documentGuideFile =
+  documentGuideData === null ? null : documentGuidesSchema.parse(documentGuideData);
+
+/** Where to get each document kind, per issuing country, with each entry's sources (ADR-0039). */
+export const documentGuides =
+  documentGuideFile === null ? [] : documentGuideEntries(documentGuideFile);
+
+/** The SHA-256 of the catalog wording the document guide file's sources were checked against. */
+export const documentGuideWordingSha256 = documentGuideFile?.wordingSha256 ?? null;
 export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
 
 /** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */

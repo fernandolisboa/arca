@@ -1,4 +1,5 @@
 import { departure } from './pt-BR-departure.js';
+import { documentGuide } from './pt-BR-document-guides.js';
 import { occupationGroups, occupations } from './pt-BR-occupations.js';
 import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
 
@@ -1164,8 +1165,10 @@ export const ptBR = {
       reason: 'Motivo: {reason}',
     },
   },
-  /** Leaving a country (ADR-0037): what to do, and the documents that trace the money. */
+  /** Leaving a country (ADR-0038): what to do, and the documents that trace the money. */
   departure,
+  /** Where to get each document kind, per issuing country (ADR-0039). */
+  documentGuide,
   /** Comparar destinos (ADR-0026): one adult's own ranking of the countries that have a route. */
   compare: {
     title: 'Comparar destinos',

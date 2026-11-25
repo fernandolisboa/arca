@@ -23,7 +23,7 @@ const sourceIds = z.array(slugSchema).min(1).max(20);
 /** A reference to an exact version of another knowledge file. */
 export const pinSchema = z.strictObject({ id: slugSchema, number: versionNumberSchema });
 
-const sourceUrlSchema = z.string().max(2000).startsWith('https://');
+export const sourceUrlSchema = z.string().max(2000).startsWith('https://');
 
 /** The most pages one machine-readable address may name with a range. */
 export const maxAddressPages = 10;
@@ -114,7 +114,7 @@ export const dependentRuleSchema = z.strictObject({
 export const appliesToSchema = z.enum(['principal', 'each_dependent', 'unit']);
 
 /** A free lowercase tag, never an enumeration in code. */
-const tagSchema = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/);
+export const tagSchema = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/);
 
 export const costSchema = z.strictObject({
   id: slugSchema,

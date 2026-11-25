@@ -28,6 +28,7 @@
         "data/**",
         "suggested-ratings/**",
         "departure-checklists/**",
+        "document-guides/**",
         "rule-texts/**",
         "scripts/**",
         "package.json",
