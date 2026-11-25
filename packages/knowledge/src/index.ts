@@ -49,6 +49,7 @@ export {
   type ProposalTarget,
   type RefusedProposal,
   checkProposal,
+  documentListProblems,
   maxProposalProblems,
 } from './proposal.js';
 
