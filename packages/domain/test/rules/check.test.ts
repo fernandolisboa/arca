@@ -491,6 +491,47 @@ describe('record collections and covers (ADR-0036)', () => {
   ])('refuses %s', (_label, input, issue) => {
     expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);
   });
+
+  const licensed = {
+    op: 'eq',
+    left: fact('registration.country'),
+    right: { op: 'token', value: 'QM' },
+  };
+  const graduate = {
+    op: 'gte',
+    left: fact('qualification.level'),
+    right: { op: 'int', value: 6 },
+  };
+
+  it.each<[string, unknown]>([
+    ['the person’s registrations', { op: 'some', over: 'person.registrations', where: licensed }],
+    [
+      'the principal’s qualifications',
+      { op: 'count', over: 'principal.qualifications', where: graduate },
+    ],
+  ])('accepts %s', (_label, input) => {
+    expect(check(input).issues).toEqual([]);
+  });
+
+  it.each<[string, unknown, string]>([
+    [
+      'a registration fact outside its collection',
+      licensed,
+      '/left: registration.country cannot be read here',
+    ],
+    [
+      'a qualification fact inside registrations',
+      { op: 'some', over: 'person.registrations', where: graduate },
+      '/where/left: qualification.level cannot be read here',
+    ],
+    [
+      'covers over qualifications, which are not periods',
+      covers('person.qualifications', { where: graduate }),
+      ': covers reads a collection of periods',
+    ],
+  ])('refuses %s', (_label, input, issue) => {
+    expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);
+  });
 });
 
 describe('isNonNegative', () => {

@@ -48,11 +48,20 @@ export const questionForFact = {
   'workPeriod.fullTime': 'workPeriods',
   'workPeriod.start': 'workPeriods',
   'workPeriod.end': 'workPeriods',
+  'qualification.level': 'qualifications',
+  'qualification.field': 'qualifications',
+  'qualification.country': 'qualifications',
+  'qualification.completed': 'qualifications',
+  'registration.country': 'registrations',
+  'registration.occupation': 'registrations',
+  'registration.since': 'registrations',
 } as const satisfies Record<FactKey, QuestionId>;
 
 /** The guided question that records each list of a person's records. */
 const questionForRecords = {
   workPeriods: 'workPeriods',
+  qualifications: 'qualifications',
+  registrations: 'registrations',
 } as const satisfies Record<RecordList, QuestionId>;
 
 const questionForMarker = {

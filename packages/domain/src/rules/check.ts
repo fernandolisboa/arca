@@ -10,6 +10,7 @@ import {
   type CollectionName,
   type Expression,
   depth,
+  hasPeriod,
   isRecordCollection,
   maxExpressionDepth,
   recordCollections,
@@ -244,7 +245,7 @@ class Checker {
       }
       case 'covers': {
         if (!this.declared(expression.at, path)) return undefined;
-        if (!isRecordCollection(expression.over)) {
+        if (!isRecordCollection(expression.over) || !hasPeriod(expression.over)) {
           return this.fail(path, 'covers reads a collection of periods');
         }
         if (![expression.atLeast, expression.window ?? 'P1D'].every(isPositive)) {
@@ -445,7 +446,9 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
     case 'ancestor':
       return scope.lineage !== undefined;
     case 'workPeriod':
-      return scope.record === 'workPeriod';
+    case 'qualification':
+    case 'registration':
+      return scope.record === target;
   }
 }
 

@@ -182,8 +182,10 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
-  /** The occupation codes work periods may name (ADR-0036). */
+  /** The occupation codes work periods and registrations may name (ADR-0036). */
   readonly occupations: readonly string[];
+  /** The field-of-study codes qualifications may name (ADR-0036). */
+  readonly studyFields: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
     readonly rules: () => Promise<{
@@ -269,9 +271,28 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
+interface ClassificationCodes {
+  readonly occupations: ReadonlySet<string>;
+  readonly studyFields: ReadonlySet<string>;
+}
+
+/** Whether every occupation and field-of-study code in the facts is one of the classifications'. */
+function knownClassificationCodes(
+  facts: StoredProfile['facts'],
+  { occupations, studyFields }: ClassificationCodes,
+): boolean {
+  const named = (code: string | undefined, codes: ReadonlySet<string>) =>
+    code === undefined || codes.has(code);
+  return (
+    (facts.workPeriods ?? []).every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.registrations ?? []).every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
+  );
+}
+
 /**
- * Replaces a person's facts and dependence; dependence names other people of the case, and a work
- * period's occupation a code of the occupations classification.
+ * Replaces a person's facts and dependence; dependence names other people of the case, and every
+ * occupation or field of study a code of its classification.
  */
 async function saveProfile(
   tx: Transaction,
@@ -279,14 +300,9 @@ async function saveProfile(
   personId: string,
   facts: StoredProfile['facts'],
   dependsOn: readonly string[] | null,
-  occupations: ReadonlySet<string>,
+  codes: ClassificationCodes,
 ) {
-  refuseUnless(
-    (facts.workPeriods ?? []).every(
-      ({ occupation }) => occupation === undefined || occupations.has(occupation),
-    ),
-    'case_invalid',
-  );
+  refuseUnless(knownClassificationCodes(facts, codes), 'case_invalid');
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
     dependsOn === null ||
@@ -389,12 +405,14 @@ export function createCaseFiles({
   today,
   countries,
   occupations,
+  studyFields,
   evaluation,
 }: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),
     occupations: new Set(occupations),
+    studyFields: new Set(studyFields),
   };
   /**
    * Runs one write in the viewer's case under its lock, then records its events once it
@@ -597,7 +615,7 @@ export function createCaseFiles({
     writeProfile: (accountId, { personId, facts, dependsOn }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        await saveProfile(tx, rows, personId, facts, dependsOn, known.occupations);
+        await saveProfile(tx, rows, personId, facts, dependsOn, known);
         return [];
       }),
 
@@ -726,7 +744,7 @@ export function createCaseFiles({
     questions: (accountId) =>
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined ? null : caseQuestions(rows, countries, occupations);
+        return rows === undefined ? null : caseQuestions(rows, countries, occupations, studyFields);
       }),
 
     playback: (accountId) =>
@@ -777,7 +795,7 @@ export function createCaseFiles({
           ),
         );
         if (answered.has('fact') || answered.has('marker') || answered.has('dependence')) {
-          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known.occupations);
+          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known);
         }
         if ((answered.has('incomes') || answered.has('assetsMarker')) && after.finances) {
           await saveFinances(tx, personId, after.finances);

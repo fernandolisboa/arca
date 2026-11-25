@@ -29,41 +29,60 @@ export const collectionNames = [
   'lineage.links',
   'person.workPeriods',
   'principal.workPeriods',
+  'person.qualifications',
+  'principal.qualifications',
+  'person.registrations',
+  'principal.registrations',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
 
 /**
  * The collections over one person's records (ADR-0036): whose records (the person in focus or the
- * principal), the snapshot list they come from, the record each item binds, and the facts that
- * bound each item's period, which `covers` reads. An absent list is unknown, `[]` none.
+ * principal), the snapshot list they come from, the record each item binds, and, for records that
+ * span time, the facts that bound each item's period, which `covers` reads. An absent list is
+ * unknown, `[]` none.
  */
 const workPeriods = {
   list: 'workPeriods',
   record: 'workPeriod',
   period: { start: 'workPeriod.start', end: 'workPeriod.end' },
 } as const;
+const qualifications = { list: 'qualifications', record: 'qualification' } as const;
+const registrations = { list: 'registrations', record: 'registration' } as const;
+
+interface RecordCollection {
+  readonly owner: 'current' | 'principal';
+  readonly list: keyof Person;
+  readonly record: PersonRecord['kind'];
+  readonly period?: { readonly start: FactKey; readonly end: FactKey };
+}
 
 export const recordCollections = {
   'person.workPeriods': { owner: 'current', ...workPeriods },
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
-} as const satisfies Partial<
-  Record<
-    CollectionName,
-    {
-      readonly owner: 'current' | 'principal';
-      readonly list: keyof Person;
-      readonly record: PersonRecord['kind'];
-      readonly period: { readonly start: FactKey; readonly end: FactKey };
-    }
-  >
->;
+  'person.qualifications': { owner: 'current', ...qualifications },
+  'principal.qualifications': { owner: 'principal', ...qualifications },
+  'person.registrations': { owner: 'current', ...registrations },
+  'principal.registrations': { owner: 'principal', ...registrations },
+} as const satisfies Partial<Record<CollectionName, RecordCollection>>;
 
 export type RecordCollectionName = keyof typeof recordCollections;
 export type RecordList = (typeof recordCollections)[RecordCollectionName]['list'];
 
 export function isRecordCollection(name: CollectionName): name is RecordCollectionName {
   return Object.hasOwn(recordCollections, name);
+}
+
+/** The record collections whose items span time, which `covers` can read. */
+export type PeriodCollectionName = {
+  [Name in RecordCollectionName]: (typeof recordCollections)[Name] extends { period: unknown }
+    ? Name
+    : never;
+}[RecordCollectionName];
+
+export function hasPeriod(name: RecordCollectionName): name is PeriodCollectionName {
+  return 'period' in recordCollections[name];
 }
 
 export const maxAncestorGenerations = 4;

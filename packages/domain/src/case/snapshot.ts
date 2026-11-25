@@ -154,20 +154,66 @@ export const workPeriodSchema = workPeriodFieldsSchema.refine(periodInOrder, per
 
 export type WorkPeriod = z.infer<typeof workPeriodSchema>;
 
+/** An ISCED 2011 level, 0 to 8. */
+export const educationLevelSchema = z.number().int().min(0).max(8);
+
+/** An ISCED-F 2013 detailed field code; the API checks it against the study-fields classification. */
+export const studyFieldCodeSchema = z.string().regex(/^[0-9]{4}$/);
+
+export const maxQualifications = 20;
+export const maxRegistrations = 20;
+
+/** A degree or diploma (ADR-0036): its level, field, the country that awarded it and when. */
+export const qualificationSchema = z.strictObject({
+  level: educationLevelSchema.optional(),
+  field: studyFieldCodeSchema.optional(),
+  country: countryCodeSchema.optional(),
+  completed: dateValueSchema.optional(),
+});
+
+export type Qualification = z.infer<typeof qualificationSchema>;
+
+/** A licence to practise an occupation in a country, and since when (ADR-0036). */
+export const registrationSchema = z.strictObject({
+  country: countryCodeSchema.optional(),
+  occupation: occupationCodeSchema.optional(),
+  since: dateValueSchema.optional(),
+});
+
+export type Registration = z.infer<typeof registrationSchema>;
+
+/** No qualification is above the education level, when both are known. */
+export const qualificationsWithinLevel = ({
+  educationLevel,
+  qualifications,
+}: {
+  readonly educationLevel?: number | undefined;
+  readonly qualifications?: readonly Qualification[] | undefined;
+}): boolean =>
+  educationLevel === undefined ||
+  (qualifications ?? []).every(({ level }) => level === undefined || level <= educationLevel);
+
+export const qualificationLevelMessage = {
+  message: 'A qualification is not above the education level',
+};
+
 /** A person's fields, before the checks across them; storage derives its schemas from these. */
 export const personFieldsSchema = z.strictObject({
   id: opaqueIdSchema,
   birthDate: dateValueSchema.optional(),
   citizenships: z.array(citizenshipSchema).max(10).optional(),
   residenceCountry: countryCodeSchema.optional(),
-  /** ISCED 2011 level, 0 to 8. */
-  educationLevel: z.number().int().min(0).max(8).optional(),
+  /** ISCED 2011 level, 0 to 8: the highest completed, which no qualification exceeds. */
+  educationLevel: educationLevelSchema.optional(),
   languages: z.array(languageSchema).max(20).optional(),
   incomes: z.array(incomeSchema).max(20).optional(),
   immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
   jobOffers: z.array(jobOfferSchema).max(10).optional(),
   /** Work periods, past and current, in any order. */
   workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
+  qualifications: z.array(qualificationSchema).max(maxQualifications).optional(),
+  /** Professional registrations: licences to practise an occupation in a country. */
+  registrations: z.array(registrationSchema).max(maxRegistrations).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
   studying: z.boolean().optional(),
@@ -187,7 +233,8 @@ export const personSchema = personFieldsSchema
   })
   .refine((person) => distinct(person.recordedInFull ?? []), {
     message: 'A completeness marker is listed once',
-  });
+  })
+  .refine(qualificationsWithinLevel, qualificationLevelMessage);
 
 export const coupleEdgeSchema = z.strictObject({
   kind: z.enum(['spouse', 'partner']),

@@ -36,6 +36,7 @@ export interface QuestionContext {
   readonly countries: readonly string[];
   readonly formerCountries: readonly string[];
   readonly occupations: readonly string[];
+  readonly studyFields: readonly string[];
 }
 
 type FieldKey = keyof Messages['questions']['fields'];
@@ -59,6 +60,25 @@ export function useNames() {
   const currencies = new Intl.DisplayNames([i18n.language], { type: 'currency', fallback: 'code' });
   const sorted = (options: { value: string; label: string }[]) =>
     options.sort((left, right) => left.label.localeCompare(right.label, i18n.language));
+  /** A classification's codes by name, under the group their first `prefix` digits name. */
+  const classified = (
+    codes: readonly string[],
+    classification: 'occupations' | 'studyFields',
+    prefix: number,
+  ) => {
+    const named = (key: string, fallback: string) =>
+      i18n.exists(key) ? t(key as 'occupations.2211') : fallback;
+    const groups = classification === 'occupations' ? 'occupationGroups' : 'studyFieldGroups';
+    return Object.entries(
+      Object.groupBy(
+        codes.map((code) => ({ value: code, label: named(`${classification}.${code}`, code) })),
+        ({ value }) => value.slice(0, prefix),
+      ),
+    ).map(([group, options = []]) => ({
+      title: named(`${groups}.${group}`, group),
+      options: sorted(options),
+    }));
+  };
   return {
     country: (code: string) => {
       const former = `formerCountries.${code}`;
@@ -75,23 +95,9 @@ export function useNames() {
         label: `${code} · ${currencies.of(code) ?? code}`,
       })),
     // ISCO-08 codes under their major group, the code's first digit.
-    occupationGroups: (codes: readonly string[]) =>
-      Object.entries(
-        Object.groupBy(
-          codes.map((code) => ({
-            value: code,
-            label: i18n.exists(`occupations.${code}`)
-              ? t(`occupations.${code}` as 'occupations.2211')
-              : code,
-          })),
-          ({ value }) => value.slice(0, 1),
-        ),
-      ).map(([group, options = []]) => ({
-        title: i18n.exists(`occupationGroups.${group}`)
-          ? t(`occupationGroups.${group}` as 'occupationGroups.2')
-          : group,
-        options: sorted(options),
-      })),
+    occupationGroups: (codes: readonly string[]) => classified(codes, 'occupations', 1),
+    // ISCED-F 2013 detailed fields under their broad field, the code's first two digits.
+    studyFieldGroups: (codes: readonly string[]) => classified(codes, 'studyFields', 2),
     field: (key: string) =>
       i18n.exists(`questions.fields.${key}`) ? t(`questions.fields.${key as FieldKey}`) : key,
   };
@@ -209,23 +215,29 @@ export function FieldEditor({
         />
       );
     case 'occupation':
+    case 'studyField': {
+      const [groups, picker] =
+        input.kind === 'occupation'
+          ? [names.occupationGroups(context.occupations), 'occupationPicker' as const]
+          : [names.studyFieldGroups(context.studyFields), 'studyFieldPicker' as const];
       return (
         <SearchPicker
           label={label}
           {...(hint === undefined ? {} : { hint })}
           placeholder={t('questions.pick')}
           value={chosenValue}
-          groups={[...names.occupationGroups(context.occupations), { options: unknownOption }]}
+          groups={[...groups, { options: unknownOption }]}
           labels={{
-            search: t('questions.occupationPicker.search'),
-            none: t('questions.occupationPicker.none'),
-            clear: t('questions.occupationPicker.clear'),
-            close: t('questions.occupationPicker.close'),
+            search: t(`questions.${picker}.search`),
+            none: t(`questions.${picker}.none`),
+            clear: t(`questions.${picker}.clear`),
+            close: t(`questions.${picker}.close`),
           }}
           layout="list"
           onChange={choose}
         />
       );
+    }
     case 'label':
       return (
         <LabelEditor

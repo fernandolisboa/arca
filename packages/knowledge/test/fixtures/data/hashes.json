@@ -144,6 +144,10 @@
       "sha256": "9c0b60f8ad6da15a7a3bd0f0e7ab6bdd4a78b38fa6d4db777204434248c485e4"
     },
     {
+      "path": "routes/qr-licensed-professional/1",
+      "sha256": "b26038ba8ef05efde587cb6424445b30e4c3d1a942987854af2b3bc689911b49"
+    },
+    {
       "path": "routes/qr-national-interest/1",
       "sha256": "5b89ee3fd22c4f96d6d3137c47953fc202145a1614624633b2e5f8a893f6cead"
     },

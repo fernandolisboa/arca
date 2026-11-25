@@ -29,6 +29,8 @@ import {
   type CompletenessMarker,
   type CountryCode,
   type Person,
+  type Qualification,
+  type Registration,
   type Relationship,
   type WorkPeriod,
   custodies,
@@ -69,10 +71,19 @@ export interface LineageBinding {
 }
 
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
-export interface PersonRecord {
-  readonly kind: 'workPeriod';
-  readonly value: WorkPeriod;
-}
+export type PersonRecord =
+  | { readonly kind: 'workPeriod'; readonly value: WorkPeriod }
+  | { readonly kind: 'qualification'; readonly value: Qualification }
+  | { readonly kind: 'registration'; readonly value: Registration };
+
+export type RecordKind = PersonRecord['kind'];
+
+/** The record kinds, each also the scope of its item facts, such as `qualification.field`. */
+export const recordKinds = [
+  'workPeriod',
+  'qualification',
+  'registration',
+] as const satisfies readonly RecordKind[];
 
 /**
  * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
@@ -100,10 +111,10 @@ export interface Derived {
 /**
  * What a fact is about: a person (the principal, a candidate dependent, a member inside a
  * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
- * candidate was reached by, the line from an ancestor to the principal, or one work period inside
- * a work-period collection.
+ * candidate was reached by, the line from an ancestor to the principal, or one record inside a
+ * record collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | 'workPeriod';
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | RecordKind;
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -374,45 +385,91 @@ export const factCatalog = {
   'workPeriod.employerCountry': {
     type: { kind: 'country' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).employerCountry) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').employerCountry) }),
   },
   /** Where the person physically works from. */
   'workPeriod.workplaceCountry': {
     type: { kind: 'country' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).workplaceCountry) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').workplaceCountry) }),
   },
   'workPeriod.relation': {
     type: { kind: 'enum', values: workRelations },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).relation) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').relation) }),
   },
   'workPeriod.occupation': {
     type: { kind: 'code', classification: 'occupations' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).occupation) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').occupation) }),
   },
   /** The role the person says they had; a route's legal definition stays an assessment. */
   'workPeriod.capacity': {
     type: { kind: 'enum', values: workCapacities },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).capacity) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').capacity) }),
   },
   'workPeriod.fullTime': {
     type: { kind: 'boolean' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: booleanValue(workPeriodOf(binding).fullTime ?? 'unknown') }),
+    derive: (binding) => ({
+      value: booleanValue(recordOf(binding, 'workPeriod').fullTime ?? 'unknown'),
+    }),
   },
   'workPeriod.start': {
     type: { kind: 'date' },
     scope: 'workPeriod',
-    derive: (binding) => dateFact(workPeriodOf(binding).start),
+    derive: (binding) => dateFact(recordOf(binding, 'workPeriod').start),
   },
   /** The last day worked; `"none"` means it still went on at `recordedOn`, so it is later. */
   'workPeriod.end': {
     type: { kind: 'date' },
     scope: 'workPeriod',
-    derive: (binding) => endFact(workPeriodOf(binding).end, binding.environment),
+    derive: (binding) => endFact(recordOf(binding, 'workPeriod').end, binding.environment),
+  },
+  /** The qualification's ISCED 2011 level; unknown, any level up to the person's education level. */
+  'qualification.level': {
+    type: { kind: 'integer' },
+    scope: 'qualification',
+    nonNegative: true,
+    derive: (binding) => {
+      const { level } = recordOf(binding, 'qualification');
+      if (level !== undefined) return { value: integerRange(level, level) };
+      const highest = person(binding.environment, binding.personId).educationLevel;
+      return { value: integerRange(0, highest ?? 8) };
+    },
+  },
+  'qualification.field': {
+    type: { kind: 'code', classification: 'studyFields' },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').field) }),
+  },
+  /** The country that awarded the qualification. */
+  'qualification.country': {
+    type: { kind: 'country' },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').country) }),
+  },
+  'qualification.completed': {
+    type: { kind: 'date' },
+    scope: 'qualification',
+    derive: (binding) => dateFact(recordOf(binding, 'qualification').completed),
+  },
+  /** Where the person is licensed to practise. */
+  'registration.country': {
+    type: { kind: 'country' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').country) }),
+  },
+  'registration.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').occupation) }),
+  },
+  'registration.since': {
+    type: { kind: 'date' },
+    scope: 'registration',
+    derive: (binding) => dateFact(recordOf(binding, 'registration').since),
   },
 } as const satisfies Record<string, FactDefinition>;
 
@@ -740,11 +797,13 @@ function edgeOf(binding: FactBinding): Relationship {
   return binding.edge;
 }
 
-function workPeriodOf(binding: FactBinding): WorkPeriod {
-  if (binding.record?.kind !== 'workPeriod') {
-    throw new RangeError('A work-period fact outside a work-period collection');
-  }
-  return binding.record.value;
+function recordOf<Kind extends RecordKind>(
+  binding: FactBinding,
+  kind: Kind,
+): Extract<PersonRecord, { kind: Kind }>['value'] {
+  const { record } = binding;
+  if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside a ${kind} collection`);
+  return record.value;
 }
 
 function otherEnd(edge: Relationship, id: string): string {

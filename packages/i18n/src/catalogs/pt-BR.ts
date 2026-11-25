@@ -810,6 +810,9 @@ export const ptBR = {
       fullTime: 'É em tempo integral?',
       employerCountry: 'País da empresa ou do cliente',
       workplaceCountry: 'País de onde trabalha',
+      field: 'Área de estudo',
+      completed: 'Quando concluiu',
+      since: 'Desde quando',
     },
     labelHint:
       'Só aparece para quem vê os dados desta pessoa, como “Hospital” ou “Cliente dos EUA”.',
@@ -818,6 +821,12 @@ export const ptBR = {
       none: 'Nenhuma ocupação com esse nome',
       clear: 'Limpar a ocupação',
       close: 'Fechar a lista de ocupações',
+    },
+    studyFieldPicker: {
+      search: 'Buscar área de estudo',
+      none: 'Nenhuma área com esse nome',
+      clear: 'Limpar a área de estudo',
+      close: 'Fechar a lista de áreas',
     },
     choice: {
       citizenshipBasis:
@@ -849,7 +858,9 @@ export const ptBR = {
       educationLevel: 'Até onde {name} estudou?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
+      qualifications: 'Que formações {name} concluiu?',
       workPeriods: 'Quais trabalhos {name} tem ou já teve?',
+      registrations: 'Onde {name} tem registro para exercer a profissão?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
       incomes: 'Quanto {name} recebe por mês?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
@@ -869,6 +880,10 @@ export const ptBR = {
       educationLevel: 'Vale o último curso que concluiu.',
       incomes: 'Anote cada fonte de renda separadamente.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
+      qualifications:
+        'Anote cada curso concluído, como técnico, graduação, especialização, mestrado ou doutorado. O país é o da escola que emitiu o diploma.',
+      registrations:
+        'É a inscrição em conselho ou ordem, como CRM, CREA ou OAB. Anote um registro por país.',
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
@@ -963,6 +978,10 @@ export const ptBR = {
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
       workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
       noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
+      qualification: 'Formação de {person}: {level}{details}.',
+      noQualification: 'Formações de {person}: nenhuma.',
+      registration: 'Registro profissional de {person}: {occupation}{details}.',
+      noRegistration: 'Registros profissionais de {person}: nenhum.',
       immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
       noImmigrationEvent: 'Imigração de {person}: nenhum visto, residência ou problema.',
       dependsOn: '{person} depende do dinheiro de {people}.',
@@ -993,6 +1012,10 @@ export const ptBR = {
       temporary: ', temporária',
       label: ' ({label})',
       noOccupation: 'ocupação não informada',
+      noLevel: 'nível não informado',
+      field: ', em {field}',
+      issuedIn: ', país: {country}',
+      completed: ', concluída em {date}',
       relation:
         ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} owner {na própria empresa} other {}}',
       capacity:
@@ -1777,6 +1800,8 @@ export const ptBR = {
       lineage: 'do elo da linha de ascendência',
       ancestor: 'do ascendente',
       workPeriod: 'do trabalho',
+      qualification: 'da formação',
+      registration: 'do registro profissional',
     },
     fact: {
       person: {
@@ -1814,6 +1839,17 @@ export const ptBR = {
         childBirthDate: 'nascimento do filho',
         citizenshipsAtChildBirth: 'cidadanias no nascimento do filho',
       },
+      qualification: {
+        level: 'nível',
+        field: 'área de estudo',
+        country: 'país que emitiu',
+        completed: 'conclusão',
+      },
+      registration: {
+        country: 'país do registro',
+        occupation: 'ocupação',
+        since: 'data do registro',
+      },
       workPeriod: {
         employerCountry: 'país da empresa',
         workplaceCountry: 'país de onde a pessoa atua',
@@ -1832,10 +1868,14 @@ export const ptBR = {
       },
       person: {
         workPeriods: 'os trabalhos da pessoa avaliada',
+        qualifications: 'as formações da pessoa avaliada',
+        registrations: 'os registros profissionais da pessoa avaliada',
       },
       principal: {
         ancestors: 'os ascendentes do requerente principal',
         workPeriods: 'os trabalhos do requerente principal',
+        qualifications: 'as formações do requerente principal',
+        registrations: 'os registros profissionais do requerente principal',
       },
       lineage: {
         links: 'os elos da linha de ascendência',

@@ -15,12 +15,14 @@ import {
   countryCodeSchema,
   coupleEdgeSchema,
   custodies,
+  educationLevelSchema,
   immigrationEventKinds,
   incomeKinds,
   isicSections,
   languageLevels,
   occupationCodeSchema,
   parentKinds,
+  studyFieldCodeSchema,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -58,10 +60,18 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
   }),
   sentence('noCitizenship', { person }),
   sentence('residence', { person, country: countryCodeSchema }),
-  sentence('education', { person, level: z.number().int().min(0).max(8) }),
+  sentence('education', { person, level: educationLevelSchema }),
   sentence('studying', { person, studying: z.boolean() }),
   sentence('language', { person, language: z.string(), level: z.enum(languageLevels) }),
   sentence('noLanguage', { person }),
+  sentence('qualification', {
+    person,
+    level: educationLevelSchema.optional(),
+    field: studyFieldCodeSchema.optional(),
+    country: countryCodeSchema.optional(),
+    completed: dateValueSchema.optional(),
+  }),
+  sentence('noQualification', { person }),
   sentence('jobOffer', {
     person,
     country: countryCodeSchema,
@@ -83,6 +93,13 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     end: dateOrNone.optional(),
   }),
   sentence('noWorkPeriod', { person }),
+  sentence('registration', {
+    person,
+    country: countryCodeSchema.optional(),
+    occupation: occupationCodeSchema.optional(),
+    since: dateValueSchema.optional(),
+  }),
+  sentence('noRegistration', { person }),
   sentence('immigrationEvent', {
     person,
     country: countryCodeSchema,
@@ -238,6 +255,26 @@ function describePerson(
           for (const period of subject.workPeriods) {
             said.push({ kind: 'workPeriod', ...ask, ...period });
           }
+        break;
+      case 'qualifications':
+        if (subject.qualifications === undefined) unanswered(question);
+        else if (subject.qualifications.length === 0) {
+          said.push({ kind: 'noQualification', ...ask });
+        } else {
+          for (const held of subject.qualifications) {
+            said.push({ kind: 'qualification', ...ask, ...held });
+          }
+        }
+        break;
+      case 'registrations':
+        if (subject.registrations === undefined) unanswered(question);
+        else if (subject.registrations.length === 0) {
+          said.push({ kind: 'noRegistration', ...ask });
+        } else {
+          for (const held of subject.registrations) {
+            said.push({ kind: 'registration', ...ask, ...held });
+          }
+        }
         break;
       case 'jobOffers':
         if (subject.jobOffers === undefined) unanswered(question);

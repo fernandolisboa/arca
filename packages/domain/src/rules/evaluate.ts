@@ -48,6 +48,7 @@ import {
   type CollectionName,
   type Expression,
   type RecordList,
+  hasPeriod,
   isNonNegative,
   isRecordCollection,
   recordCollections,
@@ -311,6 +312,8 @@ function bindingFor(target: string, frame: Frame): FactBinding {
         ...(frame.firstEdge === undefined ? {} : { edge: frame.firstEdge }),
       };
     case 'workPeriod':
+    case 'qualification':
+    case 'registration':
       return {
         environment,
         personId: frame.current,
@@ -499,7 +502,9 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
     };
   }
   assertRecordedBy(frame.environment.snapshot, reference);
-  if (!isRecordCollection(expression.over)) throw new RangeError('Unchecked covers');
+  if (!isRecordCollection(expression.over) || !hasPeriod(expression.over)) {
+    throw new RangeError('Unchecked covers');
+  }
   const { period } = recordCollections[expression.over];
   const { items, complete, records } = itemsOf(expression.over, undefined, frame);
   const lookBack: Span = {
@@ -685,10 +690,12 @@ function itemsOf(
   if (isRecordCollection(over)) {
     const { owner, list, record } = recordCollections[over];
     const personId = owner === 'principal' ? environment.principalId : frame.current;
-    const values = environment.snapshot.person(personId)[list];
+    const values: readonly PersonRecord['value'][] | undefined =
+      environment.snapshot.person(personId)[list];
     return {
       items: (values ?? []).map((value): Item => ({
-        frame: at(personId, undefined, { kind: record, value }),
+        // The table pairs each list with the kind of its records.
+        frame: at(personId, undefined, { kind: record, value } as PersonRecord),
         membership: true,
       })),
       complete: values !== undefined,

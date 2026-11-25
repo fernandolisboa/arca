@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "licensed-doctor",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "field": "0912",
+                "country": "BR",
+                "completed": "2010-12"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "BR",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "degree-in-another-field",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "field": "0613",
+                "country": "BR",
+                "completed": "2010-12"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "BR",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "degree-from-another-country",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "field": "0912",
+                "country": "PT",
+                "completed": "2010-12"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "BR",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "licensed-in-another-country",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "field": "0912",
+                "country": "BR",
+                "completed": "2010-12"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "PT",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "no-qualifications-or-registrations",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "qualifications": [],
+            "registrations": []
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "level-below-master-by-education",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 6,
+            "qualifications": [
+              {
+                "field": "0912",
+                "country": "BR"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "BR",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "degree-field-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "country": "BR"
+              }
+            ],
+            "registrations": [
+              {
+                "country": "BR",
+                "occupation": "2211",
+                "since": "2011-02"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["qualification.field@p1"]
+      }
+    },
+    {
+      "id": "licence-country-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "educationLevel": 7,
+            "qualifications": [
+              {
+                "level": 7,
+                "field": "0912",
+                "country": "BR",
+                "completed": "2010-12"
+              }
+            ],
+            "registrations": [
+              {
+                "occupation": "2211"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["registration.country@p1"]
+      }
+    },
+    {
+      "id": "records-unanswered",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["records qualifications@p1", "records registrations@p1"]
+      }
+    },
+    {
+      "id": "family-doctor-records-unanswered",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 1,
+        "sha256": "391c21eb0690f9593f761bb806b72fbd86052fa1634a2137d6803b4b345fddf7"
+      },
+      "principal": "p2",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["records qualifications@p2", "records registrations@p2"]
+      }
+    }
+  ]
+}

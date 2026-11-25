@@ -105,6 +105,44 @@ export function sentenceText(
         sector: t('questions.choice.isicSection', { value: said.sector }),
         temporary: said.temporary ? t('playback.part.temporary') : '',
       });
+    case 'noQualification':
+      return t('playback.sentence.noQualification', { person: name(said.person) });
+    case 'qualification':
+      return t('playback.sentence.qualification', {
+        person: name(said.person),
+        level:
+          said.level === undefined
+            ? t('playback.part.noLevel')
+            : t('questions.choice.educationLevel', { value: String(said.level) }),
+        details: [
+          said.field === undefined
+            ? ''
+            : t('playback.part.field', {
+                field: t(`studyFields.${said.field}` as 'studyFields.0912'),
+              }),
+          said.country === undefined
+            ? ''
+            : t('playback.part.issuedIn', { country: country(said.country) }),
+          said.completed === undefined
+            ? ''
+            : t('playback.part.completed', { date: date(said.completed) }),
+        ].join(''),
+      });
+    case 'noRegistration':
+      return t('playback.sentence.noRegistration', { person: name(said.person) });
+    case 'registration':
+      return t('playback.sentence.registration', {
+        person: name(said.person),
+        occupation:
+          said.occupation === undefined
+            ? t('playback.part.noOccupation')
+            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+        details:
+          (said.country === undefined
+            ? ''
+            : t('playback.part.issuedIn', { country: country(said.country) })) +
+          when('since', said.since),
+      });
     case 'noWorkPeriod':
       return t('playback.sentence.noWorkPeriod', { person: name(said.person) });
     case 'workPeriod':

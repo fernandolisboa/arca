@@ -31,6 +31,7 @@ const known = {
   countries: new Set(['BR', 'PT', 'US', 'IT']),
   formerCountries: new Set(['YUCS']),
   occupations: new Set(['2211', '2512']),
+  studyFields: new Set(['0912', '0613']),
 };
 
 const empty: QuestionState = {
@@ -191,6 +192,34 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(none.ok && none.state.facts).toEqual({ workPeriods: [] });
     const unknown = apply(applied.state, { workPeriods: null });
     expect(unknown.ok && unknown.state.facts).toEqual({});
+  });
+
+  it('saves qualifications and registrations, leaving out what is not known', () => {
+    const qualifications = [
+      { level: 7, field: '0912', country: 'BR', completed: '2012-12' },
+      { level: 6, country: 'PT' },
+    ];
+    const registrations = [{ country: 'BR', occupation: '2211', since: '2013-02' }, {}];
+    const applied = apply(empty, { educationLevel: 7, qualifications, registrations });
+    expect(applied.ok && applied.state.facts).toEqual({
+      educationLevel: 7,
+      qualifications,
+      registrations,
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('qualifications'), applied.state)).toEqual(qualifications);
+    expect(question('qualifications').step).toBe('studies');
+    expect(question('registrations').step).toBe('work');
+    const none = apply(applied.state, { qualifications: [], registrations: null });
+    expect(none.ok && none.state.facts).toEqual({ educationLevel: 7, qualifications: [] });
+  });
+
+  it('refuses a qualification above the education level, either way round', () => {
+    expect(apply(empty, { educationLevel: 6, qualifications: [{ level: 7 }] }).ok).toBe(false);
+    const held = apply(empty, { educationLevel: 7, qualifications: [{ level: 7 }] });
+    if (!held.ok) throw new Error('refused');
+    expect(apply(held.state, { educationLevel: 6 }).ok).toBe(false);
+    expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
   });
 
   it('takes "Não sei" as leaving the fact out', () => {
@@ -373,6 +402,13 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['a work period that ends before it starts', { workPeriods: [{ start: '2020', end: '2019' }] }],
     ['a label with outer spaces', { workPeriods: [{ label: ' Clínica' }] }],
     ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
+    ['a field of study outside the classification', { qualifications: [{ field: '9999' }] }],
+    ['a qualification level outside ISCED', { qualifications: [{ level: 9 }] }],
+    [
+      'a registration occupation outside the classification',
+      { registrations: [{ occupation: '9999' }] },
+    ],
+    ['a registration country outside the pinned list', { registrations: [{ country: 'XX' }] }],
     [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },

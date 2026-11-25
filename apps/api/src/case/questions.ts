@@ -37,6 +37,7 @@ export function caseQuestions(
   rows: CaseRows,
   countries: PinnedCountries,
   occupations: readonly string[],
+  studyFields: readonly string[],
 ): CaseQuestions {
   return {
     people: rows.people
@@ -65,5 +66,6 @@ export function caseQuestions(
     countries: [...countries.countries],
     formerCountries: [...countries.formerCountries],
     occupations: [...occupations],
+    studyFields: [...studyFields],
   };
 }
