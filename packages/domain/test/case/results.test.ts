@@ -81,6 +81,18 @@ describe('decisiveQuestions (spec 0007, R6)', () => {
     ).toEqual([{ personId: 'p1', question: 'workPeriods', decides: 2, kept: true }]);
   });
 
+  it('asks a business fact of a work period as the work periods, which link it, and the assets, which describe it', () => {
+    const since: MissingFact = {
+      kind: 'fact',
+      reference: 'workPeriod.business.operatingSince',
+      personId: 'p1',
+    };
+    expect(decisiveQuestions([{ missingFacts: [since] }], new Set(['p1']))).toEqual([
+      { personId: 'p1', question: 'workPeriods', decides: 1, kept: true },
+      { personId: 'p1', question: 'assets', decides: 1, kept: true },
+    ]);
+  });
+
   it("asks a lineage fact about the child of the next person in the line, not the ancestor's", () => {
     const line = ['grandparent', 'parent', 'p1'];
     const read = (reference: string): MissingFact => ({

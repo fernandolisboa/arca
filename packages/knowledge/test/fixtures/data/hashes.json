@@ -162,6 +162,10 @@
     {
       "path": "routes/qt-closed/1",
       "sha256": "3d191cf05ded2b0f3be0c2cd6afb6d4c58bfb9329976f4920ace036010797d26"
+    },
+    {
+      "path": "routes/qr-own-business/1",
+      "sha256": "feec72064d4da8b43a2af99a60393bbe6d6d483efc9efeabd6644a9785a19ce2"
     }
   ]
 }

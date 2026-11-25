@@ -14,6 +14,7 @@ import { CountryField } from '../forms/country-field.js';
 import { dangerLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
+import { formatDateValue } from './format.js';
 import {
   amountText,
   amountValue,
@@ -36,6 +37,30 @@ export interface QuestionContext {
   readonly countries: readonly string[];
   readonly formerCountries: readonly string[];
   readonly occupations: readonly string[];
+  /** The businesses the person owns a confirmed share of, as the assets question lists them. */
+  readonly businesses: readonly Business[];
+}
+
+export interface Business {
+  readonly id: string;
+  readonly country?: string;
+  readonly operatingSince?: string;
+}
+
+/** The businesses among the person's assets, as the assets question answers them. */
+export function businessesOf(assets: unknown): Business[] {
+  if (!Array.isArray(assets)) return [];
+  return assets.filter(isRecord).flatMap((asset) => {
+    const { id, kind, country, operatingSince } = asset;
+    if (kind !== 'business' || typeof id !== 'string') return [];
+    return [
+      {
+        id,
+        ...(typeof country === 'string' ? { country } : {}),
+        ...(typeof operatingSince === 'string' ? { operatingSince } : {}),
+      },
+    ];
+  });
 }
 
 type FieldKey = keyof Messages['questions']['fields'];
@@ -51,6 +76,7 @@ const labelLength = 80;
 const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
+const countPattern = /^[0-9]{1,8}$/;
 
 export function useNames() {
   const { t, i18n } = useTranslation();
@@ -92,8 +118,13 @@ export function useNames() {
           : group,
         options: sorted(options),
       })),
-    field: (key: string) =>
-      i18n.exists(`questions.fields.${key}`) ? t(`questions.fields.${key as FieldKey}`) : key,
+    field: (key: string, questionId?: string) => {
+      const specific = `questions.fieldFor.${questionId ?? ''}.${key}`;
+      if (i18n.exists(specific)) return t(specific as 'questions.fieldFor.assets.country');
+      return i18n.exists(`questions.fields.${key}`)
+        ? t(`questions.fields.${key as FieldKey}`)
+        : key;
+    },
   };
 }
 
@@ -118,7 +149,7 @@ export function FieldEditor({
   readonly onChange: (value: unknown) => void;
   readonly context: QuestionContext;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const names = useNames();
   const unknownOption = optional ? [{ value: unknownValue, label: t('questions.unknown') }] : [];
   const chosenValue = value === null ? unknownValue : scalar(value);
@@ -233,6 +264,38 @@ export function FieldEditor({
           hint={t('questions.labelHint')}
           value={value}
           onChange={onChange}
+        />
+      );
+    case 'business':
+      return context.businesses.length === 0 ? (
+        <p className="text-small text-muted">{t('questions.business.noneOwned')}</p>
+      ) : (
+        pick(
+          context.businesses.map((business, index) => ({
+            value: business.id,
+            label: t('questions.business.option', {
+              number: index + 1,
+              country: business.country === undefined ? 'none' : names.country(business.country),
+              since:
+                business.operatingSince === undefined
+                  ? 'none'
+                  : formatDateValue(business.operatingSince, i18n.language),
+            }),
+          })),
+        )
+      );
+    case 'count':
+      return (
+        <TextField
+          label={label}
+          {...(hint === undefined ? {} : { hint })}
+          inputMode="numeric"
+          autoComplete="off"
+          value={scalar(value)}
+          onChange={(event) => {
+            const typed = event.currentTarget.value.trim();
+            onChange(typed === '' ? undefined : countPattern.test(typed) ? Number(typed) : typed);
+          }}
         />
       );
     case 'money':
@@ -477,27 +540,40 @@ function ItemFields({
   readonly context: QuestionContext;
 }) {
   const names = useNames();
+  const asked = (field: QuestionField, values: Record_) =>
+    field.onlyWhen === undefined || values[field.onlyWhen.key] === field.onlyWhen.value;
   return (
     <>
-      {fields.map(({ key, input, optional }) => (
-        <FieldEditor
-          key={key}
-          questionId={questionId}
-          fieldKey={key}
-          label={names.field(key)}
-          input={input}
-          value={item[key]}
-          optional={optional}
-          context={context}
-          onChange={(next) => {
-            // "Não sei" stays in the draft as null until the step is sent (`sentAnswer`).
-            const rest = Object.fromEntries(
-              Object.entries(item).filter(([field]) => field !== key),
-            );
-            onChange(next === undefined ? rest : { ...rest, [key]: next });
-          }}
-        />
-      ))}
+      {fields
+        .filter((field) => asked(field, item))
+        .map(({ key, input, optional }) => (
+          <FieldEditor
+            key={key}
+            questionId={questionId}
+            fieldKey={key}
+            label={names.field(key, questionId)}
+            input={input}
+            value={item[key]}
+            optional={optional}
+            context={context}
+            onChange={(next) => {
+              // "Não sei" stays in the draft as null until the step is sent (`sentAnswer`).
+              const rest = Object.fromEntries(
+                Object.entries(item).filter(([field]) => field !== key),
+              );
+              const changed = next === undefined ? rest : { ...rest, [key]: next };
+              // A field no longer asked, such as a business's country once the asset is not one, goes.
+              const unasked = new Set(
+                fields.filter((field) => !asked(field, changed)).map((field) => field.key),
+              );
+              onChange(
+                Object.fromEntries(
+                  Object.entries(changed).filter(([field]) => !unasked.has(field)),
+                ),
+              );
+            }}
+          />
+        ))}
     </>
   );
 }

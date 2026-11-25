@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "owner-manager-for-a-year",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "owner",
+                "capacity": "manager",
+                "fullTime": true,
+                "employerCountry": "BR",
+                "workplaceCountry": "BR",
+                "start": "2019-03",
+                "end": "none",
+                "business": "a1"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "business",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 30000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-06-30",
+            "country": "BR",
+            "operatingSince": "2018-05",
+            "employees": 6
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "business-too-young",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "owner",
+                "capacity": "manager",
+                "fullTime": true,
+                "employerCountry": "BR",
+                "workplaceCountry": "BR",
+                "start": "2026-02",
+                "end": "none",
+                "business": "a1"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "business",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 30000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-06-30",
+            "country": "BR",
+            "operatingSince": "2026-02",
+            "employees": 6
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "business-details-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "owner",
+                "capacity": "manager",
+                "fullTime": true,
+                "employerCountry": "BR",
+                "workplaceCountry": "BR",
+                "start": "2019-03",
+                "end": "none",
+                "business": "a1"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "business",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 30000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-06-30"
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": [
+          "workPeriod.business.country@p1",
+          "workPeriod.business.employees@p1",
+          "workPeriod.business.operatingSince@p1"
+        ]
+      }
+    },
+    {
+      "id": "no-business-linked",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "owner",
+                "capacity": "manager",
+                "fullTime": true,
+                "employerCountry": "BR",
+                "workplaceCountry": "BR",
+                "start": "2019-03",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "business",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 30000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-06-30",
+            "country": "BR",
+            "operatingSince": "2018-05",
+            "employees": 6
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": [
+          "workPeriod.business.country@p1",
+          "workPeriod.business.employees@p1",
+          "workPeriod.business.operatingSince@p1"
+        ]
+      }
+    },
+    {
+      "id": "employee-elsewhere",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "workPeriods": [
+              {
+                "relation": "employee",
+                "capacity": "manager",
+                "fullTime": true,
+                "employerCountry": "BR",
+                "workplaceCountry": "BR",
+                "start": "2019-03",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": [
+          {
+            "id": "a1",
+            "kind": "business",
+            "owners": [
+              {
+                "person": "p1",
+                "share": "1"
+              }
+            ],
+            "value": {
+              "amount": 30000000,
+              "currency": "BRL"
+            },
+            "valuedAt": "2026-06-30",
+            "country": "BR",
+            "operatingSince": "2018-05",
+            "employees": 6
+          }
+        ]
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    }
+  ]
+}

@@ -214,6 +214,45 @@ describe('CaseSnapshot', () => {
     expect(accepts(input)).toBe(false);
   });
 
+  const business = {
+    ...asset,
+    kind: 'business',
+    country: 'BR',
+    operatingSince: '2018-05',
+    employees: 6,
+  };
+
+  it('accepts a business with its country, operating start and head count, any of them unknown', () => {
+    expect(accepts({ ...base, assets: [business] })).toBe(true);
+    expect(accepts({ ...base, assets: [{ ...asset, kind: 'business' }] })).toBe(true);
+  });
+
+  it.each([
+    ['a country on an asset that is not a business', { ...asset, country: 'BR' }],
+    ['an operating start on an asset that is not a business', { ...asset, operatingSince: '2018' }],
+    ['a head count on an asset that is not a business', { ...asset, employees: 3 }],
+    ['a negative head count', { ...business, employees: -1 }],
+    ['a fractional head count', { ...business, employees: 1.5 }],
+  ])('rejects %s', (_label, value) => {
+    expect(accepts({ ...base, assets: [value] })).toBe(false);
+  });
+
+  it('links a work period only to a business its person owns', () => {
+    const at = (link: string, assets: object[]) =>
+      accepts({ ...base, people: [{ id: 'p1', workPeriods: [{ business: link }] }], assets });
+    expect(at('a1', [business])).toBe(true);
+    expect(at('a2', [business])).toBe(false);
+    expect(at('a1', [asset])).toBe(false);
+    expect(
+      accepts({
+        ...base,
+        members: ['p1', 'p2'],
+        people: [{ id: 'p1' }, { id: 'p2', workPeriods: [{ business: 'a1' }] }],
+        assets: [business],
+      }),
+    ).toBe(false);
+  });
+
   it('accepts work periods with any part unknown, ongoing ones, and one that starts and ends in a month', () => {
     for (const workPeriods of [
       [],

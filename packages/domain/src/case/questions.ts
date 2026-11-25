@@ -78,6 +78,10 @@ export type FieldInput =
   | { readonly kind: 'share' }
   /** An ISCO-08 occupation code, picked by its name. */
   | { readonly kind: 'occupation' }
+  /** A whole number from zero, such as a head count. */
+  | { readonly kind: 'count' }
+  /** One of the businesses the person owns a confirmed share of, by its asset ID. */
+  | { readonly kind: 'business' }
   /** A short name that tells items apart on screen; kept with the profile, never in the snapshot. */
   | { readonly kind: 'label' };
 
@@ -86,6 +90,8 @@ export interface QuestionField<Key extends string = string> {
   readonly input: FieldInput;
   /** Whether "Não sei" may leave it out. */
   readonly optional: boolean;
+  /** Asked only while another field of the item holds this value; otherwise left out. */
+  readonly onlyWhen?: { readonly key: string; readonly value: string };
 }
 
 export type QuestionInput =
@@ -126,6 +132,8 @@ const needed = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: false }) as const;
 const maybe = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: true }) as const;
+const businessOnly = <Field extends QuestionField>(field: Field) =>
+  ({ ...field, onlyWhen: { key: 'kind', value: 'business' } }) as const;
 const fact = (key: FactKey) => ({ kind: 'fact', key }) as const;
 const marker = <Id extends string>(id: Id, value: ProfileMarker) =>
   ({
@@ -192,6 +200,10 @@ export const questionFlow = [
         maybe('workplaceCountry', { kind: 'country' }),
         maybe('start', partialDate),
         maybe('end', { ...partialDate, none: true }),
+        {
+          ...maybe('business', { kind: 'business' }),
+          onlyWhen: { key: 'relation', value: 'owner' },
+        },
       ],
     },
   },
@@ -234,6 +246,9 @@ export const questionFlow = [
         needed('valuedAt', { kind: 'date', precision: 'day' }),
         maybe('liquid', { kind: 'yesNo' }),
         maybe('sold', { ...partialDate, none: true }),
+        businessOnly(maybe('country', { kind: 'country' })),
+        businessOnly(maybe('operatingSince', partialDate)),
+        businessOnly(maybe('employees', { kind: 'count' })),
         needed('share', { kind: 'share' }),
       ],
     },

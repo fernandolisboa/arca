@@ -19,7 +19,7 @@ import { caseFailure, writeCase, type CaseFailure } from '../case.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page, stickyColumnClass } from '../page.js';
 import { passkeys } from '../platform.js';
-import { QuestionEditor, type QuestionContext } from '../questions/editors.js';
+import { QuestionEditor, type QuestionContext, businessesOf } from '../questions/editors.js';
 import { sentAnswer } from '../questions/entry.js';
 import { CaseSummary } from '../questions/playback.js';
 
@@ -173,6 +173,10 @@ function Answering({
     countries: questions.countries,
     formerCountries: questions.formerCountries,
     occupations: questions.occupations,
+    businesses: businessesOf(
+      person.steps.flatMap((entry) => entry.questions).find((question) => question.id === 'assets')
+        ?.answer,
+    ),
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">

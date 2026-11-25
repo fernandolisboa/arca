@@ -132,6 +132,7 @@ export function sentenceText(
             ? ''
             : t('playback.part.workplaceCountry', { country: country(said.workplaceCountry) }),
           workTime(said.start, said.end),
+          said.atOwnBusiness === true ? t('playback.part.atOwnBusiness') : '',
         ].join(''),
       });
     case 'immigrationEvent':
@@ -206,6 +207,17 @@ export function sentenceText(
             ? ''
             : t('playback.part.liquid', { liquid: said.liquid ? 'yes' : 'no' }),
         sold: when('sold', said.sold),
+        business: [
+          said.country === undefined
+            ? ''
+            : t('playback.part.businessCountry', { country: country(said.country) }),
+          said.operatingSince === undefined
+            ? ''
+            : t('playback.part.operatingSince', { date: date(said.operatingSince) }),
+          said.employees === undefined
+            ? ''
+            : t('playback.part.employees', { employees: said.employees }),
+        ].join(''),
       });
   }
 }

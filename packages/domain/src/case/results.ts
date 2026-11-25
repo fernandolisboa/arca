@@ -48,7 +48,13 @@ export const questionForFact = {
   'workPeriod.fullTime': 'workPeriods',
   'workPeriod.start': 'workPeriods',
   'workPeriod.end': 'workPeriods',
+  'workPeriod.business.country': 'assets',
+  'workPeriod.business.operatingSince': 'assets',
+  'workPeriod.business.employees': 'assets',
 } as const satisfies Record<FactKey, QuestionId>;
+
+/** A business fact is open while the work period names no business, or the business lacks it. */
+const readsLinkedBusiness = (key: FactKey) => key.startsWith('workPeriod.business.');
 
 /** The guided question that records each list of a person's records. */
 const questionForRecords = {
@@ -112,6 +118,12 @@ function asked(
         case 'lineage.edgeKind':
           return relationshipQuestion(next === undefined ? [personId] : [personId, next], kept);
         default:
+          if (readsLinkedBusiness(resolved.key)) {
+            return [
+              { personId, question: 'workPeriods' },
+              { personId, question },
+            ];
+          }
           // The edge a fact reads may not touch the person it is about, so ask through its ends.
           return question === 'relationships' && edge !== undefined
             ? relationshipQuestion(endpoints(edge), kept)

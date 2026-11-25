@@ -21,4 +21,5 @@ The work, business and talent routes the owner wants next (spec [#507](https://g
 - A rule names an occupation as `"2211"`, never as text, so the rule is checked against an official list and the screen names the code in the reader's language.
 - A new edition of either classification is a new numbered file, its own test expectations and labels for any new code; versions already pinned keep their file.
 - A display label is optional on each work period, stripped before the snapshot is built and added back to the playback only from a profile the viewer sees.
+- A business's details are asset columns, so they follow the finances share, not the profile's (#512). A work period names its business by asset ID in the profile; the snapshot keeps that link only while the viewer sees the person own the business, so a viewer with the profile alone learns that the person works at their own company, which the relation already says, and nothing of the business.
 - Self-reported capacity and employer relation can rule a route out but never alone make someone eligible where the law asks for evidence: routes keep that judgement as an assessment.

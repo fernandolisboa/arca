@@ -98,9 +98,12 @@ export async function readCase(
     valued_at: string;
     liquid: boolean | null;
     sold: string | null;
+    country: string | null;
+    operating_since: string | null;
+    employees: number | null;
   }>(sql`
     SELECT id, kind, value_amount::text AS amount, value_currency AS currency,
-           valued_at::text AS valued_at, liquid, sold
+           valued_at::text AS valued_at, liquid, sold, country, operating_since, employees
       FROM cases.asset WHERE case_id = ${caseId} ORDER BY created_at, id`);
   const owners = await rows<{
     asset_id: string;
@@ -154,6 +157,9 @@ export async function readCase(
         valuedAt: row.valued_at,
         ...(row.liquid === null ? {} : { liquid: row.liquid }),
         ...(row.sold === null ? {} : { sold: row.sold }),
+        ...(row.country === null ? {} : { country: row.country }),
+        ...(row.operating_since === null ? {} : { operatingSince: row.operating_since }),
+        ...(row.employees === null ? {} : { employees: row.employees }),
       }),
     })),
     owners: owners.map((row) => ({

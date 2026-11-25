@@ -810,6 +810,21 @@ export const ptBR = {
       fullTime: 'É em tempo integral?',
       employerCountry: 'País da empresa ou do cliente',
       workplaceCountry: 'País de onde trabalha',
+      operatingSince: 'Funciona desde quando',
+      employees: 'Quantos funcionários tem',
+      business: 'Qual das suas empresas',
+    },
+    /** A field's label where one question needs other words than the rest. */
+    fieldFor: {
+      assets: {
+        country: 'País onde a empresa está registrada',
+      },
+    },
+    business: {
+      option:
+        'Empresa {number}{country, select, none {} other { · {country}}}{since, select, none {} other { · desde {since}}}',
+      noneOwned:
+        'Para ligar este trabalho à sua empresa, anote a empresa em Finanças, na pergunta sobre bens.',
     },
     labelHint:
       'Só aparece para quem vê os dados desta pessoa, como “Hospital” ou “Cliente dos EUA”.',
@@ -977,7 +992,7 @@ export const ptBR = {
       coupleEnded:
         '{first} e {second} {couple, select, spouse {foram casados} other {viveram em união estável}}{start} até {end}.',
       parent: '{parent} é mãe ou pai de {child}{since}{details}.',
-      asset: '{asset} de {owners}: {value} em {valuedAt}{liquid}{sold}.',
+      asset: '{asset} de {owners}: {value} em {valuedAt}{liquid}{sold}{business}.',
     },
     part: {
       age: ' ({min, plural, =0 {menos de 1 ano} one {# ano} other {# anos}})',
@@ -1003,6 +1018,11 @@ export const ptBR = {
       between: ', de {start} a {end}',
       startedIn: ', começou em {date}',
       current: ', trabalho atual',
+      atOwnBusiness: ', na empresa anotada nos bens',
+      businessCountry: ', sede: {country}',
+      operatingSince: ', funcionando desde {date}',
+      employees:
+        ', {employees, plural, =0 {sem funcionários} one {# funcionário} other {# funcionários}}',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:
         ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
@@ -1823,6 +1843,11 @@ export const ptBR = {
         fullTime: 'tempo integral',
         start: 'início',
         end: 'fim',
+        business: {
+          country: 'país da empresa própria',
+          operatingSince: 'início das atividades da empresa própria',
+          employees: 'funcionários da empresa própria',
+        },
       },
     },
     collection: {

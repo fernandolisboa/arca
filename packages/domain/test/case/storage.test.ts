@@ -68,6 +68,17 @@ describe('stored finances, assets and shares', () => {
     expect(accepts(storedAssetSchema, { ...asset, id: 'a1' })).toBe(false);
   });
 
+  it('keeps the business fields to a business', () => {
+    const details = { country: 'BR', operatingSince: '2018-05', employees: 6 };
+    const company = {
+      kind: 'business',
+      value: { amount: 30000000, currency: 'BRL' },
+      valuedAt: '2026-06-30',
+    };
+    expect(accepts(storedAssetSchema, { ...company, ...details })).toBe(true);
+    expect(accepts(storedAssetSchema, { ...company, kind: 'investment', ...details })).toBe(false);
+  });
+
   it.each([
     ['0.5', true],
     ['1', true],
