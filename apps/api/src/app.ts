@@ -87,6 +87,7 @@ import {
   StepUpOptionsRequest,
   stepUpVerify,
   DepartureChecklists,
+  RecognitionTracks,
   type ErrorResponse,
   type RouteDefinition,
 } from '@arca/api-contract/routes';
@@ -145,6 +146,8 @@ import {
   type DecisionKind,
   type DecisionSubject,
   type DepartureChecklistView,
+  type RecognitionTrackView,
+  concernedFirst,
   releasable,
 } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
@@ -263,6 +266,8 @@ export interface AppDependencies {
   readonly criterionSuggestions?: CriterionSuggestions;
   /** What to do when leaving a country, from the repository's reviewed file (ADR-0038). */
   readonly departureChecklists?: readonly DepartureChecklistView[];
+  /** How a profession is recognised abroad, from the repository's reviewed file (ADR-0041). */
+  readonly recognitionTracks?: readonly RecognitionTrackView[];
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
   /** Admins' correction requests (ADR-0029); absent, their routes answer 401. */
@@ -508,6 +513,7 @@ export function createApp({
   ruleSummaries,
   criterionSuggestions,
   departureChecklists = [],
+  recognitionTracks = [],
   ruleReports,
   corrections,
   aiSettings,
@@ -1536,6 +1542,27 @@ export function createApp({
   v1.openapi(openApiRoutes.getDepartureChecklists, async (c) => {
     if ((await signedIn(c)) === null) return unauthorized(c);
     return c.json(DepartureChecklists.parse({ checklists: departureChecklists }), 200);
+  });
+  v1.openapi(openApiRoutes.getRecognitionTracks, async (c) => {
+    const current = await signedIn(c);
+    if (current === null) return unauthorized(c);
+    // The tracks are public; whom they concern is read only for a confirmed account in a case.
+    const readsCase =
+      cases !== undefined &&
+      authLimits !== undefined &&
+      accountConfirmed !== undefined &&
+      (await accountConfirmed(current.accountId));
+    if (readsCase) {
+      const limited = await overLimit(c, authLimits, caseLimits.recognition, current.sessionId);
+      if (limited !== undefined) return limited;
+    }
+    const holders =
+      (readsCase ? await cases.recognitionHolders(current.accountId, recognitionTracks) : null) ??
+      [];
+    return c.json(
+      RecognitionTracks.parse({ tracks: concernedFirst(recognitionTracks, holders), holders }),
+      200,
+    );
   });
   v1.openapi(openApiRoutes.writeComparisonPreferences, async (c) => {
     const account = await caseAccount(c, 'write');

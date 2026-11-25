@@ -3,6 +3,7 @@ import {
   comparisonCatalog,
   departureChecklists,
   documentGuides,
+  recognitionTracks,
   occupationCodes,
   pinnedCountries,
   studyFieldCodes,
@@ -622,6 +623,7 @@ const app = createApp({
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   ...(criterionSuggestions === undefined ? {} : { criterionSuggestions }),
   departureChecklists,
+  recognitionTracks,
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {
