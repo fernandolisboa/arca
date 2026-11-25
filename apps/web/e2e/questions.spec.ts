@@ -92,6 +92,11 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await finances.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const history = step(page, 'Histórico de imigração');
+  await radio(history, 'Em quais países Ana já morou?', 'Sim');
+  await pickCountry(history, 'País', 'Brasil');
+  await history.getByLabel('Situação no país').selectOption({ label: 'Com cidadania do país' });
+  await group(history, 'Desde quando').getByLabel('Ano').fill('1985');
+  await group(history, 'Até quando').getByLabel('Ainda mora lá').check();
   await radio(
     history,
     'Ana já teve visto ou residência em algum país, ou problema com imigração?',
@@ -128,6 +133,9 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
     ana.getByText(
       'Trabalho de Ana (Cliente dos EUA): Desenvolvedores de software, prestando serviço, em tempo integral, empresa ou cliente: Estados Unidos, local de trabalho: Brasil, começou em março de 2022, trabalho atual.',
     ),
+  ).toBeVisible();
+  await expect(
+    ana.getByText('Residência de Ana: Brasil, com cidadania, desde 1985 até hoje.'),
   ).toBeVisible();
   await expect(
     page

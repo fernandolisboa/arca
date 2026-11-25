@@ -21,6 +21,7 @@ import {
   languageLevels,
   occupationCodeSchema,
   parentKinds,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -83,6 +84,14 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     end: dateOrNone.optional(),
   }),
   sentence('noWorkPeriod', { person }),
+  sentence('residencePeriod', {
+    person,
+    country: countryCodeSchema,
+    basis: z.enum(residenceBases).optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNone.optional(),
+  }),
+  sentence('noResidencePeriod', { person }),
   sentence('immigrationEvent', {
     person,
     country: countryCodeSchema,
@@ -244,6 +253,16 @@ function describePerson(
         else if (subject.jobOffers.length === 0) said.push({ kind: 'noJobOffer', ...ask });
         else
           for (const offer of subject.jobOffers) said.push({ kind: 'jobOffer', ...ask, ...offer });
+        break;
+      case 'residencePeriods':
+        if (subject.residencePeriods === undefined) unanswered(question);
+        else if (subject.residencePeriods.length === 0) {
+          said.push({ kind: 'noResidencePeriod', ...ask });
+        } else {
+          for (const period of subject.residencePeriods) {
+            said.push({ kind: 'residencePeriod', ...ask, ...period });
+          }
+        }
         break;
       case 'immigrationHistory':
         if (subject.immigrationHistory === undefined) unanswered(question);

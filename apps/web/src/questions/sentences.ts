@@ -24,14 +24,20 @@ export function sentenceText(
     value?: string,
   ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
+  const closedTime = (start?: string, end?: string) =>
+    start !== undefined && end !== undefined
+      ? t('playback.part.between', { start: date(start), end: date(end) })
+      : start === undefined
+        ? when('until', end)
+        : when('startedIn', start);
   const workTime = (start?: string, end?: string) =>
-    end === 'none'
-      ? when('startedIn', start) + t('playback.part.current')
-      : start !== undefined && end !== undefined
-        ? t('playback.part.between', { start: date(start), end: date(end) })
-        : start === undefined
-          ? when('until', end)
-          : when('startedIn', start);
+    end === 'none' ? when('startedIn', start) + t('playback.part.current') : closedTime(start, end);
+  const residenceTime = (start?: string, end?: string) =>
+    end !== 'none'
+      ? closedTime(start, end)
+      : start === undefined
+        ? t('playback.part.untilToday')
+        : t('playback.part.sinceToday', { date: date(start) });
   switch (said.kind) {
     case 'profileHidden':
       return t('playback.sentence.profileHidden', { person: name(said.person) });
@@ -133,6 +139,16 @@ export function sentenceText(
             : t('playback.part.workplaceCountry', { country: country(said.workplaceCountry) }),
           workTime(said.start, said.end),
         ].join(''),
+      });
+    case 'noResidencePeriod':
+      return t('playback.sentence.noResidencePeriod', { person: name(said.person) });
+    case 'residencePeriod':
+      return t('playback.sentence.residencePeriod', {
+        person: name(said.person),
+        country: country(said.country),
+        basis:
+          said.basis === undefined ? '' : t('playback.part.residenceBasis', { basis: said.basis }),
+        time: residenceTime(said.start, said.end),
       });
     case 'immigrationEvent':
       return t('playback.sentence.immigrationEvent', {

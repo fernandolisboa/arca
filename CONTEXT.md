@@ -27,7 +27,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Record collection | Internal, no UI label | A person's own list of records (work periods first) that rules read item by item, with `covers` for the time the items span; distinct from comparison Coverage |
 | Qualification | Formação | A degree or diploma a person holds, coded by ISCED-F 2013 field of study (#511); avoid "degree" for the record |
 | Professional registration | Registro profissional | A person's licence to practise a regulated occupation with a body in one country, such as a medical council (#511); avoid "license" |
-| Residence period | Período de residência | A stretch of lawful residence by one person in one country, with its basis and dates (#513); avoid "stay" |
+| Residence period | Período de residência | A stretch of living in one country by one person, with its legal basis (citizen, permanent residence, temporary residence, other) and its dates or ongoing ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)); `residenceCountry` stays where the person lives now; avoid "stay" |
 | Field of study | Área de formação | What a qualification was in, as an ISCED-F 2013 four-digit code ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)); `studyFields` and `study-fields` in code; avoid "course" and "major" |
 | Classification | Internal, no UI label | A numbered, sourced file of the codes of one official list, occupations or fields of study, that a route version pins so its requirements can name codes ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)) |
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |

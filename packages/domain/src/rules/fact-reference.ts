@@ -10,6 +10,7 @@ export const factTargets = [
   'lineage',
   'ancestor',
   'workPeriod',
+  'residencePeriod',
 ] as const;
 export type FactTarget = (typeof factTargets)[number];
 
@@ -33,7 +34,7 @@ export function resolveFactReference(reference: string): ResolvedFact | undefine
   if (head === 'person') return lookup(reference, 'current');
   if (head === 'unit') return lookup(reference, 'unit');
   if (head === 'edge') return lookup(reference, 'edge');
-  if (head === 'workPeriod') return lookup(reference, 'workPeriod');
+  if (head === 'workPeriod' || head === 'residencePeriod') return lookup(reference, head);
   if (head === 'firstEdge') {
     const resolved = lookup(`edge.${tail}`, 'firstEdge');
     return resolved?.definition.readsLinkedPerson === true ? undefined : resolved;

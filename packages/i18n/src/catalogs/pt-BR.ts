@@ -775,7 +775,7 @@ export const ptBR = {
       yearFormat: 'Use os quatro números do ano, como 1985.',
       months:
         '{month, select, 01 {janeiro} 02 {fevereiro} 03 {março} 04 {abril} 05 {maio} 06 {junho} 07 {julho} 08 {agosto} 09 {setembro} 10 {outubro} 11 {novembro} 12 {dezembro} other {}}',
-      none: '{question, select, workPeriods {Ainda trabalha aqui} other {{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}}}',
+      none: '{question, select, workPeriods {Ainda trabalha aqui} residencePeriods {Ainda mora lá} other {{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}}}',
     },
     amount: 'Valor',
     currency: 'Moeda',
@@ -784,7 +784,7 @@ export const ptBR = {
       country: 'País',
       acquired: 'Desde quando',
       lost: 'Até quando',
-      basis: 'Como conseguiu',
+      basis: '{question, select, residencePeriods {Situação no país} other {Como conseguiu}}',
       language: 'Idioma',
       level: 'Nível',
       sector: 'Área',
@@ -841,6 +841,8 @@ export const ptBR = {
         '{value, select, employee {Com carteira ou contrato de trabalho} contractor {Prestando serviço (PJ, freelancer ou autônomo para uma empresa)} self_employed {Por conta própria, para vários clientes} owner {Na própria empresa, como dono ou sócio} other {}}',
       workCapacity:
         '{value, select, executive {Diretoria ou alta gestão} manager {Gerência ou coordenação de equipe} other {Sem cargo de chefia}}',
+      residenceBasis:
+        '{value, select, citizen {Com cidadania do país} permanent_residence {Com residência permanente} temporary_residence {Com visto ou residência temporária} other {Outra situação, como turista ou sem documentos}}',
     },
     asked: {
       birthDate: 'Quando {name} nasceu?',
@@ -853,6 +855,7 @@ export const ptBR = {
       jobOffers: '{name} tem oferta de emprego em outro país?',
       incomes: 'Quanto {name} recebe por mês?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
+      residencePeriods: 'Em quais países {name} já morou?',
       assets: 'Quais bens {name} tem?',
       allAssets: 'Esses são todos os bens de {name}?',
       immigrationHistory:
@@ -871,6 +874,8 @@ export const ptBR = {
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
+      residencePeriods:
+        'Anote cada país, incluindo o Brasil, e cada mudança de situação no mesmo país. Algumas rotas pedem anos de residência legal.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
     },
@@ -964,6 +969,8 @@ export const ptBR = {
       workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
       noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
       immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
+      residencePeriod: 'Residência de {person}: {country}{basis}{time}.',
+      noResidencePeriod: 'Países onde {person} morou: nenhum anotado.',
       noImmigrationEvent: 'Imigração de {person}: nenhum visto, residência ou problema.',
       dependsOn: '{person} depende do dinheiro de {people}.',
       independent: '{person} não depende do dinheiro de ninguém do caso.',
@@ -1003,6 +1010,10 @@ export const ptBR = {
       between: ', de {start} a {end}',
       startedIn: ', começou em {date}',
       current: ', trabalho atual',
+      residenceBasis:
+        ', {basis, select, citizen {com cidadania} permanent_residence {com residência permanente} temporary_residence {com visto ou residência temporária} other {em outra situação}}',
+      sinceToday: ', desde {date} até hoje',
+      untilToday: ', até hoje',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:
         ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
@@ -1777,6 +1788,7 @@ export const ptBR = {
       lineage: 'do elo da linha de ascendência',
       ancestor: 'do ascendente',
       workPeriod: 'do trabalho',
+      residencePeriod: 'do período de residência',
     },
     fact: {
       person: {
@@ -1824,6 +1836,12 @@ export const ptBR = {
         start: 'início',
         end: 'fim',
       },
+      residencePeriod: {
+        country: 'país',
+        basis: 'situação legal',
+        start: 'início',
+        end: 'fim',
+      },
     },
     collection: {
       unit: {
@@ -1832,10 +1850,12 @@ export const ptBR = {
       },
       person: {
         workPeriods: 'os trabalhos da pessoa avaliada',
+        residencePeriods: 'os períodos de residência da pessoa avaliada',
       },
       principal: {
         ancestors: 'os ascendentes do requerente principal',
         workPeriods: 'os trabalhos do requerente principal',
+        residencePeriods: 'os períodos de residência do requerente principal',
       },
       lineage: {
         links: 'os elos da linha de ascendência',

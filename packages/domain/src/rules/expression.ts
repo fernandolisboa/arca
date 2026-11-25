@@ -29,6 +29,8 @@ export const collectionNames = [
   'lineage.links',
   'person.workPeriods',
   'principal.workPeriods',
+  'person.residencePeriods',
+  'principal.residencePeriods',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
@@ -44,9 +46,17 @@ const workPeriods = {
   period: { start: 'workPeriod.start', end: 'workPeriod.end' },
 } as const;
 
+const residencePeriods = {
+  list: 'residencePeriods',
+  record: 'residencePeriod',
+  period: { start: 'residencePeriod.start', end: 'residencePeriod.end' },
+} as const;
+
 export const recordCollections = {
   'person.workPeriods': { owner: 'current', ...workPeriods },
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
+  'person.residencePeriods': { owner: 'current', ...residencePeriods },
+  'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
 } as const satisfies Partial<
   Record<
     CollectionName,

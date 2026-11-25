@@ -193,6 +193,21 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(unknown.ok && unknown.state.facts).toEqual({});
   });
 
+  it('saves residence periods, leaving out what is not known', () => {
+    const periods = [
+      { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' },
+      { country: 'BR', start: '1990', end: '2023-01' },
+    ];
+    const applied = apply(empty, { residencePeriods: periods });
+    expect(applied.ok && applied.state.facts).toEqual({ residencePeriods: periods });
+    if (!applied.ok) return;
+    expect(answerOf(question('residencePeriods'), applied.state)).toEqual(periods);
+    const none = apply(applied.state, { residencePeriods: [] });
+    expect(none.ok && none.state.facts).toEqual({ residencePeriods: [] });
+    const unknown = apply(applied.state, { residencePeriods: null });
+    expect(unknown.ok && unknown.state.facts).toEqual({});
+  });
+
   it('takes "Não sei" as leaving the fact out', () => {
     const answered = apply(empty, { studying: true, educationLevel: 6 });
     if (!answered.ok) throw new Error('refused');
@@ -372,6 +387,12 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['an occupation outside the classification', { workPeriods: [{ occupation: '9999' }] }],
     ['a work period that ends before it starts', { workPeriods: [{ start: '2020', end: '2019' }] }],
     ['a label with outer spaces', { workPeriods: [{ label: ' Clínica' }] }],
+    ['a residence period in a country not pinned', { residencePeriods: [{ country: 'QM' }] }],
+    [
+      'a residence period that ends before it starts',
+      { residencePeriods: [{ country: 'PT', start: '2020', end: '2019' }] },
+    ],
+    ['a residence basis outside its set', { residencePeriods: [{ country: 'PT', basis: 'visa' }] }],
     ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
     [
       'a field the item does not have',

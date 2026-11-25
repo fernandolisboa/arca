@@ -30,10 +30,12 @@ import {
   type CountryCode,
   type Person,
   type Relationship,
+  type ResidencePeriod,
   type WorkPeriod,
   custodies,
   isicSections,
   parentKinds,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -69,10 +71,11 @@ export interface LineageBinding {
 }
 
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
-export interface PersonRecord {
-  readonly kind: 'workPeriod';
-  readonly value: WorkPeriod;
-}
+export type PersonRecord =
+  | { readonly kind: 'workPeriod'; readonly value: WorkPeriod }
+  | { readonly kind: 'residencePeriod'; readonly value: ResidencePeriod };
+
+export type RecordKind = PersonRecord['kind'];
 
 /**
  * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
@@ -100,10 +103,10 @@ export interface Derived {
 /**
  * What a fact is about: a person (the principal, a candidate dependent, a member inside a
  * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
- * candidate was reached by, the line from an ancestor to the principal, or one work period inside
- * a work-period collection.
+ * candidate was reached by, the line from an ancestor to the principal, or one record inside a
+ * record collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | 'workPeriod';
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | RecordKind;
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -413,6 +416,28 @@ export const factCatalog = {
     type: { kind: 'date' },
     scope: 'workPeriod',
     derive: (binding) => endFact(workPeriodOf(binding).end, binding.environment),
+  },
+  'residencePeriod.country': {
+    type: { kind: 'country' },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(residencePeriodOf(binding).country) }),
+  },
+  /** The legal basis the person lived there on. */
+  'residencePeriod.basis': {
+    type: { kind: 'enum', values: residenceBases },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(residencePeriodOf(binding).basis) }),
+  },
+  'residencePeriod.start': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => dateFact(residencePeriodOf(binding).start),
+  },
+  /** The last day lived there; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'residencePeriod.end': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => endFact(residencePeriodOf(binding).end, binding.environment),
   },
 } as const satisfies Record<string, FactDefinition>;
 
@@ -743,6 +768,13 @@ function edgeOf(binding: FactBinding): Relationship {
 function workPeriodOf(binding: FactBinding): WorkPeriod {
   if (binding.record?.kind !== 'workPeriod') {
     throw new RangeError('A work-period fact outside a work-period collection');
+  }
+  return binding.record.value;
+}
+
+function residencePeriodOf(binding: FactBinding): ResidencePeriod {
+  if (binding.record?.kind !== 'residencePeriod') {
+    throw new RangeError('A residence-period fact outside a residence-period collection');
   }
   return binding.record.value;
 }
