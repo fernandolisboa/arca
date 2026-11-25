@@ -147,3 +147,17 @@ export function recognitionHolders(
       .map((profile) => profile.id),
   }));
 }
+
+/** The tracks that concern someone first, each group in the file's order. */
+export function concernedFirst<Track extends { readonly id: string }>(
+  tracks: readonly Track[],
+  holders: readonly RecognitionHolders[],
+): Track[] {
+  const concerned = new Set(
+    holders.filter(({ personIds }) => personIds.length > 0).map(({ trackId }) => trackId),
+  );
+  return [
+    ...tracks.filter(({ id }) => concerned.has(id)),
+    ...tracks.filter(({ id }) => !concerned.has(id)),
+  ];
+}

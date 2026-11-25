@@ -145,6 +145,7 @@ import {
   type DecisionSubject,
   type DepartureChecklistView,
   type RecognitionTrackView,
+  concernedFirst,
   releasable,
 } from '@arca/domain';
 import type { AdminChangeOutcome, AdminGrants } from './knowledge/admin-grants.js';
@@ -1508,13 +1509,18 @@ export function createApp({
     // The tracks are public; whom they concern is read only for a confirmed account in a case.
     const readsCase =
       cases !== undefined &&
+      authLimits !== undefined &&
       accountConfirmed !== undefined &&
       (await accountConfirmed(current.accountId));
-    const holders = readsCase
-      ? await cases.recognitionHolders(current.accountId, recognitionTracks)
-      : null;
+    if (readsCase) {
+      const limited = await overLimit(c, authLimits, caseLimits.recognition, current.sessionId);
+      if (limited !== undefined) return limited;
+    }
+    const holders =
+      (readsCase ? await cases.recognitionHolders(current.accountId, recognitionTracks) : null) ??
+      [];
     return c.json(
-      RecognitionTracks.parse({ tracks: recognitionTracks, holders: holders ?? [] }),
+      RecognitionTracks.parse({ tracks: concernedFirst(recognitionTracks, holders), holders }),
       200,
     );
   });

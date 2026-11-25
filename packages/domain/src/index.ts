@@ -477,6 +477,7 @@ export {
   type RecognitionSource,
   type RecognitionTrackView,
   type RecognitionTracks,
+  concernedFirst,
   recognitionHolders,
   recognitionTrackViews,
   recognitionTracksSchema,

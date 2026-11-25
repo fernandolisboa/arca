@@ -47,7 +47,7 @@ export const getRecognitionTracks = {
   path: '/recognition-tracks',
   operationId: 'getRecognitionTracks',
   summary:
-    'How each regulated profession the repository covers is recognised in each destination, with the official sources of every step and the date each was read, and which people of the viewer’s case each track concerns; signed in (401 otherwise)',
+    'How each regulated profession the repository covers is recognised in each destination, with the official sources of every step and the date each was read, and which people of the viewer’s case each track concerns, those tracks first; signed in (401 otherwise); reading the case counts 120 per hour per session (429 rate_limited)',
   response: { description: 'The recognition tracks', schema: RecognitionTracks },
 } as const satisfies RouteDefinition<typeof RecognitionTracks>;
 

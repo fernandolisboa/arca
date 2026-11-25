@@ -11,9 +11,9 @@ export const recognition = {
   failed: 'Não deu para carregar os caminhos agora. Tente de novo em instantes.',
   retry: 'Tentar de novo',
   empty: 'Ainda não há caminho de revalidação para nenhuma profissão.',
-  holders: 'Para {names}',
+  holders: 'Na família: {names}',
   noHolders:
-    'Ninguém da família tem esta profissão anotada. Registre trabalho, registro profissional ou formação nas perguntas da família e o Arca mostra aqui para quem é.',
+    'Ninguém da família tem esta profissão nas respostas. Responda nas perguntas guiadas sobre trabalho, oferta de emprego, registro profissional ou formação, e o Arca mostra aqui para quem é.',
   step: 'Etapa {number}',
   source: 'Fonte: {host} · conferida em {date}',
   track: {
@@ -22,7 +22,7 @@ export const recognition = {
   item: {
     'es-language': {
       title: 'Espanhol nível B2',
-      body: 'A Espanha pede espanhol B2 para homologar o diploma. Ficam de fora quem tem nacionalidade de um país de língua espanhola e quem cursou em espanhol pelo menos 75% da carga horária do curso, ou a formação anterior a ele. Quem fez só uma parte da faculdade em espanhol, abaixo disso, precisa do certificado.',
+      body: 'A Espanha pede espanhol B2 para homologar o diploma. Ficam de fora quem tem nacionalidade de um país de língua espanhola e quem cursou em espanhol pelo menos 75% da carga horária do curso, ou a formação anterior a ele. Quem fez em espanhol menos de 75% do curso precisa do certificado.',
     },
     'es-documents': {
       title: 'Diploma e histórico traduzidos e apostilados',
@@ -30,7 +30,7 @@ export const recognition = {
     },
     'es-homologation': {
       title: 'Pedir a homologação ao Ministério',
-      body: 'O pedido é feito só na sede eletrônica do Ministério de Ciência, Inovação e Universidades, com a taxa paga online ou pelo modelo 790-107. A ANECA confere o curso por critérios como 5 anos de estudo e 1.350 horas de prática. A lei dá 6 meses para a decisão; sem resposta nesse prazo, o pedido pode ser considerado negado.',
+      body: 'O pedido é feito só no portal eletrônico do Ministério de Ciência, Inovação e Universidades, com a taxa paga online ou pelo modelo 790-107. A ANECA confere o curso por critérios como 5 anos de estudo e 1.350 horas de prática. A lei dá 6 meses para a decisão; sem resposta nesse prazo, o pedido pode ser considerado negado.',
     },
     'es-complementary-training': {
       title: 'Se a homologação vier com condição',
@@ -38,7 +38,7 @@ export const recognition = {
     },
     'es-college': {
       title: 'Inscrever-se no Colegio de Médicos',
-      body: 'A lei espanhola mantém as colegiações obrigatórias que já existiam até outra lei listar as profissões. Antes de começar a atender, confirme no Colegio Oficial de Médicos de onde vai trabalhar o que ele pede. A taxa de inscrição não pode passar do custo do trâmite.',
+      body: 'A lei espanhola mantém a inscrição obrigatória nos colégios profissionais que já existia, até outra lei listar as profissões. Antes de começar a atender, confirme no Colegio Oficial de Médicos de onde vai trabalhar o que ele pede. A taxa de inscrição não pode passar do custo do trâmite.',
     },
     'es-public-system': {
       title: 'Rede pública ou especialidade: MIR',
@@ -46,11 +46,11 @@ export const recognition = {
     },
     'es-specialty-exam': {
       title: 'Prova do MIR',
-      body: 'Para começar a residência em 2027, as inscrições foram de 1 a 14 de setembro de 2026 e a prova é em 23 de janeiro de 2027. Exige o diploma já homologado e espanhol C1, salvo para quem cursou a faculdade em espanhol num país de língua espanhola ou fez 2 anos de residência na Espanha. Quem não tem autorização de residência na Espanha disputa no máximo 968 das 9.676 vagas de Medicina.',
+      body: 'Para começar a residência em 2027, as inscrições foram de 1 a 14 de setembro de 2026 e a prova é em 23 de janeiro de 2027. Exige o diploma já homologado e espanhol C1, salvo para quem cursou a faculdade em espanhol num país de língua espanhola ou fez 2 anos de residência na Espanha. Quem não é da UE só se inscreve se o país de origem tiver convênio de cooperação com a Espanha em vigor ou se estiver na Espanha com autorização legal de estadia. Quem não tem autorização de residência na Espanha disputa no máximo 968 das 9.676 vagas de Medicina.',
     },
     'pt-recognition-request': {
       title: 'Pedir o reconhecimento específico',
-      body: 'Uma escola médica pública confere se o diploma equivale ao mestrado integrado em Medicina. O pedido é feito no formulário do Instituto para o Ensino Superior, com diploma, histórico com disciplinas e conteúdos, duração do curso, nota final e o trabalho de conclusão. Documentos de fora da UE vão apostilados; em português, inglês, espanhol ou francês, não precisam de tradução. A taxa é a da escola escolhida. Quem é de país de língua oficial portuguesa não precisa de certificado de português.',
+      body: 'Uma escola médica pública confere se o diploma equivale ao mestrado integrado em Medicina. O pedido é feito no formulário do Instituto para o Ensino Superior, com diploma, histórico com disciplinas e conteúdos, duração do curso, nota final e o trabalho de conclusão. Documentos de fora da UE precisam de apostila; em português, inglês, espanhol ou francês, não precisam de tradução. A taxa é a da escola escolhida. Quem é de país de língua oficial portuguesa não precisa de certificado de português.',
     },
     'pt-recognition-deadline': {
       title: 'Pedido completo até 1º de setembro',

@@ -17,8 +17,13 @@ const doctor = '8d3e4f50-6172-4839-8a4b-5c6d7e8f9a0b';
 
 function appFor(
   signedIn: SignedIn | null,
-  { confirmed = true, inCase = true }: { confirmed?: boolean; inCase?: boolean } = {},
+  {
+    confirmed = true,
+    inCase = true,
+    limited = false,
+  }: { confirmed?: boolean; inCase?: boolean; limited?: boolean } = {},
 ) {
+  const hits: string[] = [];
   const calls: unknown[][] = [];
   const cases = {
     recognitionHolders: (accountId: string, tracks: readonly { id: string }[]) => {
@@ -37,12 +42,24 @@ function appFor(
       signedIn: () => Promise.resolve(signedIn),
       refresh: () => Promise.resolve({ session: null, setCookies: [] }),
     },
-    authLimits: noLimits,
+    authLimits: {
+      ...noLimits,
+      limiter: {
+        hit: (rule: { name: string }, subject: string) => {
+          hits.push(`${rule.name}:${subject}`);
+          return Promise.resolve(
+            limited
+              ? { allowed: false as const, retryAfterSeconds: 60 }
+              : { allowed: true as const },
+          );
+        },
+      },
+    },
     cases,
     accountConfirmed: () => Promise.resolve(confirmed),
     recognitionTracks,
   });
-  return { app, calls };
+  return { app, calls, hits };
 }
 
 interface Body {
@@ -74,6 +91,18 @@ describe('GET /v1/recognition-tracks (ADR-0040)', () => {
     const unconfirmed = appFor(owner, { confirmed: false });
     await unconfirmed.app.request('/v1/recognition-tracks');
     expect(unconfirmed.calls).toEqual([]);
+  });
+
+  it('counts each read of the case per session, and refuses past the limit', async () => {
+    const counted = appFor(owner);
+    await counted.app.request('/v1/recognition-tracks');
+    expect(counted.hits).toEqual([`case_recognition_session:${owner.sessionId}`]);
+    const unconfirmed = appFor(owner, { confirmed: false });
+    await unconfirmed.app.request('/v1/recognition-tracks');
+    expect(unconfirmed.hits).toEqual([]);
+    const limited = appFor(owner, { limited: true });
+    expect((await limited.app.request('/v1/recognition-tracks')).status).toBe(429);
+    expect(limited.calls).toEqual([]);
   });
 
   it('refuses a request with no session', async () => {

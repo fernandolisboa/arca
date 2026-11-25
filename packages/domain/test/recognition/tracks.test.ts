@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  concernedFirst,
   recognitionHolders,
   recognitionTrackViews,
   recognitionTracksSchema,
@@ -156,5 +157,18 @@ describe('recognitionHolders', () => {
       { trackId: 'physician', personIds: ['p1', 'p3'] },
       { trackId: 'nurse', personIds: ['p2'] },
     ]);
+  });
+});
+
+describe('concernedFirst', () => {
+  it('puts the tracks that concern someone first, each group in the file’s order', () => {
+    const tracks = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }];
+    expect(
+      concernedFirst(tracks, [
+        { trackId: 'a', personIds: [] },
+        { trackId: 'b', personIds: ['p1'] },
+        { trackId: 'd', personIds: ['p2'] },
+      ]).map(({ id }) => id),
+    ).toEqual(['b', 'd', 'a', 'c']);
   });
 });

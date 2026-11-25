@@ -5,13 +5,13 @@
     "ciencia.gob.es",
     "boe.es",
     "iesuperior.pt",
-    "unl.pt",
+    "nms.unl.pt",
     "ordemdosmedicos.pt",
     "min-saude.pt",
     "usmle.org",
     "state.gov"
   ],
-  "wordingSha256": "f209cbe63ba78df6bde74b56e8c6d66d6afabc0b23e3dff596a44863b3d5b34f",
+  "wordingSha256": "9c9f1ba7215adda8aae06f54cf34a60a3a3aaf71c4a796cbb41eb3c62db6d202",
   "sources": [
     {
       "id": "es-physician-homologation",

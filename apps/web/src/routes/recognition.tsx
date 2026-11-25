@@ -55,19 +55,17 @@ function Recognition() {
       personIds.flatMap((id) => names.get(id) ?? []),
     ]),
   );
-  // The tracks someone in the family needs come first.
-  const ordered = [...tracks.data.tracks].sort(
-    (a, b) =>
-      Number((holdersOf.get(b.id) ?? []).length > 0) -
-      Number((holdersOf.get(a.id) ?? []).length > 0),
-  );
   return (
     <Page title={title} lead={t('recognition.lead')}>
-      {ordered.length === 0 ? (
+      {tracks.data.tracks.length === 0 ? (
         <p className="text-muted">{t('recognition.empty')}</p>
       ) : (
-        ordered.map((track) => (
-          <Track key={track.id} track={track} holders={holdersOf.get(track.id) ?? []} />
+        tracks.data.tracks.map((track) => (
+          <Track
+            key={track.id}
+            track={track}
+            holders={familyCase.isSuccess ? (holdersOf.get(track.id) ?? []) : undefined}
+          />
         ))
       )}
     </Page>
@@ -79,7 +77,8 @@ function Track({
   holders,
 }: {
   readonly track: RecognitionTrack;
-  readonly holders: readonly string[];
+  /** The names of the people it concerns, or nothing until the case has loaded. */
+  readonly holders: readonly string[] | undefined;
 }) {
   const { t, i18n } = useTranslation();
   const country = new Intl.DisplayNames([i18n.language], { type: 'region', fallback: 'code' });
@@ -93,11 +92,13 @@ function Track({
         <h3 id={headingId} className="font-display text-lead">
           {t(`recognition.track.${track.id}` as never)}
         </h3>
-        <p className="text-small text-muted">
-          {holders.length > 0
-            ? t('recognition.holders', { names: list.format(holders) })
-            : t('recognition.noHolders')}
-        </p>
+        {holders !== undefined && (
+          <p className="text-small text-muted">
+            {holders.length > 0
+              ? t('recognition.holders', { names: list.format(holders) })
+              : t('recognition.noHolders')}
+          </p>
+        )}
       </div>
       <div className="grid items-start gap-5 lg:grid-cols-2 2xl:grid-cols-3">
         {track.destinations.map((destination) => {
