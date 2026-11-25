@@ -13,8 +13,10 @@ import {
   countryData,
   datasetFileData,
   departureChecklistData,
+  ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
+import { shippedRuleTextsSchema } from './rule-texts.js';
 
 export { createRouteCatalog } from './catalog.js';
 export {
@@ -59,12 +61,16 @@ export const suggestedRatings =
 const departureFile =
   departureChecklistData === null ? null : departureChecklistsSchema.parse(departureChecklistData);
 
-/** What to do when leaving a country, per country, with each item's sources (ADR-0037). */
+/** What to do when leaving a country, per country, with each item's sources (ADR-0038). */
 export const departureChecklists =
   departureFile === null ? [] : departureChecklistViews(departureFile);
 
 /** The SHA-256 of the catalog wording the departure file's sources were checked against. */
 export const departureWordingSha256 = departureFile?.wordingSha256 ?? null;
+export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
+
+/** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */
+export const shippedRuleTexts = shippedRuleTextsSchema.parse(ruleTextData);
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z

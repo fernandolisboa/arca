@@ -8,7 +8,7 @@ import { readDepartureChecklists } from '../scripts/build.ts';
 
 const repositoryDir = fileURLToPath(new URL('../departure-checklists', import.meta.url));
 
-describe('readDepartureChecklists (ADR-0037)', () => {
+describe('readDepartureChecklists (ADR-0038)', () => {
   it('reads the repository file, which the schema accepts', async () => {
     const json = await readDepartureChecklists(repositoryDir);
     expect(departureChecklistsSchema.safeParse(json).success).toBe(true);

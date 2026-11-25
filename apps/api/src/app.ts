@@ -256,7 +256,7 @@ export interface AppDependencies {
    * answers 503 `suggestions_unavailable` and the ready suggestions keep working.
    */
   readonly criterionSuggestions?: CriterionSuggestions;
-  /** What to do when leaving a country, from the repository's reviewed file (ADR-0037). */
+  /** What to do when leaving a country, from the repository's reviewed file (ADR-0038). */
   readonly departureChecklists?: readonly DepartureChecklistView[];
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;

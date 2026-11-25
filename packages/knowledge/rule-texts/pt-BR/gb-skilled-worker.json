@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "routeId": "gb-skilled-worker",
+  "texts": [
+    {
+      "en": "Skilled Worker visa for the United Kingdom: a sponsored job in an eligible occupation, usually paying at least £41,700 a year and the going rate, with English at B2",
+      "text": "Visto Skilled Worker do Reino Unido: emprego patrocinado numa profissão aceita, em geral com salário de pelo menos £41.700 por ano e o valor de mercado, e inglês nível B2"
+    },
+    {
+      "en": "Aged 18 or over",
+      "text": "Ter 18 anos ou mais"
+    },
+    {
+      "en": "Not a British or Irish citizen: they live and work in the UK without a visa",
+      "text": "Não ser cidadão britânico nem irlandês: esses moram e trabalham no Reino Unido sem visto"
+    },
+    {
+      "en": "Not applying from abroad as a citizen of Afghanistan (refused since 26 March 2026); a dual national, or someone switching from another permission inside the UK: possible",
+      "text": "Não pedir de fora como cidadão do Afeganistão (recusado desde 26 de março de 2026); com dupla nacionalidade, ou trocando de outra autorização dentro do Reino Unido, talvez se aplique"
+    },
+    {
+      "en": "A Certificate of Sponsorship for the job from a licensed employer, A-rated unless the worker stays with the sponsor of their last Skilled Worker permission",
+      "text": "Certificado de Patrocínio (Certificate of Sponsorship) para o emprego, de um empregador licenciado com nota A, salvo se o trabalhador fica com o patrocinador da última autorização Skilled Worker"
+    },
+    {
+      "en": "An eligible occupation: Table 1, 2 or 3 of Appendix Skilled Occupations (1a, 2aa, 3a in some cases), Immigration Salary List or Temporary Shortage List (issued before 31 Dec 2026); care: SW 6.1B",
+      "text": "Profissão aceita: Tabela 1, 2 ou 3 do Appendix Skilled Occupations (1a, 2aa, 3a em alguns casos), Immigration Salary List ou Temporary Shortage List (emitido antes de 31 dez. 2026); cuidadores: SW 6.1B"
+    },
+    {
+      "en": "A salary of at least £41,700 a year and the going rate for the occupation (option A)",
+      "text": "Salário de pelo menos £41.700 por ano e o valor de mercado da profissão (opção A)"
+    },
+    {
+      "en": "Or, with a PhD relevant to the job, £37,500 a year and 90% of the going rate; with a STEM PhD, £33,400 and 80% of the going rate",
+      "text": "Ou, com doutorado ligado ao emprego, £37.500 por ano e 90% do valor de mercado; com doutorado em área STEM, £33.400 e 80% do valor de mercado"
+    },
+    {
+      "en": "Or, for a job on the Immigration Salary List, £33,400 a year and the going rate; for a new entrant at the start of their career, £33,400 and 70% of the going rate",
+      "text": "Ou, para emprego da Immigration Salary List, £33.400 por ano e o valor de mercado; para quem está começando a carreira, £33.400 e 70% do valor de mercado"
+    },
+    {
+      "en": "Or: Table 3 health or education job, £25,000 and going rate; Health and Care ASHE salary job, or unbroken Skilled Worker permission since before 4 April 2024 (until 4 April 2030), £25,000 to £31,300",
+      "text": "Ou: emprego de saúde ou educação da Tabela 3, £25.000 e valor de mercado; emprego com salário ASHE de saúde e cuidado, ou autorização Skilled Worker contínua desde antes de 4 de abril de 2024 (até 4 de abril de 2030), de £25.000 a £31.300"
+    },
+    {
+      "en": "English at level B2 in reading, writing, speaking and listening (B1 if the last Skilled Worker permission required B1), shown in a way Appendix English Language allows",
+      "text": "Inglês nível B2 em leitura, escrita, fala e compreensão (B1 se a última autorização Skilled Worker exigiu B1), comprovado de um jeito que o Appendix English Language aceita"
+    },
+    {
+      "en": "Savings of £1,270 held for 28 days by the worker, unless the A-rated sponsor certifies it will maintain them, or they apply inside the UK after 12 months there with permission",
+      "text": "Poupança de £1.270 mantida por 28 dias pelo trabalhador, salvo se o patrocinador nota A garantir o sustento, ou se pedir dentro do Reino Unido depois de 12 meses lá com autorização"
+    },
+    {
+      "en": "Plus £285 for a partner, £315 for the first child, £200 for each other child, held 28 days, unless the sponsor commits to maintain them or they apply in the UK after 12 months there on permission",
+      "text": "Mais £285 pelo cônjuge ou companheiro, £315 pelo primeiro filho, £200 por cada outro filho, mantidos 28 dias, salvo se o patrocinador garantir o sustento ou se pedirem no Reino Unido depois de 12 meses lá com autorização"
+    },
+    {
+      "en": "From abroad, a TB test certificate for the worker and each partner or child who has been 6 months or more continuously in a country Appendix Tuberculosis lists, part of it in the last 6 months",
+      "text": "De fora, atestado de exame de tuberculose do trabalhador e de cada cônjuge, companheiro ou filho que passou 6 meses seguidos ou mais num país do Appendix Tuberculosis, em parte nos últimos 6 meses"
+    },
+    {
+      "en": "From abroad, for a job SW 16.1 lists (mostly health, education, care): a criminal record certificate from each country lived in 12 months or more in the last 10 years since 18, for worker and partner",
+      "text": "De fora, para emprego da lista SW 16.1 (sobretudo saúde, educação, cuidado): certidão de antecedentes criminais de cada país onde morou 12 meses ou mais nos últimos 10 anos depois dos 18, do trabalhador e do cônjuge ou companheiro"
+    },
+    {
+      "en": "An ATAS certificate for a researcher in a sensitive subject, where Appendix ATAS requires one",
+      "text": "Certificado ATAS para pesquisador de área sensível, quando o Appendix ATAS exigir"
+    },
+    {
+      "en": "Visa fee from abroad, certificate of three years or less: £819 for the main applicant (Immigration Salary List: £628; Health and Care Visa: £324); one of several alternatives: possible",
+      "text": "Taxa do visto pedido de fora, certificado de três anos ou menos: £819 para o requerente principal (Immigration Salary List: £628; Health and Care Visa: £324); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee in the UK, certificate of three years or less: £943 for the main applicant (Immigration Salary List: £628; Health and Care Visa: £324); one of several alternatives: possible",
+      "text": "Taxa do visto pedido no Reino Unido, certificado de três anos ou menos: £943 para o requerente principal (Immigration Salary List: £628; Health and Care Visa: £324); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee from abroad, certificate of three years or less: £819 for each partner or child (Immigration Salary List: £628; Health and Care Visa: £324); one of several alternatives: possible",
+      "text": "Taxa do visto pedido de fora, certificado de três anos ou menos: £819 por cônjuge, companheiro ou filho (Immigration Salary List: £628; Health and Care Visa: £324); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee in the UK, certificate of three years or less: £943 for each partner or child (Immigration Salary List: £628; Health and Care Visa: £324); one of several alternatives: possible",
+      "text": "Taxa do visto pedido no Reino Unido, certificado de três anos ou menos: £943 por cônjuge, companheiro ou filho (Immigration Salary List: £628; Health and Care Visa: £324); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee from abroad, certificate of over three years: £1,618 for the main applicant (Immigration Salary List: £1,235; Health and Care Visa: £628); one of several alternatives: possible",
+      "text": "Taxa do visto pedido de fora, certificado de mais de três anos: £1.618 para o requerente principal (Immigration Salary List: £1.235; Health and Care Visa: £628); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee in the UK, certificate of over three years: £1,865 for the main applicant (Immigration Salary List: £1,235; Health and Care Visa: £628); one of several alternatives: possible",
+      "text": "Taxa do visto pedido no Reino Unido, certificado de mais de três anos: £1.865 para o requerente principal (Immigration Salary List: £1.235; Health and Care Visa: £628); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee from abroad, certificate of over three years: £1,618 for each partner or child (Immigration Salary List: £1,235; Health and Care Visa: £628); one of several alternatives: possible",
+      "text": "Taxa do visto pedido de fora, certificado de mais de três anos: £1.618 por cônjuge, companheiro ou filho (Immigration Salary List: £1.235; Health and Care Visa: £628); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Visa fee in the UK, certificate of over three years: £1,865 for each partner or child (Immigration Salary List: £1,235; Health and Care Visa: £628); one of several alternatives: possible",
+      "text": "Taxa do visto pedido no Reino Unido, certificado de mais de três anos: £1.865 por cônjuge, companheiro ou filho (Immigration Salary List: £1.235; Health and Care Visa: £628); uma entre várias alternativas; talvez se aplique"
+    },
+    {
+      "en": "Immigration health surcharge, £1,035 a year, shown for the 5 years of a five-year certificate (£5,175; the 14 days after it may add half a year); none for a Health and Care Worker visa: possible",
+      "text": "Sobretaxa de saúde da imigração, £1.035 por ano, mostrada pelos 5 anos de um certificado de cinco anos (£5.175; os 14 dias depois dele podem somar meio ano); nada para o visto Health and Care Worker; talvez se aplique"
+    },
+    {
+      "en": "Health surcharge of each partner or child 18 or over, £1,035 a year for 5 years of a five-year certificate (£5,175, or more for the 14 days after it); none on a Health and Care Worker visa: possible",
+      "text": "Sobretaxa de saúde de cada cônjuge, companheiro ou filho com 18 anos ou mais, £1.035 por ano pelos 5 anos de um certificado de cinco anos (£5.175, ou mais pelos 14 dias depois dele); nada no visto Health and Care Worker; talvez se aplique"
+    },
+    {
+      "en": "Health surcharge of each child under 18, £776 a year for the 5 years of a five-year certificate (£3,880, or more for the 14 days after it); none on a Health and Care Worker visa: possible",
+      "text": "Sobretaxa de saúde de cada filho menor de 18 anos, £776 por ano pelos 5 anos de um certificado de cinco anos (£3.880, ou mais pelos 14 dias depois dele); nada no visto Health and Care Worker; talvez se aplique"
+    },
+    {
+      "en": "Permission until 14 days after the end date of the certificate of sponsorship, which is at most 5 years after its start date",
+      "text": "Autorização até 14 dias depois da data final do certificado de patrocínio, que vai no máximo até 5 anos depois da data de início"
+    }
+  ]
+}

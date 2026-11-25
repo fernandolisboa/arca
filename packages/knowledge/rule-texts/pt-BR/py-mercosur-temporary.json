@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "routeId": "py-mercosur-temporary",
+  "texts": [
+    {
+      "en": "Paraguayan Mercosur temporary residence for nationals of the states in the Mercosur Residence Agreement",
+      "text": "Residência temporária do Mercosul no Paraguai para nacionais dos países do Acordo de Residência do Mercosul"
+    },
+    {
+      "en": "National by origin of a state the migration directorate lists (Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Peru or Uruguay), or naturalized there for five years or more",
+      "text": "Nacional de origem de um país da lista da Direção de Migrações (Argentina, Bolívia, Brasil, Chile, Colômbia, Equador, Peru ou Uruguai), ou naturalizado lá há cinco anos ou mais"
+    },
+    {
+      "en": "Sworn statement on international records; from 14: Paraguay's police one and, save listed exemptions, no criminal or police record certificates from origin and anywhere lived in the last 5 years",
+      "text": "Declaração juramentada sobre antecedentes internacionais; a partir dos 14 anos: atestado policial do Paraguai e, salvo isenções da lista, nenhum antecedente criminal ou policial nas certidões do país de origem e de onde morou nos últimos 5 anos"
+    },
+    {
+      "en": "Papers: valid ID or passport, birth certificate, any marriage, divorce, death or naturalization papers, notarized copies; foreign ones legalized or apostilled, in Spanish save Brazil's in Portuguese",
+      "text": "Documentos: identidade ou passaporte válido, certidão de nascimento, eventuais documentos de casamento, divórcio, óbito ou naturalização, cópias autenticadas em cartório; os estrangeiros legalizados ou apostilados, em espanhol, salvo os do Brasil, em português"
+    },
+    {
+      "en": "Apply in person at the directorate in Paraguay with proof of entry or presence; a consulate before entry, which the agreement allows and asks of family needing a visa save a waiver, is not modeled",
+      "text": "Pedido pessoal na Direção de Migrações no Paraguai, com prova de entrada ou de presença; o pedido num consulado antes da entrada, que o acordo permite e exige de familiares que precisam de visto, salvo dispensa, o Arca não avalia"
+    },
+    {
+      "en": "Each applicant under 18: both parents sign and hold residence, or one applies with the child; one parent present needs the other's notarized consent or a court ruling; with a third person, more papers",
+      "text": "Cada requerente menor de 18 anos: os dois pais assinam e têm residência, ou um deles pede junto com o filho; com só um dos pais presente, é preciso consentimento do outro em cartório ou decisão judicial; com outra pessoa, mais documentos"
+    },
+    {
+      "en": "Mercosur temporary residence fee: 20 jornales, PYG 2,341,540 in cash from 2026-07-01; card payments add a commission",
+      "text": "Taxa de residência temporária do Mercosul: 20 jornales, PYG 2.341.540 em dinheiro a partir de 2026-07-01; pagamento com cartão soma uma comissão"
+    },
+    {
+      "en": "Residence fee for an Ecuadorian citizen, by reciprocity: two jornales, at the jornal of PYG 117,077 in force from 2026-07-01",
+      "text": "Taxa de residência para cidadão equatoriano, por reciprocidade: dois jornales, pelo jornal de PYG 117.077 em vigor desde 2026-07-01"
+    },
+    {
+      "en": "The same fee for each family member native of a listed state, save Ecuadorians and Paraguayans, as every foreign applicant pays it: 20 jornales, PYG 2,341,540 in cash from 2026-07-01",
+      "text": "A mesma taxa para cada familiar nativo de um país da lista, salvo equatorianos e paraguaios, como todo estrangeiro que pede paga: 20 jornales, PYG 2.341.540 em dinheiro a partir de 2026-07-01"
+    },
+    {
+      "en": "Other non-Ecuadorian foreign family members (naturalized in, or of no, listed state): a fee the table does not name; the Mercosur line's 20 jornales, PYG 2,341,540, or 25 on the general line: possible",
+      "text": "Outros familiares estrangeiros não equatorianos (naturalizados num país da lista, ou de fora dela): uma taxa que a tabela não indica; os 20 jornales da linha do Mercosul, PYG 2.341.540, ou 25 na linha geral; talvez se aplique"
+    },
+    {
+      "en": "Residence fee of each Ecuadorian family member who is not also Paraguayan, by reciprocity: two jornales, at the jornal of PYG 117,077 in force from 2026-07-01",
+      "text": "Taxa de residência de cada familiar equatoriano que não é também paraguaio, por reciprocidade: dois jornales, pelo jornal de PYG 117.077 em vigor desde 2026-07-01"
+    },
+    {
+      "en": "Mercosur temporary residence: two years, not extendable; permanent residence is asked for in the 90 days before it expires; over a year's unjustified absence may cancel it",
+      "text": "Residência temporária do Mercosul: dois anos, sem prorrogação; a residência permanente é pedida nos 90 dias antes do vencimento; mais de um ano de ausência sem justificativa pode cancelá-la"
+    }
+  ]
+}

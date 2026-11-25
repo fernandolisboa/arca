@@ -11,7 +11,7 @@ import { Page } from '../page.js';
 export const Route = createFileRoute('/departure')({ component: Departure });
 
 /**
- * Saída do país (ADR-0037): what to do when leaving a country, and the documents that trace where
+ * Saída do país (ADR-0038): what to do when leaving a country, and the documents that trace where
  * the money came from, each item with the official pages it rests on.
  */
 function Departure() {

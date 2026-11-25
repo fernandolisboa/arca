@@ -149,6 +149,17 @@ describe('routeResult (spec 0007, R6)', () => {
       true,
     ]);
     expect(shown.costs[0]?.min).toEqual({ amount: '100', currency: 'EUR' });
+    // The principal's fee is certain; a family member not yet recorded may owe theirs on top.
+    expect(shown.totals).toMatchObject([
+      {
+        currency: 'EUR',
+        certain: {
+          min: { amount: '100', currency: 'EUR' },
+          max: { amount: '100', currency: 'EUR' },
+        },
+        possibleExtra: { max: null },
+      },
+    ]);
     expect(decisiveQuestions([shown], new Set(['p1'])).length).toBeGreaterThan(0);
   });
 

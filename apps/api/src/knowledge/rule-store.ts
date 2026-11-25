@@ -33,7 +33,9 @@ export interface RuleStore {
 
 export type { RuleEngineData };
 
-const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
+/** A hex SHA-256 of a text's UTF-8. */
+export const sha256 = (text: string): string =>
+  createHash('sha256').update(text, 'utf8').digest('hex');
 
 /**
  * Reads the rule rows on the given pool. Rows are insert-only, so the row counts tell whether

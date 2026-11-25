@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "routeId": "lv-capital-investment",
+  "texts": [
+    {
+      "en": "Latvian temporary residence, for up to two years, for an investment in a company's share capital (EUR 50,000 or EUR 100,000, plus EUR 10,000 to the state budget)",
+      "text": "Residência temporária na Letônia, por até dois anos, por investimento no capital social de uma empresa (EUR 50.000 ou EUR 100.000, mais EUR 10.000 para o orçamento do Estado)"
+    },
+    {
+      "en": "Funds for the minimum investment of EUR 50,000 in a company's share capital and for the EUR 10,000 payment to the state budget (the investment is EUR 100,000 in a larger company)",
+      "text": "Recursos para o investimento mínimo de EUR 50.000 no capital social de uma empresa e para o pagamento de EUR 10.000 ao orçamento do Estado (o investimento é de EUR 100.000 numa empresa maior)"
+    },
+    {
+      "en": "Not a citizen of Russia or Belarus, whose citizens have no right to this permit",
+      "text": "Não ser cidadão da Rússia nem de Belarus, cujos cidadãos não têm direito a esta autorização"
+    },
+    {
+      "en": "Not a citizen of an EU or EEA state or of Switzerland, Latvia included: only third-country nationals may request this permit",
+      "text": "Não ser cidadão de um país da UE ou do EEE nem da Suíça, Letônia incluída: só nacionais de outros países podem pedir esta autorização"
+    },
+    {
+      "en": "EUR 50,000: a company with at most 50 employees and a yearly turnover or balance sheet of at most EUR 10 million; EUR 100,000: over 50 and over EUR 10 million, alone or with Latvian subsidiaries",
+      "text": "EUR 50.000: empresa com no máximo 50 empregados e faturamento anual ou balanço de no máximo EUR 10 milhões; EUR 100.000: mais de 50 e mais de EUR 10 milhões, sozinha ou com subsidiárias letãs"
+    },
+    {
+      "en": "The law says under the EUR 50,000 investment: permits for one company's share capital go to at most 10 foreigners, each having made the investment and paid EUR 10,000 to the state budget",
+      "text": "A lei diz, no investimento de EUR 50.000: autorizações pelo capital social de uma mesma empresa vão para no máximo 10 estrangeiros, cada um tendo feito o investimento e pago EUR 10.000 ao orçamento do Estado"
+    },
+    {
+      "en": "The permit stays valid only while the company pays at least EUR 40,000 in taxes each reporting year (EUR 100,000 for the larger one, with its Latvian subsidiaries); refunded taxes do not count",
+      "text": "A autorização só continua válida enquanto a empresa pagar pelo menos EUR 40.000 em impostos a cada ano fiscal (EUR 100.000 na maior, com as subsidiárias letãs); impostos devolvidos não contam"
+    },
+    {
+      "en": "No suspension in force: the Cabinet may suspend these permits for up to five years for nationals of third countries it names",
+      "text": "Nenhuma suspensão em vigor: o Gabinete pode suspender estas autorizações por até cinco anos para nacionais de países que ele indicar"
+    },
+    {
+      "en": "The investment increases the share capital of a company or founds a new company",
+      "text": "O investimento aumenta o capital social de uma empresa ou funda uma empresa nova"
+    },
+    {
+      "en": "The company has no registered tax debt above EUR 150, unless the tax administration has extended the payment terms, or the decision setting the debt is not yet in force or is suspended",
+      "text": "A empresa não tem dívida de imposto registrada acima de EUR 150, salvo se a administração tributária prorrogou o prazo de pagamento, ou se a decisão que fixou a dívida ainda não vale ou está suspensa"
+    },
+    {
+      "en": "The earlier regulations ask on renewal, for an incomplete first reporting year, taxes averaging EUR 3,300 a month (EUR 8,300 for the larger company); the new law dropped the clause",
+      "text": "O regulamento anterior pede na renovação, para um primeiro ano fiscal incompleto, impostos de EUR 3.300 por mês em média (EUR 8.300 na empresa maior); a lei nova tirou essa cláusula"
+    },
+    {
+      "en": "A call (izsaukums) approved by the Office of Citizenship and Migration Affairs is needed, unless the applicant is the sole officer of a registered company with the right to represent it",
+      "text": "É preciso uma carta-convite (izsaukums) aprovada pelo Escritório de Cidadania e Migração, salvo se o requerente é o único administrador de uma empresa registrada, com poder para representá-la"
+    },
+    {
+      "en": "Means of subsistence, judged case by case: the minimum monthly wage (EUR 780 in 2026) a month for each person who asks for a permit, and 30 per cent of it for a child",
+      "text": "Meios de subsistência, avaliados caso a caso: o salário mínimo mensal (EUR 780 em 2026) por mês para cada pessoa que pede autorização, e 30 por cento dele por criança"
+    },
+    {
+      "en": "The policy pays at least for emergency medical help, in-patient treatment of a critical condition, transport to the nearest medical institution and transport home on serious illness or death",
+      "text": "O seguro cobre pelo menos atendimento médico de emergência, internação em estado crítico, transporte até a unidade de saúde mais próxima e transporte para casa em caso de doença grave ou morte"
+    },
+    {
+      "en": "A valid health insurance policy is shown on receiving the permit; the insurer's limit of liability is at least EUR 42,600 for a residence permit, and the policy is valid for the whole expected stay",
+      "text": "Um seguro saúde válido é apresentado ao receber a autorização; o limite de cobertura é de pelo menos EUR 42.600 para autorização de residência, e o seguro vale por toda a estadia prevista"
+    },
+    {
+      "en": "With the request: a valid travel document, the filled-in form, a photograph and a document proving the means of subsistence for the stay",
+      "text": "Com o pedido: documento de viagem válido, o formulário preenchido, uma foto e um documento que prove os meios de subsistência para a estadia"
+    },
+    {
+      "en": "A police certificate for those over 14, from the country of citizenship or residence where they stayed over 12 months; those who need no visa to enter Latvia do not hand it in",
+      "text": "Certidão policial para maiores de 14 anos, do país de cidadania ou de residência onde ficaram mais de 12 meses; quem não precisa de visto para entrar na Letônia não entrega"
+    },
+    {
+      "en": "Family members add: a spouse, a copy of the marriage document; a child, copies of the documents proving kinship; a ward or a person under curatorship, the court ruling, taken over in Latvia if foreign",
+      "text": "Familiares acrescentam: cônjuge, cópia da certidão de casamento; filho, cópias dos documentos que provam o parentesco; tutelado ou curatelado, a decisão judicial, reconhecida na Letônia se estrangeira"
+    },
+    {
+      "en": "A child adds the consent of the parent not coming, notarised or signed before an Office or mission official, or, if the parent coming has daily care and no move limit is set, an authority's document",
+      "text": "Uma criança acrescenta o consentimento do pai ou da mãe que não vem, em cartório ou assinado diante de um funcionário do Escritório ou de uma representação, ou, se quem vem tem a guarda diária e não há limite de mudança, um documento de autoridade"
+    },
+    {
+      "en": "No conviction for an offence that Latvian law punishes as a crime, unless the record is expunged; for one committed abroad, a year after the sentence was served, five after a prison sentence",
+      "text": "Nenhuma condenação por ato que a lei letã pune como crime, salvo se o registro foi apagado; para um cometido fora, um ano depois de cumprida a pena, cinco depois de pena de prisão"
+    },
+    {
+      "en": "Not on the list of foreigners barred from entering Latvia and under no entry ban for the Schengen area",
+      "text": "Não estar na lista de estrangeiros proibidos de entrar na Letônia nem ter proibição de entrada no espaço Schengen"
+    },
+    {
+      "en": "No tuberculosis in its active phase; a health certificate from a Latvian medical institution is handed in on receiving the permit",
+      "text": "Sem tuberculose em fase ativa; um atestado de saúde de uma unidade de saúde letã é entregue ao receber a autorização"
+    },
+    {
+      "en": "Filed, among other ways, at a Latvian mission outside Schengen, or inside it with that state's residence permit, at the Office when lawfully in Latvia, or online from abroad with a secure signature",
+      "text": "Pedido feito, entre outros jeitos, numa representação da Letônia fora do Schengen, ou dentro dele com autorização de residência desse país, no Escritório quando estiver legalmente na Letônia, ou on-line de fora com assinatura segura"
+    },
+    {
+      "en": "The decision to grant this permit is valid for three months from the day it is taken, with no extension: the permit is collected in person in Latvia in that time, or the documents are filed again",
+      "text": "A decisão que concede esta autorização vale por três meses a partir do dia em que é tomada, sem prorrogação: a autorização é retirada pessoalmente na Letônia nesse prazo, ou os documentos são entregues de novo"
+    },
+    {
+      "en": "Minimum investment in the share capital of a company within the small-company limits",
+      "text": "Investimento mínimo no capital social de uma empresa dentro dos limites de empresa pequena"
+    },
+    {
+      "en": "One-off payment to the state budget for a first permit, paid before receiving it; refunded only in the Cabinet's cases, such as a written request within four months of the grant, no permit received",
+      "text": "Pagamento único ao orçamento do Estado pela primeira autorização, pago antes de recebê-la; devolvido só nos casos do Gabinete, como um pedido por escrito até quatro meses depois da concessão, sem autorização recebida"
+    },
+    {
+      "en": "State fee for examining the principal's temporary residence permit request in 30 days: EUR 160 (EUR 280 in 10 working days, EUR 560 in 5)",
+      "text": "Taxa do Estado para analisar o pedido de autorização de residência temporária do requerente principal em 30 dias: EUR 160 (EUR 280 em 10 dias úteis, EUR 560 em 5)"
+    },
+    {
+      "en": "State fee for examining each family member's temporary residence permit request in 30 days: EUR 160 (EUR 280 in 10 working days, EUR 560 in 5)",
+      "text": "Taxa do Estado para analisar o pedido de autorização de residência temporária de cada familiar em 30 dias: EUR 160 (EUR 280 em 10 dias úteis, EUR 560 em 5)"
+    },
+    {
+      "en": "Payment to the state budget on receiving a repeated permit after five years of residence on this ground: EUR 2,000; a late request or a new investment object pays as a first permit: possible",
+      "text": "Pagamento ao orçamento do Estado ao receber uma autorização repetida depois de cinco anos de residência por este motivo: EUR 2.000; um pedido atrasado ou um novo objeto de investimento paga como primeira autorização; talvez se aplique"
+    },
+    {
+      "en": "State fee the inviter pays for a request to approve a call (izsaukums): EUR 10 when filed on the state portal's online form, EUR 17 when filed another way; none when no call is needed: possible",
+      "text": "Taxa do Estado que quem convida paga pelo pedido de aprovação da carta-convite (izsaukums): EUR 10 pelo formulário on-line do portal do Estado, EUR 17 de outro jeito; nada quando não precisa de carta-convite; talvez se aplique"
+    },
+    {
+      "en": "Added state fee for each person a request to approve a call includes: EUR 10, here for the principal; none when no call is needed: possible",
+      "text": "Taxa adicional do Estado por pessoa incluída no pedido de aprovação da carta-convite: EUR 10, aqui pelo requerente principal; nada quando não precisa de carta-convite; talvez se aplique"
+    },
+    {
+      "en": "Added state fee for each person a call request includes: EUR 10 for each family member; a request of their own also pays EUR 10 on the portal, or EUR 17; none when no call is needed: possible",
+      "text": "Taxa adicional do Estado por pessoa incluída no pedido de carta-convite: EUR 10 por familiar; um pedido próprio também paga EUR 10 no portal, ou EUR 17; nada quando não precisa de carta-convite; talvez se aplique"
+    },
+    {
+      "en": "State fee for issuing the principal's residence permit in 10 working days: EUR 45 (EUR 80 in two working days)",
+      "text": "Taxa do Estado para emitir a autorização de residência do requerente principal em 10 dias úteis: EUR 45 (EUR 80 em dois dias úteis)"
+    },
+    {
+      "en": "State fee for issuing each family member's residence permit in 10 working days: EUR 45 (EUR 80 in two working days)",
+      "text": "Taxa do Estado para emitir a autorização de residência de cada familiar em 10 dias úteis: EUR 45 (EUR 80 em dois dias úteis)"
+    },
+    {
+      "en": "The Office's answer on the temporary residence permit request, within 30 days of accepting all the documents; up to four months when objective reasons prevent that",
+      "text": "Resposta do Escritório sobre o pedido de autorização de residência temporária em até 30 dias depois de aceitar todos os documentos; até quatro meses quando motivos objetivos impedirem"
+    }
+  ]
+}

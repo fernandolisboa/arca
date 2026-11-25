@@ -1,5 +1,5 @@
 /**
- * The departure checklists' wording (ADR-0037), apart from the main catalog: it carries the deadlines
+ * The departure checklists' wording (ADR-0038), apart from the main catalog: it carries the deadlines
  * and thresholds the reviewed file's sources back, so a change here goes to the same reviewers and
  * needs a new numbered checklist file (`wordingSha256`).
  */

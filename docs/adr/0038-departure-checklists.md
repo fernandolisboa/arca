@@ -1,4 +1,4 @@
-# ADR-0037: Departure checklists, from reviewed official sources in the repository
+# ADR-0038: Departure checklists, from reviewed official sources in the repository
 
 - Status: Accepted
 - Date: 2026-11-25

@@ -28,7 +28,7 @@ function appFor(signedIn: SignedIn | null) {
   });
 }
 
-describe('GET /v1/departure-checklists (ADR-0037)', () => {
+describe('GET /v1/departure-checklists (ADR-0038)', () => {
   it('answers the repository checklists to a signed-in account', async () => {
     const response = await appFor(owner).request('/v1/departure-checklists');
     expect(response.status).toBe(200);
@@ -43,7 +43,7 @@ describe('GET /v1/departure-checklists (ADR-0037)', () => {
   });
 });
 
-describe('the departure checklists’ wording (ADR-0037)', () => {
+describe('the departure checklists’ wording (ADR-0038)', () => {
   const { section, item } = ptBR.departure as {
     section: Record<string, string>;
     item: Record<string, { title: string; body: string }>;

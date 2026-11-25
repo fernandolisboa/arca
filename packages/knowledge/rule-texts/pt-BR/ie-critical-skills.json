@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ie-critical-skills",
+  "texts": [
+    {
+      "en": "Critical Skills Employment Permit for Ireland: a 2-year job offer in a critical skills occupation paying at least €40,904 a year, or any eligible job paying €68,911",
+      "text": "Critical Skills Employment Permit da Irlanda: oferta de emprego de 2 anos numa profissão de habilidade crítica com salário de pelo menos €40.904 por ano, ou qualquer emprego aceito com salário de €68.911"
+    },
+    {
+      "en": "Not a citizen of Ireland, another EU or EEA state or Switzerland: they work in Ireland without an employment permit",
+      "text": "Não ser cidadão da Irlanda, de outro país da UE ou do EEE, nem da Suíça: esses trabalham na Irlanda sem autorização de trabalho"
+    },
+    {
+      "en": "Not a citizen of the United Kingdom: exempt from the Aliens Act 1935, a British citizen is not a non-national and needs no employment permit",
+      "text": "Não ser cidadão do Reino Unido: isento do Aliens Act 1935, o cidadão britânico não é estrangeiro e não precisa de autorização de trabalho"
+    },
+    {
+      "en": "A job offer of at least 2 years and at least 20 hours of work each week",
+      "text": "Oferta de emprego de pelo menos 2 anos e pelo menos 20 horas de trabalho por semana"
+    },
+    {
+      "en": "A bona fide employer trading in Ireland and registered with the Revenue Commissioners, at least half of whose employees are EEA, Swiss or UK nationals, save the exceptions of the act",
+      "text": "Empregador de boa-fé atuando na Irlanda e registrado na Receita (Revenue Commissioners), com pelo menos metade dos empregados nacionais do EEE, da Suíça ou do Reino Unido, salvo as exceções da lei"
+    },
+    {
+      "en": "For the lower pay thresholds, a job in a critical skills occupation listed in Schedule 3 to the Employment Permits Regulations",
+      "text": "Para os pisos de salário mais baixos, emprego numa profissão de habilidade crítica da Schedule 3 do Employment Permits Regulations"
+    },
+    {
+      "en": "Pay of at least €40,904 a year and €20.17 an hour in a critical skills occupation, or €68,911 and €33.98 in any other eligible job; only basic salary and health insurance count, not bonuses",
+      "text": "Salário de pelo menos €40.904 por ano e €20,17 por hora numa profissão de habilidade crítica, ou €68.911 e €33,98 em qualquer outro emprego aceito; só contam salário-base e plano de saúde, não bônus"
+    },
+    {
+      "en": "Critical skills occupation, not a nurse, midwife or radiographer: €36,848 a year and €18.17 an hour are enough with a degree at level 8 or higher, or equivalent, from the 12 months before applying",
+      "text": "Profissão de habilidade crítica, que não seja enfermeiro, parteira ou radiologista: €36.848 por ano e €18,17 por hora bastam com diploma de nível 8 ou mais, ou equivalente, dos 12 meses antes do pedido"
+    },
+    {
+      "en": "A critical skills job bound by a public sector pay agreement, or by a Workplace Relations Commission agreement linked to one, needs that agreement's pay instead of the €40,904 or €36,848 threshold",
+      "text": "Emprego de habilidade crítica regido por acordo salarial do setor público, ou por acordo da Workplace Relations Commission ligado a um, exige o salário desse acordo no lugar do piso de €40.904 ou €36.848"
+    },
+    {
+      "en": "A relevant third level degree (a nurse, midwife or radiographer: a degree or diploma their registration board accepts); for a job paying €68,911 or more, a relevant degree or the experience",
+      "text": "Diploma de ensino superior ligado ao emprego (enfermeiro, parteira ou radiologista: diploma ou certificado aceito pelo conselho profissional); para emprego de €68.911 ou mais, diploma ligado ou a experiência"
+    },
+    {
+      "en": "Dependent parent or adult child, after 2 years in Ireland: Irish gross income over €96,929 in each of the 3 prior years for one adult, €130,985 for two (2026); Stamp 0 first; private health insurance",
+      "text": "Pai, mãe ou filho adulto dependente, depois de 2 anos na Irlanda: renda bruta irlandesa acima de €96.929 em cada um dos 3 anos anteriores para um adulto, €130.985 para dois (2026); antes, Stamp 0; plano de saúde particular"
+    },
+    {
+      "en": "For the family to join: the principal not living in homeless, emergency or IPAS accommodation, or in social or local authority housing; social housing support such as HAP may also fail",
+      "text": "Para a família vir: o requerente principal não mora em abrigo para sem-teto, acolhimento de emergência ou do IPAS, nem em moradia social ou da prefeitura; auxílio de moradia social, como o HAP, também pode impedir"
+    },
+    {
+      "en": "Permit fee, paid by worker, employer or another; an employer who applies may not recover it from the worker; 90% back on refusal or withdrawal; charity and EEA, Swiss or UK spouse waivers unchecked",
+      "text": "Taxa da autorização, paga pelo trabalhador, pelo empregador ou por outra pessoa; o empregador que pede não pode cobrar do trabalhador; 90% devolvidos em caso de recusa ou desistência; isenções de entidade beneficente e de cônjuge do EEE, da Suíça ou do Reino Unido não conferidas"
+    },
+    {
+      "en": "Fee for the registration certificate (IRP card) on registering the immigration permission, €300; the waivers in reg. 4 are not checked",
+      "text": "Taxa do certificado de registro (cartão IRP) ao registrar a autorização de imigração, €300; o Arca não confere as isenções do reg. 4"
+    },
+    {
+      "en": "Fee for the registration certificate of each family member aged 18 or over, €300; waived for a person under the age of 18 years",
+      "text": "Taxa do certificado de registro de cada familiar com 18 anos ou mais, €300; isenta para menores de 18 anos"
+    },
+    {
+      "en": "Critical Skills Employment Permit of up to 24 months, for which the €1,000 fee is paid",
+      "text": "Critical Skills Employment Permit de até 24 meses, pelo qual se paga a taxa de €1.000"
+    },
+    {
+      "en": "Stamp 4 permission, which may be applied for after 21 months of employment on the permit, to live and work without an employment permit: 2 years, then renewable",
+      "text": "Autorização Stamp 4, que pode ser pedida depois de 21 meses de trabalho com a autorização, para morar e trabalhar sem autorização de trabalho: 2 anos, depois renovável"
+    }
+  ]
+}
