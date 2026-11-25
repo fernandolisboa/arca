@@ -290,6 +290,29 @@ test.describe('floating dock', () => {
   });
 });
 
+test.describe('the mark and the name', () => {
+  const cases = [
+    [390, { narrow: 'menu', wide: 'top', edge: 'bottom' }, {}],
+    [390, { narrow: 'fixed-dock', wide: 'top', edge: 'bottom' }, {}],
+    [1280, { narrow: 'menu', wide: 'top', edge: 'bottom' }, {}],
+    [1280, { narrow: 'menu', wide: 'menu', edge: 'bottom' }, {}],
+    [1280, { narrow: 'menu', wide: 'side', edge: 'bottom' }, {}],
+    [1280, { narrow: 'menu', wide: 'side', edge: 'bottom' }, { navCollapse: 'collapsed' }],
+  ] as const;
+  for (const [width, layout, extra] of cases) {
+    test(`lead to the home page in ${layoutName(layout)} at ${String(width)} px${'navCollapse' in extra ? ', collapsed' : ''}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page, layout, { path: '/settings', extra });
+      const brand = page.getByRole('link', { name: 'Arca', exact: true });
+      await expect(brand).toHaveAttribute('title', 'Página inicial');
+      await brand.click();
+      await expect(page).toHaveURL(/\/$/);
+    });
+  }
+});
+
 test('skips the view transition on the first load and uses it on a page change', async ({
   page,
 }) => {

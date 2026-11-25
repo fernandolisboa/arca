@@ -37,6 +37,7 @@ const text = {
     accountGroup: 'Sua conta',
     collapseMenu: 'Recolher menu',
     expandMenu: 'Expandir menu',
+    home: 'Página inicial',
   },
 };
 
@@ -44,6 +45,7 @@ function render(layout: Partial<ShellLayout>, extra: Partial<AppShellProps> = {}
   return renderToStaticMarkup(
     <AppShell
       title={text.title}
+      homeHref="/"
       skipToContentLabel={text.skip}
       items={[home]}
       settings={settings}
@@ -72,6 +74,16 @@ describe('AppShell', () => {
     expect(html).not.toContain('<nav');
     expect(html).toContain('href="#main-content"');
     expect(html).toContain('fill-(--arca-mark-hull)');
+  });
+
+  it('leads from the mark and the name to the home page in the top bar and the side column', () => {
+    const brand =
+      /<a href="\/"[^>]*title="Página inicial"[^>]*>(<svg[^]*?<\/svg>)<div class="([^"]*)">Arca<\/div><\/a>/g;
+    expect(count(render({ wide: 'top' }), brand)).toBe(1);
+    expect(count(render({ wide: 'menu', narrow: 'menu' }), brand)).toBe(1);
+    expect(count(render({ wide: 'side' }), brand)).toBe(2);
+    const collapsed = [...render({ wide: 'side', collapse: 'collapsed' }).matchAll(brand)];
+    expect(collapsed.map((match) => match[2])).toEqual(['min-w-0', 'sr-only']);
   });
 
   it('puts the Settings entry last in a dock, after the items', () => {

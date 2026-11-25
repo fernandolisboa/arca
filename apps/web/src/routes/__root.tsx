@@ -57,6 +57,7 @@ function Root() {
     <>
       <AppShell
         title={<h1 className="truncate font-display text-title">{t('app.name')}</h1>}
+        homeHref="/"
         skipToContentLabel={t('shell.skipToContent')}
         items={items}
         settings={{
@@ -83,6 +84,7 @@ function Root() {
           accountGroup: t('shell.accountGroup'),
           collapseMenu: t('shell.collapseMenu'),
           expandMenu: t('shell.expandMenu'),
+          home: t('shell.home'),
         }}
         link={ShellLink}
       >
