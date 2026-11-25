@@ -139,6 +139,7 @@ export {
   validCaseStructure,
 } from './case/builder.js';
 export {
+  type AppliesTo,
   type Assessment,
   type Cost,
   type CountrySet,

@@ -34,6 +34,7 @@ const documents = [
   item('parental-consent', 'each_dependent', {
     condition: { op: 'lt', left: fact('person.ageYears'), right: int(18) },
   }),
+  item('enrollment-proof', 'each_dependent', { condition: fact('person.studying') }),
   item('bank-statement', 'unit', {
     condition: {
       op: 'gte',
@@ -57,14 +58,20 @@ const cash = (owner: string, amount: number): object => ({
  * A synthetic family: a spouse, a minor child, a child with no birth date (so a possible
  * dependent) and an adult child the route does not cover.
  */
-function family(principalBirth?: string): CaseSnapshot {
+function family(
+  principalBirth?: string,
+  { cash: amount = 3000_00, assetsInFull = true }: { cash?: number; assetsInFull?: boolean } = {},
+): CaseSnapshot {
+  const principalInFull = assetsInFull
+    ? everything
+    : everything.filter((marker) => marker !== 'assets');
   return snapshot({
     members: ['p1'],
     people: [
       {
         id: 'p1',
         ...(principalBirth === undefined ? {} : { birthDate: principalBirth }),
-        recordedInFull: everything,
+        recordedInFull: principalInFull,
       },
       { id: 'p2', birthDate: '1982-01-01', recordedInFull: everything },
       { id: 'p3', birthDate: '2010-05-01', recordedInFull: everything },
@@ -77,7 +84,7 @@ function family(principalBirth?: string): CaseSnapshot {
       { kind: 'parent', parent: 'p1', child: 'p4', parentKind: 'biological' },
       { kind: 'parent', parent: 'p1', child: 'p5', parentKind: 'biological' },
     ],
-    assets: [cash('p1', 3000_00)],
+    assets: [cash('p1', amount)],
   });
 }
 
@@ -141,8 +148,16 @@ describe('documentChecklist', () => {
     ['an unconditional item for a possible dependent', 'p4', 'birth-certificate', 'unknown'],
     ["a possible dependent's unknown condition", 'p4', 'parental-consent', 'unknown'],
     ['a unit condition that holds', 'unit', 'bank-statement', true],
+    ["a dependent's condition on a fact not recorded", 'p2', 'enrollment-proof', 'unknown'],
   ])('decides %s', (_label, person, documentId, expected) => {
     expect(truths(family('1980-01-01'))[person]?.[documentId]).toBe(expected);
+  });
+
+  it.each<[string, Parameters<typeof family>[1], Truth]>([
+    ['does not hold', { cash: 500_00 }, false],
+    ['may hold, with assets not all recorded', { cash: 500_00, assetsInFull: false }, 'unknown'],
+  ])('decides a unit condition that %s', (_label, options, expected) => {
+    expect(truths(family('1980-01-01', options))['unit']?.['bank-statement']).toBe(expected);
   });
 
   it('leaves a principal condition unknown when the fact it reads is missing', () => {
@@ -165,6 +180,7 @@ describe('documentChecklist', () => {
       expect(person.items.map((each) => each.documentId)).toEqual([
         'birth-certificate',
         'parental-consent',
+        'enrollment-proof',
       ]);
     }
     expect(result.unit.map((each) => each.documentId)).toEqual(['bank-statement']);

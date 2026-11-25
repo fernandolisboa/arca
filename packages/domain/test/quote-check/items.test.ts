@@ -73,28 +73,28 @@ describe('checkItems', () => {
     expect(checkItems({ ...closed, countrySets: [] }).map((item) => item.key)).toEqual(['closure']);
   });
 
-  it('lists each document after the durations, with the values its condition and validity state', () => {
-    const items = checkItems(
-      entry({
-        documents: [
-          {
-            id: 'consent',
-            title: 'Parental consent',
-            kind: 'parental_consent',
-            appliesTo: 'each_dependent',
-            condition: {
-              op: 'lt',
-              left: { op: 'fact', key: 'person.ageYears' },
-              right: { op: 'int', value: 18 },
-            },
-            apostille: true,
-            translation: 'sworn',
-            validity: 'P90D',
-            sources: ['law'],
+  it('lists each document after the durations only when asked, with the values it states', () => {
+    const version = entry({
+      documents: [
+        {
+          id: 'consent',
+          title: 'Parental consent',
+          kind: 'parental_consent',
+          appliesTo: 'each_dependent',
+          condition: {
+            op: 'lt',
+            left: { op: 'fact', key: 'person.ageYears' },
+            right: { op: 'int', value: 18 },
           },
-        ],
-      }),
-    );
+          apostille: true,
+          translation: 'sworn',
+          validity: 'P90D',
+          sources: ['law'],
+        },
+      ],
+    });
+    expect(checkItems(version).some((item) => item.kind === 'document')).toBe(false);
+    const items = checkItems(version, { documents: true });
     expect(items.map((item) => item.key)).toContain('document:consent');
     expect(items.findIndex((item) => item.key === 'document:consent')).toBe(
       items.findIndex((item) => item.key === 'duration:decision') + 1,

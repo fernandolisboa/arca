@@ -54,7 +54,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Destination comparison weighted by each person ([#310](https://github.com/fernandolisboa/arca/issues/310), [ADR-0026](adr/0026-destination-comparison-data.md)).
 - Work, studies, registrations and residence in the case ([#507](https://github.com/fernandolisboa/arca/issues/507), [ADR-0036](adr/0036-case-records-and-classifications.md)): occupation and field-of-study classifications, then the records the work, business and talent routes read.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
-- Personalized document checklist.
+- Personalized document checklist ([#519](https://github.com/fernandolisboa/arca/issues/519)).
 - Step-by-step plan with execution modes and action points.
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.

@@ -12,7 +12,7 @@ import {
 import { type Expression, maxNodesPerVersion, nodeCount } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import {
-  type Cost,
+  type AppliesTo,
   type CountrySet,
   type RouteVersion,
   type Source,
@@ -25,7 +25,7 @@ const lastEdgeScope: CheckScope = { current: true, unit: false, edge: true };
 const perDependentScope: CheckScope = { current: true, unit: true, edge: true };
 
 /** What a cost or document item may read: the dependent and their edge only when it is per dependent. */
-const itemScope = (appliesTo: Cost['appliesTo']): CheckScope =>
+const itemScope = (appliesTo: AppliesTo): CheckScope =>
   appliesTo === 'each_dependent' ? perDependentScope : requirementScope;
 
 /** The longest path whose condition may read `firstEdge.*`. */

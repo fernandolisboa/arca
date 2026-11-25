@@ -115,15 +115,12 @@ function targetProblems(
 }
 
 /**
- * Why an update request's proposal may not carry its document list: the admin's view of a version
- * does not show documents yet, so a request keeps the list of the version it updates exactly, and
- * a new route's first version has none. Only a session review sets one (spec #519).
+ * Why an update request's checked proposal may not carry its document list: the admin's view of a
+ * version does not show documents yet, so a request keeps the list of the version it updates
+ * exactly, and a new route's first version has none. Only a session review sets one (spec #519).
  */
-export function documentListProblems(target: ProposalTarget, content: unknown): string[] {
-  const proposed =
-    typeof content === 'object' && content !== null && 'documents' in content
-      ? (content.documents as Json | undefined)
-      : undefined;
+export function documentListProblems(target: ProposalTarget, version: RouteVersion): string[] {
+  const proposed = version.documents as Json | undefined;
   const kept = target.kind === 'update' ? (target.base.documents as Json | undefined) : undefined;
   const same =
     proposed === undefined || kept === undefined

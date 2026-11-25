@@ -19,8 +19,8 @@ export interface StaleSource {
 
 /**
  * The sources an entry cites that are stale at `today`: the version's sources that any rule,
- * assessment, cost, duration, document, closure or leap-day choice cites, in the version's source order, then
- * every source of each country set it pins, in pin order.
+ * assessment, cost, duration, document, closure or leap-day choice cites, in the version's source
+ * order, then every source of each country set it pins, in pin order.
  */
 export function staleSources(entry: CatalogEntry, today: CalendarDate): StaleSource[] {
   const { version } = entry;

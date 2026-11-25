@@ -313,6 +313,6 @@ describe('documentListProblems (spec #519)', () => {
     ['gives a new route no list', newRoute, {}, 0],
     ['gives a new route a list', newRoute, { documents: [] }, 1],
   ])('in an update request that %s', (_, target, content, count) => {
-    expect(documentListProblems(target, content)).toHaveLength(count);
+    expect(documentListProblems(target, content as RouteVersion)).toHaveLength(count);
   });
 });

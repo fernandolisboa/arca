@@ -111,7 +111,7 @@ export const dependentRuleSchema = z.strictObject({
 });
 
 /** Who an item is for, as the unit holds them: the principal, each dependent, or the unit once. */
-const appliesToSchema = z.enum(['principal', 'each_dependent', 'unit']);
+export const appliesToSchema = z.enum(['principal', 'each_dependent', 'unit']);
 
 /** A free lowercase tag, never an enumeration in code. */
 const tagSchema = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/);
@@ -224,6 +224,18 @@ export type DependentRule = z.infer<typeof dependentRuleSchema>;
 export type Cost = z.infer<typeof costSchema>;
 export type DurationStage = z.infer<typeof durationStageSchema>;
 export type DocumentItem = z.infer<typeof documentItemSchema>;
+export type AppliesTo = z.infer<typeof appliesToSchema>;
+
+/** Resolves a checked version's source IDs to its sources. */
+export function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
+  const byId = new Map(sources.map((source) => [source.id, source]));
+  return (ids) =>
+    ids.map((id) => {
+      const source = byId.get(id);
+      if (source === undefined) throw new RangeError('An unchecked source reference');
+      return source;
+    });
+}
 export type Pin = z.infer<typeof pinSchema>;
 
 /** A versioned country set, such as treaty countries, with the files it pins. */

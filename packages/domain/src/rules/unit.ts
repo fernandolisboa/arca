@@ -204,17 +204,20 @@ export function unitFrame(prepared: Prepared): {
 }
 
 /**
- * The frames a per-dependent item reads a dependent at: one per last edge they were reached by,
- * with whether some rule covers them through it.
+ * A per-dependent item read once per last edge the dependent was reached by: through each edge it
+ * applies when some rule covers them through it and the item's own truth holds there. A dependent
+ * reached by several edges is counted once, so the item applies when it applies through any.
  */
-export function dependentFrames(
+export function throughEdges<T extends { readonly applies: Truth }>(
   frame: Frame,
   dependent: Dependent,
-): { readonly frame: Frame; readonly holds: Truth }[] {
-  return dependent.edges.map(({ edge, holds }) => ({
-    frame: { ...frame, current: dependent.personId, edge },
-    holds,
-  }));
+  read: (at: Frame) => T,
+): { readonly applies: Truth; readonly perEdge: readonly T[] } {
+  const perEdge = dependent.edges.map(({ edge, holds }) => {
+    const reading = read({ ...frame, current: dependent.personId, edge });
+    return { ...reading, applies: and([holds, reading.applies]) };
+  });
+  return { applies: or(perEdge.map((reading) => reading.applies)), perEdge };
 }
 
 /** The unit as facts read it: the principal is included. */

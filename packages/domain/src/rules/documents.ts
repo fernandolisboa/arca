@@ -1,19 +1,18 @@
 import type { Duration } from '../calendar/duration.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
-import { type Truth, and, or } from '../logic/truth.js';
+import type { Truth } from '../logic/truth.js';
 import type { CatalogEntry } from './catalog.js';
 import { type VersionContext, prepare } from './context.js';
-import { citations } from './engine.js';
 import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
-import type { DocumentItem, Source } from './route-version.js';
-import { type Dependent, dependentFrames, unitFrame } from './unit.js';
+import { type AppliesTo, type DocumentItem, type Source, citations } from './route-version.js';
+import { type Dependent, throughEdges, unitFrame } from './unit.js';
 
 /** One document item for one person, or for the unit: it applies, may apply, or does not. */
 export interface DocumentResult {
   readonly documentId: string;
   readonly title: string;
   readonly kind: string;
-  readonly appliesTo: DocumentItem['appliesTo'];
+  readonly appliesTo: AppliesTo;
   readonly applies: Truth;
   /** Absent where the sources do not say, as translation and validity. */
   readonly apostille?: boolean;
@@ -81,42 +80,37 @@ export function documentChecklist(
     sources: cite(item.sources),
     traces,
   });
-  const at = (item: DocumentItem, read: Frame): DocumentResult => {
+  const evaluateAt = (item: DocumentItem, at: Frame): DocumentResult => {
     if (item.condition === undefined) return result(item, true, []);
-    const trace = evaluate(item.condition, read);
+    const trace = evaluate(item.condition, at);
     return result(item, truthOf(trace), [trace]);
   };
-  // A dependent reached by several edges hands an item in once: it applies through an edge that
-  // covers them and on which its condition holds.
-  const forDependent = (item: DocumentItem, dependent: Dependent): DocumentResult => {
-    const perEdge = dependentFrames(frame, dependent).map(({ frame: read, holds }) => {
-      const evaluated = at(item, read);
-      return { applies: and([holds, evaluated.applies]), traces: evaluated.traces };
-    });
+  const evaluateFor = (item: DocumentItem, dependent: Dependent): DocumentResult => {
+    const { applies, perEdge } = throughEdges(frame, dependent, (at) => evaluateAt(item, at));
     return result(
       item,
-      or(perEdge.map((edge) => edge.applies)),
+      applies,
       perEdge.flatMap((edge) => edge.traces),
     );
   };
-  const of = (appliesTo: DocumentItem['appliesTo']) =>
+  const itemsFor = (appliesTo: AppliesTo) =>
     documents.filter((item) => item.appliesTo === appliesTo);
-  const person = (dependent: Dependent, possible: boolean): PersonDocuments => ({
+  const dependentDocuments = (dependent: Dependent, possible: boolean): PersonDocuments => ({
     personId: dependent.personId,
     possible,
-    items: of('each_dependent').map((item) => forDependent(item, dependent)),
+    items: itemsFor('each_dependent').map((item) => evaluateFor(item, dependent)),
   });
   return {
     kind: 'listed',
     principal: {
       personId: principalId,
       possible: false,
-      items: of('principal').map((item) => at(item, frame)),
+      items: itemsFor('principal').map((item) => evaluateAt(item, frame)),
     },
     dependents: [
-      ...unit.dependents.map((dependent) => person(dependent, false)),
-      ...unit.possibleDependents.map((dependent) => person(dependent, true)),
+      ...unit.dependents.map((dependent) => dependentDocuments(dependent, false)),
+      ...unit.possibleDependents.map((dependent) => dependentDocuments(dependent, true)),
     ],
-    unit: of('unit').map((item) => at(item, frame)),
+    unit: itemsFor('unit').map((item) => evaluateAt(item, frame)),
   };
 }

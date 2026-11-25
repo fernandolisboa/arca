@@ -2,7 +2,7 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import { indexSnapshot } from '../case/graph.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
 import { addNumbers, hullNumbers, orZero, zeroBound } from '../logic/number.js';
-import { type Truth, and, or } from '../logic/truth.js';
+import type { Truth } from '../logic/truth.js';
 import { type NumberValue, type Value, isKnown } from '../logic/value.js';
 import type { CurrencyCode } from '../money/currency.js';
 import type { CurrencyPair, FxRate } from '../money/fx.js';
@@ -24,9 +24,9 @@ import {
 } from './context.js';
 import { type Frame, type Trace, evaluate, numberOf, truthOf } from './evaluate.js';
 import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
-import type { Cost, DurationStage, Source } from './route-version.js';
+import { type Cost, type DurationStage, type Source, citations } from './route-version.js';
 import { type StaleSource, staleSources } from './staleness.js';
-import { type Unit, dependentFrames, unitFrame } from './unit.js';
+import { type Unit, throughEdges, unitFrame } from './unit.js';
 
 export type EvaluationStatus =
   'unavailable' | 'not_eligible' | 'missing_information' | 'needs_assessment' | 'eligible';
@@ -310,17 +310,6 @@ function unitGaps(unit: Unit): UnitGaps {
   };
 }
 
-/** Resolves a checked version's source IDs to its sources. */
-export function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
-  const byId = new Map(sources.map((source) => [source.id, source]));
-  return (ids) =>
-    ids.map((id) => {
-      const source = byId.get(id);
-      if (source === undefined) throw new RangeError('An unchecked source reference');
-      return source;
-    });
-}
-
 interface Priced {
   readonly applies: Truth;
   readonly amount: NumberValue;
@@ -368,17 +357,16 @@ function costItems(
       continue;
     }
     for (const dependent of [...unit.dependents, ...unit.possibleDependents]) {
-      // A dependent reached by several edges pays once: the cost applies when it applies through
-      // an edge that covers them, and its amount ranges over those edges.
-      const perEdge = dependentFrames(frame, dependent).map(({ frame: at, holds }) => {
+      // The amount ranges over the edges the cost applies through.
+      const { applies, perEdge } = throughEdges(frame, dependent, (at) => {
         const priced = price(cost, at);
-        return { applies: and([holds, priced.condition]), amount: priced.amount };
+        return { applies: priced.condition, amount: priced.amount };
       });
       const counted = perEdge.filter((entry) => entry.applies !== false);
       const amount = hullNumbers(
         (counted.length > 0 ? counted : perEdge).map((entry) => entry.amount),
       );
-      add(cost, { applies: or(perEdge.map((entry) => entry.applies)), amount }, dependent.personId);
+      add(cost, { applies, amount }, dependent.personId);
     }
   }
   return { items, priced, traces };
