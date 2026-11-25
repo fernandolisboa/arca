@@ -51,6 +51,11 @@ const snapshot = caseSnapshotSchema.parse({
         },
         { occupation: '3512', start: '2015', end: '2021-02' },
       ],
+      qualifications: [
+        { level: 6, field: '0613', country: 'BR', completed: '2014-12' },
+        { country: 'PT' },
+      ],
+      registrations: [{ country: 'BR', occupation: '2512', since: '2015-01' }],
       residencePeriods: [
         { country: 'BR', basis: 'citizen', start: '1985-04', end: 'none' },
         { country: 'US', end: '2009-12' },
@@ -69,6 +74,8 @@ const snapshot = caseSnapshotSchema.parse({
       languages: [],
       jobOffers: [],
       workPeriods: [],
+      qualifications: [],
+      registrations: [],
       residencePeriods: [],
       immigrationHistory: [],
       incomes: [],
@@ -174,6 +181,8 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p2', 'noLanguage', { question: 'languages' }],
     ['p2', 'noJobOffer', { question: 'jobOffers' }],
     ['p2', 'noWorkPeriod', { question: 'workPeriods' }],
+    ['p2', 'noQualification', { question: 'qualifications' }],
+    ['p2', 'noRegistration', { question: 'registrations' }],
     ['p2', 'noResidencePeriod', { question: 'residencePeriods' }],
     ['p2', 'noImmigrationEvent', { question: 'immigrationHistory' }],
     ['p2', 'noIncome', { question: 'incomes' }],
@@ -195,9 +204,11 @@ describe('playing the case back (spec 0007, R5)', () => {
       'citizenships',
       'residenceCountry',
       'educationLevel',
+      'qualifications',
       'studying',
       'languages',
       'workPeriods',
+      'registrations',
       'jobOffers',
       'dependsOn',
       'residencePeriods',
@@ -221,6 +232,39 @@ describe('playing the case back (spec 0007, R5)', () => {
         occupation: '3512',
         start: '2015',
         end: '2021-02',
+      },
+    ]);
+  });
+
+  it('reads back every qualification and registration with only what is known', () => {
+    expect(of('p1', 'qualification')).toEqual([
+      {
+        kind: 'qualification',
+        question: 'qualifications',
+        about: ['p1'],
+        person: 'p1',
+        level: 6,
+        field: '0613',
+        country: 'BR',
+        completed: '2014-12',
+      },
+      {
+        kind: 'qualification',
+        question: 'qualifications',
+        about: ['p1'],
+        person: 'p1',
+        country: 'PT',
+      },
+    ]);
+    expect(of('p1', 'registration')).toEqual([
+      {
+        kind: 'registration',
+        question: 'registrations',
+        about: ['p1'],
+        person: 'p1',
+        country: 'BR',
+        occupation: '2512',
+        since: '2015-01',
       },
     ]);
   });

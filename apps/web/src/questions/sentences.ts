@@ -20,10 +20,21 @@ export function sentenceText(
   const list = (items: readonly string[]) =>
     new Intl.ListFormat(language, { type: 'conjunction' }).format(items);
   const when = (
-    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold' | 'startedIn',
+    key:
+      | 'since'
+      | 'until'
+      | 'in'
+      | 'startSince'
+      | 'from'
+      | 'custodySince'
+      | 'sold'
+      | 'startedIn'
+      | 'completed',
     value?: string,
   ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
+  const issuedIn = (code?: string) =>
+    code === undefined ? '' : t('playback.part.issuedIn', { country: country(code) });
   const closedTime = (start?: string, end?: string) =>
     start !== undefined && end !== undefined
       ? t('playback.part.between', { start: date(start), end: date(end) })
@@ -124,6 +135,34 @@ export function sentenceText(
             ? ''
             : t('playback.part.sponsored', { sponsored: said.sponsored ? 'yes' : 'no' }),
         ].join(''),
+      });
+    case 'noQualification':
+      return t('playback.sentence.noQualification', { person: name(said.person) });
+    case 'qualification':
+      return t('playback.sentence.qualification', {
+        person: name(said.person),
+        field:
+          said.field === undefined
+            ? ''
+            : t('playback.part.field', {
+                field: t(`studyFields.${said.field}` as 'studyFields.0912'),
+              }),
+        level:
+          said.level === undefined
+            ? t('playback.part.noLevel')
+            : t('questions.choice.educationLevel', { value: String(said.level) }),
+        details: issuedIn(said.country) + when('completed', said.completed),
+      });
+    case 'noRegistration':
+      return t('playback.sentence.noRegistration', { person: name(said.person) });
+    case 'registration':
+      return t('playback.sentence.registration', {
+        person: name(said.person),
+        occupation:
+          said.occupation === undefined
+            ? t('playback.part.noOccupation')
+            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+        details: issuedIn(said.country) + when('since', said.since),
       });
     case 'noWorkPeriod':
       return t('playback.sentence.noWorkPeriod', { person: name(said.person) });

@@ -114,6 +114,28 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
     [{ kind: 'noWorkPeriod', ...ana }, 'Trabalhos de Ana: nenhum anotado.'],
     [
       {
+        kind: 'qualification',
+        ...ana,
+        level: 7,
+        field: '0912',
+        country: 'BR',
+        completed: '2010-12',
+      },
+      'Formação de Ana em Medicina (Mestrado ou especialização), país: Brasil, concluída em dezembro de 2010.',
+    ],
+    [
+      { kind: 'qualification', ...ana, country: 'PT' },
+      'Formação de Ana (nível não informado), país: Portugal.',
+    ],
+    [{ kind: 'noQualification', ...ana }, 'Formações de Ana: nenhuma.'],
+    [
+      { kind: 'registration', ...ana, country: 'BR', occupation: '2211', since: '2011-02' },
+      'Registro profissional de Ana: Médicos clínicos gerais, país: Brasil, desde fevereiro de 2011.',
+    ],
+    [{ kind: 'registration', ...ana }, 'Registro profissional de Ana: ocupação não informada.'],
+    [{ kind: 'noRegistration', ...ana }, 'Registros profissionais de Ana: nenhum.'],
+    [
+      {
         kind: 'residencePeriod',
         ...ana,
         country: 'PT',

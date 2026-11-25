@@ -15,6 +15,7 @@ import {
   questionFlow,
   questionIds,
   questionSteps,
+  studyFieldCodeSchema,
   sentenceSchema,
   shareScopeSchema,
   startsInPlan,
@@ -176,6 +177,8 @@ export const CaseQuestions = z.object({
   formerCountries: z.array(countryCodeSchema),
   /** The ISCO-08 unit groups a work period may name (ADR-0036); their names come from i18n. */
   occupations: z.array(occupationCodeSchema),
+  /** The ISCED-F 2013 fields a qualification may name; their names come from i18n. */
+  studyFields: z.array(studyFieldCodeSchema),
 });
 export type CaseQuestions = z.infer<typeof CaseQuestions>;
 

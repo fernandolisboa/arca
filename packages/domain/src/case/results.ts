@@ -57,6 +57,13 @@ export const questionForFact = {
   'jobOffer.occupation': 'jobOffers',
   'jobOffer.annualSalary': 'jobOffers',
   'jobOffer.sponsored': 'jobOffers',
+  'qualification.level': 'qualifications',
+  'qualification.field': 'qualifications',
+  'qualification.country': 'qualifications',
+  'qualification.completed': 'qualifications',
+  'registration.country': 'registrations',
+  'registration.occupation': 'registrations',
+  'registration.since': 'registrations',
   'residencePeriod.country': 'residencePeriods',
   'residencePeriod.basis': 'residencePeriods',
   'residencePeriod.start': 'residencePeriods',
@@ -67,6 +74,8 @@ export const questionForFact = {
 const questionForRecords = {
   workPeriods: 'workPeriods',
   jobOffers: 'jobOffers',
+  qualifications: 'qualifications',
+  registrations: 'registrations',
   residencePeriods: 'residencePeriods',
 } as const satisfies Record<RecordList, QuestionId>;
 

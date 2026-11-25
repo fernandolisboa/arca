@@ -27,11 +27,13 @@ import {
   type ComparisonPreferences,
   type DecisionStates,
   type HeldAsset,
+  type KnownCodes,
   type RatingSuggestions,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  classifiedCodesKnown,
   comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
@@ -183,8 +185,10 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
-  /** The occupation codes work periods and job offers may name (ADR-0036). */
+  /** The occupation codes work periods, job offers and registrations may name (ADR-0036). */
   readonly occupations: readonly string[];
+  /** The field-of-study codes qualifications may name (ADR-0036). */
+  readonly studyFields: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
     readonly rules: () => Promise<{
@@ -291,9 +295,9 @@ function linksOwnedBusinesses(rows: CaseRows, personId: string, facts: StoredPro
 }
 
 /**
- * Replaces a person's facts and dependence; dependence names other people of the case, the
- * occupation of a work period or a job offer a code of the occupations classification, and a work
- * period's business one the person owns.
+ * Replaces a person's facts and dependence; dependence names other people of the case, every
+ * occupation or field of study a code of its classification, and a work period's business one the
+ * person owns.
  */
 async function saveProfile(
   tx: Transaction,
@@ -301,14 +305,9 @@ async function saveProfile(
   personId: string,
   facts: StoredProfile['facts'],
   dependsOn: readonly string[] | null,
-  occupations: ReadonlySet<string>,
+  codes: KnownCodes,
 ) {
-  refuseUnless(
-    [...(facts.workPeriods ?? []), ...(facts.jobOffers ?? [])].every(
-      ({ occupation }) => occupation === undefined || occupations.has(occupation),
-    ),
-    'case_invalid',
-  );
+  refuseUnless(classifiedCodesKnown(facts, codes), 'case_invalid');
   refuseUnless(linksOwnedBusinesses(rows, personId, facts), 'case_invalid');
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
@@ -417,12 +416,14 @@ export function createCaseFiles({
   today,
   countries,
   occupations,
+  studyFields,
   evaluation,
 }: CaseFilesSettings): CaseFiles {
   const known = {
     countries: new Set(countries.countries),
     formerCountries: new Set(countries.formerCountries),
     occupations: new Set(occupations),
+    studyFields: new Set(studyFields),
   };
   /**
    * Runs one write in the viewer's case under its lock, then records its events once it
@@ -625,7 +626,7 @@ export function createCaseFiles({
     writeProfile: (accountId, { personId, facts, dependsOn }) =>
       write(accountId, async (tx, rows) => {
         keptPerson(rows, personId);
-        await saveProfile(tx, rows, personId, facts, dependsOn, known.occupations);
+        await saveProfile(tx, rows, personId, facts, dependsOn, known);
         return [];
       }),
 
@@ -754,7 +755,9 @@ export function createCaseFiles({
     questions: (accountId) =>
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined ? null : caseQuestions(rows, countries, occupations);
+        return rows === undefined
+          ? null
+          : caseQuestions(rows, countries, { occupations, studyFields });
       }),
 
     playback: (accountId) =>
@@ -805,7 +808,7 @@ export function createCaseFiles({
           ),
         );
         if (answered.has('fact') || answered.has('marker') || answered.has('dependence')) {
-          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known.occupations);
+          await saveProfile(tx, rows, personId, after.facts, after.dependsOn, known);
         }
         if ((answered.has('incomes') || answered.has('assetsMarker')) && after.finances) {
           await saveFinances(tx, personId, after.finances);

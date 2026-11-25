@@ -177,6 +177,7 @@ function Answering({
       person.steps.flatMap((entry) => entry.questions).find((question) => question.id === 'assets')
         ?.answer,
     ),
+    studyFields: questions.studyFields,
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">

@@ -84,6 +84,8 @@ export type FieldInput =
   | { readonly kind: 'count' }
   /** One of the businesses the person owns a confirmed share of, by its asset ID. */
   | { readonly kind: 'business' }
+  /** An ISCED-F 2013 field-of-study code, picked by its name. */
+  | { readonly kind: 'studyField' }
   /** A short name that tells items apart on screen; kept with the profile, never in the snapshot. */
   | { readonly kind: 'label' };
 
@@ -176,6 +178,20 @@ export const questionFlow = [
     target: fact('educationLevel'),
     input: { kind: 'choice', set: 'educationLevel' },
   },
+  {
+    id: 'qualifications',
+    step: 'studies',
+    target: fact('qualifications'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('level', { kind: 'choice', set: 'educationLevel' }),
+        maybe('field', { kind: 'studyField' }),
+        maybe('country', { kind: 'country', formerStates: true }),
+        maybe('completed', partialDate),
+      ],
+    },
+  },
   { id: 'studying', step: 'studies', target: fact('studying'), input: { kind: 'yesNo' } },
   {
     id: 'languages',
@@ -206,6 +222,19 @@ export const questionFlow = [
         maybe('start', partialDate),
         maybe('end', { ...partialDate, none: true }),
         onlyWhen('relation', 'owner')(maybe('business', { kind: 'business' })),
+      ],
+    },
+  },
+  {
+    id: 'registrations',
+    step: 'work',
+    target: fact('registrations'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('country', { kind: 'country' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('since', partialDate),
       ],
     },
   },
@@ -345,6 +374,8 @@ export interface KnownCodes {
   readonly formerCountries: ReadonlySet<string>;
   /** The occupation codes of the current occupations classification. */
   readonly occupations: ReadonlySet<string>;
+  /** The field-of-study codes of the current study-fields classification. */
+  readonly studyFields: ReadonlySet<string>;
 }
 
 const languages: ReadonlySet<string> = new Set(languageCodes);
@@ -393,6 +424,26 @@ const mapList = (input: QuestionInput, value: unknown, money: (value: unknown) =
     ? value.map((item) => mapFields(input.fields, item, money))
     : value;
 
+/**
+ * Whether every occupation and field-of-study code in stored facts is one of the classifications',
+ * for writes that bypass the guided questions.
+ */
+export function classifiedCodesKnown(
+  facts: StoredProfile['facts'],
+  { occupations, studyFields }: Pick<KnownCodes, 'occupations' | 'studyFields'>,
+): boolean {
+  const named = (code: string | undefined, codes: ReadonlySet<string>) =>
+    code === undefined || codes.has(code);
+  return (
+    [
+      ...(facts.workPeriods ?? []),
+      ...(facts.jobOffers ?? []),
+      ...(facts.registrations ?? []),
+    ].every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
+  );
+}
+
 /** Whether every code an answer names is a known one, and every field it fills is one it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
@@ -400,6 +451,9 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
     if (field.kind === 'language') return typeof entry === 'string' && languages.has(entry);
     if (field.kind === 'occupation') {
       return typeof entry === 'string' && known.occupations.has(entry);
+    }
+    if (field.kind === 'studyField') {
+      return typeof entry === 'string' && known.studyFields.has(entry);
     }
     if (field.kind !== 'country') return true;
     return (

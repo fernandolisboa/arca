@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "study-fields",
+  "number": 1,
+  "classification": "Fixture: a few ISCED-F 2013 detailed fields",
+  "sources": [
+    {
+      "id": "fixture-iscedf",
+      "url": "https://www.gov.example/fixture-iscedf",
+      "title": "Fixture field-of-study codes",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "codes": ["0613", "0912", "0913"]
+}

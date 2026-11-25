@@ -38,6 +38,7 @@ beforeAll(async () => {
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
     occupations: ['2211', '2512'],
+    studyFields: ['0613', '0912'],
     evaluation: {
       rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,
@@ -1024,6 +1025,65 @@ describe('a business and a work period at it (ADR-0036)', () => {
   });
 });
 
+describe('qualifications and registrations (ADR-0036)', () => {
+  const degree = { level: 7, field: '0912', country: 'BR', completed: '2010-12' };
+  const licence = { country: 'BR', occupation: '2211', since: '2011-02' };
+
+  it('saves them, reads them back and plays them back', async () => {
+    const { alice, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [
+          { questionId: 'educationLevel', answer: 7 },
+          { questionId: 'qualifications', answer: [degree, { country: 'PT' }] },
+          { questionId: 'registrations', answer: [licence] },
+        ],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      educationLevel: 7,
+      qualifications: [degree, { country: 'PT' }],
+      registrations: [licence],
+    });
+    expect((await files.questions(alice))?.studyFields).toEqual(['0613', '0912']);
+    const said = (await files.playback(alice))?.sentences.filter(
+      ({ kind }) => kind === 'qualification' || kind === 'registration',
+    );
+    const about = { about: [people.alice], person: people.alice };
+    expect(said).toEqual([
+      { kind: 'qualification', question: 'qualifications', ...about, ...degree },
+      { kind: 'qualification', question: 'qualifications', ...about, country: 'PT' },
+      { kind: 'registration', question: 'registrations', ...about, ...licence },
+    ]);
+  });
+
+  it('refuses unknown codes and a qualification above the education level', async () => {
+    const { alice, people } = await family();
+    const answer = async (answers: { questionId: never; answer: unknown }[]) =>
+      refusal(await files.answerQuestions(alice, { personId: people.alice, answers }));
+    const asked = (questionId: string, value: unknown) => ({
+      questionId: questionId as never,
+      answer: value,
+    });
+    expect(await answer([asked('qualifications', [{ field: '9999' }])])).toBe('case_invalid');
+    expect(await answer([asked('registrations', [{ occupation: '9999' }])])).toBe('case_invalid');
+    expect(
+      await answer([asked('educationLevel', 6), asked('qualifications', [{ level: 7 }])]),
+    ).toBe('case_invalid');
+    const write = async (facts: unknown) =>
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: facts as never,
+          dependsOn: null,
+        }),
+      );
+    expect(await write({ qualifications: [{ field: '9999' }] })).toBe('case_invalid');
+    expect(await write({ registrations: [{ occupation: '9999' }] })).toBe('case_invalid');
+  });
+});
+
 describe('residence periods (ADR-0036)', () => {
   const portugal = { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' };
   const brazil = { country: 'BR', basis: 'citizen', start: '1990', end: '2023-01' };
@@ -1197,6 +1257,7 @@ describe('evaluating the case (spec 0007, R6)', () => {
       today: () => new Date('2026-11-06T12:00:00Z'),
       countries: { countries: ['BR'], formerCountries: [] },
       occupations: ['2211', '2512'],
+      studyFields: ['0613', '0912'],
       evaluation: {
         rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
         comparisons: comparisonCatalog,

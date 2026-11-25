@@ -6366,6 +6366,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -7789,6 +7854,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -9224,6 +9354,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -10670,6 +10865,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -12094,6 +12354,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -13529,6 +13854,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -14993,6 +15383,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -16355,6 +16810,71 @@
                         },
                         "maxItems": 20
                       },
+                      "qualifications": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "level": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 8
+                            },
+                            "field": {
+                              "type": "string",
+                              "pattern": "^[0-9]{4}$"
+                            },
+                            "country": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "completed": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                }
+                              ]
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20
+                      },
+                      "registrations": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "country": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "occupation": {
+                              "type": "string",
+                              "pattern": "^[0-9]{4}$"
+                            },
+                            "since": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                }
+                              ]
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20
+                      },
                       "residencePeriods": {
                         "type": "array",
                         "items": {
@@ -16979,6 +17499,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -18630,6 +19215,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -20072,6 +20722,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -21633,6 +22348,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -23057,6 +23837,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -24753,6 +25598,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -26438,6 +27348,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -27862,6 +28837,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -29308,6 +30348,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -30737,6 +31842,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -32178,6 +33348,71 @@
                                         },
                                         "maxItems": 20
                                       },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "residencePeriods": {
                                         "type": "array",
                                         "items": {
@@ -33104,9 +34339,11 @@
                                           "citizenships",
                                           "residenceCountry",
                                           "educationLevel",
+                                          "qualifications",
                                           "studying",
                                           "languages",
                                           "workPeriods",
+                                          "registrations",
                                           "jobOffers",
                                           "incomes",
                                           "dependsOn",
@@ -33169,13 +34406,21 @@
                         "type": "string",
                         "pattern": "^[0-9]{4}$"
                       }
+                    },
+                    "studyFields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}$"
+                      }
                     }
                   },
                   "required": [
                     "people",
                     "countries",
                     "formerCountries",
-                    "occupations"
+                    "occupations",
+                    "studyFields"
                   ]
                 }
               }
@@ -33238,9 +34483,11 @@
                             "citizenships",
                             "residenceCountry",
                             "educationLevel",
+                            "qualifications",
                             "studying",
                             "languages",
                             "workPeriods",
+                            "registrations",
                             "jobOffers",
                             "incomes",
                             "dependsOn",
@@ -33263,7 +34510,7 @@
                       "additionalProperties": false
                     },
                     "minItems": 1,
-                    "maxItems": 19
+                    "maxItems": 21
                   }
                 },
                 "required": [
@@ -33798,6 +35045,71 @@
                                               "type": "string",
                                               "minLength": 1,
                                               "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "qualifications": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "level": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 8
+                                            },
+                                            "field": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "completed": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
+                                      "registrations": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "country": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "since": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
                                             }
                                           },
                                           "additionalProperties": false
@@ -34713,9 +36025,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -34765,9 +36079,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -34817,9 +36133,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -34869,9 +36187,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -34952,9 +36272,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35050,9 +36372,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35102,9 +36426,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35159,9 +36485,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35217,9 +36545,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35273,9 +36603,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35342,9 +36674,144 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "qualification"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 8
+                              },
+                              "field": {
+                                "type": "string",
+                                "pattern": "^[0-9]{4}$"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "completed": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noQualification"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35394,9 +36861,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35673,9 +37142,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35725,9 +37196,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35850,9 +37323,139 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "registration"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "residencePeriods",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "occupation": {
+                                "type": "string",
+                                "pattern": "^[0-9]{4}$"
+                              },
+                              "since": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noRegistration"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "qualifications",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35902,9 +37505,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -35998,9 +37603,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36050,9 +37657,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36131,9 +37740,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36183,9 +37794,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36243,9 +37856,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36295,9 +37910,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36358,9 +37975,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36608,9 +38227,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36660,9 +38281,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36758,9 +38381,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -36853,9 +38478,11 @@
                                   "citizenships",
                                   "residenceCountry",
                                   "educationLevel",
+                                  "qualifications",
                                   "studying",
                                   "languages",
                                   "workPeriods",
+                                  "registrations",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -37953,9 +39580,11 @@
                               "citizenships",
                               "residenceCountry",
                               "educationLevel",
+                              "qualifications",
                               "studying",
                               "languages",
                               "workPeriods",
+                              "registrations",
                               "jobOffers",
                               "incomes",
                               "dependsOn",

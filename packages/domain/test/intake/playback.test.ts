@@ -228,6 +228,21 @@ describe('describeDraft (spec 0008, R3)', () => {
     expect(combined.people[0]).toEqual(snapshot.people[0]);
   });
 
+  it('leaves out an education level below a stored qualification, keeping the rest', () => {
+    const graduate = caseSnapshotSchema.parse({
+      ...snapshot,
+      people: [{ ...snapshot.people[0], qualifications: [{ level: 7 }] }, { id: 'p2' }],
+    });
+    const { draft: taken } = describeDraft(
+      graduate,
+      draft({ people: [{ ref: 'p1', educationLevel: 6, residenceCountry: 'PT' }] }),
+      kept,
+      visibility,
+      at,
+    );
+    expect(taken.people).toEqual([{ ref: 'p1', residenceCountry: 'PT' }]);
+  });
+
   it('writes nothing: the snapshot given is left as it was', () => {
     const before = JSON.stringify(snapshot);
     describeDraft(

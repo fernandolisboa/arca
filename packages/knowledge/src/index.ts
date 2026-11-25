@@ -112,6 +112,9 @@ export const datasetFiles: Readonly<Record<string, Json>> = z
  */
 export const occupationCodes: readonly string[] = newestCodes(classificationKinds.occupations);
 
+/** The codes of the newest study-fields file: the ISCED-F 2013 fields a qualification may name. */
+export const studyFieldCodes: readonly string[] = newestCodes(classificationKinds.studyFields);
+
 function newestCodes(kind: string): readonly string[] {
   const prefix = `${kind}/${kind}/`;
   const numbers = Object.keys(datasetFiles)
