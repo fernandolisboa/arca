@@ -49,6 +49,7 @@ import {
   type Expression,
   type RecordList,
   isNonNegative,
+  isPeriodCollection,
   isRecordCollection,
   recordCollections,
 } from './expression.js';
@@ -311,6 +312,7 @@ function bindingFor(target: string, frame: Frame): FactBinding {
         ...(frame.firstEdge === undefined ? {} : { edge: frame.firstEdge }),
       };
     case 'workPeriod':
+    case 'jobOffer':
       return {
         environment,
         personId: frame.current,
@@ -499,7 +501,7 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
     };
   }
   assertRecordedBy(frame.environment.snapshot, reference);
-  if (!isRecordCollection(expression.over)) throw new RangeError('Unchecked covers');
+  if (!isPeriodCollection(expression.over)) throw new RangeError('Unchecked covers');
   const { period } = recordCollections[expression.over];
   const { items, complete, records } = itemsOf(expression.over, undefined, frame);
   const lookBack: Span = {
@@ -688,7 +690,7 @@ function itemsOf(
     const values = environment.snapshot.person(personId)[list];
     return {
       items: (values ?? []).map((value): Item => ({
-        frame: at(personId, undefined, { kind: record, value }),
+        frame: at(personId, undefined, { kind: record, value } as PersonRecord),
         membership: true,
       })),
       complete: values !== undefined,

@@ -103,7 +103,20 @@ export function sentenceText(
         person: name(said.person),
         country: country(said.country),
         sector: t('questions.choice.isicSection', { value: said.sector }),
-        temporary: said.temporary ? t('playback.part.temporary') : '',
+        details: [
+          said.temporary ? t('playback.part.temporary') : '',
+          said.occupation === undefined
+            ? ''
+            : t('playback.part.offerOccupation', {
+                occupation: t(`occupations.${said.occupation}` as 'occupations.2211'),
+              }),
+          said.annualSalary === undefined
+            ? ''
+            : t('playback.part.salary', { amount: formatAmount(said.annualSalary, language) }),
+          said.sponsored === undefined
+            ? ''
+            : t('playback.part.sponsored', { sponsored: said.sponsored ? 'yes' : 'no' }),
+        ].join(''),
       });
     case 'noWorkPeriod':
       return t('playback.sentence.noWorkPeriod', { person: name(said.person) });

@@ -48,11 +48,18 @@ export const questionForFact = {
   'workPeriod.fullTime': 'workPeriods',
   'workPeriod.start': 'workPeriods',
   'workPeriod.end': 'workPeriods',
+  'jobOffer.country': 'jobOffers',
+  'jobOffer.sector': 'jobOffers',
+  'jobOffer.temporary': 'jobOffers',
+  'jobOffer.occupation': 'jobOffers',
+  'jobOffer.annualSalary': 'jobOffers',
+  'jobOffer.sponsored': 'jobOffers',
 } as const satisfies Record<FactKey, QuestionId>;
 
 /** The guided question that records each list of a person's records. */
 const questionForRecords = {
   workPeriods: 'workPeriods',
+  jobOffers: 'jobOffers',
 } as const satisfies Record<RecordList, QuestionId>;
 
 const questionForMarker = {

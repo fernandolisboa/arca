@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-sponsored-job",
+  "number": 1,
+  "title": "Fixture: sponsored skilled job offer with a salary threshold",
+  "country": "QR",
+  "tags": ["fixture", "work"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "occupations": {
+    "id": "occupations",
+    "number": 1
+  },
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "sponsored-offer",
+      "title": "A sponsored offer in the country as a doctor or software developer, paying at least 40,000 euros a year",
+      "expression": {
+        "op": "some",
+        "over": "principal.jobOffers",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "jobOffer.country"
+              },
+              "right": {
+                "op": "token",
+                "value": "QR"
+              }
+            },
+            {
+              "op": "in",
+              "item": {
+                "op": "fact",
+                "key": "jobOffer.occupation"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["2211", "2512"]
+              }
+            },
+            {
+              "op": "fact",
+              "key": "jobOffer.sponsored"
+            },
+            {
+              "op": "gte",
+              "left": {
+                "op": "fact",
+                "key": "jobOffer.annualSalary"
+              },
+              "right": {
+                "op": "money",
+                "amount": 4000000,
+                "currency": "EUR"
+              }
+            }
+          ]
+        }
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

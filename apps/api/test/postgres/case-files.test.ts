@@ -1149,3 +1149,77 @@ describe('leaving the case (spec 0007, R2)', () => {
     expect(await admin(`SELECT FROM cases.case_file WHERE id = $1`, [caseId])).toEqual([]);
   });
 });
+
+describe('job offers with occupation, salary and sponsorship (#510)', () => {
+  const offer = {
+    country: 'PT',
+    sector: 'Q',
+    temporary: false,
+    occupation: '2211',
+    annualSalary: { amount: '48000', currency: 'EUR' },
+    sponsored: true,
+  };
+  const older = { country: 'US', sector: 'J', temporary: true };
+
+  it('saves the new fields, reads them back, plays them back, and keeps older offers', async () => {
+    const { alice, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'jobOffers', answer: [offer, older] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      jobOffers: [{ ...offer, annualSalary: { amount: 4_800_000, currency: 'EUR' } }, older],
+    });
+    const answered = (await files.questions(alice))?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'jobOffers');
+    expect(answered?.answer).toEqual([offer, older]);
+    const played = (await files.playback(alice))?.sentences.filter(
+      (said) => said.kind === 'jobOffer',
+    );
+    expect(played).toEqual([
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: [people.alice],
+        person: people.alice,
+        ...offer,
+      },
+      {
+        kind: 'jobOffer',
+        question: 'jobOffers',
+        about: [people.alice],
+        person: people.alice,
+        ...older,
+      },
+    ]);
+    expect(await files.evaluations(alice)).not.toBeNull();
+  });
+
+  it('refuses an offer’s occupation outside the classification and a negative salary', async () => {
+    const { alice, people } = await family();
+    const answer = async (jobOffers: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'jobOffers', answer: jobOffers }],
+        }),
+      );
+    expect(await answer([{ ...older, occupation: '9999' }])).toBe('case_invalid');
+    expect(await answer([{ ...older, annualSalary: { amount: '-1', currency: 'EUR' } }])).toBe(
+      'case_invalid',
+    );
+    expect(
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: storedProfileFactsSchema.parse({ jobOffers: [{ ...older, occupation: '9999' }] }),
+          dependsOn: null,
+        }),
+      ),
+    ).toBe('case_invalid');
+  });
+});

@@ -270,8 +270,8 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
 /**
- * Replaces a person's facts and dependence; dependence names other people of the case, and a work
- * period's occupation a code of the occupations classification.
+ * Replaces a person's facts and dependence; dependence names other people of the case, and the
+ * occupation of a work period or a job offer a code of the occupations classification.
  */
 async function saveProfile(
   tx: Transaction,
@@ -282,7 +282,7 @@ async function saveProfile(
   occupations: ReadonlySet<string>,
 ) {
   refuseUnless(
-    (facts.workPeriods ?? []).every(
+    [...(facts.workPeriods ?? []), ...(facts.jobOffers ?? [])].every(
       ({ occupation }) => occupation === undefined || occupations.has(occupation),
     ),
     'case_invalid',

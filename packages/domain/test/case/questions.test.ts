@@ -193,6 +193,29 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(unknown.ok && unknown.state.facts).toEqual({});
   });
 
+  it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {
+    const offers = [
+      {
+        country: 'PT',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '48000.5', currency: 'EUR' },
+        sponsored: true,
+      },
+      { country: 'US', sector: 'J', temporary: true },
+    ];
+    const applied = apply(empty, { jobOffers: offers });
+    expect(applied.ok && applied.state.facts).toEqual({
+      jobOffers: [
+        { ...offers[0], annualSalary: { amount: 4_800_050, currency: 'EUR' } },
+        offers[1],
+      ],
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('jobOffers'), applied.state)).toEqual(offers);
+  });
+
   it('takes "Não sei" as leaving the fact out', () => {
     const answered = apply(empty, { studying: true, educationLevel: 6 });
     if (!answered.ok) throw new Error('refused');
@@ -373,6 +396,23 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['a work period that ends before it starts', { workPeriods: [{ start: '2020', end: '2019' }] }],
     ['a label with outer spaces', { workPeriods: [{ label: ' Clínica' }] }],
     ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
+    [
+      'a job offer’s occupation outside the classification',
+      { jobOffers: [{ country: 'US', sector: 'J', temporary: false, occupation: '9999' }] },
+    ],
+    [
+      'a job offer’s salary in more decimals than the currency has',
+      {
+        jobOffers: [
+          {
+            country: 'US',
+            sector: 'J',
+            temporary: false,
+            annualSalary: { amount: '1.001', currency: 'USD' },
+          },
+        ],
+      },
+    ],
     [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },

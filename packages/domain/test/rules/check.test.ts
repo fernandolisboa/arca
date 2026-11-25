@@ -444,6 +444,21 @@ describe('record collections and covers (ADR-0036)', () => {
       },
       requirement,
     ],
+    [
+      'a job offer’s salary against a threshold in the route’s currency',
+      {
+        op: 'some',
+        over: 'principal.jobOffers',
+        where: {
+          op: 'all',
+          operands: [
+            fact('jobOffer.sponsored'),
+            { op: 'gte', left: fact('jobOffer.annualSalary'), right: euros(4_000_000) },
+          ],
+        },
+      },
+      dependent,
+    ],
   ])('accepts %s', (_label, input, scope) => {
     expect(check(input, scope).issues).toEqual([]);
   });
@@ -487,6 +502,16 @@ describe('record collections and covers (ADR-0036)', () => {
         },
       },
       '/where: The values are outside the domain of the fact',
+    ],
+    [
+      'a job-offer fact inside work periods',
+      { op: 'some', over: 'person.workPeriods', where: fact('jobOffer.sponsored') },
+      '/where: jobOffer.sponsored cannot be read here',
+    ],
+    [
+      'covers over job offers, which have no period',
+      { ...covers('person.jobOffers'), where: fact('jobOffer.sponsored') },
+      ': covers reads a collection of periods',
     ],
   ])('refuses %s', (_label, input, issue) => {
     expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);

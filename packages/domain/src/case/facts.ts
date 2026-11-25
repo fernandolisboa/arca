@@ -28,6 +28,7 @@ import {
   type Citizenship,
   type CompletenessMarker,
   type CountryCode,
+  type JobOffer,
   type Person,
   type Relationship,
   type WorkPeriod,
@@ -69,10 +70,15 @@ export interface LineageBinding {
 }
 
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
-export interface PersonRecord {
-  readonly kind: 'workPeriod';
-  readonly value: WorkPeriod;
-}
+export type PersonRecord =
+  | { readonly kind: 'workPeriod'; readonly value: WorkPeriod }
+  | { readonly kind: 'jobOffer'; readonly value: JobOffer };
+
+/** The kinds of a person's records, each the scope of its item facts. */
+export const recordKinds = [
+  'workPeriod',
+  'jobOffer',
+] as const satisfies readonly PersonRecord['kind'][];
 
 /**
  * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
@@ -100,10 +106,10 @@ export interface Derived {
 /**
  * What a fact is about: a person (the principal, a candidate dependent, a member inside a
  * collection or an ancestor, depending on where the expression reads it), the unit, the edge a
- * candidate was reached by, the line from an ancestor to the principal, or one work period inside
- * a work-period collection.
+ * candidate was reached by, the line from an ancestor to the principal, or one record inside a
+ * record collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | 'workPeriod';
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | PersonRecord['kind'];
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -413,6 +419,47 @@ export const factCatalog = {
     type: { kind: 'date' },
     scope: 'workPeriod',
     derive: (binding) => endFact(workPeriodOf(binding).end, binding.environment),
+  },
+  'jobOffer.country': {
+    type: { kind: 'country' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).country) }),
+  },
+  'jobOffer.sector': {
+    type: { kind: 'enum', values: isicSections },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).sector) }),
+  },
+  'jobOffer.temporary': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: booleanValue(jobOfferOf(binding).temporary) }),
+  },
+  'jobOffer.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).occupation) }),
+  },
+  /** The gross annual salary the offer states, in the route's currency at `factsAsOf`. */
+  'jobOffer.annualSalary': {
+    type: { kind: 'money' },
+    scope: 'jobOffer',
+    nonNegative: true,
+    derive: (binding) => {
+      const sum = new MoneySum(binding.environment);
+      const salary = jobOfferOf(binding).annualSalary;
+      if (salary === undefined) sum.open([], true);
+      else sum.add(toExact(salary), true);
+      return sum.result();
+    },
+  },
+  /** Whether the employer will sponsor the application. */
+  'jobOffer.sponsored': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({
+      value: booleanValue(jobOfferOf(binding).sponsored ?? 'unknown'),
+    }),
   },
 } as const satisfies Record<string, FactDefinition>;
 
@@ -743,6 +790,13 @@ function edgeOf(binding: FactBinding): Relationship {
 function workPeriodOf(binding: FactBinding): WorkPeriod {
   if (binding.record?.kind !== 'workPeriod') {
     throw new RangeError('A work-period fact outside a work-period collection');
+  }
+  return binding.record.value;
+}
+
+function jobOfferOf(binding: FactBinding): JobOffer {
+  if (binding.record?.kind !== 'jobOffer') {
+    throw new RangeError('A job-offer fact outside a job-offer collection');
   }
   return binding.record.value;
 }

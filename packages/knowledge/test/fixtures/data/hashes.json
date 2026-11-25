@@ -152,6 +152,10 @@
       "sha256": "cf44fd5d1217db9ec85bcb293d7312196a30ece30df412f3913fde8d2b23482c"
     },
     {
+      "path": "routes/qr-sponsored-job/1",
+      "sha256": "05568b3129e45e3912b53145988f2b79260746351a43f95267918ddaa9d84712"
+    },
+    {
       "path": "routes/qs-investor/1",
       "sha256": "fb521cada0b726f335b1be3b62d4f038b5da4d35fbc3f666b82215a28752ad5b"
     },

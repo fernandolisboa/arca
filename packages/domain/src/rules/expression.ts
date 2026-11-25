@@ -29,14 +29,17 @@ export const collectionNames = [
   'lineage.links',
   'person.workPeriods',
   'principal.workPeriods',
+  'person.jobOffers',
+  'principal.jobOffers',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
 
 /**
  * The collections over one person's records (ADR-0036): whose records (the person in focus or the
- * principal), the snapshot list they come from, the record each item binds, and the facts that
- * bound each item's period, which `covers` reads. An absent list is unknown, `[]` none.
+ * principal), the snapshot list they come from, the record each item binds, and, for records
+ * that last a while, the facts that bound each item's period, which `covers` reads. An absent
+ * list is unknown, `[]` none.
  */
 const workPeriods = {
   list: 'workPeriods',
@@ -44,9 +47,13 @@ const workPeriods = {
   period: { start: 'workPeriod.start', end: 'workPeriod.end' },
 } as const;
 
+const jobOffers = { list: 'jobOffers', record: 'jobOffer' } as const;
+
 export const recordCollections = {
   'person.workPeriods': { owner: 'current', ...workPeriods },
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
+  'person.jobOffers': { owner: 'current', ...jobOffers },
+  'principal.jobOffers': { owner: 'principal', ...jobOffers },
 } as const satisfies Partial<
   Record<
     CollectionName,
@@ -54,7 +61,7 @@ export const recordCollections = {
       readonly owner: 'current' | 'principal';
       readonly list: keyof Person;
       readonly record: PersonRecord['kind'];
-      readonly period: { readonly start: FactKey; readonly end: FactKey };
+      readonly period?: { readonly start: FactKey; readonly end: FactKey };
     }
   >
 >;
@@ -64,6 +71,17 @@ export type RecordList = (typeof recordCollections)[RecordCollectionName]['list'
 
 export function isRecordCollection(name: CollectionName): name is RecordCollectionName {
   return Object.hasOwn(recordCollections, name);
+}
+
+/** The record collections whose items have a period, which `covers` can read. */
+export type PeriodCollectionName = {
+  [Name in RecordCollectionName]: (typeof recordCollections)[Name] extends { period: object }
+    ? Name
+    : never;
+}[RecordCollectionName];
+
+export function isPeriodCollection(name: CollectionName): name is PeriodCollectionName {
+  return isRecordCollection(name) && 'period' in recordCollections[name];
 }
 
 export const maxAncestorGenerations = 4;

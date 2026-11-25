@@ -264,3 +264,78 @@ describe('collections over work periods', () => {
     expect(truthOf(run(ownerBorn, asCandidate))).toBe(true);
   });
 });
+
+describe('job offers as a record collection (ADR-0036)', () => {
+  const offerer = (jobOffers?: readonly object[]) =>
+    frame([jobOffers === undefined ? { id: 'p1' } : { id: 'p1', jobOffers }]);
+
+  /** "A sponsored offer in QM as a software developer paying at least 40,000 euros a year." */
+  const salaryOffer = {
+    op: 'some',
+    over: 'person.jobOffers',
+    where: {
+      op: 'all',
+      operands: [
+        { op: 'eq', left: fact('jobOffer.country'), right: token('QM') },
+        { op: 'eq', left: fact('jobOffer.occupation'), right: token('2512') },
+        fact('jobOffer.sponsored'),
+        {
+          op: 'gte',
+          left: fact('jobOffer.annualSalary'),
+          right: { op: 'money', amount: 4_000_000, currency: 'EUR' },
+        },
+      ],
+    },
+  };
+  const offer = (fields: object = {}) => ({
+    country: 'QM',
+    sector: 'J',
+    temporary: false,
+    occupation: '2512',
+    sponsored: true,
+    annualSalary: { amount: 4_500_000, currency: 'EUR' },
+    ...fields,
+  });
+  const dollars = (amount: number) => ({ annualSalary: { amount, currency: 'USD' } });
+
+  it.each<[string, readonly object[] | undefined, boolean | 'unknown', readonly string[]]>([
+    ['a salary above the threshold', [offer()], true, []],
+    ['a salary in dollars that converts above it', [offer(dollars(9_000_000))], true, []],
+    ['a salary in dollars that converts below it', [offer(dollars(7_000_000))], false, []],
+    [
+      'a salary below it',
+      [offer({ annualSalary: { amount: 3_000_000, currency: 'EUR' } })],
+      false,
+      [],
+    ],
+    [
+      'a salary not known',
+      [offer({ annualSalary: undefined })],
+      'unknown',
+      ['jobOffer.annualSalary@p1'],
+    ],
+    ['an offer in another country', [offer({ country: 'QN' })], false, []],
+    ['an unsponsored offer', [offer({ sponsored: false })], false, []],
+    [
+      'sponsorship not known',
+      [offer({ sponsored: undefined })],
+      'unknown',
+      ['jobOffer.sponsored@p1'],
+    ],
+    ['no offers', [], false, []],
+    ['offers unanswered', undefined, 'unknown', ['records jobOffers@p1']],
+  ])('%s', (_label, offers, expected, missing) => {
+    const trace = run(salaryOffer, offerer(offers));
+    expect(truthOf(trace)).toBe(expected);
+    expect(gaps(trace)).toEqual(missing);
+  });
+
+  it('leaves a salary in a currency with no rate unknown, asking nothing of the family', () => {
+    const trace = run(
+      salaryOffer,
+      offerer([offer(dollars(0)), offer({ annualSalary: { amount: 9_000_000, currency: 'GBP' } })]),
+    );
+    expect(truthOf(trace)).toBe('unknown');
+    expect(gaps(trace)).toEqual([]);
+  });
+});
