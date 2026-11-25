@@ -1,0 +1,650 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:household-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Las personas extranjeras que deseen residir en España sin realizar una actividad laboral o lucrativa deberán contar con medios económicos suficientes para el periodo de residencia de la autorización, o acreditar una fuente de percepción periódica de ingresos, para sí mismo y, en su caso, su familia, en las siguientes cuantías, que se establecen con carácter de mínimas y referidas al momento de solicitud del visado o de renovación de la autorización: a) Para su sostenimiento, durante su residencia en España, una cantidad que represente mensualmente en euros el 400 % del IPREM, o su equivalente legal en moneda extranjera."
+    },
+    {
+      "key": "requirement:household-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Para el sostenimiento de cada uno de los familiares a su cargo, durante su residencia en España, una cantidad que represente mensualmente en euros el 100 % del IPREM, o su equivalente legal en moneda extranjera, cantidad a acreditar de forma adicional a la referida en el apartado a) anterior. 2. En los supuestos previstos en las letras a) y b) del apartado anterior, la cuantía global de medios económicos habrá de suponer la disposición de la cuantía mensual calculada con base a lo establecido en el apartado anterior, en relación con el tiempo de vigencia de la autorización solicitada."
+    },
+    {
+      "key": "requirement:household-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. La disponibilidad se podrá acreditar por cualquier medio de prueba admitido en Derecho, incluyendo la aportación de títulos de propiedad, cheques certificados o tarjetas de crédito, que deberán ir acompañados de una certificación bancaria que acredite la cantidad disponible como crédito de la citada tarjeta."
+    },
+    {
+      "key": "requirement:household-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-22128",
+      "quote": "el indicador público de renta de efectos múltiples (IPREM) tendrá las siguientes cuantías durante 2023: a) El IPREM diario, 20 euros. b) El IPREM mensual, 600 euros. c) El IPREM anual, 7.200 euros."
+    },
+    {
+      "key": "requirement:household-means",
+      "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-12521",
+      "quote": "Orden EFD/581/2026, de 8 de junio, por la que se actualizan desde el 1 de enero de 2024 las retribuciones del personal docente y los conceptos incluidos en el Anexo V de la Ley 31/2022, de 23 de diciembre, de Presupuestos Generales del Estado para el año 2023, prorrogados para los años 2024, 2025 y 2026"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Se consideran extranjeros, a los efectos de la aplicación de la presente Ley, a los que carezcan de la nacionalidad española. 2. Lo dispuesto en esta Ley se entenderá, en todo caso, sin perjuicio de lo establecido en leyes especiales y en los Tratados internacionales en los que España sea parte. 3. Los nacionales de los Estados miembros de la Unión Europea y aquellos a quienes sea de aplicación el régimen comunitario se regirán por las normas que lo regulan, siéndoles de aplicación la presente Ley en aquellos aspectos que pudieran ser más favorables."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "quote": "1. El presente real decreto regula las condiciones para el ejercicio de los derechos de entrada y salida, libre circulación, estancia, residencia, residencia de carácter permanente y trabajo en España por parte de los ciudadanos de otros Estados miembros de la Unión Europea y de los restantes Estados parte en el Acuerdo sobre el Espacio Económico Europeo"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "quote": "1. En virtud del Acuerdo entre la Comunidad Europea y la Confederación Suiza sobre libre circulación de personas, firmado en Luxemburgo el 21 de junio de 1999, a los ciudadanos suizos y a los miembros de su familia les es de aplicación lo previsto en el presente real decreto."
+    },
+    {
+      "key": "assessment:no-work",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "assessment:no-work",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "a) Contar con medios económicos suficientes para atender sus gastos de manutención y residencia incluyendo, en su caso, los de su familia, durante el periodo de tiempo por el que se desee residir en España, y sin necesidad de desarrollar ninguna actividad laboral o profesional, de conformidad con lo dispuesto en este capítulo."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. Para la concesión de una autorización inicial de residencia temporal no lucrativa será necesario acreditar, los siguientes requisitos específicos:"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Contar con un seguro de enfermedad."
+    },
+    {
+      "key": "assessment:no-return-commitment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. Para la concesión de una autorización inicial de residencia temporal no lucrativa será necesario acreditar, los siguientes requisitos específicos:"
+    },
+    {
+      "key": "assessment:no-return-commitment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "c) No encontrarse, en su caso, dentro del plazo de compromiso de no retorno a España que la persona extranjera haya asumido al retornar voluntariamente a su país de origen."
+    },
+    {
+      "key": "assessment:public-order",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "d) No representar una amenaza para el orden público, la seguridad pública o la salud pública, circunstancia que se acreditará mediante la comprobación de la inexistencia de antecedentes penales en España y la valoración del informe policial correspondiente."
+    },
+    {
+      "key": "assessment:public-order",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. Para la valoración del requisito establecido en el artículo 61.2 d), la oficina de extranjería recabará de oficio el informe del registro central de penados para comprobar la inexistencia de antecedentes penales en España y recabará informe policial sobre la persona solicitante. Estos informes serán emitidos en el plazo de siete días."
+    },
+    {
+      "key": "assessment:public-order",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La existencia de antecedentes en el informe policial no supondrá, por sí misma y de forma automática, causa de denegación de la autorización. En ese caso, el órgano competente valorará de forma casuística y circunstanciada que la persona extranjera no suponga una amenaza para el orden público, la seguridad interior, la salud pública o las relaciones internacionales de ninguno de los Estados miembros de la Unión Europea."
+    },
+    {
+      "key": "assessment:criminal-record-abroad",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "e) En el caso de que la persona solicitante sea mayor de edad penal, carecer de antecedentes penales en los países donde haya residido durante los últimos cinco años por delitos previstos en el ordenamiento español."
+    },
+    {
+      "key": "assessment:criminal-record-abroad",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1995-25444",
+      "quote": "Los menores de dieciocho años no serán responsables criminalmente con arreglo a este Código."
+    },
+    {
+      "key": "assessment:criminal-record-abroad",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "5. Para autorizar la residencia temporal de un extranjero será preciso que carezca de antecedentes penales en España o en los países anteriores de residencia, por delitos existentes en el ordenamiento español"
+    },
+    {
+      "key": "assessment:no-entry-ban-or-expulsion",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. La autoridad competente para resolver inadmitirá a trámite las solicitudes relativas a los procedimientos regulados en esta ley, en los siguientes supuestos:"
+    },
+    {
+      "key": "assessment:no-entry-ban-or-expulsion",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "c) Cuando se trate de reiteración de una solicitud ya denegada, siempre que las circunstancias que motivaron la denegación no hayan variado. d) Cuando conste un procedimiento administrativo sancionador contra el solicitante en el que pueda proponerse la expulsión o cuando se haya decretado en contra del mismo una orden de expulsión, judicial o administrativa salvo que, en este último caso, la orden de expulsión hubiera sido revocada o se hallase en uno de los supuestos regulados por los artículos 31 bis, 59, 59 bis o 68.3 de esta ley. e) Cuando el solicitante tenga prohibida su entrada en España."
+    },
+    {
+      "key": "assessment:application-at-own-consulate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. La presentación de solicitudes de visado y su recogida se realizarán personalmente ante la oficina consular en cuya demarcación aquél resida el sujeto legitimado."
+    },
+    {
+      "key": "assessment:application-at-own-consulate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Asimismo, las solicitudes de visado se podrán presentar en los locales de un proveedor de servicios externo con el que el Ministerio de Asuntos Exteriores, Unión Europea y Cooperación mantenga un contrato de concesión de servicios. Las solicitudes también podrán presentarse electrónicamente mediante las aplicaciones específicas de tramitación que existan. La presentación de solicitudes de visado y su recogida se podrá realizar a través de representante debidamente acreditado cuando así se prevea en la normativa española y en el derecho de la Unión Europea."
+    },
+    {
+      "key": "duration:visa-collection",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "4. Notificada la concesión del visado, la persona solicitante deberá recogerlo en el plazo máximo de un mes desde la notificación salvo en los procedimientos en que expresamente se determine otro plazo por este reglamento. En caso de no hacerlo así, se entenderá que la persona interesada ha renunciado al visado concedido y se producirá el archivo del procedimiento."
+    },
+    {
+      "key": "assessment:not-irregularly-in-spain",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "assessment:not-irregularly-in-spain",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) No encontrarse irregularmente en territorio español."
+    },
+    {
+      "key": "assessment:not-listed-as-refusable",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "assessment:not-listed-as-refusable",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "c) No figurar como rechazable en el espacio territorial de países con los que España tenga firmado un convenio en tal sentido."
+    },
+    {
+      "key": "assessment:passport-validity",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "assessment:passport-validity",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "d) Que la persona extranjera aporte pasaporte o título de viaje en vigor, reconocido como válido en España, con una vigencia mínima de un año."
+    },
+    {
+      "key": "assessment:medical-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "assessment:medical-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "i) Que la persona extranjera aporte certificado médico con el fin de acreditar que no padece ninguna de las enfermedades que pueden tener repercusiones de salud pública graves de conformidad con lo dispuesto en el Reglamento Sanitario Internacional de 2005."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. A efectos de la autorización de residencia temporal no lucrativa, el término familiar se entenderá en los términos siguientes: a) El cónyuge, pareja registrada o pareja estable debidamente probada de la persona solicitante de la autorización de residencia. Se entenderá por pareja estable aquella que acredite la existencia de un vínculo duradero. En todo caso, se entenderá la existencia de este vínculo si se acredita un tiempo de convivencia marital de, al menos, un año continuado, salvo que tuvieran descendencia en común, en cuyo caso bastará la acreditación de convivencia estable debidamente probada."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. A efectos de la autorización de residencia temporal no lucrativa, el término familiar se entenderá en los términos siguientes: a) El cónyuge, pareja registrada o pareja estable debidamente probada de la persona solicitante de la autorización de residencia. Se entenderá por pareja estable aquella que acredite la existencia de un vínculo duradero. En todo caso, se entenderá la existencia de este vínculo si se acredita un tiempo de convivencia marital de, al menos, un año continuado, salvo que tuvieran descendencia en común, en cuyo caso bastará la acreditación de convivencia estable debidamente probada."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Los hijos e hijas menores de edad no casados, o que no hayan constituido su propia unidad familiar, del solicitante o de su cónyuge, pareja registrada o pareja estable. c) Los hijos e hijas mayores de edad del solicitante o de su cónyuge, pareja registrada o pareja estable y que tengan una discapacidad que requiera de apoyo o que no sean objetivamente capaces de proveer a sus propias necesidades debido a su estado de salud."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Los hijos e hijas menores de edad no casados, o que no hayan constituido su propia unidad familiar, del solicitante o de su cónyuge, pareja registrada o pareja estable. c) Los hijos e hijas mayores de edad del solicitante o de su cónyuge, pareja registrada o pareja estable y que tengan una discapacidad que requiera de apoyo o que no sean objetivamente capaces de proveer a sus propias necesidades debido a su estado de salud."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Los hijos e hijas menores de edad no casados, o que no hayan constituido su propia unidad familiar, del solicitante o de su cónyuge, pareja registrada o pareja estable. c) Los hijos e hijas mayores de edad del solicitante o de su cónyuge, pareja registrada o pareja estable y que tengan una discapacidad que requiera de apoyo o que no sean objetivamente capaces de proveer a sus propias necesidades debido a su estado de salud."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. A efectos de la autorización de residencia temporal no lucrativa, el término familiar se entenderá en los términos siguientes: a) El cónyuge, pareja registrada o pareja estable debidamente probada de la persona solicitante de la autorización de residencia. Se entenderá por pareja estable aquella que acredite la existencia de un vínculo duradero. En todo caso, se entenderá la existencia de este vínculo si se acredita un tiempo de convivencia marital de, al menos, un año continuado, salvo que tuvieran descendencia en común, en cuyo caso bastará la acreditación de convivencia estable debidamente probada."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-17292",
+      "quote": "Los derechos a percibir, correspondientes a los gastos administrativos de tramitación de la solicitud de visado, son: Tipo de visado Tasas ordinarias (expresadas en euros) Visado de tránsito aeroportuario (tipo A). 90 euros Visado de corta duración (tipo C). 90 euros Visado expedido en frontera (tipo C). 90 euros Visado nacional de larga duración (tipo D). 90 euros"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "4. Los importes de las tasas por tramitación de la solicitud de visado se adecuarán a la revisión que proceda por aplicación del derecho comunitario. Se acomodarán, asimismo, al importe que pueda establecerse por aplicación del principio de reciprocidad."
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-17292",
+      "quote": "Los derechos a percibir, correspondientes a los gastos administrativos de tramitación de la solicitud de visado, son: Tipo de visado Tasas ordinarias (expresadas en euros) Visado de tránsito aeroportuario (tipo A). 90 euros Visado de corta duración (tipo C). 90 euros Visado expedido en frontera (tipo C). 90 euros Visado nacional de larga duración (tipo D). 90 euros"
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "4. Los importes de las tasas por tramitación de la solicitud de visado se adecuarán a la revisión que proceda por aplicación del derecho comunitario. Se acomodarán, asimismo, al importe que pueda establecerse por aplicación del principio de reciprocidad."
+    },
+    {
+      "key": "cost:permit-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "quote": "2.1 Autorización inicial de residencia temporal (excepto por circunstancias excepcionales). 2.1.1 Residencia temporal no lucrativa (titular principal y sus familiares). 10,94"
+    },
+    {
+      "key": "cost:permit-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "2. Constituye el hecho imponible de las tasas la tramitación de las autorizaciones administrativas y de los documentos de identidad previstos en esta Ley, así como de sus prórrogas, modificaciones y renovaciones; en particular: a) La tramitación de autorizaciones para la prórroga de la estancia en España. b) La tramitación de las autorizaciones para residir en España. c) La tramitación de autorizaciones de trabajo, salvo que se trate de autorizaciones para un período inferior a seis meses. d) La tramitación de tarjetas de identidad de extranjeros. e) La tramitación de documentos de identidad a indocumentados. f) La tramitación de visado."
+    },
+    {
+      "key": "cost:permit-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:permit-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "quote": "2.1 Autorización inicial de residencia temporal (excepto por circunstancias excepcionales). 2.1.1 Residencia temporal no lucrativa (titular principal y sus familiares). 10,94"
+    },
+    {
+      "key": "cost:permit-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "2. Constituye el hecho imponible de las tasas la tramitación de las autorizaciones administrativas y de los documentos de identidad previstos en esta Ley, así como de sus prórrogas, modificaciones y renovaciones; en particular: a) La tramitación de autorizaciones para la prórroga de la estancia en España. b) La tramitación de las autorizaciones para residir en España. c) La tramitación de autorizaciones de trabajo, salvo que se trate de autorizaciones para un período inferior a seis meses. d) La tramitación de tarjetas de identidad de extranjeros. e) La tramitación de documentos de identidad a indocumentados. f) La tramitación de visado."
+    },
+    {
+      "key": "cost:permit-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:identity-card-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "quote": "4.2 TIE que documenta la primera concesión de la autorización de residencia temporal, de estancia o para trabajadores transfronterizos. 16,08"
+    },
+    {
+      "key": "cost:identity-card-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "5. En el plazo de un mes desde la entrada en España, su titular deberá solicitar personalmente la correspondiente tarjeta de identidad de extranjero."
+    },
+    {
+      "key": "cost:identity-card-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:identity-card-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-12056",
+      "quote": "4.2 TIE que documenta la primera concesión de la autorización de residencia temporal, de estancia o para trabajadores transfronterizos. 16,08"
+    },
+    {
+      "key": "cost:identity-card-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "5. En el plazo de un mes desde la entrada en España, su titular deberá solicitar personalmente la correspondiente tarjeta de identidad de extranjero."
+    },
+    {
+      "key": "cost:identity-card-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "duration:permit-decision",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "4. El órgano competente resolverá sobre la autorización de residencia en el plazo máximo de un mes desde la recepción de la comunicación de la oficina consular. Transcurrido este plazo sin respuesta, se entenderá que la solicitud ha sido desestimada."
+    },
+    {
+      "key": "duration:visa-issue",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "5. La oficina consular resolverá y expedirá, en su caso, el visado de residencia en el plazo máximo de un mes desde la recepción de la resolución favorable sobre la autorización de residencia."
+    },
+    {
+      "key": "duration:identity-card-application",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "5. En el plazo de un mes desde la entrada en España, su titular deberá solicitar personalmente la correspondiente tarjeta de identidad de extranjero."
+    },
+    {
+      "key": "duration:initial-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "4. La autorización inicial de residencia temporal no lucrativa tendrá la duración de un año."
+    },
+    {
+      "key": "duration:renewed-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "7. La autorización de residencia temporal renovada tendrá una vigencia de dos años, salvo que corresponda obtener una autorización de residencia de larga duración o de larga duración-UE."
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "1. Siempre que no se establezca otra cosa, en los plazos señalados por días, a contar de uno determinado, quedará éste excluido del cómputo, el cual deberá empezar en el día siguiente; y si los plazos estuviesen fijados por meses o años, se computarán de fecha a fecha. Cuando en el mes del vencimiento no hubiera día equivalente al inicial del cómputo, se entenderá que el plazo expira el último del mes."
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos. Para el cómputo de los años de la mayoría de edad se incluirá completo el día del nacimiento."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "a) Que la persona extranjera aporte el impreso de solicitud, debidamente cumplimentado y firmado."
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. La solicitud de visado de residencia temporal no lucrativa, de residencia temporal y trabajo por cuenta propia y de residencia temporal con excepción de la autorización de trabajo conllevará la solicitud de la correspondiente autorización de residencia temporal y deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38"
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "a) Que la persona extranjera aporte el impreso de solicitud, debidamente cumplimentado y firmado."
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. La solicitud de visado de residencia temporal no lucrativa, de residencia temporal y trabajo por cuenta propia y de residencia temporal con excepción de la autorización de trabajo conllevará la solicitud de la correspondiente autorización de residencia temporal y deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38"
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "d) Que la persona extranjera aporte pasaporte o título de viaje en vigor, reconocido como válido en España, con una vigencia mínima de un año."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "d) Que la persona extranjera aporte pasaporte o título de viaje en vigor, reconocido como válido en España, con una vigencia mínima de un año."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "e) En el caso de que la persona solicitante sea mayor de edad penal, carecer de antecedentes penales en los países donde haya residido durante los últimos cinco años por delitos previstos en el ordenamiento español."
+    },
+    {
+      "key": "document:criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38"
+    },
+    {
+      "key": "document:criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1995-25444",
+      "quote": "Los menores de dieciocho años no serán responsables criminalmente con arreglo a este Código."
+    },
+    {
+      "key": "document:criminal-record-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "e) En el caso de que la persona solicitante sea mayor de edad penal, carecer de antecedentes penales en los países donde haya residido durante los últimos cinco años por delitos previstos en el ordenamiento español."
+    },
+    {
+      "key": "document:criminal-record-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38"
+    },
+    {
+      "key": "document:criminal-record-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1995-25444",
+      "quote": "Los menores de dieciocho años no serán responsables criminalmente con arreglo a este Código."
+    },
+    {
+      "key": "document:criminal-record-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:criminal-record-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:medical-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:medical-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "i) Que la persona extranjera aporte certificado médico con el fin de acreditar que no padece ninguna de las enfermedades que pueden tener repercusiones de salud pública graves de conformidad con lo dispuesto en el Reglamento Sanitario Internacional de 2005."
+    },
+    {
+      "key": "document:medical-certificate-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Serán requisitos para la concesión del visado de residencia:"
+    },
+    {
+      "key": "document:medical-certificate-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "i) Que la persona extranjera aporte certificado médico con el fin de acreditar que no padece ninguna de las enfermedades que pueden tener repercusiones de salud pública graves de conformidad con lo dispuesto en el Reglamento Sanitario Internacional de 2005."
+    },
+    {
+      "key": "document:medical-certificate-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:medical-certificate-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "h) Que la persona extranjera haya abonado la tasa por tramitación del visado."
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. Para la concesión de una autorización inicial de residencia temporal no lucrativa será necesario acreditar, los siguientes requisitos específicos:"
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "e) Haber abonado la tasa por tramitación del procedimiento."
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38, con excepción del previsto en la letra f), y del cumplimiento de los requisitos específicos de cada autorización."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "h) Que la persona extranjera haya abonado la tasa por tramitación del visado."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "e) Haber abonado la tasa por tramitación del procedimiento."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38, con excepción del previsto en la letra f), y del cumplimiento de los requisitos específicos de cada autorización."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. Para la concesión de una autorización inicial de residencia temporal no lucrativa será necesario acreditar, los siguientes requisitos específicos:"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Contar con un seguro de enfermedad."
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. La oficina consular valorará el cumplimiento de los requisitos previstos en el artículo 38 y, en el caso de los visados de residencia temporal no lucrativa, los requisitos específicos previstos en el artículo 61.2 a) y b)."
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. Para la concesión de una autorización inicial de residencia temporal no lucrativa será necesario acreditar, los siguientes requisitos específicos:"
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Contar con un seguro de enfermedad."
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "2. La oficina consular valorará el cumplimiento de los requisitos previstos en el artículo 38 y, en el caso de los visados de residencia temporal no lucrativa, los requisitos específicos previstos en el artículo 61.2 a) y b)."
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:family-ties",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. A efectos de la autorización de residencia temporal no lucrativa, el término familiar se entenderá en los términos siguientes: a) El cónyuge, pareja registrada o pareja estable debidamente probada de la persona solicitante de la autorización de residencia. Se entenderá por pareja estable aquella que acredite la existencia de un vínculo duradero. En todo caso, se entenderá la existencia de este vínculo si se acredita un tiempo de convivencia marital de, al menos, un año continuado, salvo que tuvieran descendencia en común, en cuyo caso bastará la acreditación de convivencia estable debidamente probada."
+    },
+    {
+      "key": "document:family-ties",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "b) Los hijos e hijas menores de edad no casados, o que no hayan constituido su propia unidad familiar, del solicitante o de su cónyuge, pareja registrada o pareja estable."
+    },
+    {
+      "key": "document:family-ties",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38, con excepción del previsto en la letra f), y del cumplimiento de los requisitos específicos de cada autorización."
+    },
+    {
+      "key": "document:family-ties",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:family-ties",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:adult-child-condition",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "c) Los hijos e hijas mayores de edad del solicitante o de su cónyuge, pareja registrada o pareja estable y que tengan una discapacidad que requiera de apoyo o que no sean objetivamente capaces de proveer a sus propias necesidades debido a su estado de salud."
+    },
+    {
+      "key": "document:adult-child-condition",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos."
+    },
+    {
+      "key": "document:adult-child-condition",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "deberá ser acompañada de la documentación que acredite el cumplimiento de los requisitos generales previstos en el artículo 38, con excepción del previsto en la letra f), y del cumplimiento de los requisitos específicos de cada autorización."
+    },
+    {
+      "key": "document:adult-child-condition",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Se halla en situación de residencia temporal no lucrativa la persona extranjera, así como sus familiares, que hayan sido autorizados a residir en España sin realizar actividades laborales o profesionales."
+    },
+    {
+      "key": "document:adult-child-condition",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "La solicitud del visado conllevará la solicitud de la autorización de residencia temporal no lucrativa."
+    },
+    {
+      "key": "document:means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "1. Las personas extranjeras que deseen residir en España sin realizar una actividad laboral o lucrativa deberán contar con medios económicos suficientes para el periodo de residencia de la autorización, o acreditar una fuente de percepción periódica de ingresos, para sí mismo y, en su caso, su familia"
+    },
+    {
+      "key": "document:means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. La disponibilidad se podrá acreditar por cualquier medio de prueba admitido en Derecho"
+    },
+    {
+      "key": "document:means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "En el caso de presentarse información relativa a cuentas o instrumentos financieros en el extranjero, esta deberá incluir: a) La razón social o denominación completa de la entidad bancaria o de crédito, así como su domicilio. b) La identificación completa de las cuentas. c) La fecha de apertura o cancelación o, en su caso, las fechas de concesión y revocación de la autorización. d) Los saldos de las cuentas a 31 de diciembre del año anterior al de presentación de la solicitud y el saldo medio correspondiente al último año."
+    },
+    {
+      "key": "document:card-credit-certificate",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "3. La disponibilidad se podrá acreditar por cualquier medio de prueba admitido en Derecho, incluyendo la aportación de títulos de propiedad, cheques certificados o tarjetas de crédito, que deberán ir acompañados de una certificación bancaria que acredite la cantidad disponible como crédito de la citada tarjeta."
+    },
+    {
+      "key": "document:shares-no-work",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24099",
+      "quote": "Si los medios económicos proceden de acciones o participaciones en empresas españolas, mixtas o extranjeras radicadas en España, la persona interesada acreditará, mediante certificación de las mismas, que no ejerce actividad laboral alguna en dichas empresas, y presentará declaración responsable en tal sentido."
+    }
+  ]
+}

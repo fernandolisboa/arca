@@ -179,6 +179,11 @@ export const sessionReviews: readonly SessionReview[] = [
       { routeId: 'us-eb1c', number: 1, newRoute: true },
     ],
   },
+  {
+    id: '2026-11-es-documents',
+    migration: 'knowledge_session_review_2026_11_es_documents',
+    versions: [{ routeId: 'es-non-lucrative', number: 5 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */
