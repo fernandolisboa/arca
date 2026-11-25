@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-own-business",
+  "number": 1,
+  "title": "Fixture: managing one's own operating business",
+  "country": "QR",
+  "tags": ["fixture", "business"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "owner-manager-year",
+      "title": "A continuous year in the last three managing a business the person owns, operating for at least a year and employing someone",
+      "expression": {
+        "op": "covers",
+        "over": "principal.workPeriods",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "workPeriod.relation"
+              },
+              "right": {
+                "op": "token",
+                "value": "owner"
+              }
+            },
+            {
+              "op": "in",
+              "item": {
+                "op": "fact",
+                "key": "workPeriod.capacity"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["executive", "manager"]
+              }
+            },
+            {
+              "op": "since",
+              "date": {
+                "op": "fact",
+                "key": "workPeriod.business.operatingSince"
+              },
+              "duration": "P1Y"
+            },
+            {
+              "op": "gte",
+              "left": {
+                "op": "fact",
+                "key": "workPeriod.business.employees"
+              },
+              "right": {
+                "op": "int",
+                "value": 1
+              }
+            },
+            {
+              "op": "ne",
+              "left": {
+                "op": "fact",
+                "key": "workPeriod.business.country"
+              },
+              "right": {
+                "op": "token",
+                "value": "QR"
+              }
+            }
+          ]
+        },
+        "atLeast": "P1Y",
+        "window": "P3Y",
+        "continuous": true
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

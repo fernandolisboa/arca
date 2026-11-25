@@ -328,6 +328,12 @@ export const asset = cases.table(
     liquid: boolean('liquid'),
     /** A date, partial or whole, or `none`; absent when unknown. */
     sold: text('sold'),
+    /** A business's seat, as a country code; null otherwise or when unknown. */
+    country: text('country'),
+    /** Since when a business operates, a date partial or whole; null otherwise or when unknown. */
+    operatingSince: text('operating_since'),
+    /** How many people a business employs; null otherwise or when unknown. */
+    employees: integer('employees'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -343,6 +349,16 @@ export const asset = cases.table(
     check(
       'asset_sold',
       sql`${table.sold} = 'none' OR ${table.sold} ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$'`,
+    ),
+    check('asset_country', sql`${table.country} ~ '^([A-Z]{2}|[A-Z]{4})$'`),
+    check(
+      'asset_operating_since',
+      sql`${table.operatingSince} ~ '^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$'`,
+    ),
+    check('asset_employees', sql`${table.employees} BETWEEN 0 AND 10000000`),
+    check(
+      'asset_business_fields',
+      sql`${table.kind} = 'business' OR (${table.country} IS NULL AND ${table.operatingSince} IS NULL AND ${table.employees} IS NULL)`,
     ),
     pgPolicy('asset_select_owner_visible', {
       for: 'select',

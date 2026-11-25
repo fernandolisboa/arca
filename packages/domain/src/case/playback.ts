@@ -95,6 +95,8 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     workplaceCountry: countryCodeSchema.optional(),
     start: dateValueSchema.optional(),
     end: dateOrNone.optional(),
+    /** At a business the person owns, which the assets describe. */
+    atOwnBusiness: z.literal(true).optional(),
   }),
   sentence('noWorkPeriod', { person }),
   sentence('registration', {
@@ -150,6 +152,9 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     owners: z.array(z.strictObject({ person, share: decimalSchema })).min(1),
     liquid: z.boolean().optional(),
     sold: dateOrNone.optional(),
+    country: countryCodeSchema.optional(),
+    operatingSince: dateValueSchema.optional(),
+    employees: z.number().int().min(0).optional(),
   }),
 ]);
 
@@ -272,10 +277,11 @@ function describePerson(
             said.push({ kind: 'language', ...ask, ...spoken });
         break;
       case 'workPeriods':
-        records(subject.workPeriods, 'noWorkPeriod', (period) => ({
+        records(subject.workPeriods, 'noWorkPeriod', ({ business, ...period }) => ({
           kind: 'workPeriod',
           ...ask,
           ...period,
+          ...(business === undefined ? {} : { atOwnBusiness: true }),
         }));
         break;
       case 'qualifications':
@@ -395,7 +401,17 @@ export function describeCase(
     };
   });
   const assets = snapshot.assets.map(
-    ({ kind, value, valuedAt, owners, liquid, sold }): Sentence => ({
+    ({
+      kind,
+      value,
+      valuedAt,
+      owners,
+      liquid,
+      sold,
+      country,
+      operatingSince,
+      employees,
+    }): Sentence => ({
       kind: 'asset',
       question: 'assets',
       about: owners.map((owner) => owner.person),
@@ -405,6 +421,9 @@ export function describeCase(
       owners: owners.map((owner) => ({ person: owner.person, share: owner.share })),
       ...optional('liquid', liquid),
       ...optional('sold', sold),
+      ...optional('country', country),
+      ...optional('operatingSince', operatingSince),
+      ...optional('employees', employees),
     }),
   );
   return [...people, ...relationships, ...assets];

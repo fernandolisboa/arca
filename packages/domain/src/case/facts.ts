@@ -25,6 +25,7 @@ import {
   parents,
 } from './graph.js';
 import {
+  type Asset,
   type Citizenship,
   type CompletenessMarker,
   type CountryCode,
@@ -470,6 +471,30 @@ export const factCatalog = {
     scope: 'residencePeriod',
     derive: (binding) => endFact(recordOf(binding, 'residencePeriod').end, binding.environment),
   },
+  /** Where the business the person works at, and co-owns, is seated. */
+  'workPeriod.business.country': {
+    type: { kind: 'country' },
+    scope: 'workPeriod',
+    derive: (binding) => ({ value: tokenValue(businessOf(binding)?.country) }),
+  },
+  /** Since when that business operates. */
+  'workPeriod.business.operatingSince': {
+    type: { kind: 'date' },
+    scope: 'workPeriod',
+    derive: (binding) => dateFact(businessOf(binding)?.operatingSince),
+  },
+  /** How many people that business employs. */
+  'workPeriod.business.employees': {
+    type: { kind: 'integer' },
+    scope: 'workPeriod',
+    derive: (binding) => {
+      const employees = businessOf(binding)?.employees;
+      return {
+        value:
+          employees === undefined ? integerRange(0, undefined) : integerRange(employees, employees),
+      };
+    },
+  },
   'jobOffer.country': {
     type: { kind: 'country' },
     scope: 'jobOffer',
@@ -893,6 +918,13 @@ function recordOf<Kind extends RecordKind>(binding: FactBinding, kind: Kind): Re
   const { record } = binding;
   if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside its collection`);
   return record.value as RecordValues[Kind];
+}
+
+/** The business a work period is at, which the snapshot only links while its person owns it. */
+function businessOf(binding: FactBinding): Asset | undefined {
+  const { business } = recordOf(binding, 'workPeriod');
+  if (business === undefined) return undefined;
+  return binding.environment.snapshot.snapshot.assets.find(({ id }) => id === business);
 }
 
 function otherEnd(edge: Relationship, id: string): string {

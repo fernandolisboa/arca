@@ -282,6 +282,9 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
         'liquid',
         'sold',
         'updated_at',
+        'country',
+        'operating_since',
+        'employees',
       ],
       'asset_owner UPDATE': ['confirmed'],
       'checklist_mark INSERT': [

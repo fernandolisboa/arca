@@ -6352,6 +6352,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -7204,6 +7208,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -7831,6 +7856,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -8683,6 +8712,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -9316,6 +9366,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -10168,6 +10222,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -10806,6 +10881,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -11658,6 +11737,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -12286,6 +12386,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -13138,6 +13242,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -13771,6 +13896,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -14623,6 +14752,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -15279,6 +15429,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -16131,6 +16285,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -16690,6 +16865,10 @@
                                   ]
                                 }
                               ]
+                            },
+                            "business": {
+                              "type": "string",
+                              "format": "uuid"
                             },
                             "label": {
                               "type": "string",
@@ -17382,6 +17561,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -18234,6 +18417,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -19077,6 +19281,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -19929,6 +20137,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -20584,6 +20813,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -21436,6 +21669,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -22189,6 +22443,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -23041,6 +23299,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -23669,6 +23948,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -24521,6 +24804,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -24853,6 +25157,27 @@
                             ]
                           }
                         ]
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      },
+                      "operatingSince": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                          }
+                        ]
+                      },
+                      "employees": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000000
                       }
                     },
                     "required": [
@@ -25388,6 +25713,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -26240,6 +26569,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -26568,6 +26918,27 @@
                             ]
                           }
                         ]
+                      },
+                      "country": {
+                        "type": "string",
+                        "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                      },
+                      "operatingSince": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                          }
+                        ]
+                      },
+                      "employees": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000000
                       }
                     },
                     "required": [
@@ -27102,6 +27473,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -27954,6 +28329,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -28582,6 +28978,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -29434,6 +29834,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -30072,6 +30493,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -30924,6 +31349,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -31557,6 +32003,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -32409,6 +32859,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -33042,6 +33513,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -33894,6 +34369,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -34730,6 +35226,10 @@
                                                 }
                                               ]
                                             },
+                                            "business": {
+                                              "type": "string",
+                                              "format": "uuid"
+                                            },
                                             "label": {
                                               "type": "string",
                                               "minLength": 1,
@@ -35582,6 +36082,27 @@
                                         ]
                                       }
                                     ]
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  },
+                                  "operatingSince": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                      }
+                                    ]
+                                  },
+                                  "employees": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10000000
                                   }
                                 },
                                 "required": [
@@ -36969,6 +37490,12 @@
                                       "none"
                                     ]
                                   }
+                                ]
+                              },
+                              "atOwnBusiness": {
+                                "type": "boolean",
+                                "enum": [
+                                  true
                                 ]
                               }
                             },
@@ -38418,6 +38945,26 @@
                                     ]
                                   }
                                 ]
+                              },
+                              "country": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "operatingSince": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "employees": {
+                                "type": "integer",
+                                "minimum": 0
                               }
                             },
                             "required": [
