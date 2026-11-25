@@ -1,7 +1,9 @@
 import { type RouteResult, staleAfterDays } from '@arca/api-contract/client';
 import { SourceLine, StatusChip, Tabs, tabPanelProps } from '@arca/ui';
+import { Link } from '@tanstack/react-router';
 import { type ReactNode, useId, useState } from 'react';
 import { FlagLead } from '../country-flag.js';
+import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from '../knowledge/words.js';
 import { type AmountForm, rangeForm, shownTotals } from './amount.js';
 import type { RouteRow } from './group.js';
@@ -173,6 +175,15 @@ function PrincipalResult({
         <p className="text-small text-muted">
           {t('results.newerVersion', { date: words.date(result.newerProposedVersion.from) })}
         </p>
+      )}
+      {result.status !== 'unavailable' && (
+        <Link
+          to="/family/documents"
+          search={{ route: result.routeId, person: result.principalId }}
+          className={`${textLinkClass} self-start`}
+        >
+          {t('checklist.open')}
+        </Link>
       )}
       {evaluated && (
         <>
@@ -368,20 +379,21 @@ function ruleLine(item: Rule, words: KnowledgeWords, name: (id: string) => strin
   return item.title;
 }
 
-function Sources({
+/** A source line per source: its host as a link and the date it was checked (rule 1). */
+export function Sources({
   sources,
   words,
 }: {
-  readonly sources: readonly Source[];
+  readonly sources: readonly Pick<Source, 'url' | 'verifiedAt'>[];
   readonly words: KnowledgeWords;
 }) {
   // The placeholders go back in, so the source line puts the link and the date in their place.
   const message = words.t('results.source', { host: '{host}', date: '{date}' });
   return (
     <>
-      {sources.map((source) => (
+      {sources.map((source, index) => (
         <SourceLine
-          key={source.id}
+          key={`${String(index)}:${source.url}`}
           href={source.url}
           verifiedOn={source.verifiedAt}
           locale={words.language}

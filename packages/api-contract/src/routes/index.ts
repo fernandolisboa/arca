@@ -1832,6 +1832,7 @@ export const webPathSegments = [
   'compare',
   'departure',
   'devices',
+  'documents',
   'enroll',
   'family',
   'intake',

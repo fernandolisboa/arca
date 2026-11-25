@@ -62,6 +62,7 @@ export {
   currencyCodes,
   minorUnitExponent,
   minorUnitExponents,
+  unitsAmount,
 } from './money/currency.js';
 export { type Decimal, decimalSchema, parseDecimal, roundedDecimal } from './money/decimal.js';
 export {
@@ -179,6 +180,7 @@ export {
   routeVersionSchema,
   sourceSchema,
   sourceUrls,
+  tagSchema,
   addressPages,
 } from './rules/route-version.js';
 export {
@@ -191,7 +193,13 @@ export {
   slugSchema,
 } from './rules/expression.js';
 export { factTargets } from './rules/fact-reference.js';
-export { type Classification, type FactKey, classifications, factKeys } from './case/facts.js';
+export {
+  type Classification,
+  type FactKey,
+  citizenshipsHeldOn,
+  classifications,
+  factKeys,
+} from './case/facts.js';
 export {
   type DecisiveQuestion,
   type RouteResult,
@@ -337,7 +345,9 @@ export {
   type DocumentChecklist,
   type DocumentResult,
   type PersonDocuments,
+  type RouteDocuments,
   documentChecklist,
+  routeDocuments,
 } from './rules/documents.js';
 export { type StaleSource, staleAfterDays, staleSources } from './rules/staleness.js';
 export { type Trace } from './rules/evaluate.js';
