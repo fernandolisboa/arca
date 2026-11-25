@@ -16,6 +16,7 @@ import {
   type PersonRecord,
   type RecordKind,
   deriveFact,
+  isRecordKind,
 } from '../case/facts.js';
 import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
 import { ancestorLines } from '../case/paths.js';
@@ -50,6 +51,7 @@ import {
   type Expression,
   type RecordList,
   isNonNegative,
+  isPeriodCollection,
   isRecordCollection,
   recordCollections,
 } from './expression.js';
@@ -294,6 +296,13 @@ function factTrace(derived: ReturnType<typeof deriveFact>, fact: FactRead): Trac
 
 function bindingFor(target: string, frame: Frame): FactBinding {
   const { environment } = frame;
+  if (isRecordKind(target)) {
+    return {
+      environment,
+      personId: frame.current,
+      ...(frame.record === undefined ? {} : { record: frame.record }),
+    };
+  }
   switch (target) {
     case 'principal':
       return { environment, personId: environment.principalId };
@@ -310,13 +319,6 @@ function bindingFor(target: string, frame: Frame): FactBinding {
         environment,
         personId: frame.current,
         ...(frame.firstEdge === undefined ? {} : { edge: frame.firstEdge }),
-      };
-    case 'workPeriod':
-    case 'residencePeriod':
-      return {
-        environment,
-        personId: frame.current,
-        ...(frame.record === undefined ? {} : { record: frame.record }),
       };
     default:
       return {
@@ -501,7 +503,7 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
     };
   }
   assertRecordedBy(frame.environment.snapshot, reference);
-  if (!isRecordCollection(expression.over)) throw new RangeError('Unchecked covers');
+  if (!isPeriodCollection(expression.over)) throw new RangeError('Unchecked covers');
   const { period } = recordCollections[expression.over];
   const { items, complete, records } = itemsOf(expression.over, undefined, frame);
   const lookBack: Span = {
@@ -568,6 +570,8 @@ function recordsOf(person: Person, kind: RecordKind): readonly PersonRecord[] | 
   switch (kind) {
     case 'workPeriod':
       return person.workPeriods?.map((value) => ({ kind, value }));
+    case 'jobOffer':
+      return person.jobOffers?.map((value) => ({ kind, value }));
     case 'residencePeriod':
       return person.residencePeriods?.map((value) => ({ kind, value }));
   }

@@ -106,14 +106,23 @@ const immigrationEventSchema = z.strictObject({
   date: dateValueSchema.optional(),
 });
 
+/** An ISCO-08 unit group code; the API checks it against the occupations classification. */
+export const occupationCodeSchema = z.string().regex(/^[0-9]{4}$/);
+
+/**
+ * A job offer in a country (ADR-0036). The occupation, the gross annual salary and whether the
+ * employer will sponsor the application are optional, so offers recorded without them still load.
+ */
 const jobOfferSchema = z.strictObject({
   country: countryCodeSchema,
   sector: z.enum(isicSections),
   temporary: z.boolean(),
+  occupation: occupationCodeSchema.optional(),
+  annualSalary: nonNegativeMoneySchema.optional(),
+  sponsored: z.boolean().optional(),
 });
 
-/** An ISCO-08 unit group code; the API checks it against the occupations classification. */
-export const occupationCodeSchema = z.string().regex(/^[0-9]{4}$/);
+export type JobOffer = z.infer<typeof jobOfferSchema>;
 
 export const workRelations = ['employee', 'contractor', 'self_employed', 'owner'] as const;
 /** The role a person says they had; whether it meets a route's legal definition is an assessment. */

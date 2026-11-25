@@ -238,7 +238,7 @@ export function FieldEditor({
         />
       );
     case 'money':
-      return <MoneyEditor label={label} value={value} onChange={onChange} />;
+      return <MoneyEditor label={label} value={value} optional={optional} onChange={onChange} />;
     case 'share':
       return (
         <TextField
@@ -423,44 +423,69 @@ function Check({
   );
 }
 
+/** An amount and its currency; an optional one left empty is not answered, and may be "Não sei". */
 function MoneyEditor({
   label,
   value,
+  optional,
   onChange,
 }: {
   readonly label: string;
   readonly value: unknown;
+  readonly optional: boolean;
   readonly onChange: (value: unknown) => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();
   const money = isRecord(value) ? value : {};
   const amount = typeof money['amount'] === 'string' ? money['amount'] : '';
-  const currency = typeof money['currency'] === 'string' ? money['currency'] : 'BRL';
+  // An optional amount left empty sends nothing, so the chosen currency is kept here until then.
+  const [chosenCurrency, setCurrency] = useState('BRL');
+  const currency = typeof money['currency'] === 'string' ? money['currency'] : chosenCurrency;
   const [text, setText] = useState(() => amountText(amount));
+  const send = (typed: string, chosen: string) => {
+    onChange(
+      optional && typed.trim() === ''
+        ? undefined
+        : { amount: amountValue(typed), currency: chosen },
+    );
+  };
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="font-medium">{label}</legend>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <TextField
-          label={t('questions.amount')}
-          inputMode="decimal"
-          autoComplete="off"
-          value={text}
-          onChange={(event) => {
-            setText(event.currentTarget.value);
-            onChange({ amount: amountValue(event.currentTarget.value), currency });
+      {value !== null && (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <TextField
+            label={t('questions.amount')}
+            inputMode="decimal"
+            autoComplete="off"
+            value={text}
+            onChange={(event) => {
+              setText(event.currentTarget.value);
+              send(event.currentTarget.value, currency);
+            }}
+          />
+          <SelectField
+            label={t('questions.currency')}
+            value={currency}
+            options={names.currencyOptions()}
+            onChange={(chosen) => {
+              setCurrency(chosen);
+              send(text, chosen);
+            }}
+          />
+        </div>
+      )}
+      {optional && (
+        <Check
+          label={t('questions.unknown')}
+          checked={value === null}
+          onChange={(checked) => {
+            onChange(checked ? null : undefined);
+            if (!checked) setText('');
           }}
         />
-        <SelectField
-          label={t('questions.currency')}
-          value={currency}
-          options={names.currencyOptions()}
-          onChange={(chosen) => {
-            onChange({ amount: amountValue(text), currency: chosen });
-          }}
-        />
-      </div>
+      )}
     </fieldset>
   );
 }

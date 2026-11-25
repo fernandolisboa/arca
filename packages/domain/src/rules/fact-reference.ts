@@ -4,6 +4,7 @@ import {
   factCatalog,
   isFactKey,
   isRecordKind,
+  recordKinds,
 } from '../case/facts.js';
 
 /** Who a fact reference binds to in an expression (spec 0002, R3). */
@@ -15,8 +16,7 @@ export const factTargets = [
   'firstEdge',
   'lineage',
   'ancestor',
-  'workPeriod',
-  'residencePeriod',
+  ...recordKinds,
 ] as const;
 export type FactTarget = (typeof factTargets)[number];
 
