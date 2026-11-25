@@ -27,11 +27,13 @@ import {
   type ComparisonPreferences,
   type DecisionStates,
   type HeldAsset,
+  type KnownCodes,
   type RatingSuggestions,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
   applyAnswers,
+  classifiedCodesKnown,
   comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
@@ -271,25 +273,6 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
-interface ClassificationCodes {
-  readonly occupations: ReadonlySet<string>;
-  readonly studyFields: ReadonlySet<string>;
-}
-
-/** Whether every occupation and field-of-study code in the facts is one of the classifications'. */
-function knownClassificationCodes(
-  facts: StoredProfile['facts'],
-  { occupations, studyFields }: ClassificationCodes,
-): boolean {
-  const named = (code: string | undefined, codes: ReadonlySet<string>) =>
-    code === undefined || codes.has(code);
-  return (
-    (facts.workPeriods ?? []).every(({ occupation }) => named(occupation, occupations)) &&
-    (facts.registrations ?? []).every(({ occupation }) => named(occupation, occupations)) &&
-    (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
-  );
-}
-
 /**
  * Replaces a person's facts and dependence; dependence names other people of the case, and every
  * occupation or field of study a code of its classification.
@@ -300,9 +283,9 @@ async function saveProfile(
   personId: string,
   facts: StoredProfile['facts'],
   dependsOn: readonly string[] | null,
-  codes: ClassificationCodes,
+  codes: KnownCodes,
 ) {
-  refuseUnless(knownClassificationCodes(facts, codes), 'case_invalid');
+  refuseUnless(classifiedCodesKnown(facts, codes), 'case_invalid');
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
     dependsOn === null ||
@@ -744,7 +727,9 @@ export function createCaseFiles({
     questions: (accountId) =>
       withIdentity(db(), { accountId }, async (tx) => {
         const rows = await readCase(tx, accountId);
-        return rows === undefined ? null : caseQuestions(rows, countries, occupations, studyFields);
+        return rows === undefined
+          ? null
+          : caseQuestions(rows, countries, { occupations, studyFields });
       }),
 
     playback: (accountId) =>

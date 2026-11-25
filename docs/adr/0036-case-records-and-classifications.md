@@ -21,4 +21,5 @@ The work, business and talent routes the owner wants next (spec [#507](https://g
 - A rule names an occupation as `"2211"`, never as text, so the rule is checked against an official list and the screen names the code in the reader's language.
 - A new edition of either classification is a new numbered file, its own test expectations and labels for any new code; versions already pinned keep their file.
 - A display label is optional on each work period, stripped before the snapshot is built and added back to the playback only from a profile the viewer sees.
+- Qualifications and professional registrations (#511) are record collections without a period, so `covers` refuses them; `count`, `some`, `every` and `sum` read them. A qualification's level is never above the person's education level (refused on write), so an unknown level reads as any level up to it.
 - Self-reported capacity and employer relation can rule a route out but never alone make someone eligible where the law asks for evidence: routes keep that judgement as an assessment.

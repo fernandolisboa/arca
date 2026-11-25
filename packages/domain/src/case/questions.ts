@@ -390,6 +390,23 @@ const mapList = (input: QuestionInput, value: unknown, money: (value: unknown) =
     ? value.map((item) => mapFields(input.fields, item, money))
     : value;
 
+/**
+ * Whether every occupation and field-of-study code in stored facts is one of the classifications',
+ * for writes that bypass the guided questions.
+ */
+export function classifiedCodesKnown(
+  facts: StoredProfile['facts'],
+  { occupations, studyFields }: Pick<KnownCodes, 'occupations' | 'studyFields'>,
+): boolean {
+  const named = (code: string | undefined, codes: ReadonlySet<string>) =>
+    code === undefined || codes.has(code);
+  return (
+    (facts.workPeriods ?? []).every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.registrations ?? []).every(({ occupation }) => named(occupation, occupations)) &&
+    (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
+  );
+}
+
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;

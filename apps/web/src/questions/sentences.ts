@@ -20,10 +20,21 @@ export function sentenceText(
   const list = (items: readonly string[]) =>
     new Intl.ListFormat(language, { type: 'conjunction' }).format(items);
   const when = (
-    key: 'since' | 'until' | 'in' | 'startSince' | 'from' | 'custodySince' | 'sold' | 'startedIn',
+    key:
+      | 'since'
+      | 'until'
+      | 'in'
+      | 'startSince'
+      | 'from'
+      | 'custodySince'
+      | 'sold'
+      | 'startedIn'
+      | 'completed',
     value?: string,
   ) =>
     value === undefined || value === 'none' ? '' : t(`playback.part.${key}`, { date: date(value) });
+  const issuedIn = (code?: string) =>
+    code === undefined ? '' : t('playback.part.issuedIn', { country: country(code) });
   const workTime = (start?: string, end?: string) =>
     end === 'none'
       ? when('startedIn', start) + t('playback.part.current')
@@ -110,23 +121,17 @@ export function sentenceText(
     case 'qualification':
       return t('playback.sentence.qualification', {
         person: name(said.person),
-        level:
-          said.level === undefined
-            ? t('playback.part.noLevel')
-            : t('questions.choice.educationLevel', { value: String(said.level) }),
-        details: [
+        field:
           said.field === undefined
             ? ''
             : t('playback.part.field', {
                 field: t(`studyFields.${said.field}` as 'studyFields.0912'),
               }),
-          said.country === undefined
-            ? ''
-            : t('playback.part.issuedIn', { country: country(said.country) }),
-          said.completed === undefined
-            ? ''
-            : t('playback.part.completed', { date: date(said.completed) }),
-        ].join(''),
+        level:
+          said.level === undefined
+            ? t('playback.part.noLevel')
+            : t('questions.choice.educationLevel', { value: String(said.level) }),
+        details: issuedIn(said.country) + when('completed', said.completed),
       });
     case 'noRegistration':
       return t('playback.sentence.noRegistration', { person: name(said.person) });
@@ -137,11 +142,7 @@ export function sentenceText(
           said.occupation === undefined
             ? t('playback.part.noOccupation')
             : t(`occupations.${said.occupation}` as 'occupations.2211'),
-        details:
-          (said.country === undefined
-            ? ''
-            : t('playback.part.issuedIn', { country: country(said.country) })) +
-          when('since', said.since),
+        details: issuedIn(said.country) + when('since', said.since),
       });
     case 'noWorkPeriod':
       return t('playback.sentence.noWorkPeriod', { person: name(said.person) });

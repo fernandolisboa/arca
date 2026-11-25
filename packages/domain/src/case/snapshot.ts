@@ -154,8 +154,10 @@ export const workPeriodSchema = workPeriodFieldsSchema.refine(periodInOrder, per
 
 export type WorkPeriod = z.infer<typeof workPeriodSchema>;
 
+export const maxEducationLevel = 8;
+
 /** An ISCED 2011 level, 0 to 8. */
-export const educationLevelSchema = z.number().int().min(0).max(8);
+export const educationLevelSchema = z.number().int().min(0).max(maxEducationLevel);
 
 /** An ISCED-F 2013 detailed field code; the API checks it against the study-fields classification. */
 export const studyFieldCodeSchema = z.string().regex(/^[0-9]{4}$/);
@@ -163,7 +165,7 @@ export const studyFieldCodeSchema = z.string().regex(/^[0-9]{4}$/);
 export const maxQualifications = 20;
 export const maxRegistrations = 20;
 
-/** A degree or diploma (ADR-0036): its level, field, the country that awarded it and when. */
+/** A qualification (ADR-0036): its level, field of study, the country that awarded it and when. */
 export const qualificationSchema = z.strictObject({
   level: educationLevelSchema.optional(),
   field: studyFieldCodeSchema.optional(),
@@ -173,7 +175,7 @@ export const qualificationSchema = z.strictObject({
 
 export type Qualification = z.infer<typeof qualificationSchema>;
 
-/** A licence to practise an occupation in a country, and since when (ADR-0036). */
+/** A professional registration (ADR-0036): the occupation, the country it is held in, since when. */
 export const registrationSchema = z.strictObject({
   country: countryCodeSchema.optional(),
   occupation: occupationCodeSchema.optional(),
@@ -212,7 +214,6 @@ export const personFieldsSchema = z.strictObject({
   /** Work periods, past and current, in any order. */
   workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
   qualifications: z.array(qualificationSchema).max(maxQualifications).optional(),
-  /** Professional registrations: licences to practise an occupation in a country. */
   registrations: z.array(registrationSchema).max(maxRegistrations).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),

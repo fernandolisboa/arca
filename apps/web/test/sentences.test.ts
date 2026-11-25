@@ -104,11 +104,11 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
         country: 'BR',
         completed: '2010-12',
       },
-      'Formação de Ana: Mestrado ou especialização, em Medicina, país: Brasil, concluída em dezembro de 2010.',
+      'Formação de Ana em Medicina (Mestrado ou especialização), país: Brasil, concluída em dezembro de 2010.',
     ],
     [
       { kind: 'qualification', ...ana, country: 'PT' },
-      'Formação de Ana: nível não informado, país: Portugal.',
+      'Formação de Ana (nível não informado), país: Portugal.',
     ],
     [{ kind: 'noQualification', ...ana }, 'Formações de Ana: nenhuma.'],
     [

@@ -377,6 +377,7 @@ export {
   answerCanBeUnknown,
   answerOf,
   applyAnswers,
+  classifiedCodesKnown,
   choiceSets,
   questionFlow,
   questionIds,

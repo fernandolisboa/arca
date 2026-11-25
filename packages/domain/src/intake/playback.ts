@@ -7,6 +7,7 @@ import {
   type Relationship,
   caseSnapshotSchema,
   personSchema,
+  qualificationsWithinLevel,
 } from '../case/snapshot.js';
 import { languageCodes } from '../case/languages.js';
 import {
@@ -71,7 +72,10 @@ function applyPerson(base: Person, proposed: DraftPerson): Person {
     ...(residenceCountry === undefined || base.residenceCountry !== undefined
       ? {}
       : { residenceCountry }),
-    ...(educationLevel === undefined || base.educationLevel !== undefined
+    // A level below a stored qualification would make the whole draft for the person invalid.
+    ...(educationLevel === undefined ||
+    base.educationLevel !== undefined ||
+    !qualificationsWithinLevel({ educationLevel, qualifications: base.qualifications })
       ? {}
       : { educationLevel }),
   };

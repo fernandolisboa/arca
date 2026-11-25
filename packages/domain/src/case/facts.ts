@@ -34,6 +34,7 @@ import {
   type Relationship,
   type WorkPeriod,
   custodies,
+  maxEducationLevel,
   isicSections,
   parentKinds,
   workCapacities,
@@ -197,7 +198,10 @@ export const factCatalog = {
     nonNegative: true,
     derive: ({ environment, personId }) => {
       const level = person(environment, personId).educationLevel;
-      return { value: level === undefined ? integerRange(0, 8) : integerRange(level, level) };
+      return {
+        value:
+          level === undefined ? integerRange(0, maxEducationLevel) : integerRange(level, level),
+      };
     },
   },
   'person.monthlyActiveIncome': {
@@ -436,7 +440,7 @@ export const factCatalog = {
       const { level } = recordOf(binding, 'qualification');
       if (level !== undefined) return { value: integerRange(level, level) };
       const highest = person(binding.environment, binding.personId).educationLevel;
-      return { value: integerRange(0, highest ?? 8) };
+      return { value: integerRange(0, highest ?? maxEducationLevel) };
     },
   },
   'qualification.field': {
@@ -444,7 +448,6 @@ export const factCatalog = {
     scope: 'qualification',
     derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').field) }),
   },
-  /** The country that awarded the qualification. */
   'qualification.country': {
     type: { kind: 'country' },
     scope: 'qualification',
@@ -455,7 +458,6 @@ export const factCatalog = {
     scope: 'qualification',
     derive: (binding) => dateFact(recordOf(binding, 'qualification').completed),
   },
-  /** Where the person is licensed to practise. */
   'registration.country': {
     type: { kind: 'country' },
     scope: 'registration',

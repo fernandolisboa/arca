@@ -810,7 +810,7 @@ export const ptBR = {
       fullTime: 'É em tempo integral?',
       employerCountry: 'País da empresa ou do cliente',
       workplaceCountry: 'País de onde trabalha',
-      field: 'Área de estudo',
+      field: 'Área de formação',
       completed: 'Quando concluiu',
       since: 'Desde quando',
     },
@@ -823,10 +823,10 @@ export const ptBR = {
       close: 'Fechar a lista de ocupações',
     },
     studyFieldPicker: {
-      search: 'Buscar área de estudo',
+      search: 'Buscar área de formação',
       none: 'Nenhuma área com esse nome',
-      clear: 'Limpar a área de estudo',
-      close: 'Fechar a lista de áreas',
+      clear: 'Limpar a área de formação',
+      close: 'Fechar a lista de áreas de formação',
     },
     choice: {
       citizenshipBasis:
@@ -978,7 +978,7 @@ export const ptBR = {
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
       workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
       noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
-      qualification: 'Formação de {person}: {level}{details}.',
+      qualification: 'Formação de {person}{field} ({level}){details}.',
       noQualification: 'Formações de {person}: nenhuma.',
       registration: 'Registro profissional de {person}: {occupation}{details}.',
       noRegistration: 'Registros profissionais de {person}: nenhum.',
@@ -1013,7 +1013,7 @@ export const ptBR = {
       label: ' ({label})',
       noOccupation: 'ocupação não informada',
       noLevel: 'nível não informado',
-      field: ', em {field}',
+      field: ' em {field}',
       issuedIn: ', país: {country}',
       completed: ', concluída em {date}',
       relation:
@@ -1841,7 +1841,7 @@ export const ptBR = {
       },
       qualification: {
         level: 'nível',
-        field: 'área de estudo',
+        field: 'área de formação',
         country: 'país que emitiu',
         completed: 'conclusão',
       },

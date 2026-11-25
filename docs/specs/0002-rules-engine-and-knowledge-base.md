@@ -197,7 +197,7 @@ Pure functions in `packages/domain/src/rules`, with no I/O and no model calls. T
   - a judgment factor with evidence (EB-2 NIW-like);
   - a seasonal work route tied to a job offer (H-2A-like);
   - a remote-work route reading work periods: three continuous months with an employer abroad and a year of experience in pinned occupations, added up (telework-like, #509);
-  - a licensed-professional route reading qualifications and registrations: a master's-level degree in a pinned field from one country and a licence for a pinned occupation in that country (#511);
+  - a regulated-profession route reading qualifications and professional registrations: a master's-level qualification in a pinned field from one country and a registration for a pinned occupation in that country (#511);
   - a closed route, and a closure left proposed; a version replaced at a date, evaluated with a pending-applications `rulesAsOf`; corrections dated the same as, before and after the version they fix, one of them on an earlier version, not the latest; a proposed correction dated before the active version it fixes; a chain of corrections (v3 corrects v2, which corrects v1); a newer version left proposed, and one rejected;
   - an adoptive parent edge with and without a start date;
   - a correction of a later version dated before the route's first version, which validation rejects;
