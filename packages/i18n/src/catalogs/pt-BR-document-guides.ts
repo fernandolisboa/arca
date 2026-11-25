@@ -1,10 +1,8 @@
 /** What a document guide entry says, in the screen's language (ADR-0039). */
 export interface DocumentGuideWording {
-  /** The office or channel that issues the document. */
   readonly office: string;
-  /** How to ask for it. */
   readonly request: string;
-  /** How its apostille is obtained, where the sources say. */
+  /** Only where the sources say how the apostille is obtained. */
   readonly apostille?: string;
 }
 

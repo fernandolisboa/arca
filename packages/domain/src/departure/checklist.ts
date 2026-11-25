@@ -4,7 +4,7 @@ import {
   type Citation,
   type DatedSource,
   checkCitedOfficialSources,
-  datedSources,
+  datedSourceLookup,
   officialDomainSchema,
 } from '../reviewed-data/official-sources.js';
 import { slugSchema } from '../rules/expression.js';
@@ -93,7 +93,7 @@ export interface DepartureChecklistView {
 
 /** The checklists with each item's sources written out, as the screen shows them. */
 export function departureChecklistViews(file: DepartureChecklists): DepartureChecklistView[] {
-  const sourcesOf = datedSources(file.sources);
+  const sourcesOf = datedSourceLookup(file.sources);
   return file.checklists.map(({ country, sections }) => ({
     country,
     sections: sections.map(({ id, items }) => ({

@@ -11,7 +11,8 @@ const sha256 = (wording: Wording) =>
 /**
  * Where the catalog's guide wording and the guide file disagree (ADR-0039): an entry the catalog
  * does not word, wording for an entry the file does not list, or wording the file's hash does not
- * pin. With no file, the catalog words nothing.
+ * pin, or a link written into the text instead of the checked online link. With no file, the catalog
+ * words nothing.
  */
 function wordingProblems(
   entries: readonly { readonly country: string; readonly kind: string }[],
@@ -28,11 +29,18 @@ function wordingProblems(
     .flatMap(([country, kinds]) => Object.keys(kinds).map((kind) => `${country}/${kind}`))
     .filter((key) => !listed.has(key))
     .map((key) => `${key} is worded but not in the file`);
+  const links = Object.entries(wording).flatMap(([country, kinds]) =>
+    Object.entries(kinds)
+      .filter(([, { office, request, apostille = '' }]) =>
+        [office, request, apostille].some((text) => /https?:|www\./i.test(text)),
+      )
+      .map(([kind]) => `${country}/${kind} carries a link in its wording, not in onlineUrl`),
+  );
   const hash =
     pinnedSha256 === null || pinnedSha256 === sha256(wording)
       ? []
       : ['the wording differs from what the file pins'];
-  return [...unworded, ...unlisted, ...hash];
+  return [...unworded, ...unlisted, ...links, ...hash];
 }
 
 describe('the document guides’ wording (ADR-0039)', () => {
@@ -71,6 +79,17 @@ describe('the document guides’ wording (ADR-0039)', () => {
     it('fails when the catalog words an entry the file does not list', () => {
       expect(wordingProblems([], sha256(wording), wording)).toEqual([
         'BR/birth_certificate is worded but not in the file',
+      ]);
+    });
+
+    it('fails when the wording carries a link', () => {
+      const linked: Wording = {
+        BR: {
+          birth_certificate: { office: 'Cartório sintético', request: 'Peça em www.example.com.' },
+        },
+      };
+      expect(wordingProblems(entries, sha256(linked), linked)).toEqual([
+        'BR/birth_certificate carries a link in its wording, not in onlineUrl',
       ]);
     });
 

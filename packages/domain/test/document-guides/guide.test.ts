@@ -40,10 +40,12 @@ const file = (overrides: Record<string, unknown> = {}) => ({
 const withEntries = (entries: unknown[], sources = [source('registry'), source('apostille')]) =>
   file({ sources, guides: [{ country: 'QM', currency: 'BRL', entries }] });
 
-const messages = (input: unknown) => {
+const issues = (input: unknown) => {
   const result = documentGuidesSchema.safeParse(input);
-  return result.success ? [] : result.error.issues.map(({ message }) => message);
+  return result.success ? [] : result.error.issues;
 };
+const messages = (input: unknown) => issues(input).map(({ message }) => message);
+const paths = (input: unknown) => issues(input).map(({ path }) => path.join('.'));
 
 describe('documentGuidesSchema (ADR-0039)', () => {
   it('accepts a guide whose sources and links sit on its official domains', () => {
@@ -52,8 +54,13 @@ describe('documentGuidesSchema (ADR-0039)', () => {
 
   it('refuses an entry with no source', () => {
     expect(
-      messages(withEntries([birthCertificate, { kind: 'criminal_record', sources: [] }])),
-    ).not.toEqual([]);
+      paths(
+        withEntries(
+          [birthCertificate, { kind: 'criminal_record', sources: [] }],
+          [source('registry')],
+        ),
+      ),
+    ).toEqual(['guides.0.entries.1.sources']);
   });
 
   it.each([
@@ -64,6 +71,12 @@ describe('documentGuidesSchema (ADR-0039)', () => {
   ])('refuses a source on %s', (_, url) => {
     expect(messages(file({ sources: [source('registry', url), source('apostille')] }))).toContain(
       'The source is on an official domain',
+    );
+  });
+
+  it.each(['com.br', 'org.br', 'co.uk', 'net.br'])('refuses %s as an official domain', (domain) => {
+    expect(messages(file({ officialDomains: ['gov.qm', domain] }))).toContain(
+      'An official domain is not a commercial or generic suffix',
     );
   });
 
@@ -114,15 +127,27 @@ describe('documentGuidesSchema (ADR-0039)', () => {
   });
 
   it.each([
-    ['a cost range upside down', { cost: { min: 100, max: 50 } }],
-    ['a negative cost', { cost: { min: -1, max: 50 } }],
-    ['a cost in fractions of a minor unit', { cost: { min: 0, max: 50.5 } }],
-    ['a lead time upside down', { leadTime: { min: 'P10D', max: 'P2D' } }],
-    ['a lead time in two units', { leadTime: { min: 'P10D', max: 'P1M' } }],
-  ])('refuses %s', (_, change) => {
+    ['a cost range upside down', { cost: { min: 100, max: 50 } }, 'cost'],
+    ['a negative cost', { cost: { min: -1, max: 50 } }, 'cost.min'],
+    ['a cost in fractions of a minor unit', { cost: { min: 0, max: 50.5 } }, 'cost.max'],
+    ['a lead time upside down', { leadTime: { min: 'P10D', max: 'P2D' } }, 'leadTime'],
+    ['a lead time in two units', { leadTime: { min: 'P10D', max: 'P1M' } }, 'leadTime'],
+    [
+      'business days set to false',
+      { leadTime: { min: 'P1D', max: 'P2D', businessDays: false } },
+      'leadTime.businessDays',
+    ],
+  ])('refuses %s', (_, change, path) => {
+    expect(paths(withEntries([{ ...birthCertificate, ...change }], [source('registry')]))).toEqual([
+      `guides.0.entries.0.${path}`,
+    ]);
+  });
+
+  it('accepts a lead time counted in business days', () => {
+    const leadTime = { min: 'P1D', max: 'P10D', businessDays: true };
     expect(
-      messages(withEntries([{ ...birthCertificate, ...change }], [source('registry')])),
-    ).not.toEqual([]);
+      messages(withEntries([{ ...birthCertificate, leadTime }], [source('registry')])),
+    ).toEqual([]);
   });
 
   it('accepts an entry that states no cost, lead time or link', () => {

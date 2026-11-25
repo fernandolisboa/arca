@@ -107,7 +107,8 @@ const rules: readonly Rule[] = [
     match: anyOf(
       /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists|document-guides|rule-texts)\.?)/,
       /^packages\/i18n\/src\/catalogs\/pt-BR-(departure|document-guides)\.ts$/,
-      /^apps\/api\/test\/(postgres\/)?session-review/,
+      /^apps\/api\/test\/((postgres\/)?session-review|departure-checklists|document-guides)/,
+      /^packages\/domain\/(src|test)\/(reviewed-data|departure|document-guides)\//,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),
   },

@@ -6,7 +6,7 @@ import {
   type Citation,
   type DatedSource,
   checkCitedOfficialSources,
-  datedSources,
+  datedSourceLookup,
   officialDomainSchema,
   onOfficialDomain,
 } from '../reviewed-data/official-sources.js';
@@ -21,20 +21,23 @@ import {
 /** Whole minor units (centavos for BRL), never negative. */
 const minorUnitsSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
+/** Cost, lead time and online link are left out when the cited sources do not state them. */
 const entrySchema = z.strictObject({
-  /** The document kind route items name, such as `birth_certificate`. */
   kind: tagSchema,
-  /** Where to ask for it online, on one of the file's official domains. */
   onlineUrl: sourceUrlSchema.optional(),
-  /** What it costs, in the guide's currency; absent when the sources do not say. */
   cost: z.strictObject({ min: minorUnitsSchema, max: minorUnitsSchema }).optional(),
-  /** How long it takes to get; absent when the sources do not say. */
-  leadTime: z.strictObject({ min: durationSchema, max: durationSchema }).optional(),
+  leadTime: z
+    .strictObject({
+      min: durationSchema,
+      max: durationSchema,
+      /** Set when the source counts business days, as Brazilian offices often do. */
+      businessDays: z.literal(true).optional(),
+    })
+    .optional(),
   sources: z.array(slugSchema).min(1).max(5),
 });
 
 const guideSchema = z.strictObject({
-  /** The country that issues the documents. */
   country: countryCodeSchema,
   currency: currencyCodeSchema,
   entries: z.array(entrySchema).min(1).max(200),
@@ -98,20 +101,32 @@ export interface DocumentGuideEntry {
   readonly kind: string;
   readonly onlineUrl?: string;
   readonly cost?: { readonly min: number; readonly max: number; readonly currency: CurrencyCode };
-  readonly leadTime?: { readonly min: Duration; readonly max: Duration };
+  readonly leadTime?: {
+    readonly min: Duration;
+    readonly max: Duration;
+    readonly businessDays?: true;
+  };
   readonly sources: readonly DatedSource[];
 }
 
 /** Every entry of every guide, with its sources written out. */
 export function documentGuideEntries(file: DocumentGuides): DocumentGuideEntry[] {
-  const sourcesOf = datedSources(file.sources);
+  const sourcesOf = datedSourceLookup(file.sources);
   return file.guides.flatMap(({ country, currency, entries }) =>
     entries.map(({ kind, onlineUrl, cost, leadTime, sources }) => ({
       country,
       kind,
       ...(onlineUrl === undefined ? {} : { onlineUrl }),
       ...(cost === undefined ? {} : { cost: { ...cost, currency } }),
-      ...(leadTime === undefined ? {} : { leadTime }),
+      ...(leadTime === undefined
+        ? {}
+        : {
+            leadTime: {
+              min: leadTime.min,
+              max: leadTime.max,
+              ...(leadTime.businessDays === true ? { businessDays: true as const } : {}),
+            },
+          }),
       sources: sourcesOf(sources),
     })),
   );

@@ -3,11 +3,18 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import type { plainSourceSchema } from '../rules/route-version.js';
 import { hostMatches } from '../rules/validate.js';
 
-/** A host a reviewed data file's sources may sit on, itself or below it, such as `gov.br`. */
+/**
+ * A host a reviewed data file's sources may sit on, itself or below it, such as `gov.br`. A
+ * commercial or generic second-level suffix such as `com.br` would admit any company's site, so
+ * it is refused.
+ */
 export const officialDomainSchema = z
   .string()
   .max(100)
-  .regex(/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/);
+  .regex(/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/)
+  .refine((domain) => !/^(?:com|net|org|co)\.[a-z0-9-]+$/.test(domain), {
+    message: 'An official domain is not a commercial or generic suffix',
+  });
 
 /** An `https` address's host: lowercase, with no port or user name, or undefined. */
 const httpsHost = /^https:\/\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)(?:[/?#]|$)/;
@@ -70,7 +77,7 @@ export function checkCitedOfficialSources(
 }
 
 /** Each citation's sources written out, in the order cited. */
-export function datedSources(
+export function datedSourceLookup(
   sources: readonly z.infer<typeof plainSourceSchema>[],
 ): (ids: readonly string[]) => DatedSource[] {
   const byId = new Map(
