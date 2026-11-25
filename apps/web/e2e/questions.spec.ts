@@ -103,6 +103,10 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await workStart.getByLabel('Mês').selectOption({ label: 'março' });
   await group(work, 'Até quando').getByLabel('Ainda trabalha aqui').check();
   await press(work, 'Ana tem oferta de emprego em outro país?', 'Não tem oferta');
+  // "Voltar" saves the step before going back, so its answers are there on the way forward.
+  await work.getByRole('button', { name: 'Voltar' }).click();
+  await saveAndGo(step(page, 'Estudos e idiomas'), 'Trabalho');
+  await expect(group(work, 'Onde Ana trabalha ou já trabalhou?')).toContainText('Cliente dos EUA');
   await saveAndGo(work, 'Finanças');
 
   const finances = step(page, 'Finanças');

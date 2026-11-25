@@ -869,8 +869,9 @@ function ListEditor({
                           setKeys(keys.filter((_, at) => at !== index));
                           toggle(key, false);
                           const left = items.filter((_, at) => at !== index);
-                          // Removing the last row leaves the question open, never "none".
-                          onChange(left.length === 0 ? undefined : left);
+                          // Removing the last row leaves the question open, never "none"; a list
+                          // that cannot be "Não sei", such as assets, keeps [] so the rows drop.
+                          onChange(left.length === 0 && canBeUnknown ? undefined : left);
                         }}
                       >
                         {t('questions.list.remove')}

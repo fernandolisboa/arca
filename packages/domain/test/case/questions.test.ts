@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
-import { coupleEdgeSchema, incomeSchema, parentEdgeSchema } from '../../src/case/snapshot.js';
+import {
+  coupleEdgeSchema,
+  incomeSchema,
+  parentEdgeSchema,
+  qualificationSchema,
+} from '../../src/case/snapshot.js';
 import {
   type Question,
   type QuestionState,
@@ -232,6 +237,13 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(apply(empty, { qualifications: [{ status: 'incomplete', completed: '2010' }] }).ok).toBe(
       false,
     );
+  });
+
+  it('refuses a completion date on a course that was not finished, whatever writes it', () => {
+    expect(qualificationSchema.safeParse({ status: 'studying', completed: '2010' }).success).toBe(
+      false,
+    );
+    expect(qualificationSchema.safeParse({ completed: '2010' }).success).toBe(true);
   });
 
   it('reads a qualification recorded without a status as a finished one', () => {
