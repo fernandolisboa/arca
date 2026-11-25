@@ -1548,7 +1548,7 @@ export const ptBR = {
     /** A region's suggestion reason where the country's wording would mislead, by suggestion key. */
     regionReason: {
       climate: 'temperatura média anual da região: {value} °C',
-      taxes: 'maior alíquota do imposto de renda, somando a parte da região: {value}%',
+      taxes: 'maior alíquota do imposto de renda na região: {value}%',
       'housing-cost': 'preço da moradia: {value}% da média do país',
       /** A token's whole phrase, since an ICU select cannot name a hyphenated token. */
       language: {

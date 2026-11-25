@@ -1,6 +1,6 @@
 # ADR-0035: Suggested ratings on the comparison screen, from public data in the repository
 
-- Status: Accepted
+- Status: Accepted; amended 2026-11-25 by [ADR-0042](0042-regions-in-the-comparison.md): suggested stars per region from a second reviewed file, which beat the adult's stars for the region's country
 - Date: 2026-11-21
 - Amends: [ADR-0026](0026-destination-comparison-data.md) (a personal or own criterion may be scored from a suggested rating until the adult rates it), [ADR-0034](0034-criterion-suggestions.md) (a ready suggestion can come with stars per country)
 

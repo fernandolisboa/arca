@@ -3,7 +3,7 @@ import { Fragment, useId, useState } from 'react';
 import { textLinkClass } from '../forms/text-link.js';
 import { PlaceHeader, StarCell, TotalCell } from './cells.js';
 import { CriterionLine, SuggestionLines } from './criterion-lines.js';
-import type { Edit, Preferences } from './edits.js';
+import { type Edit, type Preferences, ratingEdit } from './edits.js';
 import {
   measured,
   type CompareWords,
@@ -22,21 +22,6 @@ interface RegionProps {
   readonly preferences: Preferences;
   readonly change: Change;
   readonly words: CompareWords;
-}
-
-/**
- * The stars that count for a region scored as its country (ADR-0042): the person's stars for the
- * country, else the ones Arca suggests there.
- */
-function countryStars(
-  country: ComparedCountry,
-  criterion: Criterion,
-  preferences: Preferences,
-): number | undefined {
-  return (
-    preferences.ratings[criterion.id]?.[country.country] ??
-    country.scores.find((score) => score.criterion === criterion.id)?.suggested?.stars
-  );
 }
 
 function scoresOf(region: ComparedRegion): ReadonlyMap<string, CriterionScore> {
@@ -146,10 +131,7 @@ function RegionRow({
                   place={region.region}
                   placeName={name}
                   rating={preferences.ratings[criterion.id]?.[region.region]}
-                  suggested={
-                    score?.suggested?.stars ??
-                    (inherited ? countryStars(country, criterion, preferences) : undefined)
-                  }
+                  suggested={score?.suggested?.stars ?? score?.countryStars}
                   change={change}
                   words={words}
                 />
@@ -178,12 +160,7 @@ function RegionRow({
                         country: name,
                       })}
                       onConfirm={(stars) => {
-                        change({
-                          kind: 'rating',
-                          criterion: criterion.id,
-                          country: region.region,
-                          rating: stars,
-                        });
+                        change(ratingEdit(criterion.id, region.region, stars));
                       }}
                       words={words}
                     />
@@ -268,11 +245,7 @@ export function RegionList({
                         place={region.region}
                         placeName={name}
                         regional
-                        inheritedStars={
-                          score?.inherited === true
-                            ? countryStars(country, criterion, preferences)
-                            : undefined
-                        }
+                        inheritedStars={score?.countryStars}
                         change={change}
                         words={words}
                       />

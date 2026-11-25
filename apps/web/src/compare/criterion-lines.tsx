@@ -1,7 +1,7 @@
 import { staleAfterDays } from '@arca/api-contract/client';
 import { StarRating, formatCalendarDate } from '@arca/ui';
 import { textLinkClass } from '../forms/text-link.js';
-import type { Edit } from './edits.js';
+import { type Edit, ratingEdit } from './edits.js';
 import {
   measured,
   type CompareWords,
@@ -56,7 +56,7 @@ export function CriterionLine({
           : words.decimal(score.score);
   const muted = score?.score == null || score.inherited === true;
   const rate = (stars: number | undefined) => {
-    change({ kind: 'rating', criterion: criterion.id, country: place, rating: stars });
+    change(ratingEdit(criterion.id, place, stars));
   };
   return (
     <li className="flex flex-col gap-1 py-3">

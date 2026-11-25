@@ -102,14 +102,15 @@ const rules: readonly Rule[] = [
     reviewers: withCore('data-access', 'auth-crypto'),
   },
   // Reviewed data a merge puts into use: session reviews (ADR-0032), suggested ratings (ADR-0035),
-  // route texts (ADR-0037), departure checklists (ADR-0038), document guides (ADR-0039) and
-  // recognition tracks (ADR-0041).
+  // route texts (ADR-0037), departure checklists (ADR-0038), document guides (ADR-0039),
+  // recognition tracks (ADR-0041) and the comparison's regions (ADR-0042).
   {
     match: anyOf(
-      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|recognition-tracks\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists|document-guides|recognition-tracks|rule-texts)\.?)/,
-      /^packages\/i18n\/src\/catalogs\/pt-BR-(departure|document-guides|recognition)\.ts$/,
-      /^apps\/api\/test\/((postgres\/)?session-review|departure-checklists|document-guides|recognition-tracks)/,
+      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|recognition-tracks\/|regions\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|region-ratings|departure-checklists|document-guides|recognition-tracks|rule-texts)\.?)/,
+      /^packages\/i18n\/src\/catalogs\/pt-BR-(departure|document-guides|recognition|regions)\.ts$/,
+      /^apps\/api\/test\/((postgres\/)?session-review|departure-checklists|document-guides|recognition-tracks|region-ratings)/,
       /^packages\/domain\/(src|test)\/(reviewed-data|departure|document-guides|recognition)\//,
+      /^packages\/domain\/(src|test)\/comparison\/regions\./,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),
   },

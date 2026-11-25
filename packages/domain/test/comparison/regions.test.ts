@@ -135,9 +135,14 @@ describe('regions in the comparison (ADR-0042)', () => {
       score: result?.scores[1]?.score,
       inherited: true,
     });
-    // No regional climate: the country's suggested 3 stars (5) count.
+    // No regional climate: the country's suggested 3 stars (5) count, and say which stars they are.
     const third = result?.regions.find(({ region }) => region === 'QM-03');
-    expect(third?.scores[0]).toEqual({ criterion: 'climate', score: '5', inherited: true });
+    expect(third?.scores[0]).toEqual({
+      criterion: 'climate',
+      score: '5',
+      inherited: true,
+      countryStars: 3,
+    });
   });
 
   it('lets the person’s stars for a region win over its data', () => {
@@ -148,6 +153,8 @@ describe('regions in the comparison (ADR-0042)', () => {
     expect([region?.total, region?.rank]).toEqual([result?.regions[0]?.total, 2]);
   });
 
+  // Confirming a country's suggestion stores it as the person's stars, so if those beat the region's
+  // data, one tap would flatten every region of the country on that criterion.
   it('lets a region’s data win over the person’s stars for the country', () => {
     const result = qm({ ratings: { climate: { QM: 5 } } });
     expect(result?.regions.find(({ region }) => region === 'QM-02')?.scores[0]?.score).toBe('0');
@@ -155,6 +162,7 @@ describe('regions in the comparison (ADR-0042)', () => {
       criterion: 'climate',
       score: '10',
       inherited: true,
+      countryStars: 5,
     });
   });
 

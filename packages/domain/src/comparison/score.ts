@@ -62,6 +62,11 @@ export interface CriterionScore {
    * (ADR-0042); the country's line says where that score comes from.
    */
   readonly inherited?: true;
+  /**
+   * On an inherited personal or own criterion, the stars behind the country's score: the person's
+   * for the country, else the suggested ones. The region's stars start from them.
+   */
+  readonly countryStars?: number;
 }
 
 /** One region of a country, scored like the country with its own data where it has some. */
@@ -324,8 +329,16 @@ export function compareDestinations({
         return starScored(criterion.id, rating, found);
       }
     }
+    const countryStars = starred(criterion)
+      ? (country.score.rating ?? country.score.suggested?.stars)
+      : undefined;
     return {
-      score: { criterion: criterion.id, score: country.score.score, inherited: true },
+      score: {
+        criterion: criterion.id,
+        score: country.score.score,
+        inherited: true,
+        ...(countryStars === undefined ? {} : { countryStars }),
+      },
       ...(country.exact === undefined ? {} : { exact: country.exact }),
     };
   };

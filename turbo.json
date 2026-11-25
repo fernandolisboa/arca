@@ -30,6 +30,7 @@
         "departure-checklists/**",
         "document-guides/**",
         "recognition-tracks/**",
+        "regions/**",
         "rule-texts/**",
         "scripts/**",
         "package.json",

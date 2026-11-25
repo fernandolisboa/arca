@@ -1,6 +1,6 @@
 import { StarRating } from '@arca/ui';
 import type { ReactNode } from 'react';
-import type { Edit } from './edits.js';
+import { type Edit, ratingEdit } from './edits.js';
 import type { CompareWords, Criterion } from './words.js';
 
 export const stickyCell = 'sticky left-0 z-10 bg-surface';
@@ -88,7 +88,7 @@ export function StarCell({
   const { t } = words;
   const label = words.label(criterion);
   const rate = (stars: number | undefined) => {
-    change({ kind: 'rating', criterion: criterion.id, country: place, rating: stars });
+    change(ratingEdit(criterion.id, place, stars));
   };
   return (
     <StarRating

@@ -495,6 +495,7 @@ export {
   type RegionSuggestions,
   noRegionSuggestions,
   placeCodeSchema,
+  maxRegionsPerCountry,
   regionCodeSchema,
   regionCountry,
   regionRatingsSchema,

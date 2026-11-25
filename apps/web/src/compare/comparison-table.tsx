@@ -8,7 +8,7 @@ import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
 import { PlaceHeader, StarCell, TotalCell, stickyCell } from './cells.js';
 import { ReadingLines, SuggestionLines } from './criterion-lines.js';
-import type { Edit, Preferences } from './edits.js';
+import { type Edit, type Preferences, ratingEdit } from './edits.js';
 import { RegionRows } from './regions.js';
 import { measured, type CompareWords, type ComparedCountry, type Criterion } from './words.js';
 
@@ -296,12 +296,7 @@ function CountryRow({
                           country: name,
                         })}
                         onConfirm={(stars) => {
-                          change({
-                            kind: 'rating',
-                            criterion: criterion.id,
-                            country: country.country,
-                            rating: stars,
-                          });
+                          change(ratingEdit(criterion.id, country.country, stars));
                         }}
                         words={words}
                       />

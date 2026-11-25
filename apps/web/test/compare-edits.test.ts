@@ -23,14 +23,14 @@ describe('Comparison edits', () => {
     ],
     [
       'changes a rating',
-      { kind: 'rating', criterion: 'climate', country: 'PT', rating: 1 },
+      { kind: 'rating', criterion: 'climate', place: 'PT', rating: 1 },
       {
         ratings: { climate: { ES: 5, PT: 1 }, 'own-0000000a': { PT: 3 } },
       },
     ],
     [
       'rates a region beside its country (ADR-0042)',
-      { kind: 'rating', criterion: 'climate', country: 'PT-20', rating: 3 },
+      { kind: 'rating', criterion: 'climate', place: 'PT-20', rating: 3 },
       {
         ratings: { climate: { PT: 4, ES: 5, 'PT-20': 3 }, 'own-0000000a': { PT: 3 } },
       },
@@ -40,7 +40,7 @@ describe('Comparison edits', () => {
       {
         kind: 'rating',
         criterion: 'schools',
-        country: 'UY',
+        place: 'UY',
         rating: 2,
       },
       {
@@ -52,7 +52,7 @@ describe('Comparison edits', () => {
       {
         kind: 'rating',
         criterion: 'climate',
-        country: 'ES',
+        place: 'ES',
         rating: undefined,
       },
       { ratings: { climate: { PT: 4 }, 'own-0000000a': { PT: 3 } } },
@@ -62,7 +62,7 @@ describe('Comparison edits', () => {
       {
         kind: 'rating',
         criterion: 'own-0000000a',
-        country: 'PT',
+        place: 'PT',
         rating: undefined,
       },
       { ratings: { climate: { PT: 4, ES: 5 } } },

@@ -42023,12 +42023,6 @@
                                     "source",
                                     "stale"
                                   ]
-                                },
-                                "inherited": {
-                                  "type": "boolean",
-                                  "enum": [
-                                    true
-                                  ]
                                 }
                               },
                               "required": [
@@ -42250,6 +42244,11 @@
                                         "enum": [
                                           true
                                         ]
+                                      },
+                                      "countryStars": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 5
                                       }
                                     },
                                     "required": [
@@ -45080,12 +45079,6 @@
                                     "source",
                                     "stale"
                                   ]
-                                },
-                                "inherited": {
-                                  "type": "boolean",
-                                  "enum": [
-                                    true
-                                  ]
                                 }
                               },
                               "required": [
@@ -45307,6 +45300,11 @@
                                         "enum": [
                                           true
                                         ]
+                                      },
+                                      "countryStars": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 5
                                       }
                                     },
                                     "required": [

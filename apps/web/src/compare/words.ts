@@ -11,7 +11,8 @@ export type Suggested = NonNullable<
 >;
 export type ComparedCountry = DestinationComparison['countries'][number];
 export type ComparedRegion = ComparedCountry['regions'][number];
-export type CriterionScore = ComparedCountry['scores'][number];
+/** A country's or a region's score; only a region's can be inherited (ADR-0042). */
+export type CriterionScore = ComparedRegion['scores'][number];
 
 /** Criteria read from country data; the others are scored from the person's own stars. */
 export const measured = (criterion: Criterion) =>

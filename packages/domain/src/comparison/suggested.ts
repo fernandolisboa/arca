@@ -37,31 +37,7 @@ export const suggestedRatingsSchema = z
       .max(50),
   })
   .superRefine((file, context) => {
-    const sources = new Set(file.sources.map(({ id }) => id));
-    if (sources.size !== file.sources.length) {
-      context.addIssue({ code: 'custom', path: ['sources'], message: 'Source IDs are unique' });
-    }
-    if (new Set(file.criteria.map(({ id }) => id)).size !== file.criteria.length) {
-      context.addIssue({ code: 'custom', path: ['criteria'], message: 'Criterion IDs are unique' });
-    }
-    file.criteria.forEach(({ ratings }, index) => {
-      if (new Set(ratings.map(({ country }) => country)).size !== ratings.length) {
-        context.addIssue({
-          code: 'custom',
-          path: ['criteria', index, 'ratings'],
-          message: 'One rating per country',
-        });
-      }
-      ratings.forEach(({ source }, at) => {
-        if (!sources.has(source)) {
-          context.addIssue({
-            code: 'custom',
-            path: ['criteria', index, 'ratings', at, 'source'],
-            message: 'The source is listed',
-          });
-        }
-      });
-    });
+    refineRatingFile(file, ({ country }) => country, 'country', context);
   });
 
 export type SuggestedRatings = z.infer<typeof suggestedRatingsSchema>;
@@ -93,25 +69,92 @@ export function ratingSuggestions(
   file: SuggestedRatings,
   namesByKey: Readonly<Record<string, string>>,
 ): RatingSuggestions {
-  const sources = new Map(file.sources.map((source) => [source.id, source]));
-  const byKey = new Map(
-    file.criteria.map(({ id, ratings }) => [
-      id,
-      new Map(ratings.map((rating) => [rating.country, rating])),
-    ]),
-  );
+  const lookup = ratingLookup(file, ({ country }) => country);
   const keyByName = new Map(
     Object.entries(namesByKey)
-      .filter(([key]) => byKey.has(key))
+      .filter(([key]) => lookup.has(key))
       .map(([key, name]) => [plainName(name), key]),
   );
   return {
     keyOf: ({ id, name }) => {
       if (name !== undefined) return keyByName.get(plainName(name));
-      return byKey.has(id) ? id : undefined;
+      return lookup.has(id) ? id : undefined;
     },
-    rating: (key, country) => {
-      const found = byKey.get(key)?.get(country);
+    rating: lookup.rating,
+  };
+}
+
+/** No suggestions at all. */
+export const noRatingSuggestions: RatingSuggestions = {
+  keyOf: () => undefined,
+  rating: () => undefined,
+};
+
+interface FileRating {
+  readonly stars: number;
+  readonly value: string;
+  readonly year?: number | undefined;
+  readonly source: string;
+}
+
+interface RatingFile<R extends FileRating> {
+  readonly sources: readonly Source[];
+  readonly criteria: readonly { readonly id: string; readonly ratings: readonly R[] }[];
+}
+
+/**
+ * The checks a ratings file shares with a regions file (ADR-0042): unique source and criterion IDs,
+ * one rating per place on each key, and every rating's source listed.
+ */
+export function refineRatingFile<R extends FileRating>(
+  file: RatingFile<R>,
+  placeOf: (rating: R) => string,
+  unit: 'country' | 'region',
+  context: z.RefinementCtx,
+): void {
+  const sources = new Set(file.sources.map(({ id }) => id));
+  if (sources.size !== file.sources.length) {
+    context.addIssue({ code: 'custom', path: ['sources'], message: 'Source IDs are unique' });
+  }
+  if (new Set(file.criteria.map(({ id }) => id)).size !== file.criteria.length) {
+    context.addIssue({ code: 'custom', path: ['criteria'], message: 'Criterion IDs are unique' });
+  }
+  file.criteria.forEach(({ ratings }, index) => {
+    if (new Set(ratings.map(placeOf)).size !== ratings.length) {
+      context.addIssue({
+        code: 'custom',
+        path: ['criteria', index, 'ratings'],
+        message: `One rating per ${unit}`,
+      });
+    }
+    ratings.forEach(({ source }, at) => {
+      if (!sources.has(source)) {
+        context.addIssue({
+          code: 'custom',
+          path: ['criteria', index, 'ratings', at, 'source'],
+          message: 'The source is listed',
+        });
+      }
+    });
+  });
+}
+
+/** A ratings file's stars by suggestion key and place, each with its source. */
+export function ratingLookup<R extends FileRating>(
+  file: RatingFile<R>,
+  placeOf: (rating: R) => string,
+) {
+  const sources = new Map(file.sources.map((source) => [source.id, source]));
+  const byKey = new Map(
+    file.criteria.map(({ id, ratings }) => [
+      id,
+      new Map(ratings.map((rating) => [placeOf(rating), rating])),
+    ]),
+  );
+  return {
+    has: (key: string) => byKey.has(key),
+    rating: (key: string, place: string): SuggestedRating | undefined => {
+      const found = byKey.get(key)?.get(place);
       const source = found === undefined ? undefined : sources.get(found.source);
       if (found === undefined || source === undefined) return undefined;
       return {
@@ -124,9 +167,3 @@ export function ratingSuggestions(
     },
   };
 }
-
-/** No suggestions at all. */
-export const noRatingSuggestions: RatingSuggestions = {
-  keyOf: () => undefined,
-  rating: () => undefined,
-};
