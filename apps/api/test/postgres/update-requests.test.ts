@@ -576,6 +576,47 @@ describe('what code refuses (ADR-0031)', () => {
     );
   });
 
+  it('refuses a proposal that adds a document list, even after its correction (#519)', async () => {
+    const researcher: RuleResearcher = {
+      research: async (request, model) => {
+        const reply = await scriptedRuleResearcher.research(request, model);
+        const version = JSON.parse((reply.reply as { versionJson: string }).versionJson) as {
+          sources: { id: string; kind: string }[];
+        };
+        const official = version.sources.find((source) => source.kind === 'official');
+        if (official === undefined) throw new Error('An official source expected');
+        const documents = [
+          {
+            id: 'passport',
+            title: 'Valid passport',
+            kind: 'passport',
+            appliesTo: 'principal',
+            sources: [official.id],
+          },
+        ];
+        return {
+          ...reply,
+          reply: {
+            ...(reply.reply as object),
+            versionJson: JSON.stringify({ ...version, documents }),
+          },
+        };
+      },
+    };
+    const { start, progress, runAll } = setup({ researcher });
+    const started = await start(sourceRouteId);
+    const { requestId } = (await started.json()) as { requestId: string };
+    await runAll(requestId);
+    expect(await progress(sourceRouteId)).toMatchObject({
+      state: 'failed',
+      failure: 'proposal_invalid',
+    });
+    const stages = await postgresUpdateStore(() => testDatabase.apiDb).stages(requestId);
+    expect(JSON.stringify(stages.at(-1)?.output)).toContain(
+      'The document list of the version it updates',
+    );
+  });
+
   it('never starts or runs research from a version row changed in place', async () => {
     const { start, progress, runAll } = setup();
     const started = await start(tamperedRouteId);

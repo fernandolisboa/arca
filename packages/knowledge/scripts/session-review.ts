@@ -191,7 +191,7 @@ export function evidenceProblems(
   evidence: Evidence,
   pages: ReadonlyMap<string, ReadPage>,
 ): string[] {
-  const items = checkItems(entry);
+  const items = checkItems(entry, { documents: true });
   const keys = new Set(items.map((item) => item.key));
   const answers: CheckAnswer[] = items.map(({ key }) => ({
     key,

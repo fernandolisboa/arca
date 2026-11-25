@@ -11,7 +11,7 @@ import {
 } from './ports.js';
 
 /** Bumped only when what research is told changes; stored with nothing, so it stales nothing. */
-export const ruleResearchPromptVersion = 'rule-research-3';
+export const ruleResearchPromptVersion = 'rule-research-4';
 
 /** The most searches and fetches one research or correction call may run. */
 const maxSearches = 8;
@@ -39,6 +39,7 @@ export const ruleResearchInstructions = [
   '- Use only official sources on the hosts you are given. Every requirement, assessment, dependent rule, cost and duration cites at least one official source.',
   '- For every item, give one quote: a passage copied character for character from the cited official page, 12 to 800 characters, that states the item and every value it uses (amounts, ages, durations, dates). Code checks each quote on the page; a quote that is not on the page is rejected.',
   '- Item keys are `<kind>:<id>`, with kind one of requirement, assessment, dependent, cost, duration, and `leapDayBirthday` or `closure` alone.',
+  '- Copy `documents` from the current version exactly as it is, or leave it out when the current version has none; a new route has none. Documents need no quotes.',
   '- Keep the IDs of items that still exist. Keep the route ID and the official-domain list pins. The number is the highest existing number plus one.',
   "- `effectiveFrom` is later than the current version's: the date an official quote states the newest change took effect, or `today` from the route data when nothing changed. Leave `corrects` out.",
   '- Set `verifiedAt` of every source to today; code replaces it with the date it read the page.',
