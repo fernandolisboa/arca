@@ -205,6 +205,11 @@ export const sessionReviews: readonly SessionReview[] = [
     versions: [{ routeId: 'lv-capital-investment', number: 6 }],
   },
   {
+    id: '2026-11-au-documents',
+    migration: 'knowledge_session_review_2026_11_au_documents',
+    versions: [{ routeId: 'au-skilled-independent', number: 4 }],
+  },
+  {
     id: '2026-11-us-employer',
     migration: 'knowledge_session_review_2026_11_us_employer',
     versions: [
