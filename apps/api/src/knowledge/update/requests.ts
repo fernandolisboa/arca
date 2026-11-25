@@ -12,7 +12,6 @@ import {
   namedHosts,
   nextUpdateStep,
   proposalLists,
-  routeVersionSchema,
   updateStages,
 } from '@arca/domain';
 import { type Database, withIdentity } from '@arca/db';
@@ -20,6 +19,7 @@ import {
   type RuleRowReading,
   type RuleRows,
   approvedOfficialDomainLists,
+  countryPins,
   pinKey,
   pinnedCountries,
   verifiedRouteVersion,
@@ -145,30 +145,6 @@ const proposedRouteId = (content: unknown): string | null => {
 /** The most new-route requests the progress lists. */
 const newRoutesShown = 10;
 
-/**
- * Each country's approved official-domain lists as pins (ADR-0031): those its stored route
- * versions pin that are approved. A country with none is a new country.
- */
-function countryPins(
-  rows: RuleRows,
-  reading: RuleRowReading,
-  states: DecisionStates,
-): ReadonlyMap<string, readonly string[]> {
-  const approved = new Set(approvedOfficialDomainLists(rows, reading, states).map(pinKey));
-  const pins = new Map<string, Set<string>>();
-  for (const row of rows.routeVersions) {
-    const parsed = routeVersionSchema.safeParse(row.content);
-    if (!parsed.success) continue;
-    const { country, officialDomains } = parsed.data;
-    for (const pin of officialDomains.map(pinKey).filter((key) => approved.has(key))) {
-      const held = pins.get(country) ?? new Set<string>();
-      held.add(pin);
-      pins.set(country, held);
-    }
-  }
-  return new Map([...pins].map(([country, held]) => [country, [...held].sort()]));
-}
-
 /** Update requests on the app_api pool (ADR-0031): the start goes through the definer function. */
 export function createUpdateRequests({
   db,
@@ -267,7 +243,9 @@ export function createUpdateRequests({
     startNewRoute: async (accountId, { country, visa, links = [] }) => {
       if (!(await isAdmin(accountId))) return 'not_admin';
       if (!pinnedCountries.countries.includes(country)) return 'not_found';
-      const pins = countryPins(await rows(), reading, await states()).get(country) ?? [];
+      const pins = (countryPins(await rows(), reading, await states()).get(country) ?? []).map(
+        pinKey,
+      );
       // A new country's research may only start on hosts the admin named.
       if (pins.length === 0 && namedHosts(links, reading.hostOf).length === 0) {
         return 'links_needed';

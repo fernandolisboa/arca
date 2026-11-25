@@ -1,0 +1,551 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb1c",
+  "number": 1,
+  "title": "EB-1C multinational manager or executive: employer petition, no labor certification (permanent residence)",
+  "country": "US",
+  "tags": ["work", "permanent-residence"],
+  "effectiveFrom": "2024-04-01",
+  "status": "open",
+  "currency": "USD",
+  "sources": [
+    {
+      "id": "usc-1153-eb1c",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(1)(C) Certain multinational executives and managers: 1 year of employment in the 3 years before, to continue for the same employer or its affiliate or subsidiary",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1101-capacity",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(a)(44)(A) and (B): managerial capacity and executive capacity, each an assignment within an organization in which the employee primarily manages or directs",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(d): a spouse or child as 8 U.S.C. 1101(b)(1)(A) to (E) defines gets the same status and order of consideration if accompanying or following to join",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153-child-age",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(h)(1): a child's age is that on the date a visa number becomes available, if residence is sought within one year, reduced by the days the petition was pending",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1101",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(b)(1): a child is an unmarried person under twenty-one, including a stepchild, an adopted child, a legitimated child and one born out of wedlock with a bona fide tie to the father",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1101-spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(a)(35): spouse does not include one by a marriage ceremony where the parties are not physically present in the presence of each other, unless the marriage has been consummated",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cfr-204-5-j",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "title": "8 CFR 204.5(j): the U.S. employer's Form I-140, definitions, a year abroad in the 3 years before, a U.S. employer doing business for at least one year, and the job offer",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.5"
+    },
+    {
+      "id": "cfr-106-2",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "title": "8 CFR 106.2(a)(11) Form I-140: $715; (a)(13) Asylum Program Fee: $600, $300 for a small employer; (a)(21) Form I-485: $1,440 ($950 under 14); (c)(3) USCIS immigrant fee: $235",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=106&section=106.2"
+    },
+    {
+      "id": "cfr-22-1",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "title": "22 CFR 22.1, items 21(b) and 32(b): visa application fees, per person, for an L visa and an employment-based immigrant visa; item 25: the fraud fee of an L blanket visa applicant",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-20/title-22?chapter=I&subchapter=C&part=22&section=22.1"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "us",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "leapDayBirthday": "unsettled",
+  "requirements": [],
+  "assessments": [
+    {
+      "id": "employment-abroad",
+      "title": "Employed abroad for at least 1 year, in the 3 years before the petition or before entering the U.S. to work for the same employer, as a manager or executive by the firm or its affiliate or subsidiary",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["usc-1153-eb1c", "cfr-204-5-j"]
+    },
+    {
+      "id": "related-employer",
+      "title": "The U.S. employer is the same employer as the one abroad, or its subsidiary or affiliate, and is multinational: it or a related entity does business in the U.S. and at least one other country",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["usc-1153-eb1c", "cfr-204-5-j"]
+    },
+    {
+      "id": "doing-business-one-year",
+      "title": "The U.S. employer has been doing business for at least 1 year when it files, so an office opened on an L-1A must first run for a year",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["cfr-204-5-j"]
+    },
+    {
+      "id": "managerial-or-executive-job",
+      "title": "The U.S. employer offers, in a statement describing the duties, a job that is primarily managerial or executive; no labor certification is needed",
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["usc-1101-capacity", "cfr-204-5-j"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse; a marriage celebrated without both parties physically present counts only once consummated",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["usc-1153", "usc-1101-spouse"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried biological children under 21; born out of wedlock, via the father only if legitimated as 8 U.S.C. 1101(b)(1)(C) requires or with a bona fide relationship",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    },
+    {
+      "id": "adopted-children",
+      "title": "Unmarried adopted children under 21 adopted under 16, or 18 if a natural sibling adopted by the same parent, after 2 years in the adopter's custody and home or if battered",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 16
+                    }
+                  },
+                  {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "edge.custodyStart"
+                        },
+                        "duration": "P2Y"
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "edge.custodyStart"
+                        },
+                        "duration": "P2Y"
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    },
+    {
+      "id": "stepchildren",
+      "title": "Unmarried stepchildren under 21 whose parent married the principal before they turned 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "firstEdge.ageAtStart"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "petition-fee",
+      "title": "Form I-140 immigrant petition fee, paid by the U.S. employer that files it",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 71500,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["cfr-106-2", "cfr-204-5-j"]
+    },
+    {
+      "id": "asylum-program-fee",
+      "title": "Asylum Program Fee paid with every Form I-140 (USD 300 for a small employer, none for a nonprofit)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 60000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["cfr-106-2"]
+    },
+    {
+      "id": "visa-application-fee",
+      "title": "Immigrant visa application fee, employment-based, for the principal, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 34500,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "US"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-22-1"]
+    },
+    {
+      "id": "visa-application-fee-dependents",
+      "title": "Immigrant visa application fee, employment-based, for each accompanying family member, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 34500,
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "US"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-22-1"]
+    },
+    {
+      "id": "uscis-immigrant-fee",
+      "title": "USCIS immigrant fee for the principal, after an immigrant visa issued abroad, for the permanent resident card",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 23500,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "US"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-106-2"]
+    },
+    {
+      "id": "uscis-immigrant-fee-dependents",
+      "title": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 23500,
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "any",
+        "operands": [
+          {
+            "op": "not",
+            "operand": {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "principal.residenceCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "US"
+              }
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-106-2"]
+    },
+    {
+      "id": "adjustment-fee",
+      "title": "Form I-485 to adjust status, for the principal, when the family lives in the U.S. in a status that allows adjusting there instead of a visa abroad",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 144000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "US"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-106-2"]
+    },
+    {
+      "id": "adjustment-fee-dependents",
+      "title": "Form I-485 to adjust status, for each family member living in the U.S. with the principal (USD 950 for a child under 14 filing with a parent)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 144000,
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "principal.residenceCountry"
+            },
+            "right": {
+              "op": "token",
+              "value": "US"
+            }
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["cfr-106-2"]
+    }
+  ],
+  "durations": []
+}

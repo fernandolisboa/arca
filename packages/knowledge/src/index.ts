@@ -44,6 +44,7 @@ export {
   ruleEngineData,
   versionCasesHash,
   approvedOfficialDomainLists,
+  countryPins,
   pinKey,
   verifiedOfficialDomainLists,
 } from './rule-rows.js';
