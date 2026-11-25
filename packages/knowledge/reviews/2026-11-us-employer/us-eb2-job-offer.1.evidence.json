@@ -1,0 +1,860 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:sponsored-permanent-us-job-offer",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Any United States employer desiring and intending to employ an alien may file a petition for classification of the alien under section 203(b)(1)(B), 203(b)(1)(C), 203(b)(2), or 203(b)(3) of the Act."
+    },
+    {
+      "key": "requirement:sponsored-permanent-us-job-offer",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-A/section-656.3",
+      "quote": "Permanent, full-time work by an employee for an employer other than oneself."
+    },
+    {
+      "key": "requirement:sponsored-permanent-us-job-offer",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.17",
+      "quote": "an employer who desires to apply for a labor certification on behalf of an alien must file a completed Department of Labor Application for Permanent Employment Certification form (ETA Form 9089)."
+    },
+    {
+      "key": "requirement:sponsored-permanent-us-job-offer",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.15",
+      "quote": "An employer must apply for a labor certification for a Schedule A occupation by filing an application with the appropriate DHS office, and not with an ETA application processing center."
+    },
+    {
+      "key": "assessment:labor-certification",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "unless the Secretary of Labor has determined and certified to the Secretary of State and the Attorney General that"
+    },
+    {
+      "key": "assessment:labor-certification",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "there are not sufficient workers who are able, willing, qualified (or equally qualified in the case of an alien described in clause (ii)) and available at the time of application for a visa and admission to the United States and at the place where the alien is to perform such skilled or unskilled labor, and"
+    },
+    {
+      "key": "assessment:labor-certification",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "the employment of such alien will not adversely affect the wages and working conditions of workers in the United States similarly employed."
+    },
+    {
+      "key": "assessment:labor-certification",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The grounds for inadmissibility of aliens under subparagraphs (A) and (B) shall apply to immigrants seeking admission or adjustment of status under paragraph (2) or (3) of section 1153(b) of this title."
+    },
+    {
+      "key": "assessment:schedule-a",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-B/section-656.5",
+      "quote": "Persons who will be employed as physical therapists, and who possess all the qualifications necessary to take the physical therapist licensing examination in the state in which they propose to practice physical therapy."
+    },
+    {
+      "key": "assessment:schedule-a",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-B/section-656.5",
+      "quote": "Aliens (except for aliens in the performing arts) of exceptional ability in the sciences or arts including college and university teachers of exceptional ability"
+    },
+    {
+      "key": "assessment:schedule-a",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-B/section-656.5",
+      "quote": "Aliens of exceptional ability in the performing arts whose work during the past 12 months did require, and whose intended work in the United States will require, exceptional ability."
+    },
+    {
+      "key": "assessment:schedule-a",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.15",
+      "quote": "An employer must apply for a labor certification for a Schedule A occupation by filing an application with the appropriate DHS office, and not with an ETA application processing center."
+    },
+    {
+      "key": "assessment:schedule-a",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.15",
+      "quote": "documentation that the alien has received a Certificate from the Commission on Graduates of Foreign Nursing Schools (CGFNS); that the alien holds a full and unrestricted (permanent) license to practice nursing in the state of intended employment; or that the alien has passed the National Council Licensure Examination for Registered Nurses (NCLEX-RN)."
+    },
+    {
+      "key": "assessment:bona-fide-full-time-job",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-A/section-656.3",
+      "quote": "Permanent, full-time work by an employee for an employer other than oneself."
+    },
+    {
+      "key": "assessment:bona-fide-full-time-job",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-A/section-656.3",
+      "quote": "currently has a location within the United States to which U.S. workers may be referred for employment"
+    },
+    {
+      "key": "assessment:bona-fide-full-time-job",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-A/section-656.3",
+      "quote": "A labor certification can not be granted for an Application for Permanent Employment Certification filed on behalf of an independent contractor."
+    },
+    {
+      "key": "assessment:bona-fide-full-time-job",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.10",
+      "quote": "The job opportunity is for full-time, permanent employment for an employer other than the alien."
+    },
+    {
+      "key": "assessment:bona-fide-full-time-job",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.17",
+      "quote": "If the employer is a closely held corporation or partnership in which the alien has an ownership interest, or if there is a familial relationship between the stockholders, corporate officers, incorporators, or partners, and the alien, or if the alien is one of a small number of employees, the employer in the event of an audit must be able to demonstrate the existence of a bona fide job opportunity"
+    },
+    {
+      "key": "assessment:prevailing-wage",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.10",
+      "quote": "The offered wage equals or exceeds the prevailing wage determined pursuant to § 656.40 and § 656.41"
+    },
+    {
+      "key": "assessment:prevailing-wage",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-D/section-656.40",
+      "quote": "the prevailing wage for labor certification purposes shall be the arithmetic mean, except as provided in paragraph (b)(3) of this section, of the wages of workers similarly employed in the area of intended employment."
+    },
+    {
+      "key": "assessment:prevailing-wage",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-D/section-656.40",
+      "quote": "if the job opportunity is covered by a collective bargaining agreement (CBA) that was negotiated at arms-length between the union and the employer, the wage rate set forth in the CBA agreement is considered as not adversely affecting the wages of U.S. workers similarly employed"
+    },
+    {
+      "key": "assessment:ability-to-pay",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Any petition filed by or for an employment-based immigrant which requires an offer of employment must be accompanied by evidence that the prospective United States employer has the ability to pay the proffered wage."
+    },
+    {
+      "key": "assessment:ability-to-pay",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The petitioner must demonstrate this ability at the time the priority date is established and continuing until the beneficiary obtains lawful permanent residence."
+    },
+    {
+      "key": "assessment:advanced-degree-or-exceptional-ability",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "to qualified immigrants who are members of the professions holding advanced degrees or their equivalent or who because of their exceptional ability in the sciences, arts, or business, will substantially benefit prospectively the national economy, cultural or educational interests, or welfare of the United States"
+    },
+    {
+      "key": "assessment:advanced-degree-or-exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "A United States baccalaureate degree or a foreign equivalent degree followed by at least five years of progressive experience in the specialty shall be considered the equivalent of a master's degree."
+    },
+    {
+      "key": "assessment:advanced-degree-or-exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "If a doctoral degree is customarily required by the specialty, the alien must have a United States doctorate or a foreign equivalent degree."
+    },
+    {
+      "key": "assessment:advanced-degree-or-exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "evidence in the form of letters from current or former employer(s) showing that the alien has at least five years of progressive post-baccalaureate experience in the specialty."
+    },
+    {
+      "key": "assessment:exceptional-ability",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the possession of a degree, diploma, certificate, or similar award from a college, university, school, or other institution of learning or a license to practice or certification for a particular profession or occupation shall not by itself be considered sufficient evidence of such exceptional ability"
+    },
+    {
+      "key": "assessment:exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Exceptional ability in the sciences, arts, or business means a degree of expertise significantly above that ordinarily encountered in the sciences, arts, or business."
+    },
+    {
+      "key": "assessment:exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "To show that the alien is an alien of exceptional ability in the sciences, arts, or business, the petition must be accompanied by at least three of the following:"
+    },
+    {
+      "key": "assessment:exceptional-ability",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "If the above standards do not readily apply to the beneficiary's occupation, the petitioner may submit comparable evidence to establish the beneficiary's eligibility."
+    },
+    {
+      "key": "assessment:job-requires-advanced-degree",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The job offer portion of the individual labor certification, Schedule A application, or Pilot Program application must demonstrate that the job requires a professional holding an advanced degree or the equivalent or an alien of exceptional ability."
+    },
+    {
+      "key": "assessment:foreign-medical-graduate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "An alien who is a graduate of a medical school not accredited by a body or bodies approved for the purpose by the Secretary of Education (regardless of whether such school of medicine is in the United States) and who is coming to the United States principally to perform services as a member of the medical profession is inadmissible, unless the alien (i) has passed parts I and II of the National Board of Medical Examiners Examination (or an equivalent examination as determined by the Secretary of Health and Human Services) and (ii) is competent in oral and written English."
+    },
+    {
+      "key": "assessment:foreign-medical-graduate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The grounds for inadmissibility of aliens under subparagraphs (A) and (B) shall apply to immigrants seeking admission or adjustment of status under paragraph (2) or (3) of section 1153(b) of this title."
+    },
+    {
+      "key": "assessment:health-care-worker-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "any alien who seeks to enter the United States for the purpose of performing labor as a health-care worker, other than a physician, is inadmissible unless the alien presents to the consular officer, or, in the case of an adjustment of status, the Attorney General, a certificate from the Commission on Graduates of Foreign Nursing Schools, or a certificate from an equivalent independent credentialing organization approved by the Attorney General in consultation with the Secretary of Health and Human Services, verifying that"
+    },
+    {
+      "key": "assessment:health-care-worker-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "the alien's education, training, license, and experience"
+    },
+    {
+      "key": "assessment:health-care-worker-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "the alien has the level of competence in oral and written English considered by the Secretary of Health and Human Services, in consultation with the Secretary of Education, to be appropriate for health care work of the kind in which the alien will be engaged"
+    },
+    {
+      "key": "assessment:entry-not-suspended",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-12-19/html/2025-23570.htm",
+      "quote": "The entry into the United States of nationals of Angola as immigrants, and as nonimmigrants on B-1, B-2, B-1/B-2, F, M, and J visas, is hereby suspended."
+    },
+    {
+      "key": "assessment:entry-not-suspended",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-12-19/html/2025-23570.htm",
+      "quote": "any dual national of a country designated under sections 2, 3, 4, or 5 of this proclamation when the individual is traveling on a passport issued by a country not so designated;"
+    },
+    {
+      "key": "assessment:entry-not-suspended",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-12-19/html/2025-23570.htm",
+      "quote": "are outside the United States on the applicable effective date of this proclamation; and"
+    },
+    {
+      "key": "assessment:entry-not-suspended",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-12-19/html/2025-23570.htm",
+      "quote": "do not have a valid visa on the applicable effective date of this proclamation."
+    },
+    {
+      "key": "assessment:entry-not-suspended",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-12-19/html/2025-23570.htm",
+      "quote": "may be made on a case-by-case basis for individuals for whom the Secretary of State finds, in his discretion, that the travel by the individual would serve a United States national interest."
+    },
+    {
+      "key": "assessment:visa-number",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "Immigrant visas made available under subsection (a) or (b) shall be issued to eligible immigrants in the order in which a petition in behalf of each such immigrant is filed with the Attorney General"
+    },
+    {
+      "key": "assessment:visa-number",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The priority date of any petition filed for classification under section 203(b) of the Act which is accompanied by an individual labor certification from the Department of Labor shall be the date the labor certification application was accepted for processing by any office of the Department of Labor."
+    },
+    {
+      "key": "assessment:visa-number",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "The priority date of any petition filed for classification under section 203(b) of the Act which is accompanied by an application for Schedule A designation shall be the date the completed, signed petition (including all initial evidence and the correct fee) is properly filed with USCIS."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "by reason of any marriage ceremony where the contracting parties thereto are not physically present in the presence of each other, unless the marriage shall have been consummated"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if the father has or had a bona fide parent-child relationship with the person"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if such legitimation takes place before the child reaches the age of eighteen years and the child is in the legal custody of the legitimating parent or parents at the time of such legitimation"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a child adopted while under the age of sixteen years if the child has been in the legal custody of, and has resided with, the adopting parent or parents for at least two years or if the child has been battered or subject to extreme cruelty by the adopting parent or by a family member of the adopting parent residing in the same household"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "(I) is a natural sibling of a child described in clause (i) or subparagraph (F)(i); (II) was adopted by the adoptive parent or parents of the sibling described in such clause or subparagraph; and (III) is otherwise described in clause (i), except that the child was adopted while under the age of 18 years"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a stepchild, whether or not born out of wedlock, provided the child had not reached the age of eighteen years at the time the marriage creating the status of stepchild occurred"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Immigrant Petition for Alien Worker, Form I-140. For filing a petition to classify preference status of an alien based on profession or occupation under section 204(a) of the Act: $715."
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "A separate Form I-140 or I-360 must be filed for each beneficiary, accompanied by the applicable fee."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "the Asylum Program Fee must be paid by any petitioner filing a Petition for a Nonimmigrant Worker, Form I-129 under 8 CFR 214.2, Petition for a CNMI-Only Nonimmigrant Transitional Worker, Form I-129CW under 8 CFR 214.2(w), or an Immigrant Petition for Alien Worker, Form I-140 under 8 CFR 204.1(a). $600."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Filed by a small employer as defined in § 106.1(f): $300."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.1",
+      "quote": "Small employer means a firm or individual that has 25 or fewer full-time equivalent employees in the United States, including any affiliates and subsidiaries."
+    },
+    {
+      "key": "cost:asylum-program-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Filed by a nonprofit as defined in § 106.1(f): No fee."
+    },
+    {
+      "key": "cost:visa-application-fee",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:visa-application-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:uscis-immigrant-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "cost:uscis-immigrant-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "cost:adjustment-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Application to Register Permanent Residence or Adjust Status, Form I-485. For filing an application for permanent resident status or creation of a record of lawful permanent residence:"
+    },
+    {
+      "key": "cost:adjustment-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$1,440 for an applicant 14 years of age or older; or"
+    },
+    {
+      "key": "cost:adjustment-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$1,440 for an applicant 14 years of age or older; or"
+    },
+    {
+      "key": "cost:adjustment-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "$950 for an applicant under the age of 14 years who submits the application concurrently with the Form I-485 of a parent."
+    },
+    {
+      "key": "cost:affidavit-review-fee",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Affidavit of Support Review (only when reviewed domestically) $120"
+    },
+    {
+      "key": "cost:affidavit-review-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-213a/section-213a.2",
+      "quote": "who either filed the employment-based immigrant petition or has a significant ownership interest in the entity that filed the immigrant visa petition on behalf of the intending immigrant."
+    },
+    {
+      "key": "document:immigrant-petition",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "must be filed on Form I-140, Petition for Immigrant Worker."
+    },
+    {
+      "key": "document:immigrant-petition",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "A separate Form I-140 or I-360 must be filed for each beneficiary, accompanied by the applicable fee."
+    },
+    {
+      "key": "document:immigrant-petition",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Any United States employer desiring and intending to employ an alien may file a petition"
+    },
+    {
+      "key": "document:labor-certification",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Accompanied by any required individual labor certification, application for Schedule A designation, or evidence that the alien's occupation qualifies as a shortage occupation"
+    },
+    {
+      "key": "document:labor-certification",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "In general, ordinary legible photocopies of such documents (except for labor certifications from the Department of Labor) will be acceptable for initial filing and approval."
+    },
+    {
+      "key": "document:labor-certification",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.17",
+      "quote": "Applications filed and certified electronically must, upon receipt of the labor certification, be signed immediately by the employer in order to be valid."
+    },
+    {
+      "key": "document:labor-certification",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.30",
+      "quote": "An approved permanent labor certification granted on or after July 16, 2007 expires if not filed in support of a Form I-140 petition with the Department of Homeland Security within 180 calendar days of the date the Department of Labor granted the certification."
+    },
+    {
+      "key": "document:labor-certification",
+      "url": "https://www.ecfr.gov/current/title-20/chapter-V/part-656/subpart-C/section-656.12",
+      "quote": "An employer must not seek or receive payment of any kind for any activity related to obtaining permanent labor certification, including payment of the employer's attorneys' fees"
+    },
+    {
+      "key": "document:ability-to-pay-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Evidence of this ability shall be either in the form of copies of annual reports, federal tax returns, or audited financial statements."
+    },
+    {
+      "key": "document:ability-to-pay-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "In a case where the prospective United States employer employs 100 or more workers, the director may accept a statement from a financial officer of the organization which establishes the prospective employer's ability to pay the proffered wage."
+    },
+    {
+      "key": "document:ability-to-pay-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "In appropriate cases, additional evidence, such as profit/loss statements, bank account records, or personnel records, may be submitted by the petitioner or requested by the Service."
+    },
+    {
+      "key": "document:experience-letters",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Evidence relating to qualifying experience or training shall be in the form of letter(s) from current or former employer(s) or trainer(s) and shall include the name, address, and title of the writer, and a specific description of the duties performed by the alien or of the training received."
+    },
+    {
+      "key": "document:experience-letters",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "If such evidence is unavailable, other documentation relating to the alien's experience or training will be considered."
+    },
+    {
+      "key": "document:experience-letters",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:advanced-degree-record",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "An official academic record showing that the alien has a United States advanced degree or a foreign equivalent degree; or"
+    },
+    {
+      "key": "document:advanced-degree-record",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "An official academic record showing that the alien has a United States baccalaureate degree or a foreign equivalent degree, and evidence in the form of letters from current or former employer(s) showing that the alien has at least five years of progressive post-baccalaureate experience in the specialty."
+    },
+    {
+      "key": "document:advanced-degree-record",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:exceptional-ability-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "To show that the alien is an alien of exceptional ability in the sciences, arts, or business, the petition must be accompanied by at least three of the following:"
+    },
+    {
+      "key": "document:exceptional-ability-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "Evidence in the form of letter(s) from current or former employer(s) showing that the alien has at least ten years of full-time experience in the occupation for which he or she is being sought;"
+    },
+    {
+      "key": "document:exceptional-ability-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "A license to practice the profession or certification for a particular profession or occupation;"
+    },
+    {
+      "key": "document:exceptional-ability-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.5",
+      "quote": "If the above standards do not readily apply to the beneficiary's occupation, the petitioner may submit comparable evidence to establish the beneficiary's eligibility."
+    },
+    {
+      "key": "document:exceptional-ability-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:health-care-worker-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "any alien who seeks to enter the United States for the purpose of performing labor as a health-care worker, other than a physician, is inadmissible unless the alien presents to the consular officer, or, in the case of an adjustment of status, the Attorney General, a certificate from the Commission on Graduates of Foreign Nursing Schools, or a certificate from an equivalent independent credentialing organization approved by the Attorney General in consultation with the Secretary of Health and Human Services, verifying that"
+    },
+    {
+      "key": "document:affidavit-of-support",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-213a/section-213a.2",
+      "quote": "An employment-based immigrant under section 203(b) of the Act, if a relative"
+    },
+    {
+      "key": "document:affidavit-of-support",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-213a/section-213a.2",
+      "quote": "of the intending immigrant is a citizen or an alien lawfully admitted for permanent residence who either filed the employment-based immigrant petition or has a significant ownership interest in the entity that filed the immigrant visa petition on behalf of the intending immigrant."
+    },
+    {
+      "key": "document:affidavit-of-support",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-213a/section-213a.2",
+      "quote": "An affidavit of support under this section is not required, however, if the relative is a brother or sister of the intending immigrant, unless the brother or sister is a citizen."
+    },
+    {
+      "key": "document:adjustment-application",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.2",
+      "quote": "An application for adjustment of status is submitted on Form I-485, Application for Permanent Residence."
+    },
+    {
+      "key": "document:adjustment-application",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Application to Register Permanent Residence or Adjust Status, Form I-485. For filing an application for permanent resident status or creation of a record of lawful permanent residence:"
+    },
+    {
+      "key": "document:adjustment-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.2",
+      "quote": "An application for adjustment of status is submitted on Form I-485, Application for Permanent Residence."
+    },
+    {
+      "key": "document:adjustment-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Application to Register Permanent Residence or Adjust Status, Form I-485. For filing an application for permanent resident status or creation of a record of lawful permanent residence:"
+    },
+    {
+      "key": "document:adjustment-medical-examination",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.5",
+      "quote": "an applicant for adjustment of status shall be required to have a medical examination by a designated civil surgeon"
+    },
+    {
+      "key": "document:adjustment-medical-examination",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Report of Immigration Medical Examination and Vaccination Record (Form I-693). For adjustment of status applicants to establish they are not inadmissible to the United States on health-related grounds."
+    },
+    {
+      "key": "document:adjustment-medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.5",
+      "quote": "an applicant for adjustment of status shall be required to have a medical examination by a designated civil surgeon"
+    },
+    {
+      "key": "document:adjustment-medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "Report of Immigration Medical Examination and Vaccination Record (Form I-693). For adjustment of status applicants to establish they are not inadmissible to the United States on health-related grounds."
+    },
+    {
+      "key": "document:job-offer-confirmation",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.25",
+      "quote": "must have a valid offer of employment based on a valid petition at the time the application to adjust status is filed and at the time the alien's application to adjust status is adjudicated, and the applicant must intend to accept such offer of employment."
+    },
+    {
+      "key": "document:job-offer-confirmation",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.25",
+      "quote": "USCIS may require that the applicant demonstrate, or the applicant may affirmatively demonstrate to USCIS, on Form I-485 Supplement J"
+    },
+    {
+      "key": "document:job-offer-confirmation",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.25",
+      "quote": "Under section 204(j) of the Act, the applicant has a new offer of employment from the petitioning employer or a different U.S. employer, or a new offer based on self-employment, in the same or a similar occupational classification as the employment offered under the qualifying petition"
+    },
+    {
+      "key": "document:job-offer-confirmation",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-245/section-245.25",
+      "quote": "The alien's application to adjust status based on a qualifying petition has been pending for 180 days or more; and"
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "Every alien applying for an immigrant visa must make application, as directed by the consular officer, on Form DS-230, Application for Immigrant Visa and Alien Registration, or on Form DS-260, Electronic Application for Immigrant Visa and Alien Registration."
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "The application on Form DS-230 or on Form DS-260 for an alien under 14 years of age or one physically incapable of completing an application may be executed by the alien's parent or guardian"
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "Every alien applying for an immigrant visa must make application, as directed by the consular officer, on Form DS-230, Application for Immigrant Visa and Alien Registration, or on Form DS-260, Electronic Application for Immigrant Visa and Alien Registration."
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "The application on Form DS-230 or on Form DS-260 for an alien under 14 years of age or one physically incapable of completing an application may be executed by the alien's parent or guardian"
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "Every alien applying for an immigrant visa shall present a valid unexpired passport or other suitable travel document, or document of identity and nationality, if such document is required under the regulations issued by the Secretary of State."
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.64",
+      "quote": "every applicant for an immigrant visa shall present a passport, as defined in INA 101(a)(30), that is valid for at least 60 days beyond the period of validity of the visa"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "Every alien applying for an immigrant visa shall present a valid unexpired passport or other suitable travel document, or document of identity and nationality, if such document is required under the regulations issued by the Secretary of State."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.64",
+      "quote": "every applicant for an immigrant visa shall present a passport, as defined in INA 101(a)(30), that is valid for at least 60 days beyond the period of validity of the visa"
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates; a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certified copy of an alien's record of birth means a certificate issued by the official custodian of birth records in the country of birth showing the date and place of birth and the parentage of the alien, based upon the original registration of birth."
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a certified copy of any existing prison record, military record, and record of his birth"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates; a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certified copy of an alien's record of birth means a certificate issued by the official custodian of birth records in the country of birth showing the date and place of birth and the parentage of the alien, based upon the original registration of birth."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a certified copy of any existing prison record, military record, and record of his birth"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of the country of an alien's nationality and the country of an alien's current residence (as of the time of visa application) the term “appropriate police authorities” means those of a country, area or locality in which the alien has resided for at least six months."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of all other countries, areas, or localities, the term “appropriate police authorities” means the authorities of any country, area, or locality in which the alien has resided for at least one year."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A consular officer may require a police certificate regardless of length of residence in any country if he or she has reason to believe that a police record exists in the country, area, or locality concerned."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a copy of a certification by the appropriate police authorities stating what their records show concerning the immigrant"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of the country of an alien's nationality and the country of an alien's current residence (as of the time of visa application) the term “appropriate police authorities” means those of a country, area or locality in which the alien has resided for at least six months."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of all other countries, areas, or localities, the term “appropriate police authorities” means the authorities of any country, area, or locality in which the alien has resided for at least one year."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A consular officer may require a police certificate regardless of length of residence in any country if he or she has reason to believe that a police record exists in the country, area, or locality concerned."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a copy of a certification by the appropriate police authorities stating what their records show concerning the immigrant"
+    },
+    {
+      "key": "document:prison-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:prison-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Prison record means an official document containing a report of the applicant's record of confinement and conduct in a penal or correctional institution."
+    },
+    {
+      "key": "document:prison-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:prison-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Prison record means an official document containing a report of the applicant's record of confinement and conduct in a penal or correctional institution."
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Military record means an official document containing a complete record of the applicant's service and conduct while in military service"
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certificate of discharge from the military forces or an enrollment book belonging to the applicant shall not be acceptable in lieu of the official military record, unless it shows the alien's complete record while in military service."
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Military record means an official document containing a complete record of the applicant's service and conduct while in military service"
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certificate of discharge from the military forces or an enrollment book belonging to the applicant shall not be acceptable in lieu of the official military record, unless it shows the alien's complete record while in military service."
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Other records or documents include any records or documents establishing the applicant's relationship to a spouse or children, if any"
+    },
+    {
+      "key": "document:marriage-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:marriage-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Other records or documents include any records or documents establishing the applicant's relationship to a spouse or children, if any"
+    },
+    {
+      "key": "document:adoption-records",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:adoption-records",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "any records or documents pertinent to a determination of the applicant's identity, classification, or any other matter relating to the applicant's visa eligibility"
+    },
+    {
+      "key": "document:photographs",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Every applicant shall furnish photographs of the number and specifications prescribed by the Department."
+    },
+    {
+      "key": "document:photographs",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "The applicant must either upload a digital photograph electronically as part of submitting an online visa application, or a paper photograph at the direction of the Department."
+    },
+    {
+      "key": "document:photographs-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Every applicant shall furnish photographs of the number and specifications prescribed by the Department."
+    },
+    {
+      "key": "document:photographs-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "The applicant must either upload a digital photograph electronically as part of submitting an online visa application, or a paper photograph at the direction of the Department."
+    },
+    {
+      "key": "document:medical-examination",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "Before the issuance of an immigrant visa, the consular officer shall require every alien, regardless of age, to undergo a medical examination in order to determine eligibility to receive a visa."
+    },
+    {
+      "key": "document:medical-examination",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "by a physician selected by the alien from a panel of physicians approved by the consular officer"
+    },
+    {
+      "key": "document:medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "Before the issuance of an immigrant visa, the consular officer shall require every alien, regardless of age, to undergo a medical examination in order to determine eligibility to receive a visa."
+    },
+    {
+      "key": "document:medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "by a physician selected by the alien from a panel of physicians approved by the consular officer"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who receives vaccination against the vaccine-preventable disease or diseases for which the alien has failed to present documentation of previous vaccination"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The Attorney General may waive the application of"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "civil surgeon, medical officer, or panel physician (as those terms are defined by section 34.2 of title 42 of the Code of Federal Regulations) certifies, according to such regulations as the Secretary of Health and Human Services may prescribe, that such vaccination would not be medically appropriate"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "under such circumstances as the Attorney General provides by regulation, with respect to whom the requirement of such a vaccination would be contrary to the alien's religious beliefs or moral convictions"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who seeks admission as an immigrant, or who seeks adjustment of status to the status of an alien lawfully admitted for permanent residence, and who has failed to present documentation of having received vaccination against vaccine-preventable diseases, which shall include at least the following diseases: mumps, measles, rubella, polio, tetanus and diphtheria toxoids, pertussis, influenza type B and hepatitis B"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who receives vaccination against the vaccine-preventable disease or diseases for which the alien has failed to present documentation of previous vaccination"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The Attorney General may waive the application of"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "civil surgeon, medical officer, or panel physician (as those terms are defined by section 34.2 of title 42 of the Code of Federal Regulations) certifies, according to such regulations as the Secretary of Health and Human Services may prescribe, that such vaccination would not be medically appropriate"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "under such circumstances as the Attorney General provides by regulation, with respect to whom the requirement of such a vaccination would be contrary to the alien's religious beliefs or moral convictions"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who seeks admission as an immigrant, or who seeks adjustment of status to the status of an alien lawfully admitted for permanent residence, and who has failed to present documentation of having received vaccination against vaccine-preventable diseases, which shall include at least the following diseases: mumps, measles, rubella, polio, tetanus and diphtheria toxoids, pertussis, influenza type B and hepatitis B"
+    }
+  ]
+}

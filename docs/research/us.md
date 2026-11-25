@@ -66,6 +66,8 @@ The official treaty table on travel.state.gov refuses automated reads (checked 2
 
 On 2026-11-25 a session review added three routes, each read against the U.S. Code and the eCFR: [`us-eb2-niw`](routes/us-eb2-niw.md) (EB-2 national interest waiver), [`us-l1a`](routes/us-l1a.md) (L-1A manager or executive, including a new office) and [`us-eb1c`](routes/us-eb1c.md) (EB-1C multinational manager or executive). The record and what is left out are in [the review's README](../../packages/knowledge/reviews/2026-11-us-routes/README.md).
 
+Later the same day a second review added the employer-sponsored green card, read against the U.S. Code, 8 CFR 204.5 and the Department of Labor's 20 CFR part 656: [`us-eb3`](routes/us-eb3.md) (EB-3 skilled worker, professional or other worker) and [`us-eb2-job-offer`](routes/us-eb2-job-offer.md) (EB-2 with a job offer), both on a U.S. employer's permanent job offer and labor certification. The record is in [its README](../../packages/knowledge/reviews/2026-11-us-employer/README.md).
+
 ## Gold Card
 
 | Fact | Source |

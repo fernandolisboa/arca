@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb2-job-offer",
+  "texts": [
+    {
+      "en": "EB-2 with a job offer: advanced degree or exceptional ability, a U.S. employer's permanent job offer and labor certification (permanent residence)",
+      "text": "EB-2 com oferta de emprego: título acima do bacharelado ou habilidade excepcional, oferta de emprego permanente de empregador dos EUA e certificação trabalhista (residência permanente)"
+    },
+    {
+      "en": "A U.S. employer offers a permanent job in the U.S. and will sponsor it: it files the labor certification (with DHS for a Schedule A job), then the Form I-140 petition",
+      "text": "Um empregador dos EUA oferece emprego permanente nos EUA e vai patrocinar o pedido: protocola a certificação trabalhista (no DHS, se a vaga for do Schedule A) e depois a petição Form I-140"
+    },
+    {
+      "en": "The Department of Labor certifies there are not enough able, willing, qualified and available U.S. workers where the job is, and that the hire will not depress their wages and working conditions",
+      "text": "O Departamento do Trabalho certifica que faltam trabalhadores nos EUA aptos, dispostos, qualificados e disponíveis onde fica a vaga, e que a contratação não vai piorar salários e condições de trabalho deles"
+    },
+    {
+      "en": "Schedule A, filed with DHS: physical therapists able to sit the state license exam; nurses with a CGFNS certificate, the state license or NCLEX-RN; exceptional ability in sciences or arts, as defined",
+      "text": "Schedule A, pedido ao DHS: fisioterapeutas aptos a fazer o exame de registro do estado; enfermeiros com certificado da CGFNS, registro no estado ou NCLEX-RN; habilidade excepcional em ciências ou artes, como definida"
+    },
+    {
+      "en": "Full-time, permanent job for an employer with a U.S. location, not the worker or as a contractor; if the worker owns part of it, is kin to its owners or one of few staff, it must show the job is real",
+      "text": "Vaga permanente em tempo integral, para empregador com estabelecimento nos EUA, sem ser o próprio trabalhador nem como autônomo; se ele for sócio, parente dos donos ou um de poucos funcionários, a empresa prova que a vaga é real"
+    },
+    {
+      "en": "The offered wage is at least the prevailing wage the Department of Labor sets for the job, such as the mean wage of workers similarly employed in the area or the wage of a union contract covering it",
+      "text": "O salário oferecido é pelo menos o salário de referência que o Departamento do Trabalho fixa para a vaga, como a média paga a quem faz trabalho parecido na região ou o salário da convenção coletiva que cobre a vaga"
+    },
+    {
+      "en": "The employer can pay the offered wage from the priority date until the worker becomes a permanent resident",
+      "text": "O empregador consegue pagar o salário oferecido desde a data de prioridade até o trabalhador virar residente permanente"
+    },
+    {
+      "en": "A professional with a U.S. advanced degree or foreign equivalent (a bachelor's plus 5 years' progressive experience after it counts; a doctorate if the field requires one), or exceptional ability",
+      "text": "Profissional com título acima do bacharelado (como mestrado ou doutorado) dos EUA ou equivalente estrangeiro (vale bacharelado mais 5 anos de experiência progressiva depois dele; doutorado se a área exigir), ou com habilidade excepcional"
+    },
+    {
+      "en": "Exceptional ability, if claimed: expertise well above the ordinary in sciences, arts or business, shown by 3 of the listed kinds of evidence or comparable ones; a degree or license alone falls short",
+      "text": "Habilidade excepcional, se alegada: domínio bem acima do comum em ciências, artes ou negócios, mostrado por 3 dos tipos de prova listados ou provas equivalentes; diploma ou licença sozinhos não bastam"
+    },
+    {
+      "en": "The job, as the labor certification describes it, requires a professional holding an advanced degree or its equivalent, or a person of exceptional ability",
+      "text": "A vaga, como a certificação trabalhista a descreve, exige profissional com título acima do bacharelado (como mestrado ou doutorado) ou equivalente, ou pessoa de habilidade excepcional"
+    },
+    {
+      "en": "A doctor from a medical school not accredited by a body the Secretary of Education approves, coming mainly to practice medicine, passed NBME parts I and II or equivalent and is competent in English",
+      "text": "Médico formado em faculdade não credenciada por órgão aprovado pelo Secretário de Educação dos EUA, que vai principalmente exercer medicina, passou nas partes I e II do exame NBME ou equivalente e tem competência em inglês"
+    },
+    {
+      "en": "A health care worker other than a doctor, such as a nurse, has a certificate from CGFNS or an approved equivalent body verifying, among other things, their education, training, license and English",
+      "text": "Profissional de saúde que não seja médico, como enfermeiro, tem certificado da CGFNS ou de órgão equivalente aprovado que confere, entre outras coisas, formação, treinamento, registro profissional e inglês"
+    },
+    {
+      "en": "Proclamation 10998 does not bar immigrant entry for the family's nationalities, or spares them: in the U.S. or with a valid visa when it took effect, an unlisted passport, national-interest exception",
+      "text": "A Proclamação 10998 não suspende a entrada como imigrante das nacionalidades da família, ou estas estão isentas: nos EUA ou com visto válido quando ela entrou em vigor, passaporte de país fora da lista ou exceção de interesse nacional"
+    },
+    {
+      "en": "A visa number is available: visas go by priority date, the day the Department of Labor accepted the labor certification application or, for Schedule A, the day the I-140 was properly filed with USCIS",
+      "text": "Há número de visto disponível: os vistos saem pela data de prioridade, o dia em que o Departamento do Trabalho aceitou o pedido de certificação trabalhista ou, no Schedule A, o dia em que o I-140 foi protocolado no USCIS"
+    },
+    {
+      "en": "Form I-140 immigrant petition fee, paid with the petition the U.S. employer files for the worker",
+      "text": "Taxa da petição de imigrante Form I-140, paga junto com a petição que o empregador dos EUA protocola para o trabalhador"
+    },
+    {
+      "en": "Asylum Program Fee the employer pays with the Form I-140; USD 300 for a small employer, with 25 or fewer full-time equivalent employees in the U.S., affiliates included, and none for a nonprofit",
+      "text": "Asylum Program Fee que o empregador paga com o Form I-140; USD 300 para pequeno empregador, com até 25 funcionários equivalentes em tempo integral nos EUA, contando coligadas, e nada para entidade sem fins lucrativos"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for the principal, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para o requerente principal, quando a família tira o visto num consulado: sempre para quem está fora dos EUA, e possível para quem está dentro"
+    },
+    {
+      "en": "Immigrant visa application fee, employment-based, for each accompanying family member, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
+      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando a família tira o visto num consulado: sempre para quem está fora dos EUA, e possível para quem está dentro"
+    },
+    {
+      "en": "USCIS immigrant fee for the principal, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para o requerente principal, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "text": "Taxa de imigrante do USCIS para cada familiar que acompanha, depois de um visto de imigrante emitido fora dos EUA, pelo green card"
+    },
+    {
+      "en": "Form I-485 to adjust status, for the principal, when the family lives in the U.S. in a status that allows adjusting there instead of a visa abroad",
+      "text": "Form I-485 para ajuste de status, para o requerente principal, quando a família mora nos EUA num status que permite o ajuste lá, em vez do visto no exterior"
+    },
+    {
+      "en": "Form I-485 to adjust status, for each family member living in the U.S. with the principal (USD 950 for a child under 14 filing with a parent)",
+      "text": "Form I-485 para ajuste de status, para cada familiar que mora nos EUA com o requerente principal (USD 950 para filho menor de 14 anos que pede junto com um dos pais)"
+    },
+    {
+      "en": "Affidavit of support review fee, for an immigrant visa, when a relative must give an affidavit of support and it is reviewed domestically",
+      "text": "Taxa de análise da declaração de sustento, no visto de imigrante, quando um parente precisa dar a declaração e ela é analisada nos EUA"
+    },
+    {
+      "en": "Form I-140 petition, filed by the U.S. employer for each worker, with the fee",
+      "text": "Petição Form I-140, protocolada pelo empregador dos EUA para cada trabalhador, com a taxa"
+    },
+    {
+      "en": "The individual labor certification the Department of Labor approved, in the original and signed by the employer on receipt; for a Schedule A job, the application for Schedule A designation",
+      "text": "A certificação trabalhista individual aprovada pelo Departamento do Trabalho, em via original e assinada pelo empregador ao recebê-la; para vaga do Schedule A, o pedido de enquadramento no Schedule A"
+    },
+    {
+      "en": "It expires if not filed with a Form I-140 within 180 calendar days of its approval. The employer may not take payment for obtaining it, its attorneys' fees included",
+      "text": "Ela vence se não for protocolada com um Form I-140 em até 180 dias corridos da aprovação. O empregador não pode cobrar por obtê-la, nem os honorários dos advogados dele"
+    },
+    {
+      "en": "Evidence the employer can pay the offered wage: copies of its annual reports, federal tax returns or audited financial statements",
+      "text": "Prova de que o empregador consegue pagar o salário oferecido: cópias dos relatórios anuais, das declarações de imposto federal ou de demonstrações financeiras auditadas"
+    },
+    {
+      "en": "For an employer with 100 or more workers, a statement from a financial officer may be accepted; profit and loss statements, bank or personnel records may be added or requested",
+      "text": "Para empregador com 100 ou mais funcionários, pode bastar uma declaração do diretor financeiro; demonstrativos de resultado, extratos bancários ou registros de pessoal podem ser juntados ou pedidos"
+    },
+    {
+      "en": "Letters from current or former employers or trainers with the name, address and title of the writer and a specific description of the duties performed or the training received",
+      "text": "Cartas de empregadores ou instrutores atuais ou anteriores, com nome, endereço e cargo de quem assina e descrição específica das funções exercidas ou do treinamento recebido"
+    },
+    {
+      "en": "Where the job asks for experience or training. If such letters are unavailable, other documentation of the experience or training will be considered",
+      "text": "Quando a vaga pede experiência ou treinamento. Se não houver essas cartas, outros documentos da experiência ou do treinamento serão considerados"
+    },
+    {
+      "en": "For an advanced degree: an official academic record of a U.S. advanced degree or foreign equivalent, or of a bachelor's with employer letters showing 5 years of progressive experience after it",
+      "text": "Para título acima do bacharelado: registro acadêmico oficial de título acima do bacharelado dos EUA ou equivalente estrangeiro, ou de bacharelado com cartas de empregadores mostrando 5 anos de experiência progressiva depois dele"
+    },
+    {
+      "en": "For exceptional ability, at least 3 of the kinds of evidence the rule lists, such as employer letters showing 10 years of full-time experience in the occupation, or a license or certification",
+      "text": "Para habilidade excepcional, pelo menos 3 dos tipos de prova que a norma lista, como cartas de empregadores mostrando 10 anos de experiência em tempo integral na ocupação, ou licença ou certificação profissional"
+    },
+    {
+      "en": "If these standards do not readily apply to the occupation, comparable evidence may be submitted",
+      "text": "Se esses critérios não se aplicam bem à ocupação, dá para apresentar provas equivalentes"
+    },
+    {
+      "en": "For a health care worker other than a doctor: a certificate from CGFNS or an approved equivalent credentialing organization, shown to the consular officer or with the adjustment of status",
+      "text": "Para profissional de saúde que não seja médico: certificado da CGFNS ou de órgão de credenciamento equivalente aprovado, apresentado ao cônsul ou no pedido de ajuste de status"
+    },
+    {
+      "en": "Affidavit of support from a relative who is a U.S. citizen or permanent resident, if that relative filed the petition or has a significant ownership interest in the employer that did",
+      "text": "Declaração de sustento (affidavit of support) de parente cidadão ou residente permanente dos EUA, se esse parente protocolou a petição ou tem participação relevante no empregador que a protocolou"
+    },
+    {
+      "en": "Not required if that relative is a brother or sister, unless a U.S. citizen",
+      "text": "Não é exigida se esse parente for irmão ou irmã, a menos que seja cidadão dos EUA"
+    },
+    {
+      "en": "Form I-485 application to adjust status, when the family lives in the U.S. in a status that allows adjusting there instead of getting a visa abroad",
+      "text": "Pedido de ajuste de status Form I-485, quando a família mora nos EUA com um status que permite fazer o ajuste lá em vez de tirar o visto no exterior"
+    },
+    {
+      "en": "Medical examination by a designated civil surgeon, reported on Form I-693, for an adjustment of status in the U.S.",
+      "text": "Exame médico com um civil surgeon credenciado, registrado no Form I-693, para o ajuste de status nos EUA"
+    },
+    {
+      "en": "Form I-485 Supplement J, confirming the job offer still stands or a new one under job portability, if USCIS asks for it or the worker chooses to file it with an adjustment of status",
+      "text": "Form I-485 Supplement J, confirmando que a oferta de emprego continua de pé ou uma nova pela portabilidade de emprego, se o USCIS pedir ou o trabalhador quiser apresentá-lo no ajuste de status"
+    },
+    {
+      "en": "A new offer must be in the same or a similar occupational classification, once the adjustment application has been pending 180 days or more",
+      "text": "A nova oferta precisa ser na mesma classificação ocupacional ou em uma parecida, depois que o pedido de ajuste estiver pendente há 180 dias ou mais"
+    },
+    {
+      "en": "Form DS-260 application, for an immigrant visa at a consulate abroad; a parent or guardian may execute it for a child under 14",
+      "text": "Formulário DS-260, para o visto de imigrante num consulado fora dos EUA; para criança com menos de 14 anos, o pai, a mãe ou o responsável pode preencher"
+    },
+    {
+      "en": "Passport, for an immigrant visa at a consulate abroad",
+      "text": "Passaporte, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Valid for at least 60 days beyond the period of validity of the visa",
+      "text": "Válido por pelo menos 60 dias além da validade do visto"
+    },
+    {
+      "en": "Certified copy of the record of birth, if obtainable, from the custodian of birth records in the country of birth, with date, place and parentage, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro de nascimento, se for possível obtê-la, emitida pelo órgão que guarda o registro no país de nascimento, com data, local e filiação, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Police certificates, if obtainable, for an immigrant visa at a consulate abroad",
+      "text": "Certidões de antecedentes criminais, se for possível obtê-las, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "From the countries of nationality and of residence, each if lived in six months or more, and any place lived in a year or more; the consul may ask for others where a police record is believed to exist",
+      "text": "Do país de nacionalidade e do país onde mora, de cada um se viveu nele seis meses ou mais, e de qualquer lugar onde viveu um ano ou mais; o cônsul pode pedir outros onde acredite haver registro policial"
+    },
+    {
+      "en": "Certified copy of any existing prison record, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro prisional, se existir, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Certified copy of any existing military record, the complete record of service, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro militar, se existir, com o histórico completo do serviço, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "A discharge certificate or enrollment book is not accepted in its place unless it shows the complete record of military service",
+      "text": "Certificado de baixa do serviço ou caderneta militar não substitui o registro, a menos que mostre o histórico completo do serviço militar"
+    },
+    {
+      "en": "Records establishing the relationship to the spouse, for an immigrant visa at a consulate abroad",
+      "text": "Registros que comprovam o vínculo com o cônjuge, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Records establishing the adopted child's relationship to the adoptive parent, for an immigrant visa at a consulate abroad",
+      "text": "Registros que comprovam o vínculo do filho adotivo com quem o adotou, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Photographs of the number and specifications the Department of State prescribes, uploaded with the online application or on paper as directed, for an immigrant visa at a consulate abroad",
+      "text": "Fotos na quantidade e no padrão que o Departamento de Estado define, enviadas com o formulário on-line ou em papel, como ele orientar, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Medical examination by a physician from the panel the consular officer approves, for every applicant regardless of age, for an immigrant visa at a consulate abroad",
+      "text": "Exame médico com um médico da lista aprovada pelo consulado, para todo solicitante, de qualquer idade, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Documentation of having received the vaccinations an immigrant needs, at least mumps, measles, rubella, polio, tetanus and diphtheria, pertussis, influenza type B and hepatitis B",
+      "text": "Comprovante das vacinas que o imigrante precisa ter, pelo menos caxumba, sarampo, rubéola, pólio, tétano e difteria, coqueluche, influenza tipo B e hepatite B"
+    },
+    {
+      "en": "May be waived if the vaccines are then received, if a panel physician or civil surgeon certifies one is not medically appropriate, or, by regulation, if one is against religious or moral convictions",
+      "text": "Pode ser dispensado se a pessoa tomar as vacinas depois, se médico credenciado (panel physician ou civil surgeon) atestar que uma não é adequada ou, por regulamento, se uma for contra crenças religiosas ou morais"
+    }
+  ]
+}
