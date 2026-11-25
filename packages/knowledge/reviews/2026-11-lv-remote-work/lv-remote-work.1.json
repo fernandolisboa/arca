@@ -377,7 +377,7 @@
         "currency": "EUR"
       },
       "appliesTo": "principal",
-      "sources": ["state-fee-regulations"]
+      "sources": ["state-fee-regulations", "immigration-law-earlier-regulations"]
     }
   ],
   "durations": [
