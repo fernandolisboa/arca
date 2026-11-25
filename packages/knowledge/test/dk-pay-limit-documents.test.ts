@@ -99,8 +99,6 @@ describe('dk-pay-limit v4 documents by tie, age and custody (spec #519)', () => 
 
   it('a dependent parent documents the dependence, as a possible dependent', async () => {
     const lists = await checklist('parent-depending-on-the-principal-possible');
-    expect(pick(lists, 'p2')).toEqual(
-      row(false, false, false, false, false, false, 'unknown'),
-    );
+    expect(pick(lists, 'p2')).toEqual(row(false, false, false, false, false, false, 'unknown'));
   }, 120_000);
 });

@@ -4,10 +4,7 @@
   "number": 4,
   "title": "Danish residence and work permit under the Pay Limit Scheme: a job offer with annual pay of at least DKK 552,000 (2026)",
   "country": "DK",
-  "tags": [
-    "work",
-    "temporary-residence"
-  ],
+  "tags": ["work", "temporary-residence"],
   "effectiveFrom": "2026-01-01",
   "status": "open",
   "currency": "DKK",
@@ -231,146 +228,88 @@
           }
         }
       },
-      "sources": [
-        "aliens-act-free-movement",
-        "eu-residence-order"
-      ]
+      "sources": ["aliens-act-free-movement", "eu-residence-order"]
     }
   ],
   "assessments": [
     {
       "id": "pay-limit",
       "title": "A job offer in Denmark with annual pay of at least the pay limit: DKK 400,000 in the act, adjusted each year for wage growth; DKK 552,000 for 2026 as SIRI publishes it",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "aliens-act-pay-limit",
-        "siri-pay-limit"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-pay-limit", "siri-pay-limit"]
     },
     {
       "id": "working-hours",
       "title": "Employment of at least 30 hours a week",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "aliens-act-employment-terms",
-        "siri-pay-limit"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms", "siri-pay-limit"]
     },
     {
       "id": "danish-bank-account",
       "title": "Pay goes into a Danish bank account in the principal's own name, opened within 180 days of entry or of the permit by someone who does not yet hold a permit of at least 180 days",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "aliens-act-employment-terms",
-        "siri-pay-limit"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms", "siri-pay-limit"]
     },
     {
       "id": "usual-terms",
       "title": "Pay and employment terms not inferior to the Danish standards of the professional field",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "siri-pay-limit"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["siri-pay-limit"]
     },
     {
       "id": "genuine-offer",
       "title": "No permit for a job in a lawful labour dispute, where the actual employment is presumed not to match the application nor meet the conditions, or where the offer mainly serves to obtain residence",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "aliens-act-employment-terms"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["aliens-act-employment-terms"]
     },
     {
       "id": "no-social-assistance",
       "title": "Neither the principal nor the family members with permits through them receive assistance under the Active Social Policy Act",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "aliens-act-social-assistance"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-act-social-assistance"]
     },
     {
       "id": "shared-home",
       "title": "Family members live at the same address as the principal and receive no assistance under the Active Social Policy Act",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
-      "sources": [
-        "aliens-act-family",
-        "siri-accompanying-family"
-      ]
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["aliens-act-family", "siri-accompanying-family"]
     },
     {
       "id": "danish-authorisation",
       "title": "Where the job needs a Danish authorisation, such as a doctor's, the authorisation, or a temporary one for adaptation and training, held before the permit is granted",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "siri-conditions"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["siri-conditions"]
     },
     {
       "id": "family-permits-not-revoked",
       "title": "The permit is conditional on no family member with a permit through the principal having that permit revoked more than once for lack of a required work permit",
-      "evidence": [
-        "principal.hasSpouse"
-      ],
-      "sources": [
-        "aliens-act-revocations",
-        "siri-conditions"
-      ]
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["aliens-act-revocations", "siri-conditions"]
     },
     {
       "id": "recognised-union",
       "title": "A spouse's marriage or registered partnership must be one Danish law recognises: legal where made, both present and 18 or more then, not of convenience, not against fundamental legal principles",
-      "evidence": [
-        "principal.hasSpouse"
-      ],
-      "sources": [
-        "siri-recognised-union"
-      ]
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["siri-recognised-union"]
     },
     {
       "id": "danish-employer",
       "title": "As a general rule, the employment agreement is with a company registered in Denmark; exceptions exist, such as a foreign company providing services in Denmark",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "siri-danish-employer"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["siri-danish-employer"]
     },
     {
       "id": "custody-consent",
       "title": "A child coming with only one of two parents who share custody needs the other parent's consent; a parent with sole custody documents it",
-      "evidence": [
-        "principal.hasSpouse"
-      ],
-      "sources": [
-        "siri-custody-consent"
-      ]
+      "evidence": ["principal.hasSpouse"],
+      "sources": ["siri-custody-consent"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse who was 18 or more at the wedding; married younger, with both now 18 or more: possible, since SIRI then assesses the couple as cohabiting partners",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "any",
         "operands": [
@@ -417,17 +356,12 @@
           }
         ]
       },
-      "sources": [
-        "aliens-act-family",
-        "siri-accompanying-family"
-      ]
+      "sources": ["aliens-act-family", "siri-accompanying-family"]
     },
     {
       "id": "partner",
       "title": "Cohabiting partner over 18: SIRI asks, as a rule, for at least 1.5 to 2 years living together, so 2 years or more counts, and 1.5 to 2 years, or a registered partnership, is possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -471,18 +405,12 @@
           }
         ]
       },
-      "sources": [
-        "aliens-act-family",
-        "siri-accompanying-family",
-        "guardianship-act-minors"
-      ]
+      "sources": ["aliens-act-family", "siri-accompanying-family", "guardianship-act-minors"]
     },
     {
       "id": "children",
       "title": "Children under 18; an older child who depends on the principal: possible, only where SIRI finds extraordinary circumstances and weighty considerations",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "any",
         "operands": [
@@ -521,9 +449,7 @@
     {
       "id": "parents",
       "title": "Parents who depend on the principal: possible, only where SIRI finds extraordinary circumstances and weighty considerations",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "all",
         "operands": [
@@ -536,10 +462,7 @@
           }
         ]
       },
-      "sources": [
-        "aliens-act-family",
-        "siri-other-family"
-      ]
+      "sources": ["aliens-act-family", "siri-other-family"]
     }
   ],
   "costs": [
@@ -553,10 +476,7 @@
         "currency": "DKK"
       },
       "appliesTo": "principal",
-      "sources": [
-        "fee-order-principal",
-        "aliens-act-fee"
-      ]
+      "sources": ["fee-order-principal", "aliens-act-fee"]
     },
     {
       "id": "family-fee",
@@ -568,10 +488,7 @@
         "currency": "DKK"
       },
       "appliesTo": "each_dependent",
-      "sources": [
-        "fee-order-family",
-        "aliens-act-fee"
-      ]
+      "sources": ["fee-order-family", "aliens-act-fee"]
     }
   ],
   "durations": [
@@ -580,28 +497,21 @@
       "title": "SIRI's processing of the application: normally 1 month, up to 3 months if further information is needed",
       "min": "P1M",
       "max": "P3M",
-      "sources": [
-        "siri-processing-and-duration"
-      ]
+      "sources": ["siri-processing-and-duration"]
     },
     {
       "id": "permit",
       "title": "Permit valid for the period of the employment; for an employment of 4 years or more, normally 4 years, then extended; never beyond 3 months before the passport expires",
       "min": "P0D",
       "max": "P4Y",
-      "sources": [
-        "siri-processing-and-duration",
-        "siri-passport-validity"
-      ]
+      "sources": ["siri-processing-and-duration", "siri-passport-validity"]
     },
     {
       "id": "family-processing",
       "title": "SIRI's processing of an accompanying family member's application: normally 2 months, up to 3 months if further information is needed",
       "min": "P2M",
       "max": "P3M",
-      "sources": [
-        "siri-family-processing"
-      ]
+      "sources": ["siri-family-processing"]
     }
   ],
   "corrects": 3,
@@ -611,27 +521,21 @@
       "title": "Receipt for the paid case processing fee",
       "kind": "fee_payment_proof",
       "appliesTo": "principal",
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "passport",
       "title": "Copy of all pages of the passport, including all empty pages and the front and back cover",
       "kind": "passport",
       "appliesTo": "principal",
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "employment-contract",
       "title": "Employment contract or job offer stating the salary, the terms of employment and a job description",
       "kind": "employment_contract",
       "appliesTo": "principal",
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "work-experience",
@@ -641,9 +545,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "education",
@@ -655,10 +557,7 @@
       },
       "translation": "certified",
       "note": "Translated by an authorised translator into Danish, Norwegian, Swedish, English, French or German; attach the original and the translation",
-      "sources": [
-        "siri-pay-limit-documents",
-        "siri-documentation-requirements"
-      ]
+      "sources": ["siri-pay-limit-documents", "siri-documentation-requirements"]
     },
     {
       "id": "danish-authorisation",
@@ -668,9 +567,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "legal-stay",
@@ -680,9 +577,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "salary-components",
@@ -692,9 +587,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "cv",
@@ -704,9 +597,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "sworn-declaration",
@@ -716,9 +607,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "passport-photo-norwegian-mission",
@@ -728,27 +617,21 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-pay-limit-documents"
-      ]
+      "sources": ["siri-pay-limit-documents"]
     },
     {
       "id": "fee-receipt-dependent",
       "title": "Receipt for the paid case processing fee of the family member's own application",
       "kind": "fee_payment_proof",
       "appliesTo": "each_dependent",
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "passport-dependent",
       "title": "Copy of all pages of the passport, including the cover",
       "kind": "passport",
       "appliesTo": "each_dependent",
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "marriage-certificate-dependent",
@@ -778,10 +661,7 @@
       },
       "translation": "certified",
       "note": "A marriage certificate is translated by an authorised translator into Danish or English; attach the original and the translation",
-      "sources": [
-        "siri-family-documents",
-        "siri-documentation-requirements"
-      ]
+      "sources": ["siri-family-documents", "siri-documentation-requirements"]
     },
     {
       "id": "cohabitation-proof-dependent",
@@ -792,9 +672,7 @@
         "op": "fact",
         "key": "person.hasPartner"
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "birth-certificate-dependent",
@@ -836,9 +714,7 @@
           }
         ]
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "custody-consent-dependent",
@@ -896,9 +772,7 @@
           }
         ]
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "other-parent-id-dependent",
@@ -956,9 +830,7 @@
           }
         ]
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "sole-custody-proof-dependent",
@@ -1015,10 +887,7 @@
       },
       "translation": "certified",
       "note": "Translated by an authorised translator into Danish or English; attach the original and the translation",
-      "sources": [
-        "siri-family-documents",
-        "siri-documentation-requirements"
-      ]
+      "sources": ["siri-family-documents", "siri-documentation-requirements"]
     },
     {
       "id": "dependence-proof-dependent",
@@ -1057,9 +926,7 @@
           }
         ]
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "sworn-declaration-dependent",
@@ -1069,9 +936,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "passport-photo-norwegian-mission-dependent",
@@ -1081,9 +946,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     },
     {
       "id": "power-of-attorney-dependent",
@@ -1093,9 +956,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "siri-family-documents"
-      ]
+      "sources": ["siri-family-documents"]
     }
   ]
 }
