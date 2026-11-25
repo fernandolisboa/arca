@@ -183,7 +183,7 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
-  /** The occupation codes work periods may name (ADR-0036). */
+  /** The occupation codes work periods and job offers may name (ADR-0036). */
   readonly occupations: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */
@@ -291,9 +291,9 @@ function linksOwnedBusinesses(rows: CaseRows, personId: string, facts: StoredPro
 }
 
 /**
- * Replaces a person's facts and dependence; dependence names other people of the case, a work
- * period's occupation a code of the occupations classification, and its business one the person
- * owns.
+ * Replaces a person's facts and dependence; dependence names other people of the case, the
+ * occupation of a work period or a job offer a code of the occupations classification, and a work
+ * period's business one the person owns.
  */
 async function saveProfile(
   tx: Transaction,
@@ -304,7 +304,7 @@ async function saveProfile(
   occupations: ReadonlySet<string>,
 ) {
   refuseUnless(
-    (facts.workPeriods ?? []).every(
+    [...(facts.workPeriods ?? []), ...(facts.jobOffers ?? [])].every(
       ({ occupation }) => occupation === undefined || occupations.has(occupation),
     ),
     'case_invalid',

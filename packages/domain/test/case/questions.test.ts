@@ -194,6 +194,29 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(unknown.ok && unknown.state.facts).toEqual({});
   });
 
+  it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {
+    const offers = [
+      {
+        country: 'PT',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '48000.5', currency: 'EUR' },
+        sponsored: true,
+      },
+      { country: 'US', sector: 'J', temporary: true },
+    ];
+    const applied = apply(empty, { jobOffers: offers });
+    expect(applied.ok && applied.state.facts).toEqual({
+      jobOffers: [
+        { ...offers[0], annualSalary: { amount: 4_800_050, currency: 'EUR' } },
+        offers[1],
+      ],
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('jobOffers'), applied.state)).toEqual(offers);
+  });
+
   it('saves residence periods, leaving out what is not known', () => {
     const periods = [
       { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' },
@@ -421,6 +444,23 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     [
       'a business on a work period that is not at the person’s own company',
       { workPeriods: [{ relation: 'employee', business: '8b7c6d5e-4f3a-4b2c-8d9e-8f7a6b5c4d3e' }] },
+    ],
+    [
+      'a job offer’s occupation outside the classification',
+      { jobOffers: [{ country: 'US', sector: 'J', temporary: false, occupation: '9999' }] },
+    ],
+    [
+      'a job offer’s salary in more decimals than the currency has',
+      {
+        jobOffers: [
+          {
+            country: 'US',
+            sector: 'J',
+            temporary: false,
+            annualSalary: { amount: '1.001', currency: 'USD' },
+          },
+        ],
+      },
     ],
     [
       'a field the item does not have',

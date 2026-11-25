@@ -9,6 +9,8 @@ const base = {
   assets: [],
 };
 
+const offer = { country: 'QM', sector: 'J', temporary: false };
+
 function accepts(input: object): boolean {
   return caseSnapshotSchema.safeParse(input).success;
 }
@@ -236,6 +238,22 @@ describe('CaseSnapshot', () => {
       'more work periods than the limit',
       { ...base, people: [{ id: 'p1', workPeriods: Array.from({ length: 21 }, () => ({})) }] },
     ],
+    [
+      'a job offer with an occupation that is not an ISCO-08 unit group code',
+      {
+        ...base,
+        people: [{ id: 'p1', jobOffers: [{ ...offer, occupation: '251' }] }],
+      },
+    ],
+    [
+      'a job offer with a negative salary',
+      {
+        ...base,
+        people: [
+          { id: 'p1', jobOffers: [{ ...offer, annualSalary: { amount: -1, currency: 'EUR' } }] },
+        ],
+      },
+    ],
   ])('rejects %s', (_label, input) => {
     expect(accepts(input)).toBe(false);
   });
@@ -277,6 +295,21 @@ describe('CaseSnapshot', () => {
         assets: [business],
       }),
     ).toBe(false);
+  });
+
+  it('accepts job offers with or without an occupation, a salary and sponsorship', () => {
+    for (const jobOffer of [
+      offer,
+      {
+        ...offer,
+        occupation: '2512',
+        annualSalary: { amount: 6_000_000, currency: 'GBP' },
+        sponsored: true,
+      },
+      { ...offer, sponsored: false },
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', jobOffers: [jobOffer] }] })).toBe(true);
+    }
   });
 
   it('accepts work periods with any part unknown, ongoing ones, and one that starts and ends in a month', () => {

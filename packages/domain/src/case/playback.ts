@@ -68,6 +68,9 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     country: countryCodeSchema,
     sector: z.enum(isicSections as [string, ...string[]]),
     temporary: z.boolean(),
+    occupation: occupationCodeSchema.optional(),
+    annualSalary: amountSchema.optional(),
+    sponsored: z.boolean().optional(),
   }),
   sentence('noJobOffer', { person }),
   sentence('workPeriod', {
@@ -262,7 +265,14 @@ function describePerson(
         if (subject.jobOffers === undefined) unanswered(question);
         else if (subject.jobOffers.length === 0) said.push({ kind: 'noJobOffer', ...ask });
         else
-          for (const offer of subject.jobOffers) said.push({ kind: 'jobOffer', ...ask, ...offer });
+          for (const { annualSalary, ...offer } of subject.jobOffers) {
+            said.push({
+              kind: 'jobOffer',
+              ...ask,
+              ...offer,
+              ...(annualSalary === undefined ? {} : { annualSalary: decimalAmount(annualSalary) }),
+            });
+          }
         break;
       case 'residencePeriods':
         if (subject.residencePeriods === undefined) unanswered(question);

@@ -29,6 +29,7 @@ import {
   type Citizenship,
   type CompletenessMarker,
   type CountryCode,
+  type JobOffer,
   type Person,
   type Relationship,
   type ResidencePeriod,
@@ -74,6 +75,7 @@ export interface LineageBinding {
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
 interface RecordValues {
   readonly workPeriod: WorkPeriod;
+  readonly jobOffer: JobOffer;
   readonly residencePeriod: ResidencePeriod;
 }
 
@@ -88,6 +90,7 @@ export type RecordKind = PersonRecord['kind'];
 
 export const recordKinds = [
   'workPeriod',
+  'jobOffer',
   'residencePeriod',
 ] as const satisfies readonly RecordKind[];
 
@@ -481,6 +484,47 @@ export const factCatalog = {
           employees === undefined ? integerRange(0, undefined) : integerRange(employees, employees),
       };
     },
+  },
+  'jobOffer.country': {
+    type: { kind: 'country' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').country) }),
+  },
+  'jobOffer.sector': {
+    type: { kind: 'enum', values: isicSections },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').sector) }),
+  },
+  'jobOffer.temporary': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: booleanValue(recordOf(binding, 'jobOffer').temporary) }),
+  },
+  'jobOffer.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'jobOffer',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').occupation) }),
+  },
+  /** The gross annual salary the offer states, in the route's currency at `factsAsOf`. */
+  'jobOffer.annualSalary': {
+    type: { kind: 'money' },
+    scope: 'jobOffer',
+    nonNegative: true,
+    derive: (binding) => {
+      const salary = new MoneySum(binding.environment);
+      const stated = recordOf(binding, 'jobOffer').annualSalary;
+      if (stated === undefined) salary.open([], true);
+      else salary.add(toExact(stated), true);
+      return salary.result();
+    },
+  },
+  /** Whether the employer will sponsor the application. */
+  'jobOffer.sponsored': {
+    type: { kind: 'boolean' },
+    scope: 'jobOffer',
+    derive: (binding) => ({
+      value: booleanValue(recordOf(binding, 'jobOffer').sponsored ?? 'unknown'),
+    }),
   },
 } as const satisfies Record<string, FactDefinition>;
 
