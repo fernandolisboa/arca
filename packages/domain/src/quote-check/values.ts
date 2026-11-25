@@ -172,7 +172,7 @@ export function digitsApart(text: string): string {
     .split(lineBreak)
     .map((line) => {
       const columns = line.replace(
-        /(?<=[0-9\uff10-\uff19])(?:\s{2,}|\t)(?=[0-9\uff10-\uff19])/gu,
+        /(?<=[0-9\uff10-\uff19])(?:\s{2,}|\t|\u3000)(?=[0-9\uff10-\uff19])/gu,
         ' | ',
       );
       const words = columns.trim();

@@ -45,4 +45,5 @@ The proposal check and the quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-
 6. **Optional and in-Japan papers left out:** a passport copy when the name's spelling differs between the certificate and the passport ("if possible"), and the validity of the supporter's proof of work and of a job offer issued in Japan, which the 3-month line may cover.
 7. **Version 6's tax and social insurance records** apply to every family member, an infant too, as table III reads for each applicant.
 8. **Corrections no adversarial round saw:** the round's fixes above and the repository reviewers' fixes, if any; the session, the proposal check and the quote check read the result.
-9. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
+9. **Brazil's guide lacks four kinds issued in Brazil:** `paternity_acknowledgment` (in Brazil, recorded on the birth certificate), `identity_document`, `ancestry_records` and `adoption_decree`. The earlier document reviews left the last three out too; a guide version for them needs gov.br or jus.br pages that state where each is issued, which this review did not research.
+10. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.

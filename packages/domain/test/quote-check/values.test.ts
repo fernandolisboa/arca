@@ -103,9 +103,10 @@ describe('full-width digits', () => {
   });
 
   it('keeps full-width figures of two lines apart and widens a cut full-width figure', () => {
-    expect(numbersIn(digitsApart('第１条\n６００円'))).not.toContain('1600');
+    expect(numbersIn(digitsApart('１\n６００円'))).not.toContain('1600');
     expect(figureBounds('１.５年', 2, 3)).toEqual({ start: 0, end: 3 });
     expect(numbersIn(digitsApart('１  ６００'))).not.toContain('1600');
+    expect(numbersIn(digitsApart('１　６００'))).not.toContain('1600');
     expect(figureBounds('１，５００円', 2, 5)).toEqual({ start: 0, end: 5 });
     expect(figureBounds('１,５００円', 2, 5)).toEqual({ start: 0, end: 5 });
   });
