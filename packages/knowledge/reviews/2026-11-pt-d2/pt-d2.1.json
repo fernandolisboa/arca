@@ -391,7 +391,7 @@
     },
     {
       "id": "startup-visa-existing-startup",
-      "title": "Incubator path, home-country startup under 4 years old, to operate in Portugal: at least 5 jobs besides the founders in 24 months; executive role or 10% of capital or votes; positive equity",
+      "title": "Incubator path, home-country startup under 4 years old, to operate in Portugal: potential for at least 5 jobs besides founders in 24 months; executive role or 10% of capital or votes; positive equity",
       "evidence": ["principal.monthlyActiveIncome"],
       "sources": ["startup-visa-rules"]
     },
