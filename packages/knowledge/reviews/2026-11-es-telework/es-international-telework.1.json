@@ -267,6 +267,90 @@
                   "op": "all",
                   "operands": [
                     {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "employee"
+                      }
+                    },
+                    {
+                      "op": "ne",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.employerCountry"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "ES"
+                      }
+                    }
+                  ]
+                },
+                "atLeast": "P3M",
+                "window": "P3M",
+                "continuous": true
+              },
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "employee"
+                      }
+                    },
+                    {
+                      "op": "ne",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.employerCountry"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "ES"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "covers",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
                       "op": "in",
                       "item": {
                         "op": "fact",
@@ -722,6 +806,33 @@
         ]
       },
       "sources": ["ley-14-2013-family"]
+    },
+    {
+      "id": "partner-parents",
+      "title": "The partner's parents who depend on the holder or the partner: possible, as the law says \"dependent ascendants\" and does not say whose",
+      "path": ["partner", "parent"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "fact",
+                "key": "person.dependsOnPrincipal"
+              },
+              {
+                "op": "fact",
+                "key": "edge.dependsOnLinkedPerson"
+              }
+            ]
+          },
+          {
+            "op": "unmodeled"
+          }
+        ]
+      },
+      "sources": ["ley-14-2013-family"]
     }
   ],
   "costs": [
@@ -784,7 +895,7 @@
               "op": "eq",
               "left": {
                 "op": "fact",
-                "key": "principal.residenceCountry"
+                "key": "person.residenceCountry"
               },
               "right": {
                 "op": "token",
