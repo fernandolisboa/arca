@@ -874,7 +874,7 @@ export const ptBR = {
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       jobOffers:
-        'Se souber, anote a ocupação, o salário por ano e se a empresa vai patrocinar o visto. Algumas rotas exigem salário mínimo ou patrocínio da empresa. O salário aparece para quem vê os dados pessoais desta pessoa.',
+        'Se souber, anote a ocupação, o salário por ano e se a empresa vai patrocinar o visto. Algumas rotas exigem um salário a partir de certo valor ou o patrocínio da empresa. O salário aparece para quem vê os dados pessoais desta pessoa.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
     },

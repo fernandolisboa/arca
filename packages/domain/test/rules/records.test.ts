@@ -314,6 +314,24 @@ describe('job offers as a record collection (ADR-0036)', () => {
       'unknown',
       ['jobOffer.annualSalary@p1'],
     ],
+    [
+      'a salary exactly at the threshold',
+      [offer({ annualSalary: { amount: 4_000_000, currency: 'EUR' } })],
+      true,
+      [],
+    ],
+    [
+      'a salary in dollars that converts exactly to it',
+      [offer(salaryInDollars(8_000_000))],
+      true,
+      [],
+    ],
+    [
+      'one offer that meets it beside one whose salary is not known',
+      [offer(), offer({ annualSalary: undefined })],
+      true,
+      [],
+    ],
     ['an offer in another country', [offer({ country: 'QN' })], false, []],
     ['an unsponsored offer', [offer({ sponsored: false })], false, []],
     [
