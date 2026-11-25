@@ -55,6 +55,7 @@ Domain-only Phase 1 code (consultancy core, slice 1) runs in parallel with Phase
 - Work, studies, registrations and residence in the case ([#507](https://github.com/fernandolisboa/arca/issues/507), [ADR-0036](adr/0036-case-records-and-classifications.md)): occupation and field-of-study classifications, then the records the work, business and talent routes read.
 - Strategy recommendation with alternatives, pros, cons, risks, cost and time.
 - Personalized document checklist ([#519](https://github.com/fernandolisboa/arca/issues/519)).
+- Family plan: a route per person, who goes along, who goes first and reunification later ([ADR-0040](adr/0040-family-plan.md)).
 - Step-by-step plan with execution modes and action points.
 - On-call assistant with cited sources.
 - Assets, tax and FX simulator; source-of-funds trail.

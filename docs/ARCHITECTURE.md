@@ -107,6 +107,7 @@ Entities, not final schema:
 - `action_point`: where each step happens (official link, phone, consulate by jurisdiction, partner by region).
 - `evaluation`: person or unit × route version → status, missing requirements, estimated cost and time.
 - `asset`, `sale`, `gift`, `fx_transfer`: the source-of-funds trail.
+- `plan_move`, `plan_move_dependent`: the family plan, one per case and shared by its members: each move a member's route in a stage with the people it takes, evaluated on read with only them in the unit ([ADR-0040](adr/0040-family-plan.md)).
 - `plan`, `task`, `task_dependency`: the executable plan, with the execution mode of each task.
 - `document`: type, owner, validity, apostille, translation and a pointer to the encrypted file.
 - `update_request`, `update_stage` and `update_end`: a request to refresh one route or add one, its stages with their token usage and web searches, and the proposal or failure code it ended with; one live per route, or per country for a new route. `rule_verdict` caches the validator's answer per item, quote, page text hash, validator model and prompt version, kept across requests ([ADR-0031](adr/0031-rule-updates-on-request.md)).

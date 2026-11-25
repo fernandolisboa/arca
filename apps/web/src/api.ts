@@ -98,6 +98,16 @@ export const comparisonQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** The case's family plan, each move evaluated with only the people it takes (ADR-0040). */
+export const familyPlanQuery = queryOptions({
+  queryKey: ['case', 'plan'],
+  queryFn: () => api.call(routes.getFamilyPlan),
+  networkMode: 'always',
+  retry: false,
+  // Each read counts against a per-session limit, so a tab coming back into view does not read.
+  refetchOnWindowFocus: false,
+});
+
 /** What to do when leaving a country, with official sources (ADR-0038): public, rarely changed. */
 export const departureChecklistsQuery = queryOptions({
   queryKey: ['departure-checklists'],
