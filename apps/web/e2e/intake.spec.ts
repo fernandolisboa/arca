@@ -55,7 +55,7 @@ test('drafts the family from a text, then saves what the member kept', async ({ 
   expect(violations.map(({ id, nodes }) => [id, nodes.map((node) => node.target)])).toEqual([]);
   await save.click();
 
-  await expect(page.getByRole('heading', { level: 2, name: 'Perguntas guiadas' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Questionário' })).toBeVisible();
   await page.getByRole('button', { name: 'Ver o resumo do caso' }).click();
   await expect(page.getByText(/^Nascimento de Bia: 2015/)).toBeVisible();
   await expect(page.getByText('Cidadania de Bia: Itália.')).toBeVisible();

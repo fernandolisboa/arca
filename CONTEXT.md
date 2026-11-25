@@ -47,7 +47,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Family (mode) | Em família | The step is assigned to a relative in the case who offered to help |
 | Action point | Ponto de ação | Where a step actually happens: link, phone, office, partner; says whether the step can be done online |
 | Family area | Área da família | The screen with the people in a case, who has an account, invites and who may upload documents for whom; grants no access by itself |
-| Guided questions | Perguntas guiadas | The step-by-step questions per person that fill the case, each setting one part of it (a fact, a completeness marker, dependence, an asset or a relationship's details); "Não sei" leaves it unknown |
+| Guided questions | Questionário | The step-by-step questions per person that fill the case, each setting one part of it (a fact, a completeness marker, dependence, an asset or a relationship's details); "Não sei" leaves it unknown |
 | Free-text intake | Contar com suas palavras | Filling the case from the member's own description of the family, through an intake draft the member reviews (spec 0008) |
 | Intake draft | Rascunho | The answers proposed from a member's own description of the family, which the member reviews person by person and fact by fact before anything is saved (spec 0008); the text itself is never stored |
 | Playback | Resumo do caso | The case read back in plain sentences, each linked to the question that sets it, so the person can correct it |

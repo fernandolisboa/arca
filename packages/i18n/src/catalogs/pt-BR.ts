@@ -430,7 +430,7 @@ export const ptBR = {
         action: 'Começar',
       },
       questions: {
-        title: 'Responder às perguntas guiadas',
+        title: 'Responder ao questionário',
         body: '{left, plural, =0 {Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} one {Falta # pergunta. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} other {Faltam # perguntas. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.}}',
         action: 'Continuar',
       },
@@ -443,7 +443,7 @@ export const ptBR = {
     stages: {
       label: 'Etapas do caso',
       family: 'Contar sobre a família',
-      questions: 'Perguntas guiadas',
+      questions: 'Questionário',
       routes: 'Ver as rotas que servem',
       progress: '{answered} de {total}',
       done: '(feita)',
@@ -589,8 +589,8 @@ export const ptBR = {
     },
     nextStep: 'Próximo passo',
     nextQuestionsMine:
-      '{count, plural, =0 {As perguntas guiadas montam o seu caso.} other {As perguntas guiadas montam o seu caso e o de {names}.}}',
-    nextQuestionsOthers: 'As perguntas guiadas montam o caso de {names}.',
+      '{count, plural, =0 {O questionário monta o seu caso.} other {O questionário monta o seu caso e o de {names}.}}',
+    nextQuestionsOthers: 'O questionário monta o caso de {names}.',
     nextResults: 'Veja as rotas que o Arca encontrou para quem entra no planejamento.',
     sections: {
       label: 'Partes da família',
@@ -619,7 +619,7 @@ export const ptBR = {
       spouse: 'casamento',
       partner: 'união estável',
     },
-    questions: 'Responder às perguntas guiadas',
+    questions: 'Responder ao questionário',
     me: '{name} (você)',
     member: 'Entra no planejamento',
     relative: 'Parente fora do planejamento',
@@ -747,7 +747,7 @@ export const ptBR = {
   },
   /** The guided questions (spec 0007, R4): one step at a time, "Não sei" always allowed. */
   questions: {
-    title: 'Perguntas guiadas',
+    title: 'Questionário',
     lead: 'Responda no seu ritmo. Cada etapa fica salva quando você avança, e “Não sei” sempre vale.',
     signIn: 'Entre para responder às perguntas.',
     noCase: 'Comece o caso na área da família para responder às perguntas.',
@@ -989,11 +989,11 @@ export const ptBR = {
     submit: 'Montar rascunho',
     drafting: 'Lendo o seu texto…',
     failure:
-      '{reason, select, not_found {Comece o caso na área da família antes de contar com suas palavras.} intake_unavailable {O rascunho por texto não está disponível agora. Você pode seguir pelas perguntas guiadas.} intake_timeout {O rascunho demorou demais. Tente de novo, talvez com um texto mais curto.} intake_unparsable {Não deu para montar um rascunho com esse texto. Tente escrever de outro jeito.} limited {Você já montou muitos rascunhos. Espere um pouco ou tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, not_found {Comece o caso na área da família antes de contar com suas palavras.} intake_unavailable {O rascunho por texto não está disponível agora. Você pode seguir pelo questionário.} intake_timeout {O rascunho demorou demais. Tente de novo, talvez com um texto mais curto.} intake_unparsable {Não deu para montar um rascunho com esse texto. Tente escrever de outro jeito.} limited {Você já montou muitos rascunhos. Espere um pouco ou tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     reviewLead:
       'Confira o que o Arca entendeu e desmarque o que estiver errado. Nada vai para o caso antes de você salvar.',
     empty:
-      'O texto não trouxe nada novo para o caso. Conte com mais detalhes ou siga pelas perguntas guiadas.',
+      'O texto não trouxe nada novo para o caso. Conte com mais detalhes ou siga pelo questionário.',
     unnamed:
       '{role, select, self {Pessoa nova (você)} spouse {Pessoa nova (cônjuge)} partner {Pessoa nova (companheiro ou companheira)} child {Pessoa nova (filho ou filha)} parent {Pessoa nova (pai ou mãe)} grandparent {Pessoa nova (avô ou avó)} sibling {Pessoa nova (irmão ou irmã)} other {Pessoa nova}}',
     choice: {
@@ -1006,14 +1006,13 @@ export const ptBR = {
       citizenships: 'Essas são todas as cidadanias de {name}: {list}',
       languages: 'Esses são todos os idiomas de {name}: {list}',
     },
-    wholeHint:
-      'Se a lista estiver incompleta, deixe desmarcado. Ela fica para as perguntas guiadas.',
+    wholeHint: 'Se a lista estiver incompleta, deixe desmarcado. Ela fica para o questionário.',
     save: 'Salvar no caso',
     needNames: 'Dê um nome a cada pessoa nova para salvar.',
     saveFailure:
-      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelas perguntas guiadas.} case_limit {O caso chegou a um limite. Tire alguém na área da família e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelo questionário.} case_limit {O caso chegou a um limite. Tire alguém na área da família e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     restart: 'Escrever outro texto',
-    toQuestions: 'Ir para as perguntas guiadas',
+    toQuestions: 'Ir para o questionário',
   },
   /** The case read back in plain sentences, each opening its question (spec 0007, R5). */
   playback: {

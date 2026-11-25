@@ -24,8 +24,8 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   const problems = watchProblems(page);
   await signedIn(page);
   await family(page);
-  await page.getByRole('link', { name: 'Responder às perguntas guiadas' }).click();
-  await expect(page.getByRole('heading', { level: 2, name: 'Perguntas guiadas' })).toBeVisible();
+  await page.getByRole('link', { name: 'Responder ao questionário' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Questionário' })).toBeVisible();
 
   const basics = step(page, 'Dados básicos');
   const born = group(basics, 'Quando Ana nasceu?');
