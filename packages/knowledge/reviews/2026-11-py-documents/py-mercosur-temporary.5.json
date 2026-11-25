@@ -29,7 +29,7 @@
       "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
       "title": "Ley N.º 3578/2008, Mercosur Residence Agreement, article 4.1, c) to e): no judicial, criminal or police records in the country of origin or where the applicant lived in the five years before",
       "kind": "official",
-      "verifiedAt": "2026-11-20"
+      "verifiedAt": "2026-11-25"
     },
     {
       "id": "ley-3578-family",
@@ -644,7 +644,7 @@
       "title": "Birth certificate issued by the competent authority of the issuing country, endorsed and legalized or apostilled",
       "kind": "birth_certificate",
       "appliesTo": "principal",
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
@@ -704,7 +704,7 @@
                       },
                       "set": {
                         "op": "tokens",
-                        "values": ["AR", "CO"]
+                        "values": ["AR", "CA", "CO", "CU", "ES", "MX", "NI", "VE"]
                       }
                     }
                   ]
@@ -717,7 +717,7 @@
           }
         ]
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-records"]
     },
     {
@@ -748,7 +748,7 @@
         "op": "fact",
         "key": "person.hasSpouse"
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
@@ -771,7 +771,7 @@
           }
         ]
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
@@ -911,7 +911,7 @@
       "title": "Birth certificate issued by the competent authority of the issuing country, endorsed and legalized or apostilled",
       "kind": "birth_certificate",
       "appliesTo": "each_dependent",
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
@@ -971,7 +971,7 @@
                       },
                       "set": {
                         "op": "tokens",
-                        "values": ["AR", "CO"]
+                        "values": ["AR", "CA", "CO", "CU", "ES", "MX", "NI", "VE"]
                       }
                     }
                   ]
@@ -984,7 +984,7 @@
           }
         ]
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-records"]
     },
     {
@@ -1015,7 +1015,7 @@
         "op": "fact",
         "key": "person.hasSpouse"
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
@@ -1038,7 +1038,7 @@
           }
         ]
       },
-      "note": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "note": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
       "sources": ["dnm-mercosur-requirements", "ley-3578-residence"]
     },
     {
