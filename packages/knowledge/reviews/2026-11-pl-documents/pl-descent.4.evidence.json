@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:polish-line",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 14. Małoletni nabywa obywatelstwo polskie przez urodzenie, w przypadku gdy: 1) co najmniej jedno z rodziców jest obywatelem polskim;"
+    },
+    {
+      "key": "requirement:polish-line",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 55. 1. Decyzję w sprawie potwierdzenia posiadania obywatelstwa polskiego lub jego utraty wydaje na wniosek osoby, której postępowanie dotyczy,"
+    },
+    {
+      "key": "requirement:polish-line",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2012/161",
+      "quote": "Ustawa z dnia 2 kwietnia 2009 r. o obywatelstwie polskim Ustawa rozdział 5 i art. 65 wchodzą w życie z dniem 15 maja 2012 r."
+    },
+    {
+      "key": "requirement:polish-line",
+      "url": "https://api.sejm.gov.pl/eli/acts/DU/2012/161",
+      "quote": "2012-08-15 IN_FORCE"
+    },
+    {
+      "key": "assessment:no-own-loss",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 46. Obywatel polski, który zrzeka się obywatelstwa polskiego, traci obywatelstwo polskie po uzyskaniu zgody Prezydenta Rzeczypospolitej Polskiej na zrzeczenie się obywatelstwa polskiego."
+    },
+    {
+      "key": "assessment:no-own-loss",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 7. 1. Nadanie obywatelstwa polskiego rodzicom, uznanie ich za obywateli polskich oraz wyrażenie zgody na zrze- czenie się obywatelstwa polskiego obejmuje małoletniego pozostającego pod ich władzą rodzicielską."
+    },
+    {
+      "key": "assessment:parentage-settled-within-a-year",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 6. 1. Zmiany w ustaleniu osoby albo obywatelstwa jednego lub obojga rodziców podlegają uwzględnieniu przy określeniu obywatelstwa małoletniego, jeżeli nastąpiły przed upływem roku od dnia urodzenia się małoletniego."
+    },
+    {
+      "key": "assessment:parentage-settled-within-a-year",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "2. Zmiany w ustaleniu osoby ojca, wynikające z orzeczenia sądu wydanego na skutek powództwa o zaprzeczenie ojcostwa albo o ustalenie bezskuteczności uznania ojcostwa, podlegają uwzględnieniu przy określeniu obywatelstwa mało- letniego, chyba że małoletni osiągnął już pełnoletność lub za jego zgodą, jeżeli ukończył 16 lat."
+    },
+    {
+      "key": "assessment:full-adoption-before-16",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 16. Małoletni cudzoziemiec, przysposobiony przez osobę lub osoby posiadające obywatelstwo polskie, nabywa obywatelstwo polskie, jeżeli przysposobienie pełne nastąpiło przed ukończeniem przez niego 16 lat. W tym przypadku przyjmuje się, że małoletni cudzoziemiec nabył obywatelstwo polskie z dniem urodzenia."
+    },
+    {
+      "key": "assessment:application-and-proof",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 56. 1. Wniosek o potwierdzenie posiadania lub utraty obywatelstwa polskiego zawiera dane osoby, której potwier- dzenie dotyczy, i jej wstępnych do drugiego stopnia oraz informacje o istotnych okolicznościach niezbędnych do ustalenia stanu faktycznego i prawnego."
+    },
+    {
+      "key": "assessment:application-and-proof",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "2. Osoba i podmiot występujący z wnioskiem o potwierdzenie posiadania lub utraty obywatelstwa polskiego są obo- wiązani dołączyć dokumenty potwierdzające dane i informacje zawarte we wniosku, chyba że uzyskanie tych dokumentów napotyka trudne do przezwyciężenia przeszkody."
+    },
+    {
+      "key": "assessment:application-and-proof",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "quote": "§ 1. Rozporządzenie określa wzór formularza wniosku o potwierdzenie posiadania lub utraty obywatelstwa polskiego."
+    },
+    {
+      "key": "assessment:documents-in-polish",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "assessment:no-own-loss",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 8. Do nadania obywatelstwa polskiego małoletniemu, który ukończył 16 lat, uznania go za obywatela polskiego oraz utraty przez niego obywatelstwa polskiego wskutek wyrażenia zgody na zrzeczenie się obywatelstwa przez jego rodzi- ców jest wymagane oświadczenie o wyrażeniu zgody złożone przez małoletniego."
+    },
+    {
+      "key": "assessment:documents-in-polish",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "quote": "Wniosek wypełnia się w języku polskim"
+    },
+    {
+      "key": "assessment:documents-in-polish",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "*) Za czynności konsularne wykonywane w ramach opracowywania dokumentacji nie pobiera się dodatkowych opłat, z wyjątkiem opłat za sporządzenie i poświadczenie lub sprawdzenie i poświadczenie tłumaczenia (poz. 6.08, 6.09, 6.10 i 6.11 taryfy opłat kon- sularnych)."
+    },
+    {
+      "key": "assessment:documents-in-polish",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "w państwie przyjmującym na język polski – za każdą rozpoczętą stronę tłumaczenia**) 120"
+    },
+    {
+      "key": "assessment:documents-in-polish",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "6.10 Sporządzenie i poświadczenie tłumaczenia dokumentów o treściach powtarzalnych z języka polskiego na język urzędowy lub powszechnie używany w państwie przyjmującym lub z języka urzędowego lub powszechnie używanego w państwie przyjmującym na język polski 60"
+    },
+    {
+      "key": "assessment:documents-at-a-consul",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "oryginał aktualnego dokumentu tożsamości wraz ze stronami zawierającymi adnotacje urzędowe (do wglądu), jeśli urodziłeś się poza granicami Rzeczypospolitej Polskiej – musisz przedstawić pełny akt urodzenia zawierający nazwiska rodziców, akt stanu cywilnego stwierdzający Twój stan cywilny"
+    },
+    {
+      "key": "assessment:documents-at-a-consul",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "kopie dokumentów muszą być potwierdzone za zgodność z oryginałami przez konsula,"
+    },
+    {
+      "key": "assessment:documents-at-a-consul",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille : – w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula, – w przypadku pozostałych krajów."
+    },
+    {
+      "key": "assessment:documents-at-the-voivode",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "odpisy aktów stanu cywilnego tj. aktu urodzenia, aktu małżeństwa (może zaistnieć konieczność ich umiejscowienia, jeżeli zostały sporządzone poza granicami RP),"
+    },
+    {
+      "key": "assessment:documents-at-the-voivode",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dowód wniesienia opłaty skarbowej"
+    },
+    {
+      "key": "assessment:documents-at-the-voivode",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "kserokopia aktualnego dokumentu tożsamości,"
+    },
+    {
+      "key": "assessment:documents-at-the-voivode",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "pocztą (kopie dokumentów muszą być wówczas uwierzytelnione przez notariusza /lub adwokata albo radcę prawnego, jeśli jest pełnomocnikiem w sprawie/) na adres:"
+    },
+    {
+      "key": "assessment:attorney-for-service",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1691",
+      "quote": "§ 4. Strona, która nie ma miejsca zamieszkania lub zwykłego pobytu albo siedziby w Rzeczypospolitej Polskiej, innym państwie członkowskim Unii Europejskiej, Konfederacji Szwajcarskiej albo państwie członkowskim Europejskiego Poro- zumienia o Wolnym Handlu (EFTA) – stronie umowy o Europejskim Obszarze Gospodarczym, jeżeli nie ustanowiła pełno- mocnika do prowadzenia sprawy zamieszkałego w Rzeczypospolitej Polskiej i nie działa za pośrednictwem konsula Rzeczy- pospolitej Polskiej, jest obowiązana wskazać w Rzeczypospolitej Polskiej pełnomocnika do doręczeń, chyba że doręczenie następuje usługą rejestrowanego doręczenia elektronicznego."
+    },
+    {
+      "key": "assessment:attorney-for-service",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1691",
+      "quote": "§ 5. W razie niewskazania pełnomocnika do doręczeń przeznaczone dla tej strony pisma pozostawia się w aktach sprawy ze skutkiem doręczenia."
+    },
+    {
+      "key": "assessment:attorney-for-service",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "quote": "12) Stosownie do przepisu art. 40 § 4 Kodeksu postępowania administracyjnego wnioskodawca zamieszkały za granicą lub mający siedzibę za granicą, jeżeli nie ustanowił pełnomocnika do prowadzenia sprawy zamieszkałego w kraju, jest obowiązany wskazać w kraju pełnomocnika do doręczeń."
+    },
+    {
+      "key": "assessment:appeal-within-14-days",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "Odwołanie składa się do Ministra Spraw Wewnętrznych i Administracji za pośrednictwem wojewody, który wydał decyzję w Twojej sprawie. Masz na to 14 dni od dnia doręczenia decyzji."
+    },
+    {
+      "key": "assessment:appeal-within-14-days",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "4. W sprawach należących do właściwości wojewody organem wyższego stopnia w rozumieniu Kodeksu postępowania administracyjnego jest minister właściwy do spraw wewnętrznych."
+    },
+    {
+      "key": "assessment:deciding-voivode",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "wojewoda właściwy ze względu na miejsce zamieszkania lub ostatnie miejsce zamieszkania na terytorium Rzeczy- pospolitej Polskiej osoby, której postępowanie dotyczy, a w przypadku braku tej podstawy – wojewoda mazowiecki."
+    },
+    {
+      "key": "assessment:own-application-for-each-minor",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "Nie możesz swoim wnioskiem objąć małoletnich dzieci, trzeba dla nich złożyć indywidualne wnioski."
+    },
+    {
+      "key": "cost:stamp-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "27. Decyzja w przedmiocie potwierdzenia posiadania lub utraty obywatelstwa polskiego 277 zł"
+    },
+    {
+      "key": "cost:stamp-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "5.01 Doręczenie dokumentu, który przekazał organ krajowy, na złożony bezpośrednio w tym organie wniosek osoby przebywającej za granicą 40"
+    },
+    {
+      "key": "cost:stamp-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "Art. 6. 1. Obowiązek zapłaty opłaty skarbowej powstaje: 1) od dokonania czynności urzędowej – z chwilą dokonania zgłoszenia lub złożenia wniosku o dokonanie czynności urzędowej;"
+    },
+    {
+      "key": "cost:stamp-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "zaświadczenia lub zezwolenia (pozwolenia, koncesji) albo składając dokument stwierdzający udzielenie pełnomocnictwa lub prokury albo jego odpis, wypis lub kopię przedstawią zaświadczenie o korzystaniu ze świadczeń pomocy społecznej z powodu ubóstwa;"
+    },
+    {
+      "key": "cost:stamp-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "Art. 3a. 1. Nie podlega opłacie skarbowej dokonanie czynności urzędowej lub wydanie zaświadczenia, jeżeli dokonanie tej czynności lub wydanie zaświadczenia następuje na podstawie zgłoszenia lub na wniosek, które przekazane zostały za pośrednictwem polskiego konsula albo, jeżeli doręczenie dokumentu potwierdzającego dokonanie czynności urzędowej lub zaświadczenia dokonywane jest za pośrednictwem polskiego konsula, za pobraniem opłaty konsularnej."
+    },
+    {
+      "key": "cost:consular-fee",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "II. Obowiązująca od dnia 1 stycznia 2026 r."
+    },
+    {
+      "key": "cost:consular-fee",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "2.03 Przyjęcie i opracowanie wniosku o potwierdzenie posiadania obywatelstwa polskiego wraz z doręczeniem decyzji w tej sprawie*) 100"
+    },
+    {
+      "key": "cost:consular-fee",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1298",
+      "quote": "§ 3. 1. Konsul przelicza opłaty określone w taryfie opłat konsularnych na walutę, w której są pobierane opłaty, stosując kurs referencyjny tej waluty w stosunku do euro ogłaszany przez Europejski Bank Centralny obowiązujący w ostatnim dniu poprzedniego miesiąca,"
+    },
+    {
+      "key": "cost:consular-fee",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Osoba zamieszkująca poza terytorium Rzeczypospolitej Polskiej może złożyć wniosek o potwierdzenie posiadania lub utraty oby- watelstwa polskiego za pośrednictwem konsula właściwego ze względu na jej miejsce zamieszkania."
+    },
+    {
+      "key": "cost:power-of-attorney-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "Dokument stwierdzający udzielenie pełnomocnictwa lub prokury oraz jego odpis, wypis lub kopia – od każdego stosunku pełnomocnictwa (prokury) 17 zł"
+    },
+    {
+      "key": "cost:power-of-attorney-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "albo składając dokument stwierdzający udzielenie pełnomocnictwa lub prokury albo jego odpis, wypis lub kopię przedstawią zaświadczenie o korzystaniu ze świadczeń pomocy społecznej z powodu ubóstwa;"
+    },
+    {
+      "key": "cost:power-of-attorney-duty",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "3) jeżeli pełnomocnictwo udzielane jest małżonkowi, wstępnemu, zstępnemu lub rodzeństwu"
+    },
+    {
+      "key": "duration:confirmation-decision",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "3a.1) Załatwienie spraw innych niż wymienione w ust. 1 i 2 następuje w terminie 6 miesięcy od dnia wpływu wniosku do organu właściwego do wydania decyzji."
+    },
+    {
+      "key": "duration:confirmation-decision",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "Wojewoda ma 6 miesięcy na wydanie decyzji. W uzasadnionych przypadkach termin ten może być wydłużony."
+    },
+    {
+      "key": "duration:confirmation-decision",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "Do terminów wydania decyzji nie wlicza się terminów przewidzianych w przepisach prawa dla dokonania określonych czynności"
+    },
+    {
+      "key": "duration:confirmation-decision",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "okresów zawieszenia postępowania oraz okresów opóźnień spowodowanych z winy strony"
+    },
+    {
+      "key": "duration:confirmation-decision",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "albo z przyczyn niezależnych od organu"
+    },
+    {
+      "key": "document:application",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "quote": "§ 1. Rozporządzenie określa wzór formularza wniosku o potwierdzenie posiadania lub utraty obywatelstwa polskiego."
+    },
+    {
+      "key": "document:application",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "wniosek wypełnia się wyłącznie w języku polskim"
+    },
+    {
+      "key": "document:application",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "kopie dokumentów muszą być potwierdzone za zgodność z oryginałami przez konsula,"
+    },
+    {
+      "key": "document:application",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "pocztą (kopie dokumentów muszą być wówczas uwierzytelnione przez notariusza /lub adwokata albo radcę prawnego, jeśli jest pełnomocnikiem w sprawie/) na adres:"
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "oryginał aktualnego dokumentu tożsamości wraz ze stronami zawierającymi adnotacje urzędowe (do wglądu),"
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "kserokopia aktualnego dokumentu tożsamości,"
+    },
+    {
+      "key": "document:birth-record",
+      "url": "https://dziennikustaw.gov.pl/DU/2012/925",
+      "quote": "11) Do wniosku należy dołączyć dokumenty potwierdzające dane i informacje w nim zawarte, a przede wszystkich akty stanu cywilnego (urodzenia i małżeństwa)."
+    },
+    {
+      "key": "document:birth-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "jeśli urodziłeś się poza granicami Rzeczypospolitej Polskiej – musisz przedstawić pełny akt urodzenia zawierający nazwiska rodziców,"
+    },
+    {
+      "key": "document:birth-record",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:birth-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:birth-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "akt stanu cywilnego stwierdzający Twój stan cywilny (akt zawarcia małżeństwa, dokument rozwodowy lub akt zgonu współmałżonka)."
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "akt stanu cywilnego stwierdzający Twój stan cywilny (akt zawarcia małżeństwa, dokument rozwodowy lub akt zgonu współmałżonka)."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:ancestry-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty istotne dla ustalenia posiadania obywatelstwa polskiego, w szczególności akty stanu cywilnego oraz dokumenty potwierdzające polskie pochodzenie Twoich rodziców/dziadków (akt urodzenia, małżeństwa, metryka chrztu, kopie polskich dokumentów rodziców lub dziadków itp.)."
+    },
+    {
+      "key": "document:ancestry-records",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "2. Osoba i podmiot występujący z wnioskiem o potwierdzenie posiadania lub utraty obywatelstwa polskiego są obo- wiązani dołączyć dokumenty potwierdzające dane i informacje zawarte we wniosku, chyba że uzyskanie tych dokumentów napotyka trudne do przezwyciężenia przeszkody."
+    },
+    {
+      "key": "document:ancestry-records",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:ancestry-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:ancestry-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:name-change-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "W przypadku zmiany nazwiska – kopia dokumentów potwierdzających ten fakt (akt małżeństwa, akt zmiany imienia lub nazwiska, itp.),"
+    },
+    {
+      "key": "document:name-change-records",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:name-change-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:name-change-records",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:attorney-for-service",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "wniosek na formularzu urzędowo określonym oraz informacja dotycząca pełnomocnika do doręczeń (do pobrania poniżej)"
+    },
+    {
+      "key": "document:attorney-for-service",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1691",
+      "quote": "§ 4. Strona, która nie ma miejsca zamieszkania lub zwykłego pobytu albo siedziby w Rzeczypospolitej Polskiej, innym państwie członkowskim Unii Europejskiej, Konfederacji Szwajcarskiej albo państwie członkowskim Europejskiego Poro- zumienia o Wolnym Handlu (EFTA) – stronie umowy o Europejskim Obszarze Gospodarczym, jeżeli nie ustanowiła pełno- mocnika do prowadzenia sprawy zamieszkałego w Rzeczypospolitej Polskiej i nie działa za pośrednictwem konsula Rzeczy- pospolitej Polskiej, jest obowiązana wskazać w Rzeczypospolitej Polskiej pełnomocnika do doręczeń, chyba że doręczenie następuje usługą rejestrowanego doręczenia elektronicznego."
+    },
+    {
+      "key": "document:power-of-attorney",
+      "url": "https://www.gov.pl/web/mswia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "17,00 PLN za pełnomocnictwo – jeśli ustanowisz pełnomocnika do prowadzenia sprawy. Z opłaty skarbowej za pełnomocnictwo zwolnieni są: małżonek, rodzice, dzieci i rodzeństwo wnioskodawcy. Stosunek pokrewieństwa powinny potwierdzać załączone do sprawy dokumenty"
+    },
+    {
+      "key": "document:stamp-duty-proof",
+      "url": "https://www.gov.pl/web/uw-pomorski/poswiadczenia-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dowód wniesienia opłaty skarbowej"
+    },
+    {
+      "key": "document:stamp-duty-proof",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "Art. 7. Zwalnia się od opłaty skarbowej:"
+    },
+    {
+      "key": "document:stamp-duty-proof",
+      "url": "https://dziennikustaw.gov.pl/DU/2026/1395",
+      "quote": "zaświadczenia lub zezwolenia (pozwolenia, koncesji) albo składając dokument stwierdzający udzielenie pełnomocnictwa lub prokury albo jego odpis, wypis lub kopię przedstawią zaświadczenie o korzystaniu ze świadczeń pomocy społecznej z powodu ubóstwa;"
+    }
+  ]
+}

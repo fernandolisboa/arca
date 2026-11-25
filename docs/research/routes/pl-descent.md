@@ -4,6 +4,15 @@ Research notes for the confirmation of Polish citizenship by descent, route `pl-
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Version audited:** 3
+- **Outcome:** correction, version 4, from version 3's date, 2026-01-01, which keeps every item of version 3 and adds the official document list: the citizenship act (arts. 12 and 56), the form regulation of 2012 and its instructions, the Code of Administrative Procedure (art. 40 § 4), and the pages of the Polish consulates in Brazil, the Interior Ministry and the Pomeranian voivode. Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-pl-documents/README.md).
+- **Amendments looked for:** the ELI record of the act lists Dz.U. 2025 poz. 921 as its last amending act, so the consolidated text Dz.U. 2025 poz. 1611 is current; the form regulation of 2012 is still in force.
+- **Watch next:** the Mazovian voivode's own document list, which decides for someone who never lived in Poland; its pages could not be read.
+
 ### 2026-11-20, session review
 
 A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-pl/README.md](../../../packages/knowledge/reviews/2026-11-pl/README.md).
