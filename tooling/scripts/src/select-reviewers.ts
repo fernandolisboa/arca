@@ -102,11 +102,11 @@ const rules: readonly Rule[] = [
     reviewers: withCore('data-access', 'auth-crypto'),
   },
   // Reviewed data a merge puts into use: session reviews (ADR-0032), suggested ratings (ADR-0035),
-  // route texts (ADR-0037) and departure checklists (ADR-0038).
+  // route texts (ADR-0037), departure checklists (ADR-0038) and document guides (ADR-0039).
   {
     match: anyOf(
-      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists|rule-texts)\.?)/,
-      /^packages\/i18n\/src\/catalogs\/pt-BR-departure\.ts$/,
+      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists|document-guides|rule-texts)\.?)/,
+      /^packages\/i18n\/src\/catalogs\/pt-BR-(departure|document-guides)\.ts$/,
       /^apps\/api\/test\/(postgres\/)?session-review/,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),

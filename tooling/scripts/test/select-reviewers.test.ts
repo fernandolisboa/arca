@@ -246,6 +246,8 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['apps/api/test/session-review-quotes.test.ts', 'ai-safety'],
   ['packages/knowledge/departure-checklists/1.json', 'data-access'],
   ['packages/i18n/src/catalogs/pt-BR-departure.ts', 'auth-crypto'],
+  ['packages/knowledge/test/document-guides.test.ts', 'data-access'],
+  ['packages/i18n/src/catalogs/pt-BR-document-guides.ts', 'auth-crypto'],
   ['docs/runbooks/session-rule-review.md', 'supply-chain'],
   ['apps/web/src/case.ts', 'auth-crypto'],
   ['apps/web/src/main.tsx', 'supply-chain'],

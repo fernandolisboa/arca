@@ -453,6 +453,14 @@ export {
   departureChecklistsSchema,
 } from './departure/checklist.js';
 export {
+  type DocumentGuideEntry,
+  type DocumentGuides,
+  documentGuideEntries,
+  documentGuidesSchema,
+  guideEntriesFor,
+} from './document-guides/guide.js';
+export { type DatedSource } from './reviewed-data/official-sources.js';
+export {
   type ComparedCriterion,
   type ComparisonInput,
   type CountryComparison,

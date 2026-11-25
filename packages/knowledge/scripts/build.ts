@@ -9,6 +9,7 @@ import {
   parseCalendarDate,
   sourceUrls,
   departureChecklistsSchema,
+  documentGuidesSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
@@ -53,6 +54,8 @@ export interface CatalogParts {
   readonly suggestedRatings?: Json | null;
   /** The highest-numbered departure checklists file (ADR-0038), or null when there is none. */
   readonly departureChecklists?: Json | null;
+  /** The highest-numbered document guides file (ADR-0039), or null when there is none. */
+  readonly documentGuides?: Json | null;
   /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
   readonly ruleTexts?: Json;
 }
@@ -212,6 +215,7 @@ export function runtimeModule({
   comparisons = [],
   suggestedRatings = null,
   departureChecklists = null,
+  documentGuides = null,
   ruleTexts = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
@@ -225,6 +229,7 @@ export function runtimeModule({
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
     exportedJson('departureChecklistData', departureChecklists),
+    exportedJson('documentGuideData', documentGuides),
     exportedJson('ruleTextData', ruleTexts),
     '',
   ].join('\n');
@@ -262,25 +267,40 @@ export const readSuggestedRatings = (dir: string) =>
   readLatestNumbered(dir, suggestedRatingsSchema);
 
 /**
- * The highest-numbered departure checklists file in `dir` (ADR-0038), or null; a source verified
+ * The highest-numbered file in `dir` of official sources (ADR-0038), or null; a source verified
  * after `today` fails the build, as route sources do.
  */
-export async function readDepartureChecklists(
+async function readLatestSourced(
   dir: string,
-  today: CalendarDate = todayUtc(),
+  schema: { parse: (json: Json) => { number: number; sources: readonly SourceDate[] } },
+  name: string,
+  today: CalendarDate,
 ): Promise<Json | null> {
-  const json = await readLatestNumbered(dir, departureChecklistsSchema);
+  const json = await readLatestNumbered(dir, schema);
   if (json === null) return null;
-  const late = departureChecklistsSchema
+  const late = schema
     .parse(json)
     .sources.filter(({ verifiedAt }) => compareDates(verifiedAt, today) > 0);
   if (late.length > 0) {
     throw new Error(
-      `departure checklist sources verified after ${today}: ${late.map(({ id }) => id).join(', ')}`,
+      `${name} sources verified after ${today}: ${late.map(({ id }) => id).join(', ')}`,
     );
   }
   return json;
 }
+
+interface SourceDate {
+  readonly id: string;
+  readonly verifiedAt: CalendarDate;
+}
+
+/** The highest-numbered departure checklists file in `dir` (ADR-0038), or null. */
+export const readDepartureChecklists = (dir: string, today: CalendarDate = todayUtc()) =>
+  readLatestSourced(dir, departureChecklistsSchema, 'departure checklist', today);
+
+/** The highest-numbered document guides file in `dir` (ADR-0039), or null. */
+export const readDocumentGuides = (dir: string, today: CalendarDate = todayUtc()) =>
+  readLatestSourced(dir, documentGuidesSchema, 'document guide', today);
 
 /**
  * Every route's texts in `dir` (ADR-0037), one `<route-id>.json` a route, each checked against its
@@ -337,9 +357,10 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const [suggestedRatings, departureChecklists, ruleTextFiles] = await Promise.all([
+  const [suggestedRatings, departureChecklists, documentGuides, ruleTextFiles] = await Promise.all([
     readSuggestedRatings(join(packageDir, 'suggested-ratings')),
     readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
+    readDocumentGuides(join(packageDir, 'document-guides'), today),
     readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
   ]);
   const ruleTexts = shipRuleTexts(ruleTextFiles, (text) =>
@@ -347,7 +368,7 @@ async function main(): Promise<void> {
   );
   await writeFile(
     targets.runtime,
-    runtimeModule({ ...parts, suggestedRatings, departureChecklists, ruleTexts }),
+    runtimeModule({ ...parts, suggestedRatings, departureChecklists, documentGuides, ruleTexts }),
   );
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
