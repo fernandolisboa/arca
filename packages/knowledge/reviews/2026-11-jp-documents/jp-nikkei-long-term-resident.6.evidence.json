@@ -1,0 +1,860 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者の実子（第一号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者でかつて日本国民として本邦に本籍を有したことがあるものの実子の実子（第一号、第三号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "requirement:japanese-descent",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_7",
+      "quote": "定住者の項の下欄に掲げる地位については、法務大臣があらかじめ告示をもつて定めるものに限る。"
+    },
+    {
+      "key": "requirement:not-japanese-national",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_2",
+      "quote": "外国人 日本の国籍を有しない者をいう。"
+    },
+    {
+      "key": "assessment:good-conduct",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "日本人の子として出生した者の実子（第一号又は第八号に該当する者を除く。）であって素行が善良であるものに係るもの"
+    },
+    {
+      "key": "assessment:good-conduct",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_5",
+      "quote": "次の各号のいずれかに該当する外国人は、本邦に上陸することができない。"
+    },
+    {
+      "key": "assessment:family-conditions",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号又は前号に掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するもの（この号に該当する者として上陸の許可を受けた者で当該在留期間中に離婚をしたものを除く。）の配偶者であって素行が善良であるもの"
+    },
+    {
+      "key": "assessment:family-conditions",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "在留資格「定住者」については「出入国管理及び難民認定法第七条第一項第二号の規定に基づき同法別表第二の定住者の項の下欄に掲げる地位を定める件」（定住者告示）に該当するとして、上陸を許可され在留している場合は、原則として引き続き各告示に定める要件に該当することを要します 。"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "ただし、申請人の年齢や扶養を受けていること等の要件については、年齢を重ねたり、扶養を受ける状況が消滅する等、我が国入国後の事情の変更により、適合しなくなることがありますが、このことにより直ちに在留期間更新が不許可となるものではありません。"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "４ 素行が不良でないこと"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "申請人の生活状況として、日常生活において公共の負担となっておらず、かつ、その有する資産又は技能等から見て将来において安定した生活が見込まれること（世帯単位で認められれば足ります。）が求められますが、"
+    },
+    {
+      "key": "assessment:extension-conditions",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "また、長期間にわたる再入国許可による出国（みなし再入国許可による出国を含む。）がある場合についても、正当な理由があるときを除き、消極的な要素として評価されます。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "我が国で就労している（しようとする）場合には、アルバイトを含めその雇用・労働条件が、労働関係法規に適合していることが必要です。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "納税義務がある場合には、当該納税義務を履行していることが求められ、履行していない場合には消極的な要素として評価されます。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "また、国民健康保険料など、法令によって納付することとされているものについて、高額の未納や長期間の未納などが判明した場合も、悪質なものについては同様に取り扱います。"
+    },
+    {
+      "key": "assessment:extension-obligations",
+      "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00058.html",
+      "quote": "８ 入管法に定める届出等の義務を履行していること"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号又は前号に掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するもの（この号に該当する者として上陸の許可を受けた者で当該在留期間中に離婚をしたものを除く。）の配偶者であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "次のいずれかに該当する者の扶養を受けて生活するこれらの者の六歳未満の養子（第一号から第四号まで、前号又は次号に該当する者を除く。）に係るもの"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "ハ一年以上の在留期間を指定されている定住者の在留資格をもって在留する者"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "第三号、第四号又は前号ハに掲げる地位を有する者として上陸の許可、在留資格の変更の許可又は在留資格の取得の許可を受けた者で一年以上の在留期間を指定されている定住者の在留資格をもって在留するものの扶養を受けて生活するこれらの者の未成年で未婚の実子であって素行が善良であるもの"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "dependent:spouse-adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "次のいずれかに該当する者の扶養を受けて生活するこれらの者の六歳未満の養子（第一号から第四号まで、前号又は次号に該当する者を除く。）に係るもの"
+    },
+    {
+      "key": "dependent:spouse-adopted-children",
+      "url": "https://www.moj.go.jp/isa/content/001368764.pdf",
+      "quote": "ハ一年以上の在留期間を指定されている定住者の在留資格をもって在留する者"
+    },
+    {
+      "key": "duration:period-of-stay",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054",
+      "quote": "一 法第七条第一項第二号の告示で定める地位を認められる者にあつては、五年、三年、一年又は六月"
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://laws.e-gov.go.jp/law/135AC1000000050",
+      "quote": "年齢ハ出生ノ日ヨリ之ヲ起算ス 民法第百四十三条ノ規定ハ年齢ノ計算ニ之ヲ準用ス"
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_143",
+      "quote": "ただし、月又は年によって期間を定めた場合において、最後の月に応当する日がないときは、その月の末日に満了する。"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3月超6月以下 窓⼝ 18,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "1年 窓⼝ 33,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3年以上5年未満 窓⼝ 64,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "5年以上 窓⼝ 75,000 円"
+    },
+    {
+      "key": "cost:extension-fee",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "在留資格の変更や在留期間の更新などに必要な手数料が改定されます。"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3月超6月以下 窓⼝ 18,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "1年 窓⼝ 33,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "3年以上5年未満 窓⼝ 64,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "5年以上 窓⼝ 75,000 円"
+    },
+    {
+      "key": "cost:extension-fee-dependents",
+      "url": "https://www.moj.go.jp/isa/content/001469198.pdf",
+      "quote": "在留資格の変更や在留期間の更新などに必要な手数料が改定されます。"
+    },
+    {
+      "key": "assessment:landing-documents",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書 二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。） 三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 五 本邦に居住する身元保証人の身元保証書"
+    },
+    {
+      "key": "assessment:extension-documents",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書 二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。） 三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書 五 本邦に居住する身元保証人の身元保証書"
+    },
+    {
+      "key": "document:coe-application",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043#Mp-At_6_2",
+      "quote": "法第七条の二第一項の規定により在留資格認定証明書の交付を申請しようとする者は、別記第六号の三様式による申請書一通を地方出入国在留管理局に出頭して提出しなければならない。"
+    },
+    {
+      "key": "document:coe-application",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "法別表第二の定住者の項の下欄に掲げる地位を有する者としての活動（定住者） 本邦に居住する本人の親族"
+    },
+    {
+      "key": "document:coe-application",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "在留資格認定証明書交付申請書 １通"
+    },
+    {
+      "key": "document:photo",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043#Mp-At_6_2",
+      "quote": "写真（申請の日前六月以内に撮影されたもので別表第三の二に定める要件を満たしたものとする。"
+    },
+    {
+      "key": "document:photo",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "写真 １葉（指定の規格を満たした写真を用意し、申請書に添付して提出）"
+    },
+    {
+      "key": "document:return-envelope",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "返信用封筒（定形封筒に宛先を明記の上、必要な額の郵便切手（簡易書留用）を貼付したもの） １通"
+    },
+    {
+      "key": "document:grandparent-family-register",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(1) 祖父母（日本人）の戸籍謄本又は除籍謄本（全部事項証明書） １通"
+    },
+    {
+      "key": "document:grandparent-family-register",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:grandparent-family-register",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書"
+    },
+    {
+      "key": "document:japanese-notice-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(2) 婚姻届出受理証明書（祖父母と両親のもの） 各１通"
+    },
+    {
+      "key": "document:japanese-notice-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(3) 出生届出受理証明書（申請人のもの） １通"
+    },
+    {
+      "key": "document:japanese-notice-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(4) 死亡届出受理証明書（祖父母と両親のもの） 各１通"
+    },
+    {
+      "key": "document:japanese-notice-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 上記(2)～(4)は、日本の役所に届出をしている場合にのみ提出していただきます。"
+    },
+    {
+      "key": "document:japanese-notice-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:household-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(5) 本邦における同居者の住民票（世帯全員の記載があるもの） １通"
+    },
+    {
+      "key": "document:household-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 上記(5)は、本邦に居住する方と同居する場合のみ提出していただきます。"
+    },
+    {
+      "key": "document:household-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 上記(5)は、個人番号（マイナンバー）については省略し、他の事項については省略のないものとするようお願いします。"
+    },
+    {
+      "key": "document:household-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:means-own",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(1) 申請人が自ら証明する場合 預貯金通帳残高証明書（申請人名義のもの） １通 雇用予定証明書又は採用内定通知書（日本の会社発行のもの） １通"
+    },
+    {
+      "key": "document:means-own",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。）"
+    },
+    {
+      "key": "document:means-payer",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(2) 申請人に代わって滞在費用支弁者が日本にいる場合 滞在費用支弁者の直近１年分の住民税の課税（又は非課税）証明書及び納税証明書（１年間の総所得及び納税状況が記載されたもの） 各１通"
+    },
+    {
+      "key": "document:means-payer",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:means-payer",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。）"
+    },
+    {
+      "key": "document:guarantee",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(1) 身元保証書 １通"
+    },
+    {
+      "key": "document:guarantee",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 身元保証人には、通常、日本に居住している日本人又は永住者の方になっていただきます。"
+    },
+    {
+      "key": "document:guarantee",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "五 本邦に居住する身元保証人の身元保証書"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(2) 申請人の犯罪経歴証明書（本国の機関から発行されたもの） １通"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:ancestor-marriage-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(3) 祖父母及び両親の本国（外国）の機関から発行された結婚証明書 各１通"
+    },
+    {
+      "key": "document:ancestor-marriage-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:ancestor-marriage-certificates",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書"
+    },
+    {
+      "key": "document:birth-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(4) 両親及び申請人の本国（外国）の機関から発行された出生証明書 各１通"
+    },
+    {
+      "key": "document:birth-certificates",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:birth-certificates",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "一 戸籍謄本、婚姻証明書、出生証明書その他の当該外国人の身分関係を証する文書"
+    },
+    {
+      "key": "document:acknowledgment-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(5) 申請人の本国（外国）の機関から発行された認知に係る証明書 １通"
+    },
+    {
+      "key": "document:acknowledgment-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 認知に係る証明書がある方のみ提出して下さい。"
+    },
+    {
+      "key": "document:acknowledgment-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:ancestor-records",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(6) 祖父母及び父母が実在していたことを証明する公的な資料 適宜（例：祖父母及び父母の旅券、死亡証明書、運転免許証等）"
+    },
+    {
+      "key": "document:ancestor-records",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:identity-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "(7) 申請人が本人であることを証明する公的な資料 適宜（例：身分証明書（ＩＤカード）、運転免許証、軍役証明書、選挙人手帳等）"
+    },
+    {
+      "key": "document:identity-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:japanese-language",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "※ 在留期間「５年」を希望する場合に提出が必要となります（未成年者を除きます。）。"
+    },
+    {
+      "key": "document:japanese-language",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "法務大臣が告示で定める日本語教育機関において６月以上の日本語教育を受けたことを証明する文書"
+    },
+    {
+      "key": "document:japanese-language",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "「日本語教育の参照枠」におけるB１相当以上の日本語能力を有していることを証明する文書（日本語能力試験Ｎ２に合格したことを証明する文書、日本語能力試験Ｎ３に合格し総合得点が１０４点以上であることを証明する文書又は財団法人日本漢字能力検定協会が実施するＢＪＴビジネス日本語能力テストで４００点以上を取得したことを証明する文書）"
+    },
+    {
+      "key": "document:japanese-language",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "学校教育法第１条に規定する学校（幼稚園を除く。）において１年以上の教育を受けたことを証明する文書"
+    },
+    {
+      "key": "document:japanese-language",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "document:passport",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_6",
+      "quote": "本邦に上陸しようとする外国人（乗員を除く。以下この節において同じ。）は、有効な旅券で日本国領事官等の査証を受けたものを所持しなければならない。"
+    },
+    {
+      "key": "document:coe-application-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043#Mp-At_6_2",
+      "quote": "法第七条の二第一項の規定により在留資格認定証明書の交付を申請しようとする者は、別記第六号の三様式による申請書一通を地方出入国在留管理局に出頭して提出しなければならない。"
+    },
+    {
+      "key": "document:coe-application-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "法別表第二の定住者の項の下欄に掲げる地位を有する者としての活動（定住者） 本邦に居住する本人の親族"
+    },
+    {
+      "key": "document:coe-application-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "在留資格認定証明書交付申請書 １通"
+    },
+    {
+      "key": "document:coe-application-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "在留資格認定証明書交付申請書 １通"
+    },
+    {
+      "key": "document:coe-application-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "在留資格認定証明書交付申請書 １通"
+    },
+    {
+      "key": "document:photo-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043#Mp-At_6_2",
+      "quote": "写真（申請の日前六月以内に撮影されたもので別表第三の二に定める要件を満たしたものとする。"
+    },
+    {
+      "key": "document:photo-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "写真 １葉（指定の規格を満たした写真を用意し、申請書に添付して提出）"
+    },
+    {
+      "key": "document:photo-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "写真 １葉（指定の規格を満たした写真を用意し、申請書に添付して提出）"
+    },
+    {
+      "key": "document:photo-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "写真 １葉（指定の規格を満たした写真を用意し、申請書に添付して提出）"
+    },
+    {
+      "key": "document:return-envelope-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "返信用封筒（定形封筒に宛先を明記の上、必要な額の郵便切手（簡易書留用）を貼付したもの） １通"
+    },
+    {
+      "key": "document:return-envelope-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "返信用封筒（定形封筒に宛先を明記の上、必要な額の郵便切手（簡易書留用）を貼付したもの） １通"
+    },
+    {
+      "key": "document:return-envelope-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "返信用封筒（定形封筒に宛先を明記の上、必要な額の郵便切手（簡易書留用）を貼付したもの） １通"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(3) 申請人の本国（外国）の機関から発行された出生証明書 １通"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(3) 申請人の本国（外国）の機関から発行された出生証明書 １通"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(4) 申請人の本国（外国）の機関から発行された出生証明書 １通"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(2) 申請人の本国（外国）の機関から発行された結婚証明書 １通"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_3.html",
+      "quote": "(2) 申請人の本国（外国）の機関から発行された結婚証明書 １通"
+    },
+    {
+      "key": "document:marriage-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(1) 婚姻届出受理証明書 １通"
+    },
+    {
+      "key": "document:marriage-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "※ 日本の役所に届出ている場合にのみ提出して下さい。"
+    },
+    {
+      "key": "document:marriage-questionnaire",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(4) 質問書（PDF：387KB） １通"
+    },
+    {
+      "key": "document:marriage-questionnaire",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "質問書（ポルトガル語）（PDF：273KB）"
+    },
+    {
+      "key": "document:marriage-questionnaire",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_3.html",
+      "quote": "(4) 質問書（PDF：387KB） １通"
+    },
+    {
+      "key": "document:relationship-evidence",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(5) 夫婦間の交流が確認できる資料"
+    },
+    {
+      "key": "document:relationship-evidence",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "スナップ写真（お二人で写っており、容姿がはっきりと確認できるもの。アプリ加工したものは不可。） ２～３葉"
+    },
+    {
+      "key": "document:relationship-evidence",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "その他（以下で提出できるもの） ・ＳＮＳ記録 ・通話記録"
+    },
+    {
+      "key": "document:relationship-evidence",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_3.html",
+      "quote": "(5) 夫婦間の交流が確認できる資料"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(6) 申請人の犯罪経歴証明書（本国の機関から発行されたもの） １通"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(5) 申請人の犯罪経歴証明書（本国の機関から発行されたもの） １通"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 上記(5)～(7)は、申請人が「定住者」の方の扶養を受ける日系人である場合のみ必要です。"
+    },
+    {
+      "key": "document:identity-proof-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(7) 申請人が本人であることを証明する公的な資料 適宜（例：身分証明書（ＩＤカード）、運転免許証、軍役証明書、選挙人手帳等）"
+    },
+    {
+      "key": "document:identity-proof-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:identity-proof-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(7) 申請人が本人であることを証明する公的な資料（例：身分証明書（ＩＤカード）、運転免許証、軍役証明書、選挙人手帳等） 適宜"
+    },
+    {
+      "key": "document:identity-proof-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 上記(5)～(7)は、申請人が「定住者」の方の扶養を受ける日系人である場合のみ必要です。"
+    },
+    {
+      "key": "document:ancestor-records-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(6) 祖父母及び父母が実在していたことを証明する公的な資料 適宜（例：祖父母及び父母の旅券、死亡証明書、運転免許証等）"
+    },
+    {
+      "key": "document:ancestor-records-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 上記(5)～(7)は、申請人が「定住者」の方の扶養を受ける日系人である場合のみ必要です。"
+    },
+    {
+      "key": "document:ancestor-records-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:acknowledgment-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(4) 申請人の本国（外国）の機関から発行された認知に係る証明書（認知に係る証明書がある方のみ提出して下さい。） １通"
+    },
+    {
+      "key": "document:acknowledgment-certificate-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:birth-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(2) 申請人の出生届出受理証明書 １通"
+    },
+    {
+      "key": "document:birth-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 日本の役所に届出をしている場合にのみ提出していただきます。"
+    },
+    {
+      "key": "document:birth-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:adoption-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(3) 申請人と養子縁組が成立していることを証明する本国（外国）の機関から発行された証明書 １通"
+    },
+    {
+      "key": "document:adoption-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "提出書類が外国語で作成されている場合には、訳文（日本語）を添付してください。"
+    },
+    {
+      "key": "document:adoption-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(2) 申請人の養子縁組届出受理証明書 １通"
+    },
+    {
+      "key": "document:adoption-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "※ 日本の役所に提出している場合にのみ提出して下さい。"
+    },
+    {
+      "key": "document:adoption-notice-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:support-statement",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(2) 理由書（扶養を受けなければならないことを説明したもの、適宜の様式） １通"
+    },
+    {
+      "key": "document:support-statement",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(2) 理由書（扶養を受けなければならないことを説明したもの、適宜の様式） １通"
+    },
+    {
+      "key": "document:guarantee-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "(1) 身元保証書 １通"
+    },
+    {
+      "key": "document:guarantee-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "※ 身元保証人には、通常、３世の方になっていただきます。"
+    },
+    {
+      "key": "document:guarantee-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 身元保証人には、通常、申請人の扶養者の方になっていただきます。"
+    },
+    {
+      "key": "document:guarantee-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(1) 身元保証書 １通"
+    },
+    {
+      "key": "document:guarantee-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "五 本邦に居住する身元保証人の身元保証書"
+    },
+    {
+      "key": "document:supporter-tax-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:supporter-tax-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(1) 扶養者の直近１年分の住民税の課税（又は非課税）証明書及び納税証明書（１年間の総所得及び納税状況が記載されたもの） 各１通"
+    },
+    {
+      "key": "document:supporter-tax-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(1) 扶養者の直近１年分の住民税の課税（又は非課税）証明書及び納税証明書（１年間の総所得及び納税状況が記載されたもの） 各１通"
+    },
+    {
+      "key": "document:supporter-tax-certificate",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "※ 上記(1)～(3)は、発行日から３か月以内のものを提出して下さい。"
+    },
+    {
+      "key": "document:supporter-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "※ 個人番号（マイナンバー）については省略し、他の事項については省略のないものとするようお願いします。"
+    },
+    {
+      "key": "document:supporter-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident_01.html",
+      "quote": "日本で発行される証明書は全て、発行日から３か月以内のものを提出してください。"
+    },
+    {
+      "key": "document:supporter-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(3) 扶養者の住民票（世帯全員の記載があるもの） １通"
+    },
+    {
+      "key": "document:supporter-resident-record",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident05_2.html",
+      "quote": "(3) 扶養者の住民票(世帯全員の記載があるもの) １通"
+    },
+    {
+      "key": "document:supporter-work-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(1) 扶養者が会社に勤務している場合 扶養者の在職証明書 １通"
+    },
+    {
+      "key": "document:supporter-work-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(2) 扶養者が自営業等の場合 扶養者の確定申告書の控えの写し １通 扶養者の営業許可書の写し（ある場合） １通"
+    },
+    {
+      "key": "document:supporter-work-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04_1.html",
+      "quote": "(3) 扶養者が無職である場合 預貯金通帳の写し 適宜"
+    },
+    {
+      "key": "document:supporter-work-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "３世の方の在職証明書 １通"
+    },
+    {
+      "key": "document:supporter-work-proof",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_3.html",
+      "quote": "(8) 預貯金通帳の写し 適宜"
+    },
+    {
+      "key": "document:japanese-language-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "※ 在留期間「５年」を希望する場合に提出が必要となります（未成年者を除きます。）。"
+    },
+    {
+      "key": "document:japanese-language-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "法務大臣が告示で定める日本語教育機関において６月以上の日本語教育を受けたことを証明する文書"
+    },
+    {
+      "key": "document:japanese-language-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "「日本語教育の参照枠」におけるB１相当以上の日本語能力を有していることを証明する文書（日本語能力試験Ｎ２に合格したことを証明する文書、日本語能力試験Ｎ３に合格し総合得点が１０４点以上であることを証明する文書又は財団法人日本漢字能力検定協会が実施するＢＪＴビジネス日本語能力テストで４００点以上を取得したことを証明する文書）"
+    },
+    {
+      "key": "document:japanese-language-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident03_1.html",
+      "quote": "学校教育法第１条に規定する学校（幼稚園を除く。）において１年以上の教育を受けたことを証明する文書"
+    },
+    {
+      "key": "document:japanese-language-dependent",
+      "url": "https://laws.e-gov.go.jp/law/129AC0000000089#Mp-At_4",
+      "quote": "年齢十八歳をもって、成年とする。"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://laws.e-gov.go.jp/law/326CO0000000319#Mp-At_6",
+      "quote": "本邦に上陸しようとする外国人（乗員を除く。以下この節において同じ。）は、有効な旅券で日本国領事官等の査証を受けたものを所持しなければならない。"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04.html",
+      "quote": "・本邦入国時に１８歳に達している方については、在留資格認定証明書の有効期限にかかわらず、同在留資格で入国することはできません。"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.moj.go.jp/isa/applications/status/longtermresident04.html",
+      "quote": "・在留資格認定証明書を受領後は、日本大使館又は総領事館で在留資格認定証明書を提示して査証申請を行う必要がありますので、期間の余裕をもって在留資格認定証明書交付申請手続を行うように御留意願います。"
+    },
+    {
+      "key": "document:yearly-income",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。）"
+    },
+    {
+      "key": "document:tax-social-insurance",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書"
+    },
+    {
+      "key": "document:payer-records",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書"
+    },
+    {
+      "key": "document:yearly-income-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "二 在留中の一切の経費を支弁することができることを証する文書（年間の収入に関する文書を含む。）"
+    },
+    {
+      "key": "document:tax-social-insurance-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "三 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書"
+    },
+    {
+      "key": "document:payer-records-dependent",
+      "url": "https://laws.e-gov.go.jp/law/356M50000010054/20270319_507M60000010043",
+      "quote": "四 当該外国人以外の者が経費を支弁する場合又は扶養者がいる場合は、当該経費を支弁する者又は当該扶養者に係る次に掲げる資料 イ 年間の収入に関する文書 ロ 課税及び納税に関する文書並びに社会保険の加入状況及び社会保険料の納付状況に関する文書"
+    }
+  ]
+}

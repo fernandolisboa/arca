@@ -227,6 +227,27 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_pt_d3',
     versions: [{ routeId: 'pt-d3', number: 1, newRoute: true }],
   },
+  {
+    id: '2026-11-jp-documents',
+    migration: 'knowledge_session_review_2026_11_jp_documents',
+    versions: [
+      { routeId: 'jp-nikkei-long-term-resident', number: 5 },
+      { routeId: 'jp-nikkei-long-term-resident', number: 6 },
+    ],
+  },
+  {
+    id: '2026-11-ar-documents',
+    migration: 'knowledge_session_review_2026_11_ar_documents',
+    versions: [
+      { routeId: 'ar-mercosur-temporary', number: 6 },
+      { routeId: 'ar-mercosur-temporary', number: 7 },
+    ],
+  },
+  {
+    id: '2026-11-py-documents',
+    migration: 'knowledge_session_review_2026_11_py_documents',
+    versions: [{ routeId: 'py-mercosur-temporary', number: 5 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

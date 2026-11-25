@@ -4,6 +4,15 @@ Research notes for Japan's long-term resident status (teijusha) for the third ge
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Versions audited:** 3 and 4
+- **Outcome:** corrections, version 5 from version 3's date, 2026-10-01, and version 6 from version 4's date, 2027-03-19, which keep every item and add the official document list: Enforcement Ordinance art. 6-2 and appended tables III and IV, Immigration Act art. 6(1), and the Immigration Services Agency's pages for a certificate of eligibility (sansei, spouse, minor child, adopted child). Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-jp-documents/README.md).
+- **Reading:** the agency's pages answer the app's reader and Node's `fetch`, not plain `curl` (CloudFront 403); they write figures in full-width digits, which the quote check now reads ([ADR-0027 amendment](../../adr/0027-admins-and-the-checked-batch-activation.md#amendment-2026-11-25-full-width-digits)).
+- **Watch next:** the agency's lists once table III's 2027-03-19 wording is in force; the consulate's visa list on `mofa.go.jp`, outside the `jp` list.
+
 ### 2026-11-20, session review
 
 A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-jp/README.md](../../../packages/knowledge/reviews/2026-11-jp/README.md).
