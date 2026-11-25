@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "“Nacionales de una Parte”: son las personas que poseen nacionalidad originaria de uno de los Estados Partes o nacionalidad adquirida por naturalización y ostentaran dicho beneficio desde hace 5 (cinco) años"
+    },
+    {
+      "key": "requirement:mercosur-nationality",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los ciudadanos de Argentina, Brasil, Uruguay, Bolivia, Chile, Perú, Colombia y Ecuador (Estados actualmente suscriptos al Acuerdo de Residencia del MERCOSUR)."
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Certificado que acredite la carencia de antecedentes judiciales y/o penales y/o policiales en el país de origen o en los que hubiera residido el peticionante durante los 5 (cinco) años anteriores a su arribo al país de recepción o a su petición ante el Consulado"
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Declaración jurada de carencia de antecedentes internacionales penales o policiales"
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Antecedentes para Extranjeros vigente, expedido por el Departamento de Informática de la Policía Nacional (Requerido a partir de los 14 años de edad)."
+    },
+    {
+      "key": "assessment:no-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se exime de presentar el certificado a adolescentes extranjeros nacionales de Argentina, Canadá, Colombia, Cuba, España, México, Nicaragua y Venezuela, menores de entre 15 y 18 años (según corresponda)"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Nacimiento, expedido por la autoridad competente en el país de emisor, visado y legalizado o apostillado."
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "assessment:documents",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Partida de nacimiento y comprobación del estado civil de la persona y certificado de nacionalización o naturalización, cuando fuere el caso"
+    },
+    {
+      "key": "assessment:in-person-in-paraguay",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "El trámite es personal y presencial."
+    },
+    {
+      "key": "assessment:in-person-in-paraguay",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada de la Constancia de ingreso al país"
+    },
+    {
+      "key": "assessment:in-person-in-paraguay",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Nacionales de una Parte, que deseen establecerse en el territorio de la otra, y que presenten ante la sede consular respectiva su solicitud de ingreso al país"
+    },
+    {
+      "key": "assessment:in-person-in-paraguay",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Si por su nacionalidad los miembros de la familia necesitan visación para ingresar al país, deberán tramitar la residencia ante la"
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los progenitores deberán contar con la residencia vigente (temporal o permanente) al momento de la solicitud de residencia, o al menos uno de los progenitores deberá solicitar la residencia en el mismo acto que el niño, niña o adolescente solicitante."
+    },
+    {
+      "key": "assessment:minor-applicants",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Autorización notarial otorgada por el progenitor ausente, en la cual conste expresamente su voluntad de que el hijo/a viva y resida de manera temporal o permanente con el padre/madre en el Paraguay"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República del Paraguay y la República Oriental del Uruguay, Estados Partes del MERCOSUR, la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "La Ley garantiza el derecho a la reunificación familiar de los migrantes con sus padres, cónyuges, hijos solteros menores y/o hijos mayores con capacidades diferentes."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República del Paraguay y la República Oriental del Uruguay, Estados Partes del MERCOSUR, la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "La Ley garantiza el derecho a la reunificación familiar de los migrantes con sus padres, cónyuges, hijos solteros menores y/o hijos mayores con capacidades diferentes."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "La República Argentina, la República Federativa del Brasil, la República del Paraguay y la República Oriental del Uruguay, Estados Partes del MERCOSUR, la República de Bolivia y la República de Chile, Estados Asociados."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "La Ley garantiza el derecho a la reunificación familiar de los migrantes con sus padres, cónyuges, hijos solteros menores y/o hijos mayores con capacidades diferentes."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/12775/x",
+      "quote": "Este Código reputa plenamente capaz a todo ser humano que haya cumplido dieciocho años de edad"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "La Ley garantiza el derecho a la reunificación familiar de los migrantes con sus padres, cónyuges, hijos solteros menores y/o hijos mayores con capacidades diferentes."
+    },
+    {
+      "key": "cost:residence-fee",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Residencia Temporaria por Acuerdo Mercosur (Incluido cambio de categoría) 20 | 117.077 | 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Residencia Temporaria Mercosur (incluido cambio de categoría). Gs. 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee-ecuadorian",
+      "url": "https://migraciones.gov.py/tramites-para-ciudadanos-de-nacionalidad-ecuatoriana/",
+      "quote": "estableciendo como única tasa a abonar la suma equivalente a dos (2) jornales para la realización de dichos trámites"
+    },
+    {
+      "key": "cost:residence-fee-ecuadorian",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Jornal Mínimo: Gs. 117.077"
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Residencia Temporaria por Acuerdo Mercosur (Incluido cambio de categoría) 20 | 117.077 | 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Residencia Temporaria Mercosur (incluido cambio de categoría). Gs. 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Residencia Temporaria por Acuerdo Mercosur (Incluido cambio de categoría) 20 | 117.077 | 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Residencia Temporaria Mercosur (incluido cambio de categoría). Gs. 2.341.540"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "A los miembros de la familia que no ostenten la nacionalidad de uno de los Estados Partes, se les expedirá una residencia de idéntica vigencia de aquella que posea la persona de la cual dependan"
+    },
+    {
+      "key": "cost:residence-fee-family",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "Las personas extranjeras deberán abonar el arancel correspondiente por las solicitudes de Residencia Precaria, Temporal o Permanente"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "Las personas extranjeras deberán abonar el arancel correspondiente por las solicitudes de Residencia Precaria, Temporal o Permanente"
+    },
+    {
+      "key": "cost:residence-fee-family-other",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Residencia Temporaria por Ley 6984/2022 (Incluida Residencia Precaria y cambio de categoría) 25 | 117.077 | 2.926.925"
+    },
+    {
+      "key": "cost:residence-fee-family-ecuadorian",
+      "url": "https://migraciones.gov.py/tramites-para-ciudadanos-de-nacionalidad-ecuatoriana/",
+      "quote": "estableciendo como única tasa a abonar la suma equivalente a dos (2) jornales para la realización de dichos trámites"
+    },
+    {
+      "key": "cost:residence-fee-family-ecuadorian",
+      "url": "https://migraciones.gov.py/aranceles-migratorios/",
+      "quote": "Jornal Mínimo: Gs. 117.077"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "PLAZO DE VALIDEZ DE LA RESIDENCIA: Dos (2) años, no prorrogable."
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "podrá otorgar una residencia temporaria de hasta 2 (dos) años"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "el solicitante deberá dar ingreso a dicho trámite a partir de los noventa (90) días previos al vencimiento de su Carnet de Admisión Temporaria MERCOSUR"
+    },
+    {
+      "key": "duration:temporary-residence",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/10973/x",
+      "quote": "por más de 1 (un) año si se tratara de un residente temporal, salvo casos en que mediara autorización de la Dirección Nacional de Migraciones"
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Documento de Identidad del país de origen, vigente:"
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Cédula de Identidad vigente."
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Documento Nacional de Identidad vigente."
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Pasaporte vigente."
+    },
+    {
+      "key": "document:identity-document",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se requiere la presentación de los documentos de identidad acompañados por copias debidamente autenticadas por Escribanía Pública, a fin de que los originales permanezcan en poder de sus titulares."
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Nacimiento, expedido por la autoridad competente en el país de emisor, visado y legalizado o apostillado."
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:foreign-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Antecedentes Policiales o Penales, expedido por la autoridad competente del país emisor o por la representación consular en Paraguay, con vigencia a nivel nacional (Requerido a partir de los 14 años de edad)"
+    },
+    {
+      "key": "document:foreign-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se exime de presentar el certificado a adolescentes extranjeros nacionales de Argentina, Canadá, Colombia, Cuba, España, México, Nicaragua y Venezuela, menores de entre 15 y 18 años (según corresponda)"
+    },
+    {
+      "key": "document:foreign-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:foreign-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:foreign-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:paraguayan-criminal-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Antecedentes para Extranjeros vigente, expedido por el Departamento de Informática de la Policía Nacional (Requerido a partir de los 14 años de edad)."
+    },
+    {
+      "key": "document:marriage-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Estado Civil, expedido por la autoridad competente en el país emisor, visado y legalizado o apostillado, si corresponde."
+    },
+    {
+      "key": "document:marriage-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Certificado de Matrimonio."
+    },
+    {
+      "key": "document:marriage-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:marriage-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:marriage-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Estado Civil, expedido por la autoridad competente en el país emisor, visado y legalizado o apostillado, si corresponde."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sentencia de Divorcio."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Certificado de Defunción del cónyuge."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:naturalization-certificate",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Partida de nacimiento y comprobación del estado civil de la persona y certificado de nacionalización o naturalización, cuando fuere el caso"
+    },
+    {
+      "key": "document:criminal-record-statement",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Declaración Jurada de no poseer antecedentes internacionales (Proveída por Migraciones al momento de iniciar el trámite de Residencia)."
+    },
+    {
+      "key": "document:criminal-record-statement",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Declaración jurada de carencia de antecedentes internacionales penales o policiales"
+    },
+    {
+      "key": "document:entry-proof",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada de la Constancia de ingreso al país:"
+    },
+    {
+      "key": "document:entry-proof",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Boleta migratoria sellada de ingreso al país."
+    },
+    {
+      "key": "document:entry-proof",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sello de ingreso al país en el pasaporte."
+    },
+    {
+      "key": "document:entry-proof",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Declaración Jurada proveída por la Dirección Nacional de Migraciones."
+    },
+    {
+      "key": "document:entry-proof",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Cualquier otro documento que acredite su presencia en el país."
+    },
+    {
+      "key": "document:minor-parents-identity",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se deberá presentar 1 (una) copia autenticada de los documentos de identidad del país de origen de ambos progenitores y, si poseen, 1 (una) copia autenticada del carnet de residencia otorgado por la DNM o de la Cédula de Identidad Paraguaya."
+    },
+    {
+      "key": "document:minor-parents-identity",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "acompañada de 1 (una) copia del documento de identidad de los progenitores."
+    },
+    {
+      "key": "document:minor-parents-identity",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "document:minor-authorization",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Autorización notarial otorgada por el progenitor ausente, en la cual conste expresamente su voluntad de que el hijo/a viva y resida de manera temporal o permanente con el padre/madre en el Paraguay"
+    },
+    {
+      "key": "document:minor-authorization",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sentencia judicial que autorice la residencia del niño, niña o adolescente en el Paraguay"
+    },
+    {
+      "key": "document:minor-authorization",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Autorización notarial otorgada por ambos progenitores"
+    },
+    {
+      "key": "document:minor-authorization",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "1 (una) copia autenticada del documento de identidad paraguayo del tercero."
+    },
+    {
+      "key": "document:minor-authorization",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "document:minor-parent-death-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "En caso de fallecimiento de uno de los progenitores, se deberá presentar original y 1 (una) copia autenticada del certificado de defunción."
+    },
+    {
+      "key": "document:minor-parent-death-certificate",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "document:identity-document-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Documento de Identidad del país de origen, vigente:"
+    },
+    {
+      "key": "document:identity-document-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Cédula de Identidad vigente."
+    },
+    {
+      "key": "document:identity-document-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Documento Nacional de Identidad vigente."
+    },
+    {
+      "key": "document:identity-document-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Pasaporte vigente."
+    },
+    {
+      "key": "document:identity-document-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se requiere la presentación de los documentos de identidad acompañados por copias debidamente autenticadas por Escribanía Pública, a fin de que los originales permanezcan en poder de sus titulares."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Nacimiento, expedido por la autoridad competente en el país de emisor, visado y legalizado o apostillado."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:foreign-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Antecedentes Policiales o Penales, expedido por la autoridad competente del país emisor o por la representación consular en Paraguay, con vigencia a nivel nacional (Requerido a partir de los 14 años de edad)"
+    },
+    {
+      "key": "document:foreign-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se exime de presentar el certificado a adolescentes extranjeros nacionales de Argentina, Canadá, Colombia, Cuba, España, México, Nicaragua y Venezuela, menores de entre 15 y 18 años (según corresponda)"
+    },
+    {
+      "key": "document:foreign-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:foreign-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:foreign-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:paraguayan-criminal-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Antecedentes para Extranjeros vigente, expedido por el Departamento de Informática de la Policía Nacional (Requerido a partir de los 14 años de edad)."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Estado Civil, expedido por la autoridad competente en el país emisor, visado y legalizado o apostillado, si corresponde."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Certificado de Matrimonio."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Si el documento fue emitido en el exterior, debe estar legalizado o apostillado."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:divorce-or-death-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada del Certificado de Estado Civil, expedido por la autoridad competente en el país emisor, visado y legalizado o apostillado, si corresponde."
+    },
+    {
+      "key": "document:divorce-or-death-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sentencia de Divorcio."
+    },
+    {
+      "key": "document:divorce-or-death-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Certificado de Defunción del cónyuge."
+    },
+    {
+      "key": "document:divorce-or-death-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Todos los documentos en idioma extranjero deberán estar traducidos al español por un traductor público matriculado en la República del Paraguay"
+    },
+    {
+      "key": "document:divorce-or-death-record-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los documentos en idioma portugués emitidos por la República Federativa del Brasil están exceptuados de traducción"
+    },
+    {
+      "key": "document:naturalization-certificate-dependent",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Partida de nacimiento y comprobación del estado civil de la persona y certificado de nacionalización o naturalización, cuando fuere el caso"
+    },
+    {
+      "key": "document:criminal-record-statement-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Declaración Jurada de no poseer antecedentes internacionales (Proveída por Migraciones al momento de iniciar el trámite de Residencia)."
+    },
+    {
+      "key": "document:criminal-record-statement-dependent",
+      "url": "https://www.bacn.gov.py/leyes-paraguayas/1104/x",
+      "quote": "Declaración jurada de carencia de antecedentes internacionales penales o policiales"
+    },
+    {
+      "key": "document:entry-proof-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Original + una copia autenticada de la Constancia de ingreso al país:"
+    },
+    {
+      "key": "document:entry-proof-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Boleta migratoria sellada de ingreso al país."
+    },
+    {
+      "key": "document:entry-proof-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sello de ingreso al país en el pasaporte."
+    },
+    {
+      "key": "document:entry-proof-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Declaración Jurada proveída por la Dirección Nacional de Migraciones."
+    },
+    {
+      "key": "document:entry-proof-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Cualquier otro documento que acredite su presencia en el país."
+    },
+    {
+      "key": "document:minor-parents-identity-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Se deberá presentar 1 (una) copia autenticada de los documentos de identidad del país de origen de ambos progenitores y, si poseen, 1 (una) copia autenticada del carnet de residencia otorgado por la DNM o de la Cédula de Identidad Paraguaya."
+    },
+    {
+      "key": "document:minor-parents-identity-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "acompañada de 1 (una) copia del documento de identidad de los progenitores."
+    },
+    {
+      "key": "document:minor-parents-identity-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "document:minor-authorization-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Autorización notarial otorgada por el progenitor ausente, en la cual conste expresamente su voluntad de que el hijo/a viva y resida de manera temporal o permanente con el padre/madre en el Paraguay"
+    },
+    {
+      "key": "document:minor-authorization-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Sentencia judicial que autorice la residencia del niño, niña o adolescente en el Paraguay"
+    },
+    {
+      "key": "document:minor-authorization-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Autorización notarial otorgada por ambos progenitores"
+    },
+    {
+      "key": "document:minor-authorization-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "1 (una) copia autenticada del documento de identidad paraguayo del tercero."
+    },
+    {
+      "key": "document:minor-authorization-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    },
+    {
+      "key": "document:minor-parent-death-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "En caso de fallecimiento de uno de los progenitores, se deberá presentar original y 1 (una) copia autenticada del certificado de defunción."
+    },
+    {
+      "key": "document:minor-parent-death-certificate-dependent",
+      "url": "https://migraciones.gov.py/residencia-temporaria-mercosur/",
+      "quote": "Los solicitantes menores de 18 años de edad deberán estar acompañados por ambos padres o tutores para la firma de la solicitud de radicación."
+    }
+  ]
+}

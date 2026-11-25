@@ -49,6 +49,70 @@
     {
       "en": "Mercosur temporary residence: two years, not extendable; permanent residence is asked for in the 90 days before it expires; over a year's unjustified absence may cancel it",
       "text": "Residência temporária do Mercosul: dois anos, sem prorrogação; a residência permanente é pedida nos 90 dias antes do vencimento; mais de um ano de ausência sem justificativa pode cancelá-la"
+    },
+    {
+      "en": "Valid identity document of the country of origin: identity card, national identity document or passport",
+      "text": "Documento de identidade válido do país de origem: carteira de identidade, documento nacional de identidade ou passaporte"
+    },
+    {
+      "en": "Original plus a copy authenticated by a notary (Escribanía Pública), so the original stays with its holder",
+      "text": "Original e uma cópia autenticada em cartório (Escribanía Pública), para o original ficar com o titular"
+    },
+    {
+      "en": "Birth certificate issued by the competent authority of the issuing country, endorsed and legalized or apostilled",
+      "text": "Certidão de nascimento emitida pela autoridade competente do país emissor, visada e legalizada ou apostilada"
+    },
+    {
+      "en": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "text": "Original e uma cópia autenticada; se emitido no exterior, legalizado ou apostilado e traduzido para o espanhol por tradutor público, salvo documentos brasileiros em português"
+    },
+    {
+      "en": "From age 14, a police or criminal record certificate with national coverage, from the issuing country or its consulate in Paraguay; some nationals aged 15 to 17 are exempt",
+      "text": "A partir dos 14 anos, certidão de antecedentes policiais ou criminais de abrangência nacional, do país emissor ou do seu consulado no Paraguai; alguns nacionais de 15 a 17 anos são isentos"
+    },
+    {
+      "en": "From age 14, a current police certificate for foreigners (Certificado de Antecedentes para Extranjeros) from the National Police's IT department",
+      "text": "A partir dos 14 anos, certidão de antecedentes para estrangeiros (Certificado de Antecedentes para Extranjeros) vigente, do Departamento de Informática da Polícia Nacional"
+    },
+    {
+      "en": "Original plus an authenticated copy",
+      "text": "Original e uma cópia autenticada"
+    },
+    {
+      "en": "For someone married, the marriage certificate, as the civil status record, endorsed and legalized or apostilled",
+      "text": "Para quem é casado, a certidão de casamento, como prova do estado civil, visada e legalizada ou apostilada"
+    },
+    {
+      "en": "For someone divorced, the divorce ruling; for someone widowed, the spouse's death certificate, as the civil status record",
+      "text": "Para quem é divorciado, a sentença de divórcio; para quem é viúvo, a certidão de óbito do cônjuge, como prova do estado civil"
+    },
+    {
+      "en": "For someone whose nationality of a listed state was acquired by naturalization, the naturalization certificate",
+      "text": "Para quem adquiriu por naturalização a nacionalidade de um dos países da lista, o certificado de naturalização"
+    },
+    {
+      "en": "Sworn statement of having no international records, which the directorate provides when the application starts",
+      "text": "Declaração juramentada de não ter antecedentes internacionais, que a Direção de Migrações entrega ao iniciar o pedido"
+    },
+    {
+      "en": "Proof of entry into Paraguay: the stamped entry card, the entry stamp in the passport, the directorate's sworn statement or any other paper proving presence in the country",
+      "text": "Comprovante de entrada no Paraguai: cartão migratório carimbado, carimbo de entrada no passaporte, declaração juramentada da Direção de Migrações ou outro papel que prove a presença no país"
+    },
+    {
+      "en": "For an applicant under 18: a copy of both parents' identity documents, authenticated where both parents are present",
+      "text": "Para quem tem menos de 18 anos: cópia dos documentos de identidade do pai e da mãe, autenticada quando os dois estão presentes"
+    },
+    {
+      "en": "For an applicant under 18 not accompanied by both parents: the absent parent's notarized authorization, or both parents' notarized authorization for a third person, or a court ruling",
+      "text": "Para quem tem menos de 18 anos e não está acompanhado do pai e da mãe: autorização em cartório do pai ou da mãe ausente, ou dos dois para um terceiro, ou sentença judicial"
+    },
+    {
+      "en": "With a third person, also an authenticated copy of that person's Paraguayan identity document",
+      "text": "Com um terceiro, também cópia autenticada do documento de identidade paraguaio dessa pessoa"
+    },
+    {
+      "en": "For an applicant under 18 whose parent died: the parent's death certificate",
+      "text": "Para quem tem menos de 18 anos e perdeu o pai ou a mãe: a certidão de óbito"
     }
   ]
 }
