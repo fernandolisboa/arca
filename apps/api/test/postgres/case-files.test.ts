@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  type QuestionId,
   buildCaseSnapshot,
   identityKey,
   parseCalendarDate,
@@ -916,6 +917,111 @@ describe('work periods (ADR-0036)', () => {
         }),
       ),
     ).toBe('case_invalid');
+  });
+});
+
+describe('a business and a work period at it (ADR-0036)', () => {
+  const company = {
+    kind: 'business',
+    value: { amount: '300000', currency: 'BRL' },
+    valuedAt: '2026-06-30',
+    country: 'BR',
+    operatingSince: '2018-05',
+    employees: 6,
+    share: '1',
+  };
+  const snapshotFor = (accountId: string) =>
+    withIdentity(testDatabase.apiDb, { accountId }, async (tx) => {
+      const rows = await readCase(tx, accountId);
+      if (rows === undefined) throw new Error('no case');
+      return buildCaseSnapshot(rows, parseCalendarDate('2026-11-06')).snapshot;
+    });
+  const answer = (accountId: string, personId: string, questionId: QuestionId, value: unknown) =>
+    files.answerQuestions(accountId, { personId, answers: [{ questionId, answer: value }] });
+
+  it('stores a business’s details, links a work period to it, and shows both only with the finances', async () => {
+    const { alice, bruno, people } = await family();
+    const added = viewOf(await answer(alice, people.alice, 'assets', [company]));
+    const businessId = added.assets[0]?.id ?? '';
+    expect(added.assets[0]?.asset).toMatchObject({
+      kind: 'business',
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+    const owner = { relation: 'owner', capacity: 'manager', business: businessId };
+    viewOf(await answer(alice, people.alice, 'workPeriods', [owner]));
+    const own = await snapshotFor(alice);
+    expect(own.people[0]?.workPeriods).toEqual([{ ...owner, business: 'a1' }]);
+    expect(own.assets[0]).toMatchObject({ id: 'a1', operatingSince: '2018-05', employees: 6 });
+
+    // With only the profile shared, Bruno reads the work period but not the business it is at.
+    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    const profileOnly = await snapshotFor(bruno);
+    expect(profileOnly.people[0]?.workPeriods).toEqual([
+      { relation: 'owner', capacity: 'manager' },
+    ]);
+    expect(profileOnly.assets).toEqual([]);
+    const seenBy = async (viewer: string) =>
+      (await files.view(viewer))?.people.find(({ id }) => id === people.alice)?.profile?.facts
+        .workPeriods;
+    expect(await seenBy(bruno)).toEqual([{ relation: 'owner', capacity: 'manager' }]);
+    const played = (await files.playback(bruno))?.sentences ?? [];
+    expect(played.filter(({ kind }) => kind === 'asset')).toEqual([]);
+    expect(played.find(({ kind }) => kind === 'workPeriod')).not.toHaveProperty('atOwnBusiness');
+
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [bruno],
+    });
+    expect(await seenBy(bruno)).toEqual([owner]);
+    const shared = (await files.playback(bruno))?.sentences ?? [];
+    expect(shared.find(({ kind }) => kind === 'workPeriod')).toMatchObject({ atOwnBusiness: true });
+    expect(shared.find(({ kind }) => kind === 'asset')).toMatchObject({
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
+  it('refuses a work period at a business the person does not own, or at an asset that is not a business', async () => {
+    const { alice, bruno, people } = await family();
+    const house = viewOf(
+      await answer(alice, people.alice, 'assets', [
+        {
+          kind: 'real_estate',
+          value: { amount: '500000', currency: 'BRL' },
+          valuedAt: '2026-01-10',
+          share: '1',
+        },
+      ]),
+    ).assets[0]?.id;
+    const brunos = viewOf(await answer(bruno, people.bruno, 'assets', [company])).assets[0]?.id;
+    for (const business of [house, brunos, randomUUID()]) {
+      expect(
+        refusal(
+          await answer(alice, people.alice, 'workPeriods', [{ relation: 'owner', business }]),
+        ),
+      ).toBe('case_invalid');
+    }
+    expect(
+      refusal(await answer(alice, people.alice, 'assets', [{ ...company, kind: 'investment' }])),
+    ).toBe('case_invalid');
+  });
+
+  it('keeps a stored link once the business is gone, out of the snapshot, so other answers still save', async () => {
+    const { alice, people } = await family();
+    const businessId =
+      viewOf(await answer(alice, people.alice, 'assets', [company])).assets[0]?.id ?? '';
+    viewOf(
+      await answer(alice, people.alice, 'workPeriods', [
+        { relation: 'owner', business: businessId },
+      ]),
+    );
+    viewOf(await answer(alice, people.alice, 'assets', [{ id: businessId, dropped: true }]));
+    viewOf(await answer(alice, people.alice, 'studying', true));
+    expect((await snapshotFor(alice)).people[0]?.workPeriods).toEqual([{ relation: 'owner' }]);
   });
 });
 

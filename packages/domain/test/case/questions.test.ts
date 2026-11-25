@@ -183,6 +183,7 @@ describe('answering the guided questions (spec 0007, R4)', () => {
         end: 'none',
       },
       { occupation: '2512', relation: 'contractor', start: '2012', end: '2019-02' },
+      { relation: 'owner', business: house },
     ];
     const applied = apply(empty, { workPeriods: periods });
     expect(applied.ok && applied.state.facts).toEqual({ workPeriods: periods });
@@ -322,17 +323,14 @@ describe('answering the guided questions (spec 0007, R4)', () => {
         share: '0.5',
       },
     ]);
-    const applied = apply(state, {
-      assets: [
-        {
-          kind: 'cash',
-          value: { amount: '100.25', currency: 'EUR' },
-          valuedAt: '2026-11-01',
-          liquid: true,
-          share: '1',
-        },
-      ],
-    });
+    const newCash = {
+      kind: 'cash',
+      value: { amount: '100.25', currency: 'EUR' },
+      valuedAt: '2026-11-01',
+      liquid: true,
+      share: '1',
+    };
+    const applied = apply(state, { assets: [newCash] });
     const added = {
       asset: {
         kind: 'cash',
@@ -354,9 +352,34 @@ describe('answering the guided questions (spec 0007, R4)', () => {
       [{ id: house, dropped: true, share: '1' }],
       [{ id: house, dropped: false }],
       [{ id: marriage, dropped: true }],
+      [{ ...newCash, country: 'BR' }],
+      [{ ...newCash, kind: 'business', employees: -1 }],
+      [{ ...newCash, kind: 'business', country: 'XX' }],
     ]) {
       expect(apply(state, { assets: refused }).ok, JSON.stringify(refused)).toBe(false);
     }
+    const business = apply(state, {
+      assets: [
+        { ...newCash, kind: 'business', country: 'BR', operatingSince: '2018-05', employees: 6 },
+      ],
+    });
+    expect(business.ok && business.state.assets[1]?.asset).toMatchObject({
+      kind: 'business',
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
+  it('asks the business fields of a business only', () => {
+    const fields = questionFlow.find(({ id }) => id === 'assets')?.input;
+    const businessOnly =
+      fields?.kind === 'list'
+        ? fields.fields.flatMap((field) =>
+            'onlyWhen' in field && field.onlyWhen.value === 'business' ? [field.key] : [],
+          )
+        : [];
+    expect(businessOnly).toEqual(['country', 'operatingSince', 'employees']);
   });
 
   it('works out the owner rows to drop and the assets, fields and shares to write', () => {
@@ -446,6 +469,11 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ],
     ['a residence basis outside its set', { residencePeriods: [{ country: 'PT', basis: 'visa' }] }],
     ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
+    ['a business named by something other than its ID', { workPeriods: [{ business: 'a1' }] }],
+    [
+      'a business on a work period that is not at the person’s own company',
+      { workPeriods: [{ relation: 'employee', business: '8b7c6d5e-4f3a-4b2c-8d9e-8f7a6b5c4d3e' }] },
+    ],
     ['a field of study outside the classification', { qualifications: [{ field: '9999' }] }],
     ['a qualification level outside ISCED', { qualifications: [{ level: 9 }] }],
     [

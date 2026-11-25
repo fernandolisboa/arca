@@ -38,6 +38,7 @@ import {
   comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
+  ownsBusiness,
   maxCaseMembers,
   maxCasePeople,
   nextPreferences,
@@ -273,6 +274,9 @@ const assetColumns = (asset: StoredAsset) => ({
   valuedAt: asset.valuedAt,
   liquid: asset.liquid ?? null,
   sold: asset.sold ?? null,
+  country: asset.country ?? null,
+  operatingSince: asset.operatingSince ?? null,
+  employees: asset.employees ?? null,
 });
 
 /** Whether a confirmed invite links the two accounts, either way; the identity sees only its own. */
@@ -287,8 +291,26 @@ const linked = (tx: Transaction, accountId: string, other: string) =>
 const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10));
 
 /**
- * Replaces a person's facts and dependence; dependence names other people of the case, and every
- * occupation or field of study a code of its classification.
+ * Whether every business a work period newly names is a business the person owns a confirmed
+ * share of. A link already stored stays even once the business is sold or reclassified, so that
+ * another answer still saves; the snapshot leaves such a link out (ADR-0036).
+ */
+function linksOwnedBusinesses(rows: CaseRows, personId: string, facts: StoredProfile['facts']) {
+  const stored = new Set(
+    rows.profiles
+      .find((profile) => profile.personId === personId)
+      ?.facts.workPeriods?.map(({ business }) => business),
+  );
+  return (facts.workPeriods ?? []).every(
+    ({ business }) =>
+      business === undefined || stored.has(business) || ownsBusiness(rows, personId, business),
+  );
+}
+
+/**
+ * Replaces a person's facts and dependence; dependence names other people of the case, every
+ * occupation or field of study a code of its classification, and a work period's business one the
+ * person owns.
  */
 async function saveProfile(
   tx: Transaction,
@@ -299,6 +321,7 @@ async function saveProfile(
   codes: KnownCodes,
 ) {
   refuseUnless(classifiedCodesKnown(facts, codes), 'case_invalid');
+  refuseUnless(linksOwnedBusinesses(rows, personId, facts), 'case_invalid');
   const known = new Set(rows.people.map(({ id }) => id));
   refuseUnless(
     dependsOn === null ||
@@ -344,7 +367,10 @@ async function insertAsset(tx: Transaction, personId: string, share: string, ass
                            ${fields.amount}::bigint, ${fields.currency},
                            ${fields.valuedAt}::date, ${fields.liquid}::boolean,
                            ${fields.sold}::text) AS id`);
-  refuseUnless((added.rows[0]?.id ?? null) !== null, 'not_found');
+  const id = added.rows[0]?.id ?? null;
+  if (id === null) throw new Refused('not_found');
+  // `add_asset` takes the fields every asset has; a business's own fields follow as an update.
+  if (asset.kind === 'business') await updateAssetRow(tx, id, asset);
 }
 
 async function updateAssetRow(tx: Transaction, assetId: string, asset: StoredAsset) {
@@ -356,7 +382,9 @@ async function updateAssetRow(tx: Transaction, assetId: string, asset: StoredAss
         UPDATE cases.asset
            SET kind = ${fields.kind}, value_amount = ${fields.amount},
                value_currency = ${fields.currency}, valued_at = ${fields.valuedAt}::date,
-               liquid = ${fields.liquid}, sold = ${fields.sold}, updated_at = now()
+               liquid = ${fields.liquid}, sold = ${fields.sold}, country = ${fields.country},
+               operating_since = ${fields.operatingSince}, employees = ${fields.employees},
+               updated_at = now()
          WHERE id = ${assetId} RETURNING id`,
     ),
     'not_found',

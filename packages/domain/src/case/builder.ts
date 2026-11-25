@@ -6,7 +6,13 @@ import {
   caseSnapshotSchema,
   workPeriodFieldsSchema,
 } from './snapshot.js';
-import type { StoredAsset, StoredFinances, StoredProfile, StoredRelationship } from './storage.js';
+import type {
+  StoredAsset,
+  StoredFinances,
+  StoredProfile,
+  StoredRelationship,
+  StoredWorkPeriod,
+} from './storage.js';
 
 /**
  * The case rows one account sees, as row-level security returns them (spec 0007, R1): every
@@ -51,39 +57,6 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
   const profiles = byPerson(rows.profiles);
   const finances = byPerson(rows.finances);
 
-  const people = rows.people.map(({ id }) => {
-    const profile = profiles.get(id);
-    const money = finances.get(id);
-    const markers: CompletenessMarker[] = [...(profile?.facts.recordedInFull ?? [])];
-    if (money?.assetsRecordedInFull === true) markers.push('assets');
-    const workPeriods = profile?.facts.workPeriods;
-    return {
-      ...profile?.facts,
-      // Only the snapshot's own fields pass, so a label stays with the profile (ADR-0036).
-      ...(workPeriods === undefined
-        ? {}
-        : {
-            workPeriods: workPeriods.map((period) =>
-              Object.fromEntries(
-                Object.entries(period).filter(([key]) =>
-                  Object.hasOwn(workPeriodFieldsSchema.shape, key),
-                ),
-              ),
-            ),
-          }),
-      id: personId(id),
-      ...(money?.incomes === undefined ? {} : { incomes: money.incomes }),
-      ...(profile?.dependenceAnswered === true
-        ? {
-            financiallyDependentOn: rows.dependence
-              .filter((row) => row.personId === id)
-              .map((row) => personId(row.dependsOnId)),
-          }
-        : {}),
-      ...(markers.length === 0 ? {} : { recordedInFull: markers }),
-    };
-  });
-
   const confirmedOwners = rows.owners.filter((owner) => owner.confirmed);
   const ownedAssets = rows.assets.filter((asset) =>
     confirmedOwners.some((owner) => owner.assetId === asset.id),
@@ -100,6 +73,47 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
       .map((owner) => ({ person: personId(owner.personId), share: owner.share })),
   }));
 
+  /**
+   * Only the snapshot's own fields pass, so a label stays with the profile (ADR-0036); the link to
+   * a business only while the viewer sees the person own it, so it never shows a business the
+   * viewer may not see and a business no longer owned drops out.
+   */
+  const snapshotWorkPeriod = (stored: StoredWorkPeriod, owner: string) => {
+    const period = Object.fromEntries(
+      Object.entries(stored).filter(
+        ([key]) => key !== 'business' && Object.hasOwn(workPeriodFieldsSchema.shape, key),
+      ),
+    );
+    const { business } = stored;
+    return business !== undefined && ownsBusiness(rows, owner, business)
+      ? { ...period, business: mapped(assetIds, business) }
+      : period;
+  };
+
+  const people = rows.people.map(({ id }) => {
+    const profile = profiles.get(id);
+    const money = finances.get(id);
+    const markers: CompletenessMarker[] = [...(profile?.facts.recordedInFull ?? [])];
+    if (money?.assetsRecordedInFull === true) markers.push('assets');
+    const workPeriods = profile?.facts.workPeriods;
+    return {
+      ...profile?.facts,
+      ...(workPeriods === undefined
+        ? {}
+        : { workPeriods: workPeriods.map((period) => snapshotWorkPeriod(period, id)) }),
+      id: personId(id),
+      ...(money?.incomes === undefined ? {} : { incomes: money.incomes }),
+      ...(profile?.dependenceAnswered === true
+        ? {
+            financiallyDependentOn: rows.dependence
+              .filter((row) => row.personId === id)
+              .map((row) => personId(row.dependsOnId)),
+          }
+        : {}),
+      ...(markers.length === 0 ? {} : { recordedInFull: markers }),
+    };
+  });
+
   const snapshot = caseSnapshotSchema.parse({
     recordedOn,
     members: rows.people.filter((person) => person.caseMember).map(({ id }) => personId(id)),
@@ -108,6 +122,23 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
     assets,
   });
   return { snapshot, personIds, assetIds };
+}
+
+/**
+ * Whether the rows the viewer sees show the person owning a confirmed share of this business, the
+ * only case in which a work period's link to it is shown or newly stored (ADR-0036).
+ */
+export function ownsBusiness(
+  rows: Pick<VisibleCaseRows, 'assets' | 'owners'>,
+  personId: string,
+  assetId: string,
+): boolean {
+  return (
+    rows.assets.some(({ id, kind }) => id === assetId && kind === 'business') &&
+    rows.owners.some(
+      (owner) => owner.assetId === assetId && owner.personId === personId && owner.confirmed,
+    )
+  );
 }
 
 /**

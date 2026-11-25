@@ -250,6 +250,60 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
       },
       'Imóvel de Ana (50%) e Bruno (50%): R$ 500.000,00 em 10 de janeiro de 2026, difícil de transformar em dinheiro, com venda em outubro de 2026.',
     ],
+    [
+      {
+        kind: 'asset',
+        about: ['a'],
+        asset: 'business',
+        value: { amount: '300000', currency: 'BRL' },
+        valuedAt: '2026-06-30',
+        owners: [{ person: 'a', share: '1' }],
+        country: 'BR',
+        operatingSince: '2018-05',
+        employees: 0,
+      },
+      'Empresa ou participação de Ana (100%): R$ 300.000,00 em 30 de junho de 2026, sede: Brasil, funcionando desde maio de 2018, sem funcionários.',
+    ],
+    [
+      {
+        kind: 'asset',
+        about: ['a'],
+        asset: 'business',
+        value: { amount: '300000', currency: 'BRL' },
+        valuedAt: '2026-06-30',
+        owners: [{ person: 'a', share: '1' }],
+        country: 'BR',
+        operatingSince: '2018-05',
+        employees: 1,
+      },
+      'Empresa ou participação de Ana (100%): R$ 300.000,00 em 30 de junho de 2026, sede: Brasil, funcionando desde maio de 2018, 1 funcionário.',
+    ],
+    [
+      {
+        kind: 'asset',
+        about: ['a'],
+        asset: 'business',
+        value: { amount: '300000', currency: 'BRL' },
+        valuedAt: '2026-06-30',
+        owners: [{ person: 'a', share: '1' }],
+        country: 'BR',
+        operatingSince: '2018-05',
+        employees: 6,
+      },
+      'Empresa ou participação de Ana (100%): R$ 300.000,00 em 30 de junho de 2026, sede: Brasil, funcionando desde maio de 2018, 6 funcionários.',
+    ],
+    [
+      {
+        kind: 'workPeriod',
+        ...ana,
+        relation: 'owner',
+        capacity: 'manager',
+        start: '2019-03',
+        end: 'none',
+        atOwnBusiness: true,
+      },
+      'Trabalho de Ana: ocupação não informada, na própria empresa, em cargo de gerência, começou em março de 2019, trabalho atual, na empresa listada nos bens.',
+    ],
   ])('words %j', async (sentence, text) => {
     const i18n = await createI18n();
     expect(
