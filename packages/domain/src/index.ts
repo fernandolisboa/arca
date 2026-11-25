@@ -149,10 +149,12 @@ export {
   validCaseStructure,
 } from './case/builder.js';
 export {
+  type AppliesTo,
   type Assessment,
   type Cost,
   type CountrySet,
   type DependentRule,
+  type DocumentItem,
   type DurationStage,
   type OfficialDomainList,
   type Pin,
@@ -160,6 +162,7 @@ export {
   type RouteVersion,
   type Source,
   countrySetSchema,
+  documentItemSchema,
   durationStageSchema,
   jsonDepthWithin,
   maxKnowledgeJsonDepth,
@@ -325,6 +328,12 @@ export {
   evaluateVersion,
   evaluateVersionTraced,
 } from './rules/engine.js';
+export {
+  type DocumentChecklist,
+  type DocumentResult,
+  type PersonDocuments,
+  documentChecklist,
+} from './rules/documents.js';
 export { type StaleSource, staleAfterDays, staleSources } from './rules/staleness.js';
 export { type Trace } from './rules/evaluate.js';
 export { type MissingFact } from './rules/missing.js';
