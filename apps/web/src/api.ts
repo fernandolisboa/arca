@@ -75,9 +75,12 @@ export const caseEvaluationsQuery = queryOptions({
 });
 
 /** One route's document checklist for a member as principal (spec #519). */
+/** Every principal's checklist of one route, which a mark on it changes. */
+export const routeDocumentsKey = (routeId: string) => ['case', 'documents', routeId] as const;
+
 export const routeDocumentsQuery = (routeId: string, principalId: string) =>
   queryOptions({
-    queryKey: ['case', 'documents', routeId, principalId],
+    queryKey: [...routeDocumentsKey(routeId), principalId],
     queryFn: () => api.call(routes.getRouteDocuments, { routeId, principalId }),
     networkMode: 'always',
     retry: false,
