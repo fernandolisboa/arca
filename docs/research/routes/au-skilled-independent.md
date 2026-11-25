@@ -4,6 +4,15 @@ Research notes for Australia's Skilled Independent visa (subclass 189), points-t
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Version audited:** 3
+- **Outcome:** correction, version 4, from version 3's date, 2026-07-01, which keeps every item of version 3 and adds the official document list: the Migration Regulations 1994 (regs. 1.15C, 2.03AA and 2.07, Schedule 2 Part 189, Schedule 4 criteria 4005, 4017, 4019 and 4021 and Part 3), LIN 20/162 (form 1393, an internet application) and the language tests and passports instrument of 2025. Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-au-documents/README.md).
+- **Amendments looked for:** the register lists the regulations' compilation of 2026-11-12 and two amendments from 2026-11-13 and 2026-11-28, which the review of 2026-11-20 found touch none of the provisions cited.
+- **Watch next:** the Home Affairs page of the visa lists more documents (identity, relationship, points claims), but it draws its text with scripts the app's reader cannot see; those stay out until an official page the app can read states them.
+
 ### 2026-11-20, session review
 
 A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-au/README.md](../../../packages/knowledge/reviews/2026-11-au/README.md).
