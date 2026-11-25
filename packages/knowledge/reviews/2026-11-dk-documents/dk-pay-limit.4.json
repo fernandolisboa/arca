@@ -898,22 +898,6 @@
         "op": "all",
         "operands": [
           {
-            "op": "not",
-            "operand": {
-              "op": "any",
-              "operands": [
-                {
-                  "op": "fact",
-                  "key": "person.hasSpouse"
-                },
-                {
-                  "op": "fact",
-                  "key": "person.hasPartner"
-                }
-              ]
-            }
-          },
-          {
             "op": "gte",
             "left": {
               "op": "fact",
@@ -923,6 +907,50 @@
               "op": "int",
               "value": 18
             }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "not",
+                "operand": {
+                  "op": "any",
+                  "operands": [
+                    {
+                      "op": "fact",
+                      "key": "person.hasSpouse"
+                    },
+                    {
+                      "op": "fact",
+                      "key": "person.hasPartner"
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "fact",
+                    "key": "person.dependsOnPrincipal"
+                  },
+                  {
+                    "op": "gt",
+                    "left": {
+                      "op": "fact",
+                      "key": "person.ageYears"
+                    },
+                    "right": {
+                      "op": "fact",
+                      "key": "principal.ageYears"
+                    }
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

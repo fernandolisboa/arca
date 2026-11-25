@@ -101,4 +101,11 @@ describe('dk-pay-limit v4 documents by tie, age and custody (spec #519)', () => 
     const lists = await checklist('parent-depending-on-the-principal-possible');
     expect(pick(lists, 'p2')).toEqual(row(false, false, false, false, false, false, 'unknown'));
   }, 120_000);
+
+  it('married dependent parents still document their dependence, as possible', async () => {
+    const lists = await checklist('married-parents-depending-on-the-principal-possible');
+    for (const parent of ['p2', 'p3']) {
+      expect(lists[parent]?.['dependence-proof-dependent']).toBe('unknown');
+    }
+  }, 120_000);
 });

@@ -1303,6 +1303,85 @@
         "possibleDependents": [],
         "missingFacts": []
       }
+    },
+    {
+      "id": "married-parents-depending-on-the-principal-possible",
+      "snapshot": {
+        "recordedOn": "2026-10-01",
+        "members": ["p1", "p2", "p3"],
+        "people": [
+          {
+            "id": "p1",
+            "birthDate": "1985-03-10",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1985-03-10",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "birthDate": "1955-06-06",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1955-06-06",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": ["p1"]
+          },
+          {
+            "id": "p3",
+            "birthDate": "1957-07-07",
+            "recordedInFull": ["spouses", "partners", "children", "parents", "assets"],
+            "citizenships": [
+              {
+                "country": "BR",
+                "acquired": "1957-07-07",
+                "lost": "none",
+                "basis": "birth"
+              }
+            ],
+            "financiallyDependentOn": ["p1"]
+          }
+        ],
+        "relationships": [
+          {
+            "kind": "parent",
+            "parent": "p2",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "parent",
+            "parent": "p3",
+            "child": "p1",
+            "parentKind": "biological"
+          },
+          {
+            "kind": "spouse",
+            "people": ["p2", "p3"],
+            "start": "1980-01-01",
+            "end": "none"
+          }
+        ],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-10-01",
+      "expected": {
+        "status": "needs_assessment",
+        "dependents": [],
+        "possibleDependents": ["p2", "p3"],
+        "missingFacts": []
+      }
     }
   ]
 }
