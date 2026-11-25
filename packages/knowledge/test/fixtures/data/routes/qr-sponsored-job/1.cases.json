@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "salary-above",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 4500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "salary-in-dollars-above",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 5000000,
+                  "currency": "USD"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "salary-below",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 3500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "salary-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["jobOffer.annualSalary@p1"]
+      }
+    },
+    {
+      "id": "salary-rate-missing",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 6000000,
+                  "currency": "GBP"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "offer-in-another-country",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QN",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 4500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "offer-unsponsored",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "sponsored": false,
+                "annualSalary": {
+                  "amount": 4500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "sponsorship-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "2512",
+                "annualSalary": {
+                  "amount": 4500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["jobOffer.sponsored@p1"]
+      }
+    },
+    {
+      "id": "other-occupation",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false,
+                "occupation": "4311",
+                "sponsored": true,
+                "annualSalary": {
+                  "amount": 4500000,
+                  "currency": "EUR"
+                }
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "offer-recorded-before-these-fields",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": [
+              {
+                "country": "QR",
+                "sector": "J",
+                "temporary": false
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": [
+          "jobOffer.annualSalary@p1",
+          "jobOffer.occupation@p1",
+          "jobOffer.sponsored@p1"
+        ]
+      }
+    },
+    {
+      "id": "no-offers",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "jobOffers": []
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "offers-unanswered",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "fx": {
+        "rates": [
+          {
+            "from": "USD",
+            "to": "EUR",
+            "rate": "0.9",
+            "date": "2026-10-30",
+            "source": "fixture"
+          }
+        ]
+      },
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["records jobOffers@p1"]
+      }
+    }
+  ]
+}

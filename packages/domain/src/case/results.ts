@@ -48,6 +48,12 @@ export const questionForFact = {
   'workPeriod.fullTime': 'workPeriods',
   'workPeriod.start': 'workPeriods',
   'workPeriod.end': 'workPeriods',
+  'jobOffer.country': 'jobOffers',
+  'jobOffer.sector': 'jobOffers',
+  'jobOffer.temporary': 'jobOffers',
+  'jobOffer.occupation': 'jobOffers',
+  'jobOffer.annualSalary': 'jobOffers',
+  'jobOffer.sponsored': 'jobOffers',
   'qualification.level': 'qualifications',
   'qualification.field': 'qualifications',
   'qualification.country': 'qualifications',
@@ -64,6 +70,7 @@ export const questionForFact = {
 /** The guided question that records each list of a person's records. */
 const questionForRecords = {
   workPeriods: 'workPeriods',
+  jobOffers: 'jobOffers',
   qualifications: 'qualifications',
   registrations: 'registrations',
   residencePeriods: 'residencePeriods',

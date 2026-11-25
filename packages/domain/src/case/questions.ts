@@ -236,6 +236,9 @@ export const questionFlow = [
         needed('country', { kind: 'country' }),
         needed('sector', { kind: 'choice', set: 'isicSection' }),
         needed('temporary', { kind: 'yesNo' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('annualSalary', { kind: 'money' }),
+        maybe('sponsored', { kind: 'yesNo' }),
       ],
     },
   },
@@ -417,8 +420,11 @@ export function classifiedCodesKnown(
   const named = (code: string | undefined, codes: ReadonlySet<string>) =>
     code === undefined || codes.has(code);
   return (
-    (facts.workPeriods ?? []).every(({ occupation }) => named(occupation, occupations)) &&
-    (facts.registrations ?? []).every(({ occupation }) => named(occupation, occupations)) &&
+    [
+      ...(facts.workPeriods ?? []),
+      ...(facts.jobOffers ?? []),
+      ...(facts.registrations ?? []),
+    ].every(({ occupation }) => named(occupation, occupations)) &&
     (facts.qualifications ?? []).every(({ field }) => named(field, studyFields))
   );
 }

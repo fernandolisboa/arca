@@ -78,6 +78,9 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     country: countryCodeSchema,
     sector: z.enum(isicSections as [string, ...string[]]),
     temporary: z.boolean(),
+    occupation: occupationCodeSchema.optional(),
+    annualSalary: amountSchema.optional(),
+    sponsored: z.boolean().optional(),
   }),
   sentence('noJobOffer', { person }),
   sentence('workPeriod', {
@@ -290,10 +293,11 @@ function describePerson(
         }));
         break;
       case 'jobOffers':
-        records(subject.jobOffers, 'noJobOffer', (offer) => ({
+        records(subject.jobOffers, 'noJobOffer', ({ annualSalary, ...offer }) => ({
           kind: 'jobOffer',
           ...ask,
           ...offer,
+          ...(annualSalary === undefined ? {} : { annualSalary: decimalAmount(annualSalary) }),
         }));
         break;
       case 'residencePeriods':

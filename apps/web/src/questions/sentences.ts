@@ -49,6 +49,7 @@ export function sentenceText(
       : start === undefined
         ? t('playback.part.untilToday')
         : t('playback.part.sinceToday', { date: date(start) });
+  const occupation = (code: string) => t(`occupations.${code}` as 'occupations.2211');
   switch (said.kind) {
     case 'profileHidden':
       return t('playback.sentence.profileHidden', { person: name(said.person) });
@@ -120,7 +121,20 @@ export function sentenceText(
         person: name(said.person),
         country: country(said.country),
         sector: t('questions.choice.isicSection', { value: said.sector }),
-        temporary: said.temporary ? t('playback.part.temporary') : '',
+        details: [
+          said.temporary ? t('playback.part.temporary') : '',
+          said.occupation === undefined
+            ? ''
+            : t('playback.part.offerOccupation', {
+                occupation: occupation(said.occupation),
+              }),
+          said.annualSalary === undefined
+            ? ''
+            : t('playback.part.salary', { amount: formatAmount(said.annualSalary, language) }),
+          said.sponsored === undefined
+            ? ''
+            : t('playback.part.sponsored', { sponsored: said.sponsored ? 'yes' : 'no' }),
+        ].join(''),
       });
     case 'noQualification':
       return t('playback.sentence.noQualification', { person: name(said.person) });
@@ -159,7 +173,7 @@ export function sentenceText(
         occupation:
           said.occupation === undefined
             ? t('playback.part.noOccupation')
-            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+            : occupation(said.occupation),
         details: [
           said.relation === undefined
             ? ''

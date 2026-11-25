@@ -3,6 +3,7 @@ import {
   type FactType,
   type PersonRecord,
   classifications,
+  isRecordKind,
 } from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
@@ -10,7 +11,7 @@ import {
   type CollectionName,
   type Expression,
   depth,
-  hasPeriod,
+  isPeriodCollection,
   isRecordCollection,
   maxExpressionDepth,
   recordCollections,
@@ -245,7 +246,7 @@ class Checker {
       }
       case 'covers': {
         if (!this.declared(expression.at, path)) return undefined;
-        if (!isRecordCollection(expression.over) || !hasPeriod(expression.over)) {
+        if (!isPeriodCollection(expression.over)) {
           return this.fail(path, 'covers reads a collection of periods');
         }
         if (![expression.atLeast, expression.window ?? 'P1D'].every(isPositive)) {
@@ -431,6 +432,7 @@ class Checker {
 }
 
 function reachable(target: FactTarget, scope: CheckScope): boolean {
+  if (isRecordKind(target)) return scope.record === target;
   switch (target) {
     case 'principal':
       return true;
@@ -445,11 +447,6 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
     case 'lineage':
     case 'ancestor':
       return scope.lineage !== undefined;
-    case 'workPeriod':
-    case 'residencePeriod':
-    case 'qualification':
-    case 'registration':
-      return scope.record === target;
   }
 }
 

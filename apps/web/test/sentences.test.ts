@@ -67,6 +67,23 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
       { kind: 'jobOffer', ...ana, country: 'PT', sector: 'J', temporary: true },
       'Oferta de emprego para Ana: Portugal, na área de Informação e comunicação, temporária.',
     ],
+    [
+      {
+        kind: 'jobOffer',
+        ...ana,
+        country: 'PT',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '48000', currency: 'EUR' },
+        sponsored: true,
+      },
+      'Oferta de emprego para Ana: Portugal, na área de Saúde e assistência social, ocupação: Médicos clínicos gerais, salário de € 48.000,00 por ano, com patrocínio da empresa para o visto.',
+    ],
+    [
+      { kind: 'jobOffer', ...ana, country: 'US', sector: 'J', temporary: false, sponsored: false },
+      'Oferta de emprego para Ana: Estados Unidos, na área de Informação e comunicação, sem patrocínio da empresa para o visto.',
+    ],
     [{ kind: 'noJobOffer', ...ana }, 'Ofertas de emprego para Ana: nenhuma.'],
     [
       {

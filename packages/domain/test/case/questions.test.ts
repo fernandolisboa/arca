@@ -222,6 +222,29 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
   });
 
+  it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {
+    const offers = [
+      {
+        country: 'PT',
+        sector: 'Q',
+        temporary: false,
+        occupation: '2211',
+        annualSalary: { amount: '48000.5', currency: 'EUR' },
+        sponsored: true,
+      },
+      { country: 'US', sector: 'J', temporary: true },
+    ];
+    const applied = apply(empty, { jobOffers: offers });
+    expect(applied.ok && applied.state.facts).toEqual({
+      jobOffers: [
+        { ...offers[0], annualSalary: { amount: 4_800_050, currency: 'EUR' } },
+        offers[1],
+      ],
+    });
+    if (!applied.ok) return;
+    expect(answerOf(question('jobOffers'), applied.state)).toEqual(offers);
+  });
+
   it('saves residence periods, leaving out what is not known', () => {
     const periods = [
       { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' },
@@ -430,6 +453,23 @@ describe('answering the guided questions (spec 0007, R4)', () => {
       { registrations: [{ occupation: '9999' }] },
     ],
     ['a registration country outside the pinned list', { registrations: [{ country: 'XX' }] }],
+    [
+      'a job offer’s occupation outside the classification',
+      { jobOffers: [{ country: 'US', sector: 'J', temporary: false, occupation: '9999' }] },
+    ],
+    [
+      'a job offer’s salary in more decimals than the currency has',
+      {
+        jobOffers: [
+          {
+            country: 'US',
+            sector: 'J',
+            temporary: false,
+            annualSalary: { amount: '1.001', currency: 'USD' },
+          },
+        ],
+      },
+    ],
     [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },
