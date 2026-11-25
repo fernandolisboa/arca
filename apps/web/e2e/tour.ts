@@ -6,7 +6,7 @@ import { databaseServer, signedOutOrigin } from './servers.js';
  */
 const seen = JSON.stringify({
   v: 1,
-  seen: ['app', 'compare', 'departure', 'family', 'knowledge', 'vault'],
+  seen: ['app', 'compare', 'departure', 'family', 'knowledge', 'recognition', 'vault'],
 });
 
 /**

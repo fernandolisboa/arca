@@ -9,6 +9,7 @@ import {
   parseCalendarDate,
   sourceUrls,
   departureChecklistsSchema,
+  recognitionTracksSchema,
   documentGuidesSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
@@ -56,6 +57,8 @@ export interface CatalogParts {
   readonly departureChecklists?: Json | null;
   /** The highest-numbered document guides file (ADR-0039), or null when there is none. */
   readonly documentGuides?: Json | null;
+  /** The highest-numbered recognition tracks file (ADR-0041), or null when there is none. */
+  readonly recognitionTracks?: Json | null;
   /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
   readonly ruleTexts?: Json;
 }
@@ -216,6 +219,7 @@ export function runtimeModule({
   suggestedRatings = null,
   departureChecklists = null,
   documentGuides = null,
+  recognitionTracks = null,
   ruleTexts = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
@@ -230,6 +234,7 @@ export function runtimeModule({
     exportedJson('suggestedRatingData', suggestedRatings),
     exportedJson('departureChecklistData', departureChecklists),
     exportedJson('documentGuideData', documentGuides),
+    exportedJson('recognitionTrackData', recognitionTracks),
     exportedJson('ruleTextData', ruleTexts),
     '',
   ].join('\n');
@@ -302,6 +307,10 @@ export const readDepartureChecklists = (dir: string, today: CalendarDate = today
 export const readDocumentGuides = (dir: string, today: CalendarDate = todayUtc()) =>
   readLatestSourced(dir, documentGuidesSchema, 'document guide', today);
 
+/** The highest-numbered recognition tracks file in `dir` (ADR-0041), or null. */
+export const readRecognitionTracks = (dir: string, today: CalendarDate = todayUtc()) =>
+  readLatestSourced(dir, recognitionTracksSchema, 'recognition track', today);
+
 /**
  * Every route's texts in `dir` (ADR-0037), one `<route-id>.json` a route, each checked against its
  * schema, its file name and for a title written twice; none when the directory is missing.
@@ -357,18 +366,27 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const [suggestedRatings, departureChecklists, documentGuides, ruleTextFiles] = await Promise.all([
-    readSuggestedRatings(join(packageDir, 'suggested-ratings')),
-    readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
-    readDocumentGuides(join(packageDir, 'document-guides'), today),
-    readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
-  ]);
+  const [suggestedRatings, departureChecklists, documentGuides, recognitionTracks, ruleTextFiles] =
+    await Promise.all([
+      readSuggestedRatings(join(packageDir, 'suggested-ratings')),
+      readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
+      readDocumentGuides(join(packageDir, 'document-guides'), today),
+      readRecognitionTracks(join(packageDir, 'recognition-tracks'), today),
+      readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
+    ]);
   const ruleTexts = shipRuleTexts(ruleTextFiles, (text) =>
     createHash('sha256').update(text, 'utf8').digest('hex'),
   );
   await writeFile(
     targets.runtime,
-    runtimeModule({ ...parts, suggestedRatings, departureChecklists, documentGuides, ruleTexts }),
+    runtimeModule({
+      ...parts,
+      suggestedRatings,
+      departureChecklists,
+      documentGuides,
+      recognitionTracks,
+      ruleTexts,
+    }),
   );
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,

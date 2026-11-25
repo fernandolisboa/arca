@@ -70,7 +70,8 @@ export const documentLimits = {
 
 /**
  * Case writes and rule reports per account; the case's playback, evaluations, document checklists,
- * comparison and family plan per session (spec 0007, ADR-0026, spec #519, ADR-0040).
+ * comparison, family plan and recognition tracks per session (spec 0007, ADR-0026, spec #519,
+ * ADR-0040, ADR-0041).
  */
 export const caseLimits = {
   write: { name: 'case_write_account', limit: 300, windowSeconds: hour },
@@ -79,6 +80,7 @@ export const caseLimits = {
   documents: { name: 'case_documents_session', limit: 600, windowSeconds: hour },
   comparison: { name: 'case_comparison_session', limit: 60, windowSeconds: hour },
   plan: { name: 'case_plan_session', limit: 60, windowSeconds: hour },
+  recognition: { name: 'case_recognition_session', limit: 120, windowSeconds: hour },
   reports: { name: 'rule_report_account', limit: 20, windowSeconds: 24 * hour },
 } as const satisfies Record<string, RateLimitRule>;
 

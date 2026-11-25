@@ -1,5 +1,5 @@
-import type { DepartureChecklist, DepartureSource } from '@arca/api-contract/client';
-import { Button, SourceLine, cardClass } from '@arca/ui';
+import type { DepartureChecklist } from '@arca/api-contract/client';
+import { Button, cardClass } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { departureChecklistsQuery, sessionQuery } from '../api.js';
 import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { Page } from '../page.js';
+import { SourceList } from '../source-list.js';
 
 export const Route = createFileRoute('/departure')({ component: Departure });
 
@@ -60,6 +61,8 @@ function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
   const { t, i18n } = useTranslation();
   const country = new Intl.DisplayNames([i18n.language], { type: 'region', fallback: 'code' });
   const headingId = `departure-${checklist.country}`;
+  // The placeholders go back in, so the source line puts the link and the date in their place.
+  const source = t('departure.source', { host: '{host}', date: '{date}' });
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-4">
       <h3 id={headingId} className="font-display text-lead">
@@ -81,7 +84,7 @@ function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
                 <li key={item.id} className="flex flex-col gap-1">
                   <p className="font-medium">{t(`departure.item.${item.id}.title` as never)}</p>
                   <p className="text-small">{t(`departure.item.${item.id}.body` as never)}</p>
-                  <Sources sources={item.sources} />
+                  <SourceList sources={item.sources} message={source} />
                 </li>
               ))}
             </ol>
@@ -89,26 +92,5 @@ function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
         ))}
       </div>
     </section>
-  );
-}
-
-function Sources({ sources }: { readonly sources: readonly DepartureSource[] }) {
-  const { t, i18n } = useTranslation();
-  // The placeholders go back in, so the source line puts the link and the date in their place.
-  const message = t('departure.source', { host: '{host}', date: '{date}' });
-  return (
-    <ul className="flex flex-col gap-1 text-caption text-muted">
-      {sources.map((source) => (
-        <li key={source.url} className="flex flex-col">
-          <span>{source.title}</span>
-          <SourceLine
-            href={source.url}
-            verifiedOn={source.verifiedAt}
-            locale={i18n.language}
-            message={message}
-          />
-        </li>
-      ))}
-    </ul>
   );
 }
