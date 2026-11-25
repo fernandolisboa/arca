@@ -48,6 +48,9 @@ export const questionForFact = {
   'workPeriod.fullTime': 'workPeriods',
   'workPeriod.start': 'workPeriods',
   'workPeriod.end': 'workPeriods',
+  'workPeriod.business.country': 'assets',
+  'workPeriod.business.operatingSince': 'assets',
+  'workPeriod.business.employees': 'assets',
   'jobOffer.country': 'jobOffers',
   'jobOffer.sector': 'jobOffers',
   'jobOffer.temporary': 'jobOffers',
@@ -132,6 +135,14 @@ function asked(
           ];
         case 'lineage.edgeKind':
           return relationshipQuestion(next === undefined ? [personId] : [personId, next], kept);
+        // Open while the work period names no business, or while the business lacks the detail.
+        case 'workPeriod.business.country':
+        case 'workPeriod.business.operatingSince':
+        case 'workPeriod.business.employees':
+          return [
+            { personId, question: 'workPeriods' },
+            { personId, question },
+          ];
         default:
           // The edge a fact reads may not touch the person it is about, so ask through its ends.
           return question === 'relationships' && edge !== undefined

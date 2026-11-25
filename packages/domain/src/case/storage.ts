@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import {
   assetFieldsSchema,
+  businessFieldsMessage,
+  businessFieldsOnBusiness,
   completenessMarkers,
   coupleEdgeSchema,
   distinct,
@@ -32,11 +34,12 @@ export const displayNameSchema = z
   .refine((name) => name === name.trim(), { message: 'A name has no outer spaces' });
 
 /**
- * A work period as the profile stores it: with an optional label that tells work periods apart on screen,
- * which stays with the profile and never enters the snapshot or a model call (ADR-0036).
+ * A work period as the profile stores it: with an optional label that tells work periods apart on
+ * screen, which stays with the profile and never enters the snapshot or a model call (ADR-0036),
+ * and the business asset it is at by its row's UUID.
  */
 export const storedWorkPeriodSchema = workPeriodFieldsSchema
-  .extend({ label: displayNameSchema.optional() })
+  .extend({ label: displayNameSchema.optional(), business: storedIdSchema.optional() })
   .refine(periodInOrder, periodOrderMessage);
 
 export type StoredWorkPeriod = z.infer<typeof storedWorkPeriodSchema>;
@@ -70,7 +73,9 @@ export const storedFinancesSchema = z.strictObject({
   assetsRecordedInFull: z.boolean(),
 });
 
-export const storedAssetSchema = assetFieldsSchema.omit({ id: true, owners: true });
+export const storedAssetSchema = assetFieldsSchema
+  .omit({ id: true, owners: true })
+  .refine(businessFieldsOnBusiness, businessFieldsMessage);
 
 /** A person's share of an asset: more than 0 and at most 1, with at most six decimal places. */
 export const storedOwnerShareSchema = z

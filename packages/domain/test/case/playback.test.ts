@@ -295,6 +295,39 @@ describe('playing the case back (spec 0007, R5)', () => {
     );
   });
 
+  it('reads back a business’s details and a work period at it', () => {
+    const owned = caseSnapshotSchema.parse({
+      recordedOn: at,
+      members: ['p1'],
+      people: [
+        { id: 'p1', workPeriods: [{ relation: 'owner', business: 'a1' }, { start: '2010' }] },
+      ],
+      relationships: [],
+      assets: [
+        {
+          id: 'a1',
+          kind: 'business',
+          owners: [{ person: 'p1', share: '1' }],
+          value: { amount: 30000000, currency: 'BRL' },
+          valuedAt: '2026-06-30',
+          country: 'BR',
+          operatingSince: '2018-05',
+          employees: 6,
+        },
+      ],
+    });
+    const back = describeCase(owned, new Map([['p1', seen]]), at);
+    expect(back.filter(({ kind }) => kind === 'workPeriod')).toEqual([
+      expect.objectContaining({ relation: 'owner', atOwnBusiness: true }),
+      expect.not.objectContaining({ atOwnBusiness: true }),
+    ]);
+    expect(back.find(({ kind }) => kind === 'asset')).toMatchObject({
+      country: 'BR',
+      operatingSince: '2018-05',
+      employees: 6,
+    });
+  });
+
   it('reads a job offer’s salary back in the currency’s units', () => {
     expect(of('p1', 'jobOffer')).toEqual([
       expect.objectContaining({ country: 'PT' }),

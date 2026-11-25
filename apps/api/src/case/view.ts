@@ -1,7 +1,9 @@
 import type { CaseView } from '@arca/api-contract/routes';
 import { lockKey, type Transaction } from '@arca/db';
 import {
+  type StoredProfile,
   type VisibleCaseRows,
+  ownsBusiness,
   storedAssetSchema,
   storedFinancesSchema,
   storedProfileFactsSchema,
@@ -98,9 +100,12 @@ export async function readCase(
     valued_at: string;
     liquid: boolean | null;
     sold: string | null;
+    country: string | null;
+    operating_since: string | null;
+    employees: number | null;
   }>(sql`
     SELECT id, kind, value_amount::text AS amount, value_currency AS currency,
-           valued_at::text AS valued_at, liquid, sold
+           valued_at::text AS valued_at, liquid, sold, country, operating_since, employees
       FROM cases.asset WHERE case_id = ${caseId} ORDER BY created_at, id`);
   const owners = await rows<{
     asset_id: string;
@@ -154,6 +159,9 @@ export async function readCase(
         valuedAt: row.valued_at,
         ...(row.liquid === null ? {} : { liquid: row.liquid }),
         ...(row.sold === null ? {} : { sold: row.sold }),
+        ...(row.country === null ? {} : { country: row.country }),
+        ...(row.operating_since === null ? {} : { operatingSince: row.operating_since }),
+        ...(row.employees === null ? {} : { employees: row.employees }),
       }),
     })),
     owners: owners.map((row) => ({
@@ -175,6 +183,26 @@ export const sharedWith = (rows: CaseRows, accountId: string, personId: string) 
   rows.shares
     .filter((row) => row.personId === personId && row.accountId === accountId)
     .map((row) => row.scope);
+
+/**
+ * A profile shown to someone other than its keeper: a work period names its business only while
+ * the viewer sees the person own it, so the profile share alone reveals no asset (ADR-0036).
+ */
+function withVisibleBusinesses(
+  rows: CaseRows,
+  personId: string,
+  facts: StoredProfile['facts'],
+): StoredProfile['facts'] {
+  if (facts.workPeriods === undefined) return facts;
+  return {
+    ...facts,
+    workPeriods: facts.workPeriods.map(({ business, ...period }) =>
+      business !== undefined && ownsBusiness(rows, personId, business)
+        ? { ...period, business }
+        : period,
+    ),
+  };
+}
 
 /** The case as the viewer sees it: what they see, and what they may change (spec 0007, R3). */
 export function caseView(rows: CaseRows, accountId: string): CaseView {
@@ -201,7 +229,9 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
           profile === undefined
             ? null
             : {
-                facts: profile.facts,
+                facts: kept.has(person.id)
+                  ? profile.facts
+                  : withVisibleBusinesses(rows, person.id, profile.facts),
                 dependsOn: profile.dependenceAnswered
                   ? rows.dependence
                       .filter((row) => row.personId === person.id)

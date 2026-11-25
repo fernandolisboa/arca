@@ -142,6 +142,8 @@ export const workPeriodFieldsSchema = z.strictObject({
   fullTime: z.boolean().optional(),
   start: dateValueSchema.optional(),
   end: dateOrNoneSchema.optional(),
+  /** The business asset, co-owned by the person, that the work is at. */
+  business: opaqueIdSchema.optional(),
 });
 
 /** A period does not end before it starts. */
@@ -316,7 +318,27 @@ export const assetKinds = [
   'other',
 ] as const;
 
-/** An asset's fields, before the checks across its owners. */
+const maxBusinessEmployees = 10_000_000;
+
+/** What only a business records: where it is seated, since when it operates, how many it employs. */
+const businessFieldsSchema = z.strictObject({
+  country: countryCodeSchema.optional(),
+  operatingSince: dateValueSchema.optional(),
+  employees: z.number().int().min(0).max(maxBusinessEmployees).optional(),
+});
+
+const businessFieldKeys = Object.keys(businessFieldsSchema.shape);
+
+/** Only a business holds the business fields. */
+export const businessFieldsOnBusiness = (asset: {
+  readonly kind: string;
+  readonly [key: string]: unknown;
+}): boolean =>
+  asset.kind === 'business' || businessFieldKeys.every((key) => asset[key] === undefined);
+
+export const businessFieldsMessage = { message: 'Only a business has business fields' };
+
+/** An asset's fields, before the checks across them and its owners. */
 export const assetFieldsSchema = z.strictObject({
   id: opaqueIdSchema,
   kind: z.enum(assetKinds),
@@ -328,11 +350,14 @@ export const assetFieldsSchema = z.strictObject({
   valuedAt: calendarDateSchema,
   liquid: z.boolean().optional(),
   sold: dateOrNoneSchema.optional(),
+  ...businessFieldsSchema.shape,
 });
 
-const assetSchema = assetFieldsSchema.refine((asset) => validShares(asset.owners), {
-  message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
-});
+const assetSchema = assetFieldsSchema
+  .refine((asset) => validShares(asset.owners), {
+    message: 'Owners are distinct, each share is positive and the shares add up to at most 1',
+  })
+  .refine(businessFieldsOnBusiness, businessFieldsMessage);
 
 /**
  * The engine's only view of a case. It holds no free text, names or document numbers, so it
@@ -367,6 +392,19 @@ export const caseSnapshotSchema = z
       ...snapshot.assets.flatMap((asset) => asset.owners.map((owner) => owner.person)),
     ];
     if (references.some((id) => !known.has(id))) issue('Every referenced person is in `people`');
+    const businesses = new Map(
+      snapshot.assets.flatMap((asset) =>
+        asset.kind === 'business'
+          ? [[asset.id, new Set(asset.owners.map((owner) => owner.person))] as const]
+          : [],
+      ),
+    );
+    const atBusinessesTheyOwn = snapshot.people.every((person) =>
+      (person.workPeriods ?? []).every(
+        ({ business }) => business === undefined || businesses.get(business)?.has(person.id),
+      ),
+    );
+    if (!atBusinessesTheyOwn) issue('A work period is at a business its person owns');
     if (snapshot.relationships.map(endpoints).some(([a, b]) => a === b)) {
       issue('A relationship links two different people');
     }

@@ -80,6 +80,10 @@ export type FieldInput =
   | { readonly kind: 'share' }
   /** An ISCO-08 occupation code, picked by its name. */
   | { readonly kind: 'occupation' }
+  /** A whole number from zero, such as a head count. */
+  | { readonly kind: 'count' }
+  /** One of the businesses the person owns a confirmed share of, by its asset ID. */
+  | { readonly kind: 'business' }
   /** An ISCED-F 2013 field-of-study code, picked by its name. */
   | { readonly kind: 'studyField' }
   /** A short name that tells items apart on screen; kept with the profile, never in the snapshot. */
@@ -90,6 +94,8 @@ export interface QuestionField<Key extends string = string> {
   readonly input: FieldInput;
   /** Whether "Não sei" may leave it out. */
   readonly optional: boolean;
+  /** Asked only while another field of the item holds this value; otherwise left out. */
+  readonly onlyWhen?: { readonly key: string; readonly value: string };
 }
 
 export type QuestionInput =
@@ -130,6 +136,11 @@ const needed = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: false }) as const;
 const maybe = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: true }) as const;
+const onlyWhen =
+  (key: string, value: string) =>
+  <Field extends QuestionField>(field: Field) =>
+    ({ ...field, onlyWhen: { key, value } }) as const;
+const businessOnly = onlyWhen('kind', 'business');
 const fact = (key: FactKey) => ({ kind: 'fact', key }) as const;
 const marker = <Id extends string>(id: Id, value: ProfileMarker) =>
   ({
@@ -210,6 +221,7 @@ export const questionFlow = [
         maybe('workplaceCountry', { kind: 'country' }),
         maybe('start', partialDate),
         maybe('end', { ...partialDate, none: true }),
+        onlyWhen('relation', 'owner')(maybe('business', { kind: 'business' })),
       ],
     },
   },
@@ -268,6 +280,9 @@ export const questionFlow = [
         needed('valuedAt', { kind: 'date', precision: 'day' }),
         maybe('liquid', { kind: 'yesNo' }),
         maybe('sold', { ...partialDate, none: true }),
+        businessOnly(maybe('country', { kind: 'country' })),
+        businessOnly(maybe('operatingSince', partialDate)),
+        businessOnly(maybe('employees', { kind: 'count' })),
         needed('share', { kind: 'share' }),
       ],
     },
@@ -429,6 +444,7 @@ export function classifiedCodesKnown(
   );
 }
 
+/** Whether every code an answer names is a known one, and every field it fills is one it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
@@ -452,7 +468,13 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
       value.every(
         (item) =>
           isRecord(item) &&
-          input.fields.every(({ key, input: field }) => fieldKnown(field, item[key])),
+          input.fields.every(
+            ({ key, input: field, onlyWhen }: QuestionField) =>
+              fieldKnown(field, item[key]) &&
+              (onlyWhen === undefined ||
+                item[key] === undefined ||
+                item[onlyWhen.key] === onlyWhen.value),
+          ),
       )
     );
   }
