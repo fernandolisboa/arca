@@ -4,11 +4,11 @@
   "texts": [
     {
       "en": "EB-2 national interest waiver: advanced degree or exceptional ability, no job offer needed (permanent residence)",
-      "text": "EB-2 com dispensa por interesse nacional: diploma avançado ou habilidade excepcional, sem precisar de oferta de emprego (residência permanente)"
+      "text": "EB-2 com dispensa por interesse nacional: pós-graduação ou habilidade excepcional, sem precisar de oferta de emprego (residência permanente)"
     },
     {
       "en": "A professional with a U.S. advanced degree or foreign equivalent (a bachelor's plus 5 years' progressive experience after it counts; a doctorate if the field requires one), or exceptional ability",
-      "text": "Profissional com diploma avançado dos EUA ou equivalente estrangeiro (vale bacharelado mais 5 anos de experiência progressiva depois dele; doutorado se a área exigir), ou com habilidade excepcional"
+      "text": "Profissional com pós-graduação dos EUA ou equivalente estrangeiro (vale bacharelado mais 5 anos de experiência progressiva depois dele; doutorado se a área exigir), ou com habilidade excepcional"
     },
     {
       "en": "Exceptional ability, if claimed: expertise well above the ordinary in the sciences, arts or business, shown by 3 of 6 kinds of evidence or comparable evidence; a degree or license alone is not enough",
@@ -24,15 +24,15 @@
     },
     {
       "en": "Asylum Program Fee paid with every Form I-140; USD 300 for a small employer, a firm or individual with 25 or fewer full-time employees in the U.S.; whether a self-petitioner counts is unconfirmed",
-      "text": "Asylum Program Fee paga com todo Form I-140; USD 300 para pequeno empregador, empresa ou pessoa com até 25 funcionários em tempo integral nos EUA; não está confirmado se quem pede por conta própria conta como um"
+      "text": "Asylum Program Fee paga com todo Form I-140; USD 300 para pequeno empregador, empresa ou pessoa com até 25 funcionários em tempo integral nos EUA; não está confirmado se quem pede por conta própria se enquadra como pequeno empregador"
     },
     {
       "en": "Immigrant visa application fee, employment-based, for the principal, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
-      "text": "Taxa do pedido de visto de imigrante por emprego, para o requerente principal, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+      "text": "Taxa do pedido de visto de imigrante por emprego, para o requerente principal, quando a família tira o visto num consulado: sempre para quem está fora dos EUA, e possível para quem está dentro"
     },
     {
       "en": "Immigrant visa application fee, employment-based, for each accompanying family member, when the family gets the visa at a consulate: always from outside the U.S., possible from inside it",
-      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando a família tira o visto num consulado: sempre de fora dos EUA, possível de dentro deles"
+      "text": "Taxa do pedido de visto de imigrante por emprego, para cada familiar que acompanha, quando a família tira o visto num consulado: sempre para quem está fora dos EUA, e possível para quem está dentro"
     },
     {
       "en": "USCIS immigrant fee for the principal, after an immigrant visa issued abroad, for the permanent resident card",
