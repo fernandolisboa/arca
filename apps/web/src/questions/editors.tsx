@@ -74,10 +74,12 @@ export function useNames() {
         codes.map((code) => ({ value: code, label: named(`${classification}.${code}`, code) })),
         ({ value }) => value.slice(0, prefix),
       ),
-    ).map(([group, options = []]) => ({
-      title: named(`${groups}.${group}`, group),
-      options: sorted(options),
-    }));
+    )
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([group, options = []]) => ({
+        title: named(`${groups}.${group}`, group),
+        options: sorted(options),
+      }));
   };
   return {
     country: (code: string) => {

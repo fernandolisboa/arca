@@ -174,7 +174,7 @@ export const questionFlow = [
       fields: [
         maybe('level', { kind: 'choice', set: 'educationLevel' }),
         maybe('field', { kind: 'studyField' }),
-        maybe('country', { kind: 'country' }),
+        maybe('country', { kind: 'country', formerStates: true }),
         maybe('completed', partialDate),
       ],
     },

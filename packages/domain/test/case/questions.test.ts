@@ -197,7 +197,7 @@ describe('answering the guided questions (spec 0007, R4)', () => {
   it('saves qualifications and registrations, leaving out what is not known', () => {
     const qualifications = [
       { level: 7, field: '0912', country: 'BR', completed: '2012-12' },
-      { level: 6, country: 'PT' },
+      { level: 6, country: 'YUCS' },
     ];
     const registrations = [{ country: 'BR', occupation: '2211', since: '2013-02' }, {}];
     const applied = apply(empty, { educationLevel: 7, qualifications, registrations });

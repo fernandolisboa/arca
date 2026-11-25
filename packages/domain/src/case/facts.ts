@@ -448,8 +448,9 @@ export const factCatalog = {
     scope: 'qualification',
     derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').field) }),
   },
+  /** A qualification may come from a state that no longer exists, such as the USSR. */
   'qualification.country': {
-    type: { kind: 'country' },
+    type: { kind: 'country', formerStates: true },
     scope: 'qualification',
     derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').country) }),
   },
