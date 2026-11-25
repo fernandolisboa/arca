@@ -1,7 +1,9 @@
 import { type RouteResult, staleAfterDays } from '@arca/api-contract/client';
 import { SourceLine, StatusChip, Tabs, tabPanelProps } from '@arca/ui';
+import { Link } from '@tanstack/react-router';
 import { type ReactNode, useId, useState } from 'react';
 import { FlagLead } from '../country-flag.js';
+import { textLinkClass } from '../forms/text-link.js';
 import type { KnowledgeWords } from '../knowledge/words.js';
 import { type AmountForm, rangeForm, shownTotals } from './amount.js';
 import type { RouteRow } from './group.js';
@@ -176,6 +178,13 @@ function PrincipalResult({
       )}
       {evaluated && (
         <>
+          <Link
+            to="/family/documents"
+            search={{ route: result.routeId, person: result.principalId }}
+            className={`${textLinkClass} self-start`}
+          >
+            {t('checklist.open')}
+          </Link>
           <section aria-label={t('results.familyTitle')} className="flex flex-col gap-1 text-small">
             {result.dependents.length === 0 && result.possibleDependents.length === 0 && (
               <p>{t('results.nobodyWith')}</p>

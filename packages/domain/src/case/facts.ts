@@ -558,6 +558,15 @@ function citizenshipsDuring(subject: Person, during: Interval<CalendarDate>): To
 }
 
 /**
+ * The countries whose citizenship a person holds on `at`, certainly or possibly: whose documents
+ * they may ask for, such as a document guide's issuing country (ADR-0039).
+ */
+export function citizenshipsHeldOn(subject: Person, at: CalendarDate): string[] {
+  const { definite, possible } = citizenshipsDuring(subject, { min: at, max: at });
+  return [...definite, ...possible];
+}
+
+/**
  * Citizenships held since birth and still held on `at`, such as a native national's: one by birth,
  * or by descent or another basis acquired on the birth date. Naturalization, marriage and
  * investment are never held since birth.

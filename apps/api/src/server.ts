@@ -2,6 +2,7 @@ import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
   departureChecklists,
+  documentGuides,
   occupationCodes,
   pinnedCountries,
   createRuleTexts,
@@ -577,6 +578,7 @@ const app = createApp({
         ? {}
         : { suggestions: comparisonRatingSuggestions(suggestedRatings) }),
       texts: createRuleTexts(shippedRuleTexts, sha256),
+      guides: documentGuides,
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),
       engineCommit: readEngineCommit(),

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CaseSnapshot } from '../../src/case/snapshot.js';
 import type { Truth } from '../../src/logic/truth.js';
-import { type DocumentChecklist, documentChecklist } from '../../src/rules/documents.js';
+import { type CatalogEntry, type RouteCatalog, identityKey } from '../../src/rules/catalog.js';
+import {
+  type DocumentChecklist,
+  documentChecklist,
+  routeDocuments,
+} from '../../src/rules/documents.js';
 import { snapshot } from '../case/builders.js';
 import { context, entry } from './fixtures.js';
 
@@ -211,5 +216,57 @@ describe('documentChecklist', () => {
     expect(police?.traces).toHaveLength(1);
     const consent = result.dependents[1]?.items[1];
     expect(consent?.traces.map((trace) => trace.value)).toEqual([{ type: 'boolean', value: true }]);
+  });
+
+  it('says what an item that may apply depends on, and nothing once it is decided', () => {
+    const result = listed(family());
+    const [passport, pension] = result.principal.items;
+    expect(passport?.missingFacts).toEqual([]);
+    expect(pension?.missingFacts).toEqual([
+      { kind: 'fact', reference: 'principal.ageYears', personId: 'p1' },
+    ]);
+    const enrollment = listed(family('1980-01-01')).dependents[0]?.items[2];
+    expect(enrollment?.missingFacts).toMatchObject([
+      { kind: 'fact', reference: 'person.studying', personId: 'p2' },
+    ]);
+  });
+});
+
+describe('routeDocuments', () => {
+  const withDocuments = entry({ documents });
+  const catalog = (entries: readonly CatalogEntry[]): RouteCatalog => ({
+    identities: () => entries.map(({ identity }) => identity),
+    activeEntry: (identity) =>
+      entries.find(({ identity: each }) => identityKey(each) === identityKey(identity)),
+  });
+  const active = new Map([[identityKey(withDocuments.identity), 'active' as const]]);
+
+  it('computes the checklist of the active version in effect', () => {
+    const result = routeDocuments(
+      family('1980-01-01'),
+      catalog([withDocuments]),
+      'qm-sample',
+      'p1',
+      context({ states: active }),
+    );
+    expect(result).toMatchObject({ kind: 'active', entry: { identity: { number: 1 } } });
+    expect(result.kind === 'active' && result.checklist.kind).toBe('listed');
+  });
+
+  it('reads no content of a version that waits for activation (rule 5)', () => {
+    const result = routeDocuments(
+      family('1980-01-01'),
+      catalog([withDocuments]),
+      'qm-sample',
+      'p1',
+      context({ states: new Map() }),
+    );
+    expect(result).toEqual({ kind: 'pending', pending: withDocuments.identity });
+  });
+
+  it('finds no version for a route the catalog lacks', () => {
+    expect(routeDocuments(family('1980-01-01'), catalog([]), 'qm-other', 'p1', context())).toEqual({
+      kind: 'no_version',
+    });
   });
 });
