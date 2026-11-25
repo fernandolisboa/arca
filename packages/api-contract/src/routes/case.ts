@@ -350,6 +350,11 @@ const currency = z.string().regex(/^[A-Z]{3}$/);
 const unitsMoney = z.object({ amount: decimalSchema, currency });
 const sources = z.array(sourceSchema).max(50);
 const people = z.array(z.uuid()).max(maxCasePeople);
+/** A version's title, in the screen's language when it has a translation (ADR-0037). */
+const shownText = z.string().max(400);
+/** The version's own English title, given only when the shown one is a translation. */
+const originalText = z.string().max(200).nullable();
+const unitsRange = z.object({ min: unitsMoney.nullable(), max: unitsMoney.nullable() });
 
 /** One route for one principal, as `routeResult` in the domain lays it out (spec 0007, R6). */
 export const RouteResult = z.object({
@@ -363,8 +368,13 @@ export const RouteResult = z.object({
     'eligible',
     'pending_activation',
   ]),
-  /** The active version's title and country; null while no version is active. */
-  route: z.object({ title: z.string().max(200), country: countryCodeSchema }).nullable(),
+  /**
+   * The active version's title and country; null while no version is active. A title in the
+   * screen's language carries the version's own English beside it (ADR-0037).
+   */
+  route: z
+    .object({ title: shownText, original: originalText, country: countryCodeSchema })
+    .nullable(),
   version: z
     .object({ number: z.int().min(1), hash: z.string().regex(/^[0-9a-f]{64}$/) })
     .nullable(),
@@ -374,14 +384,25 @@ export const RouteResult = z.object({
   possibleDependents: people,
   unitOpen: z.boolean(),
   requirements: z
-    .array(z.object({ id: z.string(), title: z.string(), result: truth, sources }))
+    .array(
+      z.object({
+        id: z.string(),
+        title: shownText,
+        original: originalText,
+        result: truth,
+        sources,
+      }),
+    )
     .max(50),
-  assessments: z.array(z.object({ id: z.string(), title: z.string(), sources })).max(20),
+  assessments: z
+    .array(z.object({ id: z.string(), title: shownText, original: originalText, sources }))
+    .max(20),
   costs: z
     .array(
       z.object({
         costId: z.string(),
-        title: z.string(),
+        title: shownText,
+        original: originalText,
         appliesTo: z.enum(['principal', 'each_dependent', 'unit']),
         personId: z.uuid().nullable(),
         applies: truth,
@@ -396,13 +417,16 @@ export const RouteResult = z.object({
     .array(
       z.object({
         id: z.string(),
-        title: z.string(),
+        title: shownText,
+        original: originalText,
         min: durationSchema,
         max: durationSchema,
         sources,
       }),
     )
     .max(20),
+  /** The cost per currency, summed in code: what certainly applies, and what may on top. */
+  totals: z.array(z.object({ currency, certain: unitsRange, possibleExtra: unitsRange })).max(50),
   /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
   closureSources: sources,
   /** Rates the exchange table lacks; no one in the family can answer them. */
@@ -576,4 +600,7 @@ export {
   languageCodes,
   questionFlow,
   questionSteps,
+  bestRouteStatus,
+  routeCountry,
+  routeStatusOrder,
 } from '@arca/domain';

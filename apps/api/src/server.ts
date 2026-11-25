@@ -2,6 +2,8 @@ import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
   pinnedCountries,
+  createRuleTexts,
+  shippedRuleTexts,
   suggestedRatings,
   versionCasesHash,
 } from '@arca/knowledge';
@@ -34,7 +36,7 @@ import { authService, type AuthService } from './auth/service.js';
 import { accountNotice, type AccountNotice } from './auth/account-notices.js';
 import { createStepUp, type StepUpService, type StepUpSpender } from './auth/step-up.js';
 import { createAdminGrants } from './knowledge/admin-grants.js';
-import { postgresRuleStore } from './knowledge/rule-store.js';
+import { postgresRuleStore, sha256 } from './knowledge/rule-store.js';
 import { updateModelsFor } from './knowledge/update/environment.js';
 import { createUpdateRequests } from './knowledge/update/requests.js';
 import { createVersionReviews } from './knowledge/update/review.js';
@@ -571,6 +573,7 @@ const app = createApp({
       ...(suggestedRatings === null
         ? {}
         : { suggestions: comparisonRatingSuggestions(suggestedRatings) }),
+      texts: createRuleTexts(shippedRuleTexts, sha256),
       states: () => knowledgeDecisions().states(),
       today: () => todayInSaoPaulo(),
       engineCommit: readEngineCommit(),

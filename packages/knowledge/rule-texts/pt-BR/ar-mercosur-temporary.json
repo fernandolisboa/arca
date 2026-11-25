@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "routeId": "ar-mercosur-temporary",
+  "texts": [
+    {
+      "en": "Argentine temporary residence by nationality for native nationals of Mercosur member and associated states",
+      "text": "Residência temporária na Argentina por nacionalidade, para nativos dos países membros e associados do Mercosul"
+    },
+    {
+      "en": "Native national of a Mercosur member or associated state the migration directorate lists, or naturalized for five years or more in one of the eight states it lists for that",
+      "text": "Nativo de um país membro ou associado do Mercosul da lista da Direção de Migrações, ou naturalizado há cinco anos ou mais em um dos oito países que ela lista para isso"
+    },
+    {
+      "en": "No conviction, final or not, even suspended, or formal charge (procesamiento) or committal for trial, anywhere, for a crime Argentine law punishes with 3 years of prison or more, save a dispensation",
+      "text": "Nenhuma condenação, definitiva ou não, mesmo suspensa, nem acusação formal (procesamiento) ou pronúncia, em qualquer país, por crime que a lei argentina pune com 3 anos de prisão ou mais, salvo dispensa"
+    },
+    {
+      "en": "No conviction, final or not, even suspended, in Argentina or abroad, for a crime Argentine law punishes with less than 3 years of prison, save an exceptional dispensation",
+      "text": "Nenhuma condenação, definitiva ou não, mesmo suspensa, na Argentina ou fora, por crime que a lei argentina pune com menos de 3 anos de prisão, salvo dispensa excepcional"
+    },
+    {
+      "en": "No conviction or record, of any penalty, for an intentional crime against life, sexual integrity, or the public powers and constitutional order: no dispensation is possible",
+      "text": "Nenhuma condenação ou antecedente, com qualquer pena, por crime doloso contra a vida, a integridade sexual ou os poderes públicos e a ordem constitucional: não há dispensa possível"
+    },
+    {
+      "en": "No ban on entering Argentina in force, unless revoked or run out; expulsion for an intentional crime bans reentry for good, for a crime on life, sex or the constitutional order with no dispensation",
+      "text": "Nenhuma proibição de entrar na Argentina em vigor, salvo se revogada ou vencida; expulsão por crime doloso proíbe a volta para sempre, e por crime contra a vida, sexual ou contra a ordem constitucional não tem dispensa"
+    },
+    {
+      "en": "None of article 29's other bars: false papers or hidden records, fraud, flagrante delicto, international or terror crimes, migrant smuggling, irregular entry, false purpose, extradition, hate messages",
+      "text": "Nenhum dos outros impedimentos do artigo 29: documentos falsos ou antecedentes ocultados, fraude, flagrante, crimes internacionais ou de terrorismo, tráfico de migrantes, entrada irregular, finalidade falsa, extradição, mensagens de ódio"
+    },
+    {
+      "en": "In Argentina, apply online after a lawful entry through an authorized post (the sworn statement of purpose and health insurance applies once regulated); from abroad, at a consulate (not modeled)",
+      "text": "Na Argentina, o pedido é on-line, depois de uma entrada regular por um posto autorizado (a declaração juramentada de finalidade e o plano de saúde valem quando forem regulamentados); de fora, num consulado (o Arca não avalia isso)"
+    },
+    {
+      "en": "Papers: identity document, proof of lawful entry and of an address; from 16, criminal record certificates of Argentina and of each country lived in over 1 year in the last 3 years; sworn statement",
+      "text": "Documentos: documento de identidade, prova da entrada regular e de um endereço; a partir dos 16 anos, certidões de antecedentes criminais da Argentina e de cada país onde morou mais de 1 ano nos últimos 3 anos; declaração juramentada"
+    },
+    {
+      "en": "Until permanent residence, routine care in health services the national State runs needs health insurance or prior payment, outside emergencies",
+      "text": "Até a residência permanente, o atendimento de rotina nos serviços de saúde do Estado nacional exige plano de saúde ou pagamento antecipado, fora das emergências"
+    },
+    {
+      "en": "Residence fee in the Mercosur and associated states column: 50 UMSM, at ARS 1,000 a unit, paid when applying in Argentina",
+      "text": "Taxa de residência na coluna dos países membros e associados do Mercosul: 50 UMSM, a ARS 1.000 por unidade, paga ao pedir na Argentina"
+    },
+    {
+      "en": "Residence fee of each family member, unless an unmarried child under 18 applying with a parent: 50 UMSM, at ARS 1,000 a unit, the lower of the table's two columns",
+      "text": "Taxa de residência de cada familiar, salvo filho solteiro menor de 18 anos que pede junto com o pai ou a mãe: 50 UMSM, a ARS 1.000 por unidade, a menor das duas colunas da tabela"
+    },
+    {
+      "en": "Further fee of each family member who is not a native of a listed state, if the table's 100 UMSM column applies, which it does not say: 50 UMSM more, at ARS 1,000 a unit: possible",
+      "text": "Taxa adicional de cada familiar que não é nativo de um país da lista, se valer a coluna de 100 UMSM da tabela, o que ela não diz: mais 50 UMSM, a ARS 1.000 por unidade; talvez se aplique"
+    },
+    {
+      "en": "Argentina's criminal record certificate, from age 16, if got outside the online system, as with a preferential appointment: ARS 1,000 for delivery in 5 days, more if faster: possible",
+      "text": "Certidão de antecedentes criminais da Argentina, a partir dos 16 anos, se tirada fora do sistema on-line, como num atendimento preferencial: ARS 1.000 para entrega em 5 dias, mais se for mais rápido; talvez se aplique"
+    },
+    {
+      "en": "The same certificate for each family member aged 16 or more, if got outside the online system: ARS 1,000 for delivery in 5 days, more if faster: possible",
+      "text": "A mesma certidão para cada familiar com 16 anos ou mais, se tirada fora do sistema on-line: ARS 1.000 para entrega em 5 dias, mais se for mais rápido; talvez se aplique"
+    },
+    {
+      "en": "Temporary residence by nationality: two years, extendable, with multiple entries and exits; among other grounds, cancelled after six months or more abroad, save exceptions",
+      "text": "Residência temporária por nacionalidade: dois anos, prorrogável, com várias entradas e saídas; entre outros motivos, é cancelada depois de seis meses ou mais fora do país, salvo exceções"
+    }
+  ]
+}

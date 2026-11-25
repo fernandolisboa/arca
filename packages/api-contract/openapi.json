@@ -29629,6 +29629,13 @@
                             "properties": {
                               "title": {
                                 "type": "string",
+                                "maxLength": 400
+                              },
+                              "original": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
                                 "maxLength": 200
                               },
                               "country": {
@@ -29638,6 +29645,7 @@
                             },
                             "required": [
                               "title",
+                              "original",
                               "country"
                             ]
                           },
@@ -29712,7 +29720,15 @@
                                   "type": "string"
                                 },
                                 "title": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "maxLength": 400
+                                },
+                                "original": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 200
                                 },
                                 "result": {
                                   "anyOf": [
@@ -29777,6 +29793,7 @@
                               "required": [
                                 "id",
                                 "title",
+                                "original",
                                 "result",
                                 "sources"
                               ]
@@ -29792,7 +29809,15 @@
                                   "type": "string"
                                 },
                                 "title": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "maxLength": 400
+                                },
+                                "original": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 200
                                 },
                                 "sources": {
                                   "type": "array",
@@ -29844,6 +29869,7 @@
                               "required": [
                                 "id",
                                 "title",
+                                "original",
                                 "sources"
                               ]
                             },
@@ -29858,7 +29884,15 @@
                                   "type": "string"
                                 },
                                 "title": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "maxLength": 400
+                                },
+                                "original": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 200
                                 },
                                 "appliesTo": {
                                   "type": "string",
@@ -29978,6 +30012,7 @@
                               "required": [
                                 "costId",
                                 "title",
+                                "original",
                                 "appliesTo",
                                 "personId",
                                 "applies",
@@ -29997,7 +30032,15 @@
                                   "type": "string"
                                 },
                                 "title": {
-                                  "type": "string"
+                                  "type": "string",
+                                  "maxLength": 400
+                                },
+                                "original": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 200
                                 },
                                 "min": {
                                   "type": "string",
@@ -30057,12 +30100,129 @@
                               "required": [
                                 "id",
                                 "title",
+                                "original",
                                 "min",
                                 "max",
                                 "sources"
                               ]
                             },
                             "maxItems": 20
+                          },
+                          "totals": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                },
+                                "certain": {
+                                  "type": "object",
+                                  "properties": {
+                                    "min": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "max": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "min",
+                                    "max"
+                                  ]
+                                },
+                                "possibleExtra": {
+                                  "type": "object",
+                                  "properties": {
+                                    "min": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "max": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "min",
+                                    "max"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "currency",
+                                "certain",
+                                "possibleExtra"
+                              ]
+                            },
+                            "maxItems": 50
                           },
                           "closureSources": {
                             "type": "array",
@@ -30155,6 +30315,7 @@
                           "assessments",
                           "costs",
                           "durations",
+                          "totals",
                           "closureSources",
                           "missingRates",
                           "missingDates"
