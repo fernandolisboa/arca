@@ -17,6 +17,7 @@ data/indicators/<id>/<n>.json               country indicators for the destinati
 data/comparisons/<id>/<n>.json              comparison versions: criteria and the indicators they pin
 data/hashes.json                            committed content hashes, append-only
 suggested-ratings/<n>.json                  the comparison's suggested stars per country (ADR-0035); not rules, no activation
+rule-texts/pt-BR/<route-id>.json            route version titles in Portuguese, keyed by their English (ADR-0037); not rules, no activation
 scripts/                                    load, validate, hash and write the catalog; generate countries
 vendor/cldr/<release>/                      the pinned CLDR territories file, its license and manifest
 src/                                        the runtime entry; pure, no I/O
@@ -39,7 +40,7 @@ Every file in `data` is immutable once on `main`. A change is a new numbered fil
 3. Validates it against the schemas in `@arca/domain` and the rules of spec 0002 R6: IDs and numbers match the path, numbers are contiguous, pins resolve to valid files, official sources and their machine-readable addresses (`machineReadableUrl`, an optional data address of the same text, on an official source only) sit on a pinned official host, members and route countries are in the pinned countries files, `verifiedAt` is not after the build date, and version dates and corrections stay inside their bounds.
 4. Hashes each route version, country set, country indicator and comparison version: SHA-256 over the RFC 8785 canonical JSON of `{ "version": <file>, "pinned": { "<kind>/<id>/<number>": <file>, … } }`, holding every file it pins, transitively.
 5. Compares every hash, and the hashes of the RFC 8785 test vectors, with `data/hashes.json`.
-6. Writes `src/generated/catalog.ts` (route data) and `src/generated/runtime.ts` (what the API ships), with the highest-numbered `suggested-ratings/<n>.json` checked against `suggestedRatingsSchema`; a new suggested ratings file is a new number, and `test/suggested-ratings-bands.test.ts` recomputes its stars from their values ([ADR-0035](../../docs/adr/0035-suggested-ratings.md)). Any issue fails the build and deletes both modules, so no tool keeps serving an earlier catalog.
+6. Writes `src/generated/catalog.ts` (route data) and `src/generated/runtime.ts` (what the API ships), with the highest-numbered `suggested-ratings/<n>.json` checked against `suggestedRatingsSchema`; a new suggested ratings file is a new number, and `test/suggested-ratings-bands.test.ts` recomputes its stars from their values ([ADR-0035](../../docs/adr/0035-suggested-ratings.md)), and every `rule-texts/pt-BR/<route-id>.json`, checked against `ruleTextFileSchema`, its file name and for a title translated twice ([ADR-0037](../../docs/adr/0037-rule-texts-in-the-screens-language.md)). Any issue fails the build and deletes both modules, so no tool keeps serving an earlier catalog.
 
 ## The import into the database
 

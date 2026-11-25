@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "routeId": "uy-mercosur-permanent",
+  "texts": [
+    {
+      "en": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
+      "text": "Residência permanente no Uruguai para nacionais dos países membros e associados do Mercosul"
+    },
+    {
+      "en": "Nationality of a Mercosur state the directorate lists: Argentina, Bolivia, Brazil, Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname, Venezuela; Panama, associated since 2024-12-06: possible",
+      "text": "Nacionalidade de um país do Mercosul da lista da Direção de Migração: Argentina, Bolívia, Brasil, Chile, Colômbia, Equador, Guiana, Paraguai, Peru, Suriname, Venezuela; Panamá, associado desde 2024-12-06: talvez se aplique"
+    },
+    {
+      "en": "No charge or conviction for an intentional common crime punished with over two years of prison, and no repeated offending, unless five years passed since the sentence was served, with no new crime",
+      "text": "Nenhuma acusação ou condenação por crime comum doloso punido com mais de dois anos de prisão, e nenhuma reincidência, salvo se passaram cinco anos desde o cumprimento da pena, sem novo crime"
+    },
+    {
+      "en": "No crime against humanity, no conviction for trafficking, laundering, drugs or arms, and no expulsion or re-entry ban not revoked; an administrative expulsion on other grounds lapses after three years",
+      "text": "Nenhum crime contra a humanidade, nenhuma condenação por tráfico de pessoas, lavagem de dinheiro, drogas ou armas, e nenhuma expulsão ou proibição de reentrada não revogada; uma expulsão administrativa por outros motivos caduca depois de três anos"
+    },
+    {
+      "en": "Criminal record certificates, at national level, of each country lived in for more than six months in the last five years; applicants under 18 do not present them",
+      "text": "Certidões de antecedentes criminais, de âmbito nacional, de cada país onde morou mais de seis meses nos últimos cinco anos; menores de 18 anos não apresentam"
+    },
+    {
+      "en": "A valid certificate, issued by a vaccination centre in Uruguay, that the applicant meets the Uruguayan vaccination scheme",
+      "text": "Um certificado válido, emitido por um posto de vacinação no Uruguai, de que o requerente cumpre o esquema de vacinação uruguaio"
+    },
+    {
+      "en": "Original, valid papers: photo, ID or passport, any marriage certificate under a year old; foreign papers apostilled or legalized, unless verifiable online, and translated, save Brazil's",
+      "text": "Documentos originais e válidos: foto, identidade ou passaporte, eventual certidão de casamento com menos de um ano; documentos estrangeiros apostilados ou legalizados, salvo se verificáveis on-line, e traduzidos, salvo os do Brasil"
+    },
+    {
+      "en": "Under 18: birth certificate legalized or apostilled, and express consent of the parents with parental authority, in person or by a power notarized in Uruguay, valid 180 days",
+      "text": "Menores de 18 anos: certidão de nascimento legalizada ou apostilada, e consentimento expresso dos pais com poder familiar, pessoalmente ou por procuração em cartório no Uruguai, válida por 180 dias"
+    },
+    {
+      "en": "Apply to the Ministry of the Interior (online, then in person) or at a Uruguayan consulate, then complete within 30 business days of entry; the decision is due within 90 business days",
+      "text": "Pedido ao Ministério do Interior (on-line, depois pessoalmente) ou num consulado uruguaio, completado em até 30 dias úteis depois da entrada; a decisão sai em até 90 dias úteis"
+    },
+    {
+      "en": "Fees in indexed units (UI), readjusted every six months: residence 557.30 UI, none for Brazilians and Paraguayans; certificate 55.70 UI; a 225.60 UI re-entry permit per exit while pending",
+      "text": "Taxas em unidades indexadas (UI), reajustadas a cada seis meses: residência 557,30 UI, nada para brasileiros e paraguaios; certificado 55,70 UI; licença de reentrada de 225,60 UI por saída enquanto o pedido estiver em análise"
+    }
+  ]
+}

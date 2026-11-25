@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "routeId": "cz-eu-blue-card",
+  "texts": [
+    {
+      "en": "EU Blue Card for the Czech Republic: a highly qualified job with gross pay of at least 1.5 times the average gross annual wage, CZK 885,870 a year from May 2026",
+      "text": "Cartão Azul da UE para a República Tcheca: emprego altamente qualificado com salário bruto de pelo menos 1,5 vez o salário médio bruto anual, CZK 885.870 por ano a partir de maio de 2026"
+    },
+    {
+      "en": "Not a citizen of the Czech Republic, another EU or EEA state or Switzerland: they live and work there under the EU rules on free movement",
+      "text": "Não ser cidadão da República Tcheca, de outro país da UE ou do EEE, nem da Suíça: esses moram e trabalham lá pelas regras de livre circulação da UE"
+    },
+    {
+      "en": "A job that requires high qualification, in a vacancy of the central register of vacancies open to Blue Card holders",
+      "text": "Emprego que exige alta qualificação, numa vaga do cadastro central de vagas aberta a titulares do Cartão Azul"
+    },
+    {
+      "en": "Not a research permit applicant; not another EU state's long-term resident here for work or business; not here under a trade treaty, save an intra-company transferee; not posted by an EU employer",
+      "text": "Não estar pedindo autorização de pesquisador; não ser residente de longa duração de outro país da UE vindo para trabalho ou negócio; não estar ali por tratado comercial, salvo transferência dentro da empresa; não ser destacado por empregador da UE"
+    },
+    {
+      "en": "An employment contract, or a contract to conclude one, of at least 6 months for the statutory weekly working hours",
+      "text": "Contrato de trabalho, ou contrato para firmar um, de pelo menos 6 meses, com a jornada semanal legal"
+    },
+    {
+      "en": "Gross pay of at least 1.5 times the average gross annual wage, which is CZK 590,580 from 1 May 2026 to 30 April 2027",
+      "text": "Salário bruto de pelo menos 1,5 vez o salário médio bruto anual, que é de CZK 590.580 de 1º de maio de 2026 a 30 de abril de 2027"
+    },
+    {
+      "en": "Completed university education, or higher vocational education from studies of at least 3 years",
+      "text": "Ensino superior completo, ou ensino profissional superior de pelo menos 3 anos"
+    },
+    {
+      "en": "Instead of the education, for ICT managers and specialists (CZ-ISCO 133 and 25): at least 3 years of professional practice in the 7 years before the application",
+      "text": "No lugar da formação, para gestores e especialistas de TIC (CZ-ISCO 133 e 25): pelo menos 3 anos de prática profissional nos 7 anos antes do pedido"
+    },
+    {
+      "en": "For a regulated profession: proof of meeting the conditions to practise it, and the recognition authority's opinion before the card is issued",
+      "text": "Para profissão regulamentada: prova de que atende às condições para exercê-la, e o parecer do órgão de reconhecimento antes da emissão do cartão"
+    },
+    {
+      "en": "For family members who come too: the family's total monthly income after reuniting reaches their living minimums plus the housing amounts, or the housing costs shown",
+      "text": "Para familiares que vão junto: a renda mensal total da família depois da reunião alcança os mínimos de subsistência mais os valores de moradia, ou os custos de moradia comprovados"
+    },
+    {
+      "en": "Proof of accommodation for the stay in Czechia, from the principal and from each family member who applies",
+      "text": "Prova de moradia para a estadia na Tchéquia, do requerente principal e de cada familiar que pede"
+    },
+    {
+      "en": "Each applicant aged 15 or more: a document like a criminal record extract, issued by the state of citizenship",
+      "text": "Cada requerente com 15 anos ou mais: um documento equivalente a certidão de antecedentes criminais, emitido pelo país de cidadania"
+    },
+    {
+      "en": "Unless publicly insured, before the entry visa: travel health cover of at least EUR 400,000 a claim, no co-pay; the principal's until public cover starts; an adult relative's comprehensive by day 90",
+      "text": "Sem seguro público, antes do visto de entrada: seguro saúde de viagem de pelo menos EUR 400.000 por sinistro, sem coparticipação; o do requerente principal até começar a cobertura pública; o de um familiar adulto, completo até o 90º dia"
+    },
+    {
+      "en": "For each family member: proof of the family relationship; for a child, the consent of a parent or guardian who does not come along",
+      "text": "Para cada familiar: prova do vínculo familiar; para uma criança, o consentimento do pai, da mãe ou do responsável que não vai junto"
+    },
+    {
+      "en": "Fee for a Blue Card application filed at an embassy: CZK 5,000 for a principal living outside the EU, EEA and Switzerland; one living in an EU or EEA state or Switzerland: possible",
+      "text": "Taxa do pedido de Cartão Azul feito numa embaixada: CZK 5.000 para requerente principal que mora fora da UE, do EEE e da Suíça; para quem mora num país da UE, do EEE ou na Suíça, talvez se aplique"
+    },
+    {
+      "en": "Fee for a Blue Card application filed in Czechia, open to a holder of a long-stay visa or permit, of international protection or of another EU state's Blue Card in its first month: CZK 2,500: possible",
+      "text": "Taxa do pedido de Cartão Azul feito na Tchéquia, aberto a quem tem visto ou autorização de longa duração, proteção internacional ou Cartão Azul de outro país da UE no primeiro mês: CZK 2.500; talvez se aplique"
+    },
+    {
+      "en": "Fee for each family member's residence permit application filed at an embassy: CZK 2,500 for one living outside the EU, EEA and Switzerland; one living in them: possible",
+      "text": "Taxa do pedido de autorização de residência de cada familiar feito numa embaixada: CZK 2.500 para quem mora fora da UE, do EEE e da Suíça; para quem mora neles, talvez se aplique"
+    },
+    {
+      "en": "Fee for a family member aged 15 or more who may apply in Czechia (a long-stay visa or a permit for another purpose): CZK 2,500: possible",
+      "text": "Taxa para familiar com 15 anos ou mais que pode pedir na Tchéquia (com visto de longa duração ou autorização para outra finalidade): CZK 2.500; talvez se aplique"
+    },
+    {
+      "en": "Fee for a family member under 15 who may apply in Czechia (a long-stay visa or a permit for another purpose): CZK 1,000: possible",
+      "text": "Taxa para familiar menor de 15 anos que pode pedir na Tchéquia (com visto de longa duração ou autorização para outra finalidade): CZK 1.000; talvez se aplique"
+    },
+    {
+      "en": "At an embassy that books filing appointments by order: CZK 1,000 for processing the order to book the principal's in-person filing: possible",
+      "text": "Numa embaixada que agenda o protocolo por pedido: CZK 1.000 pelo pedido de agendamento do protocolo presencial do requerente principal; talvez se aplique"
+    },
+    {
+      "en": "At an embassy that books filing appointments by order: CZK 1,000 for processing the order to book a family member's in-person filing: possible",
+      "text": "Numa embaixada que agenda o protocolo por pedido: CZK 1.000 pelo pedido de agendamento do protocolo presencial de um familiar; talvez se aplique"
+    },
+    {
+      "en": "Decision on the Blue Card application, within 90 days of filing; within 30 days, or 60 in complex cases, for one who held a Blue Card in another EU state",
+      "text": "Decisão sobre o pedido de Cartão Azul em até 90 dias do protocolo; em até 30 dias, ou 60 em casos complexos, para quem já teve Cartão Azul em outro país da UE"
+    },
+    {
+      "en": "Decision on a family member's application to join a Blue Card holder, within 90 days of filing, with the Blue Card decision if filed together; 30 days, or 60 if complex, for one from another EU state",
+      "text": "Decisão sobre o pedido de um familiar para se juntar ao titular do Cartão Azul em até 90 dias do protocolo, junto com a decisão do Cartão Azul se pedidos juntos; 30 dias, ou 60 se complexo, para quem vem de outro país da UE"
+    },
+    {
+      "en": "Blue Card valid for 3 months longer than the term of the employment contract, at most 3 years",
+      "text": "Cartão Azul válido por 3 meses além do prazo do contrato de trabalho, no máximo 3 anos"
+    }
+  ]
+}

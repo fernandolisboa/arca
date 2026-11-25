@@ -178,6 +178,7 @@ export {
   type RouteResult,
   type RouteStatus,
   type UnitsMoney,
+  type UnitsRange,
   bestRouteStatus,
   decisiveQuestions,
   questionForFact,

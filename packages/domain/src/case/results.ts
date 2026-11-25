@@ -2,7 +2,7 @@ import type { CalendarDate } from '../calendar/calendar-date.js';
 import type { Truth } from '../logic/truth.js';
 import { unitsAmount } from '../money/currency.js';
 import type { Money } from '../money/money.js';
-import type { EvaluationStatus, RouteEvaluation } from '../rules/engine.js';
+import type { AmountRange, EvaluationStatus, RouteEvaluation } from '../rules/engine.js';
 import { resolveFactReference } from '../rules/fact-reference.js';
 import type { MissingFact } from '../rules/missing.js';
 import type { Source } from '../rules/route-version.js';
@@ -151,6 +151,12 @@ export interface UnitsMoney {
   readonly currency: string;
 }
 
+/** A range of amounts in currency units; a bound is null when it is open. */
+export interface UnitsRange {
+  readonly min: UnitsMoney | null;
+  readonly max: UnitsMoney | null;
+}
+
 /** A route's result for one person: an evaluation status, or a version waiting for activation. */
 export type RouteStatus = EvaluationStatus | 'pending_activation';
 
@@ -214,6 +220,15 @@ export interface RouteResult {
     readonly max: string;
     readonly sources: readonly Source[];
   }[];
+  /**
+   * The route's cost per currency, summed in code from the costs above (CLAUDE.md rule 3): what
+   * certainly applies, and what may apply on top of it; a bound is null when it is open.
+   */
+  readonly totals: readonly {
+    readonly currency: string;
+    readonly certain: UnitsRange;
+    readonly possibleExtra: UnitsRange;
+  }[];
   /** Rates the FX table lacks, which no one in the family can answer (spec 0002, R5). */
   readonly missingRates: readonly { readonly from: string; readonly to: string }[];
   /** Reference dates the version reads that the case does not set yet. */
@@ -229,6 +244,11 @@ const unitsMoney = (money: Money | undefined): UnitsMoney | null =>
         amount: unitsAmount(money.amount, money.currency),
         currency: money.currency,
       };
+
+const unitsRange = ({ min, max }: AmountRange): UnitsRange => ({
+  min: unitsMoney(min),
+  max: unitsMoney(max),
+});
 
 /** A route a requirement already rules out, or a closed one: no answer changes its status. */
 const settled = (status: EvaluationStatus) => status === 'not_eligible' || status === 'unavailable';
@@ -248,6 +268,7 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
     assessments: [],
     costs: [],
     durations: [],
+    totals: [],
     missingRates: [],
     missingDates: [],
     missingFacts: [],
@@ -298,6 +319,11 @@ export function routeResult(evaluated: RouteEvaluation, principalId: string): Ro
       min,
       max,
       sources,
+    })),
+    totals: evaluation.totals.map(({ currency, certain, possibleExtra }) => ({
+      currency,
+      certain: unitsRange(certain),
+      possibleExtra: unitsRange(possibleExtra),
     })),
     missingRates: evaluation.missingRates.map(({ from, to }) => ({ from, to })),
     missingDates: evaluation.missingDates,
