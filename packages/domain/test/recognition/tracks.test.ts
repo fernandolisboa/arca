@@ -129,6 +129,18 @@ describe('recognitionHolders', () => {
     ]);
   });
 
+  it.each(['studying', 'incomplete'] as const)(
+    'leaves out a course in the field that is %s',
+    (status) => {
+      expect(
+        holders([{ id: 'p1', qualifications: [{ level: 7, field: '0912', status }] }]),
+      ).toEqual([
+        { trackId: 'physician', personIds: [] },
+        { trackId: 'nurse', personIds: [] },
+      ]);
+    },
+  );
+
   it('names nobody for other occupations, or for records whose occupation is unknown', () => {
     expect(
       holders([

@@ -117,6 +117,7 @@ export {
   maxCasePeople,
   maxCaseRelationships,
   maxQualifications,
+  qualificationStatuses,
   maxRegistrations,
   maxResidencePeriods,
   maxWorkPeriods,

@@ -430,7 +430,7 @@ export const ptBR = {
         action: 'Começar',
       },
       questions: {
-        title: 'Responder às perguntas guiadas',
+        title: 'Responder ao questionário',
         body: '{left, plural, =0 {Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} one {Falta # pergunta. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.} other {Faltam # perguntas. Com as respostas, o Arca compara os destinos e mostra as rotas que servem para vocês.}}',
         action: 'Continuar',
       },
@@ -443,7 +443,7 @@ export const ptBR = {
     stages: {
       label: 'Etapas do caso',
       family: 'Contar sobre a família',
-      questions: 'Perguntas guiadas',
+      questions: 'Questionário',
       routes: 'Ver as rotas que servem',
       progress: '{answered} de {total}',
       done: '(feita)',
@@ -589,8 +589,8 @@ export const ptBR = {
     },
     nextStep: 'Próximo passo',
     nextQuestionsMine:
-      '{count, plural, =0 {As perguntas guiadas montam o seu caso.} other {As perguntas guiadas montam o seu caso e o de {names}.}}',
-    nextQuestionsOthers: 'As perguntas guiadas montam o caso de {names}.',
+      '{count, plural, =0 {O questionário monta o seu caso.} other {O questionário monta o seu caso e o de {names}.}}',
+    nextQuestionsOthers: 'O questionário monta o caso de {names}.',
     nextResults: 'Veja as rotas que o Arca encontrou para quem entra no planejamento.',
     sections: {
       label: 'Partes da família',
@@ -619,7 +619,7 @@ export const ptBR = {
       spouse: 'casamento',
       partner: 'união estável',
     },
-    questions: 'Responder às perguntas guiadas',
+    questions: 'Responder ao questionário',
     me: '{name} (você)',
     member: 'Entra no planejamento',
     relative: 'Parente fora do planejamento',
@@ -747,14 +747,14 @@ export const ptBR = {
   },
   /** The guided questions (spec 0007, R4): one step at a time, "Não sei" always allowed. */
   questions: {
-    title: 'Perguntas guiadas',
+    title: 'Questionário',
     lead: 'Responda no seu ritmo. Cada etapa fica salva quando você avança, e “Não sei” sempre vale.',
     signIn: 'Entre para responder às perguntas.',
     noCase: 'Comece o caso na área da família para responder às perguntas.',
     noneKept: 'Você ainda não cuida dos dados de ninguém no caso.',
     loadFailure: 'Não conseguimos carregar as perguntas agora.',
     retry: 'Tentar de novo',
-    person: 'De quem são as respostas?',
+    person: 'Respostas de',
     stepsTitle: 'Etapas',
     steps: {
       basics: 'Dados básicos',
@@ -765,7 +765,11 @@ export const ptBR = {
       family: 'Família',
     },
     progress: '{answered} de {total} respondidas',
-    next: 'Salvar e continuar',
+    stepProgress: '{answered}/{total}',
+    stepOption: 'Etapa {position} de {steps} · {step} ({answered}/{total})',
+    position: 'Etapa {position} de {steps} · {answered} de {total} respondidas',
+    previous: 'Voltar',
+    next: 'Salvar e ir para {step}',
     save: 'Salvar',
     saved: 'Respostas salvas.',
     back: 'Voltar para a área da família',
@@ -774,11 +778,25 @@ export const ptBR = {
     no: 'Não',
     pick: 'Escolha uma opção',
     list: {
-      has: 'Sim',
-      none: 'Nenhum',
-      add: 'Adicionar',
+      add: '+ {question, select, citizenships {Adicionar cidadania} qualifications {Adicionar curso} languages {Adicionar idioma} workPeriods {Adicionar trabalho} registrations {Adicionar registro} jobOffers {Adicionar oferta} incomes {Adicionar renda} assets {Adicionar bem} residencePeriods {Adicionar país} immigrationHistory {Adicionar visto ou ocorrência} other {Adicionar}}',
+      none: '{question, select, citizenships {Nenhuma cidadania} qualifications {Nenhum curso} languages {Nenhum idioma} workPeriods {Nunca trabalhou} registrations {Não tem registro} jobOffers {Não tem oferta} incomes {Não tem renda} residencePeriods {Nenhum país} immigrationHistory {Nunca teve} other {Nenhum}}',
+      or: 'ou',
+      change: 'Mudar',
+      edit: 'Editar',
+      editItem: 'Editar {item}',
+      done: 'Pronto',
       remove: 'Remover',
-      item: 'Item {number}',
+      item: '{question, select, citizenships {Cidadania} qualifications {Curso} languages {Idioma} workPeriods {Trabalho} registrations {Registro} jobOffers {Oferta} incomes {Renda} assets {Bem} residencePeriods {País} immigrationHistory {Ocorrência} other {Item}} {number}',
+    },
+    summary: {
+      date: '{date, select, none {{field, select, lost {ainda tem} sold {ainda tem} other {{question, select, workPeriods {até hoje} residencePeriods {até hoje} other {ainda juntos}}}}} other {{field, select, acquired {desde {date}} start {desde {date}} since {desde {date}} operatingSince {desde {date}} lost {perdeu em {date}} end {até {date}} completed {concluiu em {date}} sold {vendeu em {date}} valuedAt {em {date}} other {em {date}}}}}',
+    },
+    languagePicker: {
+      common: 'Mais comuns',
+      search: 'Buscar idioma',
+      none: 'Nenhum idioma com esse nome',
+      clear: 'Limpar o idioma',
+      close: 'Fechar a lista de idiomas',
     },
     date: {
       year: 'Ano',
@@ -796,12 +814,13 @@ export const ptBR = {
     formerCountries: 'Países que não existem mais',
     fields: {
       country:
-        '{question, select, qualifications {País que emitiu o diploma} registrations {País do registro} other {País}}',
+        '{question, select, qualifications {País da escola} registrations {País do registro} other {País}}',
       acquired: 'Desde quando',
       lost: 'Até quando',
       basis: '{question, select, residencePeriods {Situação no país} other {Como conseguiu}}',
       language: 'Idioma',
-      level: 'Nível',
+      level: '{question, select, qualifications {Tipo de curso} other {Nível}}',
+      status: 'Situação',
       sector: 'Área',
       temporary: 'É um trabalho temporário?',
       kind: 'Tipo',
@@ -863,8 +882,12 @@ export const ptBR = {
     choice: {
       citizenshipBasis:
         '{value, select, birth {Nascimento} descent {Descendência} naturalization {Naturalização} marriage {Casamento} investment {Investimento} other {Outro jeito}}',
+      qualificationLevel:
+        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio técnico} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
+      qualificationStatus:
+        '{value, select, completed {Concluído} studying {Em andamento} incomplete {Não concluído} other {}}',
       educationLevel:
-        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Mestrado ou especialização} 8 {Doutorado} other {}}',
+        '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
       languageLevel:
         '{value, select, A1 {A1, iniciante} A2 {A2, básico} B1 {B1, intermediário} B2 {B2, intermediário avançado} C1 {C1, avançado} C2 {C2, domínio pleno} native {Língua materna} other {}}',
       isicSection:
@@ -889,36 +912,37 @@ export const ptBR = {
       birthDate: 'Quando {name} nasceu?',
       citizenships: 'Quais cidadanias {name} tem ou já teve?',
       residenceCountry: 'Em que país {name} mora hoje?',
-      educationLevel: 'Até onde {name} estudou?',
+      educationLevel: 'Qual o maior nível de estudo que {name} concluiu?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
-      qualifications: 'Que formações {name} concluiu?',
-      workPeriods: 'Quais trabalhos {name} tem ou já teve?',
-      registrations: 'Onde {name} tem registro para exercer a profissão?',
+      qualifications: 'Que cursos técnicos ou superiores {name} fez?',
+      workPeriods: 'Onde {name} trabalha ou já trabalhou?',
+      registrations: '{name} tem registro em conselho ou ordem profissional?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
-      incomes: 'Quanto {name} recebe por mês?',
+      incomes: 'De onde vem a renda de {name}?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
       residencePeriods: 'Em quais países {name} já morou?',
       assets: 'Quais bens {name} tem?',
       allAssets: 'Esses são todos os bens de {name}?',
-      immigrationHistory:
-        '{name} já teve visto ou residência em algum país, ou problema com imigração?',
+      immigrationHistory: '{name} já teve visto, residência ou algum problema com imigração?',
       allSpouses: 'Esses são todos os casamentos de {name}, inclusive os que acabaram?',
       allPartners: 'Essas são todas as uniões estáveis de {name}?',
       allChildren: 'Esses são todos os filhos de {name}?',
       allParents: 'Esses são todos os pais de {name}?',
-      relationships: 'Detalhes dos vínculos de {name}',
+      relationships: 'Conte um pouco mais sobre os vínculos de {name}',
     },
     hint: {
-      birthDate: 'Sem o dia, vale só o mês e o ano, ou só o ano.',
-      citizenships: 'Conte também uma cidadania que já perdeu.',
-      educationLevel: 'Vale o último curso que concluiu.',
-      incomes: 'Anote cada fonte de renda separadamente.',
+      birthDate: 'Se não souber o dia, preencha só o mês e o ano, ou só o ano.',
+      citizenships: 'Inclua também uma cidadania que perdeu ou renunciou.',
+      educationLevel:
+        'Conta só o que terminou. Se largou a faculdade, marque o ensino médio e anote o curso logo abaixo.',
+      studying: 'Conta curso técnico, faculdade ou pós.',
+      languages: 'Inclua a língua materna.',
+      incomes: 'Uma fonte por vez, com o valor que entra por mês.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
       qualifications:
-        'Anote cada curso concluído, como técnico, graduação, especialização, mestrado ou doutorado. O país é o da escola que emitiu o diploma.',
-      registrations:
-        'É a inscrição em conselho ou ordem, como CRM, CREA ou OAB. Anote um registro por país.',
+        'Um curso por vez, incluindo os que não terminou ou ainda está fazendo. O país é o da escola.',
+      registrations: 'Como CRM, CREA ou OAB. Um registro por país.',
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       jobOffers:
@@ -935,7 +959,7 @@ export const ptBR = {
       no: 'Pode haver mais',
     },
     people: {
-      some: 'Sim',
+      some: 'Sim, de alguém',
       nobody: 'Não depende de ninguém',
     },
     noRelationships: 'Nenhum vínculo anotado ainda.',
@@ -965,11 +989,11 @@ export const ptBR = {
     submit: 'Montar rascunho',
     drafting: 'Lendo o seu texto…',
     failure:
-      '{reason, select, not_found {Comece o caso na área da família antes de contar com suas palavras.} intake_unavailable {O rascunho por texto não está disponível agora. Você pode seguir pelas perguntas guiadas.} intake_timeout {O rascunho demorou demais. Tente de novo, talvez com um texto mais curto.} intake_unparsable {Não deu para montar um rascunho com esse texto. Tente escrever de outro jeito.} limited {Você já montou muitos rascunhos. Espere um pouco ou tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, not_found {Comece o caso na área da família antes de contar com suas palavras.} intake_unavailable {O rascunho por texto não está disponível agora. Você pode seguir pelo questionário.} intake_timeout {O rascunho demorou demais. Tente de novo, talvez com um texto mais curto.} intake_unparsable {Não deu para montar um rascunho com esse texto. Tente escrever de outro jeito.} limited {Você já montou muitos rascunhos. Espere um pouco ou tente de novo amanhã.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     reviewLead:
       'Confira o que o Arca entendeu e desmarque o que estiver errado. Nada vai para o caso antes de você salvar.',
     empty:
-      'O texto não trouxe nada novo para o caso. Conte com mais detalhes ou siga pelas perguntas guiadas.',
+      'O texto não trouxe nada novo para o caso. Conte com mais detalhes ou siga pelo questionário.',
     unnamed:
       '{role, select, self {Pessoa nova (você)} spouse {Pessoa nova (cônjuge)} partner {Pessoa nova (companheiro ou companheira)} child {Pessoa nova (filho ou filha)} parent {Pessoa nova (pai ou mãe)} grandparent {Pessoa nova (avô ou avó)} sibling {Pessoa nova (irmão ou irmã)} other {Pessoa nova}}',
     choice: {
@@ -982,14 +1006,13 @@ export const ptBR = {
       citizenships: 'Essas são todas as cidadanias de {name}: {list}',
       languages: 'Esses são todos os idiomas de {name}: {list}',
     },
-    wholeHint:
-      'Se a lista estiver incompleta, deixe desmarcado. Ela fica para as perguntas guiadas.',
+    wholeHint: 'Se a lista estiver incompleta, deixe desmarcado. Ela fica para o questionário.',
     save: 'Salvar no caso',
     needNames: 'Dê um nome a cada pessoa nova para salvar.',
     saveFailure:
-      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelas perguntas guiadas.} case_limit {O caso chegou a um limite. Tire alguém na área da família e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
+      '{reason, select, case_invalid {Alguma coisa não combina com o que o caso já tem. O que já foi salvo continua no caso. Termine pelo questionário.} case_limit {O caso chegou a um limite. Tire alguém na área da família e tente de novo.} not_found {Isso não está mais disponível. Atualize a página.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas alterações em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     restart: 'Escrever outro texto',
-    toQuestions: 'Ir para as perguntas guiadas',
+    toQuestions: 'Ir para o questionário',
   },
   /** The case read back in plain sentences, each opening its question (spec 0007, R5). */
   playback: {
@@ -1061,6 +1084,7 @@ export const ptBR = {
       field: ' em {field}',
       issuedIn: ', país: {country}',
       completed: ', concluída em {date}',
+      status: '{status, select, studying {, em andamento} incomplete {, não concluída} other {}}',
       relation:
         ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} owner {na própria empresa} other {}}',
       capacity:

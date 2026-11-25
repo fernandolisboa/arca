@@ -14,11 +14,18 @@ export interface ChoiceGroupProps<V extends string> {
   /** The checked choice. */
   readonly value: V;
   readonly onChange: (value: V) => void;
+  /** Short answers side by side, each as wide as its label, instead of a full-width grid. */
+  readonly inline?: boolean;
+  /** Keeps the legend and description for screen readers only, where the screen shows them elsewhere. */
+  readonly legendHidden?: boolean;
+  /** Shown above the answers, inside the group, such as what is already recorded. */
+  readonly before?: ReactNode;
 }
 
 /**
  * One question with a few answers, as native radio buttons inside a fieldset, so arrow keys,
- * labels and screen readers work without extra code. Each answer is a full-width touch target.
+ * labels and screen readers work without extra code. Each answer is a touch target, full width
+ * unless `inline`.
  */
 export function ChoiceGroup<V extends string>({
   legend,
@@ -26,6 +33,9 @@ export function ChoiceGroup<V extends string>({
   choices,
   value,
   onChange,
+  inline = false,
+  legendHidden = false,
+  before,
 }: ChoiceGroupProps<V>) {
   const groupId = useId();
   const descriptionId = `${groupId}-description`;
@@ -34,13 +44,21 @@ export function ChoiceGroup<V extends string>({
       className="flex flex-col gap-2"
       {...(description === undefined ? {} : { 'aria-describedby': descriptionId })}
     >
-      <legend className="mb-2 font-medium">{legend}</legend>
+      <legend className={legendHidden ? 'sr-only' : 'mb-2 font-medium'}>{legend}</legend>
       {description !== undefined && (
-        <p id={descriptionId} className="-mt-1 mb-1 text-small text-muted">
+        <p
+          id={descriptionId}
+          className={legendHidden ? 'sr-only' : '-mt-1 mb-1 text-small text-muted'}
+        >
           {description}
         </p>
       )}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {before}
+      <div
+        className={
+          inline ? 'flex flex-wrap gap-2' : 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3'
+        }
+      >
         {choices.map((choice) => (
           <label
             key={choice.value}
