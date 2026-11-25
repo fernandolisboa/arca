@@ -51,6 +51,10 @@ const snapshot = caseSnapshotSchema.parse({
         },
         { occupation: '3512', start: '2015', end: '2021-02' },
       ],
+      residencePeriods: [
+        { country: 'BR', basis: 'citizen', start: '1985-04', end: 'none' },
+        { country: 'US', end: '2009-12' },
+      ],
       immigrationHistory: [{ country: 'US', kind: 'visa_refusal', date: '2018' }],
       financiallyDependentOn: [],
       incomes: [
@@ -65,6 +69,7 @@ const snapshot = caseSnapshotSchema.parse({
       languages: [],
       jobOffers: [],
       workPeriods: [],
+      residencePeriods: [],
       immigrationHistory: [],
       incomes: [],
       financiallyDependentOn: ['p1'],
@@ -138,6 +143,17 @@ describe('playing the case back (spec 0007, R5)', () => {
     ],
     [
       'p1',
+      'residencePeriod',
+      {
+        question: 'residencePeriods',
+        country: 'BR',
+        basis: 'citizen',
+        start: '1985-04',
+        end: 'none',
+      },
+    ],
+    [
+      'p1',
       'immigrationEvent',
       { question: 'immigrationHistory', country: 'US', event: 'visa_refusal', date: '2018' },
     ],
@@ -158,6 +174,7 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p2', 'noLanguage', { question: 'languages' }],
     ['p2', 'noJobOffer', { question: 'jobOffers' }],
     ['p2', 'noWorkPeriod', { question: 'workPeriods' }],
+    ['p2', 'noResidencePeriod', { question: 'residencePeriods' }],
     ['p2', 'noImmigrationEvent', { question: 'immigrationHistory' }],
     ['p2', 'noIncome', { question: 'incomes' }],
     ['p2', 'dependsOn', { question: 'dependsOn', on: ['p1'] }],
@@ -183,6 +200,7 @@ describe('playing the case back (spec 0007, R5)', () => {
       'workPeriods',
       'jobOffers',
       'dependsOn',
+      'residencePeriods',
       'immigrationHistory',
     ]);
     expect(questions('p4')).toEqual([]);
@@ -203,6 +221,20 @@ describe('playing the case back (spec 0007, R5)', () => {
         occupation: '3512',
         start: '2015',
         end: '2021-02',
+      },
+    ]);
+  });
+
+  it('reads back every residence period, in the order recorded, with only what is known', () => {
+    expect(of('p1', 'residencePeriod')).toEqual([
+      expect.objectContaining({ country: 'BR', end: 'none' }),
+      {
+        kind: 'residencePeriod',
+        question: 'residencePeriods',
+        about: ['p1'],
+        person: 'p1',
+        country: 'US',
+        end: '2009-12',
       },
     ]);
   });

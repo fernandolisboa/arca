@@ -31,10 +31,12 @@ import {
   type JobOffer,
   type Person,
   type Relationship,
+  type ResidencePeriod,
   type WorkPeriod,
   custodies,
   isicSections,
   parentKinds,
+  residenceBases,
   workCapacities,
   workRelations,
 } from './snapshot.js';
@@ -70,18 +72,29 @@ export interface LineageBinding {
 }
 
 /** One of a person's records, inside a record collection such as `person.workPeriods`. */
-export type PersonRecord =
-  | { readonly kind: 'workPeriod'; readonly value: WorkPeriod }
-  | { readonly kind: 'jobOffer'; readonly value: JobOffer };
+interface RecordValues {
+  readonly workPeriod: WorkPeriod;
+  readonly jobOffer: JobOffer;
+  readonly residencePeriod: ResidencePeriod;
+}
 
-/** The kinds of a person's records, each the scope of its item facts. */
+export type PersonRecord = {
+  readonly [Kind in keyof RecordValues]: {
+    readonly kind: Kind;
+    readonly value: RecordValues[Kind];
+  };
+}[keyof RecordValues];
+
+export type RecordKind = PersonRecord['kind'];
+
 export const recordKinds = [
   'workPeriod',
   'jobOffer',
-] as const satisfies readonly PersonRecord['kind'][];
+  'residencePeriod',
+] as const satisfies readonly RecordKind[];
 
-export function isRecordKind(value: string): value is PersonRecord['kind'] {
-  return (recordKinds as readonly string[]).includes(value);
+export function isRecordKind(name: string): name is RecordKind {
+  return (recordKinds as readonly string[]).includes(name);
 }
 
 /**
@@ -113,7 +126,7 @@ export interface Derived {
  * candidate was reached by, the line from an ancestor to the principal, or one record inside a
  * record collection.
  */
-export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | PersonRecord['kind'];
+export type FactScope = 'person' | 'unit' | 'edge' | 'lineage' | RecordKind;
 
 export type FactType =
   | { readonly kind: 'boolean' | 'integer' | 'money' | 'date' }
@@ -384,65 +397,88 @@ export const factCatalog = {
   'workPeriod.employerCountry': {
     type: { kind: 'country' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).employerCountry) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').employerCountry) }),
   },
   /** Where the person physically works from. */
   'workPeriod.workplaceCountry': {
     type: { kind: 'country' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).workplaceCountry) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').workplaceCountry) }),
   },
   'workPeriod.relation': {
     type: { kind: 'enum', values: workRelations },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).relation) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').relation) }),
   },
   'workPeriod.occupation': {
     type: { kind: 'code', classification: 'occupations' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).occupation) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').occupation) }),
   },
   /** The role the person says they had; a route's legal definition stays an assessment. */
   'workPeriod.capacity': {
     type: { kind: 'enum', values: workCapacities },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: tokenValue(workPeriodOf(binding).capacity) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'workPeriod').capacity) }),
   },
   'workPeriod.fullTime': {
     type: { kind: 'boolean' },
     scope: 'workPeriod',
-    derive: (binding) => ({ value: booleanValue(workPeriodOf(binding).fullTime ?? 'unknown') }),
+    derive: (binding) => ({
+      value: booleanValue(recordOf(binding, 'workPeriod').fullTime ?? 'unknown'),
+    }),
   },
   'workPeriod.start': {
     type: { kind: 'date' },
     scope: 'workPeriod',
-    derive: (binding) => dateFact(workPeriodOf(binding).start),
+    derive: (binding) => dateFact(recordOf(binding, 'workPeriod').start),
   },
   /** The last day worked; `"none"` means it still went on at `recordedOn`, so it is later. */
   'workPeriod.end': {
     type: { kind: 'date' },
     scope: 'workPeriod',
-    derive: (binding) => endFact(workPeriodOf(binding).end, binding.environment),
+    derive: (binding) => endFact(recordOf(binding, 'workPeriod').end, binding.environment),
+  },
+  'residencePeriod.country': {
+    type: { kind: 'country' },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').country) }),
+  },
+  'residencePeriod.basis': {
+    type: { kind: 'enum', values: residenceBases },
+    scope: 'residencePeriod',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'residencePeriod').basis) }),
+  },
+  'residencePeriod.start': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => dateFact(recordOf(binding, 'residencePeriod').start),
+  },
+  /** The last day lived there; `"none"` means it still went on at `recordedOn`, so it is later. */
+  'residencePeriod.end': {
+    type: { kind: 'date' },
+    scope: 'residencePeriod',
+    derive: (binding) => endFact(recordOf(binding, 'residencePeriod').end, binding.environment),
   },
   'jobOffer.country': {
     type: { kind: 'country' },
     scope: 'jobOffer',
-    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).country) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').country) }),
   },
   'jobOffer.sector': {
     type: { kind: 'enum', values: isicSections },
     scope: 'jobOffer',
-    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).sector) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').sector) }),
   },
   'jobOffer.temporary': {
     type: { kind: 'boolean' },
     scope: 'jobOffer',
-    derive: (binding) => ({ value: booleanValue(jobOfferOf(binding).temporary) }),
+    derive: (binding) => ({ value: booleanValue(recordOf(binding, 'jobOffer').temporary) }),
   },
   'jobOffer.occupation': {
     type: { kind: 'code', classification: 'occupations' },
     scope: 'jobOffer',
-    derive: (binding) => ({ value: tokenValue(jobOfferOf(binding).occupation) }),
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'jobOffer').occupation) }),
   },
   /** The gross annual salary the offer states, in the route's currency at `factsAsOf`. */
   'jobOffer.annualSalary': {
@@ -451,7 +487,7 @@ export const factCatalog = {
     nonNegative: true,
     derive: (binding) => {
       const salary = new MoneySum(binding.environment);
-      const stated = jobOfferOf(binding).annualSalary;
+      const stated = recordOf(binding, 'jobOffer').annualSalary;
       if (stated === undefined) salary.open([], true);
       else salary.add(toExact(stated), true);
       return salary.result();
@@ -462,7 +498,7 @@ export const factCatalog = {
     type: { kind: 'boolean' },
     scope: 'jobOffer',
     derive: (binding) => ({
-      value: booleanValue(jobOfferOf(binding).sponsored ?? 'unknown'),
+      value: booleanValue(recordOf(binding, 'jobOffer').sponsored ?? 'unknown'),
     }),
   },
 } as const satisfies Record<string, FactDefinition>;
@@ -791,18 +827,10 @@ function edgeOf(binding: FactBinding): Relationship {
   return binding.edge;
 }
 
-function workPeriodOf(binding: FactBinding): WorkPeriod {
-  if (binding.record?.kind !== 'workPeriod') {
-    throw new RangeError('A work-period fact outside a work-period collection');
-  }
-  return binding.record.value;
-}
-
-function jobOfferOf(binding: FactBinding): JobOffer {
-  if (binding.record?.kind !== 'jobOffer') {
-    throw new RangeError('A job-offer fact outside a job-offer collection');
-  }
-  return binding.record.value;
+function recordOf<Kind extends RecordKind>(binding: FactBinding, kind: Kind): RecordValues[Kind] {
+  const { record } = binding;
+  if (record?.kind !== kind) throw new RangeError(`A ${kind} fact outside its collection`);
+  return record.value as RecordValues[Kind];
 }
 
 function otherEnd(edge: Relationship, id: string): string {

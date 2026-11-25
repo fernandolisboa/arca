@@ -54,12 +54,17 @@ export const questionForFact = {
   'jobOffer.occupation': 'jobOffers',
   'jobOffer.annualSalary': 'jobOffers',
   'jobOffer.sponsored': 'jobOffers',
+  'residencePeriod.country': 'residencePeriods',
+  'residencePeriod.basis': 'residencePeriods',
+  'residencePeriod.start': 'residencePeriods',
+  'residencePeriod.end': 'residencePeriods',
 } as const satisfies Record<FactKey, QuestionId>;
 
 /** The guided question that records each list of a person's records. */
 const questionForRecords = {
   workPeriods: 'workPeriods',
   jobOffers: 'jobOffers',
+  residencePeriods: 'residencePeriods',
 } as const satisfies Record<RecordList, QuestionId>;
 
 const questionForMarker = {

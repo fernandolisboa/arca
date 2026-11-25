@@ -148,6 +148,10 @@
       "sha256": "5b89ee3fd22c4f96d6d3137c47953fc202145a1614624633b2e5f8a893f6cead"
     },
     {
+      "path": "routes/qr-legal-residence/1",
+      "sha256": "25a70fdd2bd23307b14902400085a64a379451f454cd14afba1fc04bcaace4cb"
+    },
+    {
       "path": "routes/qr-remote-work/1",
       "sha256": "cf44fd5d1217db9ec85bcb293d7312196a30ece30df412f3913fde8d2b23482c"
     },

@@ -31,6 +31,8 @@ export const collectionNames = [
   'principal.workPeriods',
   'person.jobOffers',
   'principal.jobOffers',
+  'person.residencePeriods',
+  'principal.residencePeriods',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
@@ -41,11 +43,13 @@ export type CollectionName = (typeof collectionNames)[number];
  * that last a while, the facts that bound each item's period, which `covers` reads. An absent
  * list is unknown, `[]` none.
  */
-const workPeriods = {
-  list: 'workPeriods',
-  record: 'workPeriod',
-  period: { start: 'workPeriod.start', end: 'workPeriod.end' },
-} as const;
+const periods = <const List extends keyof Person, const Record extends PersonRecord['kind']>(
+  list: List,
+  record: Record,
+) => ({ list, record, period: { start: `${record}.start`, end: `${record}.end` } }) as const;
+
+const workPeriods = periods('workPeriods', 'workPeriod');
+const residencePeriods = periods('residencePeriods', 'residencePeriod');
 
 const jobOffers = { list: 'jobOffers', record: 'jobOffer' } as const;
 
@@ -54,6 +58,8 @@ export const recordCollections = {
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
   'person.jobOffers': { owner: 'current', ...jobOffers },
   'principal.jobOffers': { owner: 'principal', ...jobOffers },
+  'person.residencePeriods': { owner: 'current', ...residencePeriods },
+  'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
 } as const satisfies Partial<
   Record<
     CollectionName,

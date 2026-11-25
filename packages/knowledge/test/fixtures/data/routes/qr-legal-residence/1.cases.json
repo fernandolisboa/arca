@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "family-returned-after-residence-abroad",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 2,
+        "sha256": "fbe2e8d9a86e8a15127769a3b60c9c6e06a5ba1aadc5fb8d7dd1da0240ff7b5f"
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "family-never-lived-abroad",
+      "family": {
+        "id": "remote-worker-doctor-business-owner",
+        "number": 2,
+        "sha256": "fbe2e8d9a86e8a15127769a3b60c9c6e06a5ba1aadc5fb8d7dd1da0240ff7b5f"
+      },
+      "principal": "p2",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "two-full-years",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "basis": "temporary_residence",
+                "start": "2022-03-01",
+                "end": "2024-02-29"
+              },
+              {
+                "country": "BR",
+                "basis": "citizen",
+                "start": "1990-01-01",
+                "end": "2022-02-28"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "year-and-a-half",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "basis": "temporary_residence",
+                "start": "2023-01-01",
+                "end": "2024-06-30"
+              },
+              {
+                "country": "QR",
+                "basis": "other",
+                "start": "2024-07-01",
+                "end": "2025-06-30"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "ongoing-across-the-date",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "basis": "permanent_residence",
+                "start": "2024-09-15",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "ongoing-too-short",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "basis": "temporary_residence",
+                "start": "2025-06",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "not_eligible",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": []
+      }
+    },
+    {
+      "id": "residence-unanswered",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1"
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["records residencePeriods@p1"]
+      }
+    },
+    {
+      "id": "basis-unknown",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "start": "2020",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["residencePeriod.basis@p1"]
+      }
+    },
+    {
+      "id": "start-known-by-year",
+      "snapshot": {
+        "recordedOn": "2026-11-01",
+        "members": ["p1"],
+        "people": [
+          {
+            "id": "p1",
+            "residencePeriods": [
+              {
+                "country": "QR",
+                "basis": "citizen",
+                "start": "2024",
+                "end": "none"
+              }
+            ]
+          }
+        ],
+        "relationships": [],
+        "assets": []
+      },
+      "principal": "p1",
+      "rulesAsOf": "2026-11-01",
+      "expected": {
+        "status": "missing_information",
+        "dependents": [],
+        "possibleDependents": [],
+        "missingFacts": ["residencePeriod.start@p1"]
+      }
+    }
+  ]
+}

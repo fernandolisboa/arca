@@ -14,12 +14,13 @@ import {
   type FactType,
   type LineageBinding,
   type PersonRecord,
+  type RecordKind,
   deriveFact,
   isRecordKind,
 } from '../case/facts.js';
 import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
 import { ancestorLines } from '../case/paths.js';
-import type { Relationship } from '../case/snapshot.js';
+import type { Person, Relationship } from '../case/snapshot.js';
 import {
   addNumbers,
   compareNumbers,
@@ -564,6 +565,18 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
   };
 }
 
+/** A person's records of one kind, each tagged with it; undefined when the list is unknown. */
+function recordsOf(person: Person, kind: RecordKind): readonly PersonRecord[] | undefined {
+  switch (kind) {
+    case 'workPeriod':
+      return person.workPeriods?.map((value) => ({ kind, value }));
+    case 'jobOffer':
+      return person.jobOffers?.map((value) => ({ kind, value }));
+    case 'residencePeriod':
+      return person.residencePeriods?.map((value) => ({ kind, value }));
+  }
+}
+
 function dayAfter(date: CalendarDate): CalendarDate {
   return tryAddDays(date, 1) ?? date;
 }
@@ -688,10 +701,10 @@ function itemsOf(
   if (isRecordCollection(over)) {
     const { owner, list, record } = recordCollections[over];
     const personId = owner === 'principal' ? environment.principalId : frame.current;
-    const values = environment.snapshot.person(personId)[list];
+    const values = recordsOf(environment.snapshot.person(personId), record);
     return {
       items: (values ?? []).map((value): Item => ({
-        frame: at(personId, undefined, { kind: record, value } as PersonRecord),
+        frame: at(personId, undefined, value),
         membership: true,
       })),
       complete: values !== undefined,

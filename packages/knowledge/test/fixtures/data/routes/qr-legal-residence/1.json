@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-legal-residence",
+  "number": 1,
+  "title": "Fixture: settlement after legal residence",
+  "country": "QR",
+  "tags": ["fixture", "residence"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "legal-residence",
+      "title": "Two years in all of legal residence in the country in the five years up to the date",
+      "expression": {
+        "op": "covers",
+        "over": "principal.residencePeriods",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "eq",
+              "left": {
+                "op": "fact",
+                "key": "residencePeriod.country"
+              },
+              "right": {
+                "op": "token",
+                "value": "QR"
+              }
+            },
+            {
+              "op": "in",
+              "item": {
+                "op": "fact",
+                "key": "residencePeriod.basis"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["citizen", "permanent_residence", "temporary_residence"]
+              }
+            }
+          ]
+        },
+        "atLeast": "P2Y",
+        "window": "P5Y",
+        "continuous": false
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}
