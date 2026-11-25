@@ -84,6 +84,15 @@ export const comparisonQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** What to do when leaving a country, with official sources (ADR-0037): public, rarely changed. */
+export const departureChecklistsQuery = queryOptions({
+  queryKey: ['departure-checklists'],
+  queryFn: () => api.call(routes.getDepartureChecklists),
+  networkMode: 'always',
+  retry: false,
+  staleTime: Infinity,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],

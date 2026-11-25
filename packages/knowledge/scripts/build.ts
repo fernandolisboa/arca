@@ -6,6 +6,7 @@ import {
   maxKnowledgeJsonDepth,
   parseCalendarDate,
   sourceUrls,
+  departureChecklistsSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
@@ -39,6 +40,8 @@ export interface CatalogParts {
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
   readonly suggestedRatings?: Json | null;
+  /** The highest-numbered departure checklists file (ADR-0037), or null when there is none. */
+  readonly departureChecklists?: Json | null;
 }
 
 export interface KnowledgeBuild extends CatalogParts {
@@ -187,6 +190,7 @@ export function runtimeModule({
   countryFiles = {},
   comparisons = [],
   suggestedRatings = null,
+  departureChecklists = null,
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
     indicators.flatMap((indicator) => indicator.sources.flatMap(sourceUrls)),
@@ -198,15 +202,19 @@ export function runtimeModule({
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
+    exportedJson('departureChecklistData', departureChecklists),
     '',
   ].join('\n');
 }
 
 /**
- * The highest-numbered suggested ratings file in `dir` (ADR-0035), named `<number>.json`, checked
- * against its schema and its own number; null when the directory holds none.
+ * The highest-numbered file in `dir`, named `<number>.json`, checked against its schema and its own
+ * number; null when the directory holds none.
  */
-export async function readSuggestedRatings(dir: string): Promise<Json | null> {
+async function readLatestNumbered(
+  dir: string,
+  schema: { parse: (json: Json) => { number: number } },
+): Promise<Json | null> {
   const names = await readdir(dir).catch((error: unknown) => {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw error;
@@ -217,18 +225,22 @@ export async function readSuggestedRatings(dir: string): Promise<Json | null> {
     .sort((a, b) => b - a);
   const [latest] = numbers;
   if (latest === undefined) return null;
-  const json = parseJsonSubset(
-    await readKnowledgeFile(join(dir, `${String(latest)}.json`)),
-    maxKnowledgeJsonDepth,
-  );
-  const parsed = suggestedRatingsSchema.parse(json);
-  if (parsed.number !== latest) {
-    throw new Error(
-      `suggested-ratings/${String(latest)}.json carries number ${String(parsed.number)}`,
-    );
+  const file = join(dir, `${String(latest)}.json`);
+  const json = parseJsonSubset(await readKnowledgeFile(file), maxKnowledgeJsonDepth);
+  const { number } = schema.parse(json);
+  if (number !== latest) {
+    throw new Error(`${file} carries number ${String(number)}`);
   }
   return json;
 }
+
+/** The highest-numbered suggested ratings file in `dir` (ADR-0035), or null. */
+export const readSuggestedRatings = (dir: string) =>
+  readLatestNumbered(dir, suggestedRatingsSchema);
+
+/** The highest-numbered departure checklists file in `dir` (ADR-0037), or null. */
+export const readDepartureChecklists = (dir: string) =>
+  readLatestNumbered(dir, departureChecklistsSchema);
 
 export function formatIssue(issue: Issue): string {
   return `${issue.file}${issue.path === undefined ? '' : ` ${issue.path}`}: ${issue.message}`;
@@ -257,8 +269,14 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
-  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings }));
+  const [suggestedRatings, departureChecklists] = await Promise.all([
+    readSuggestedRatings(join(packageDir, 'suggested-ratings')),
+    readDepartureChecklists(join(packageDir, 'departure-checklists')),
+  ]);
+  await writeFile(
+    targets.runtime,
+    runtimeModule({ ...parts, suggestedRatings, departureChecklists }),
+  );
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );

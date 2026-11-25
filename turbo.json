@@ -27,6 +27,7 @@
       "inputs": [
         "data/**",
         "suggested-ratings/**",
+        "departure-checklists/**",
         "scripts/**",
         "package.json",
         "$TURBO_ROOT$/tooling/scripts/src/host.ts",

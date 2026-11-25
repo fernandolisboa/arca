@@ -2,6 +2,7 @@ import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
+import { departureRoutes } from './departure.js';
 import { adminRoutes } from './admins.js';
 import { AiProvider, AiStage, aiSettingsRoutes } from './ai-settings.js';
 import { knowledgeRoutes } from './knowledge.js';
@@ -1703,6 +1704,7 @@ export const deleteDocuments = {
 
 export * from './case.js';
 export * from './comparison.js';
+export * from './departure.js';
 export * from './knowledge.js';
 export * from './admins.js';
 export * from './uploads.js';
@@ -1766,6 +1768,7 @@ export const routes = {
   deleteDocuments,
   ...caseRoutes,
   ...comparisonRoutes,
+  ...departureRoutes,
   ...knowledgeRoutes,
   ...adminRoutes,
   ...aiSettingsRoutes,
@@ -1794,6 +1797,7 @@ export const apiPathSegments: readonly string[] = [
 export const webPathSegments = [
   'assets',
   'compare',
+  'departure',
   'devices',
   'enroll',
   'family',

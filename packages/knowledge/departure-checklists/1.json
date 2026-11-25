@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "number": 1,
+  "officialDomains": ["gov.br", "jus.br", "uscis.gov"],
+  "sources": [
+    {
+      "id": "exit-notice",
+      "url": "https://www.gov.br/pt-br/servicos/comunicar-saida-definitiva-do-pais",
+      "title": "Comunicar saída definitiva do país (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "exit-return",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda/preenchimento/dsdp/forma",
+      "title": "Como entregar a Declaração de Saída Definitiva do País (Receita Federal)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "fiscal-exit-faq",
+      "url": "https://www.gov.br/mre/pt-br/assuntos/portal-consular/saida-fiscal-definitiva-do-brasil/saida-fiscal-definitiva-do-brasil-orientacoes-para-brasileiros-no-exterior",
+      "title": "Saída Fiscal Definitiva do Brasil: orientações (Itamaraty)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cpf-update",
+      "url": "https://www.gov.br/pt-br/servicos/atualizar-cadastro-de-pessoas-fisicas",
+      "title": "Atualizar CPF (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ecac-proxy",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2023/janeiro/disponibilizadas-novas-formas-de-acesso-a-servicos-no-e-cac",
+      "title": "Novas formas de acesso a serviços no e-CAC (Receita Federal)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "tax-return-copies",
+      "url": "https://www.gov.br/pt-br/servicos/obter-copia-de-declaracao-enviada-a-receita-federal",
+      "title": "Obter cópia de declaração enviada à Receita Federal (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "nonresident-accounts",
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?tipo=Resolu%C3%A7%C3%A3o%20BCB&numero=277",
+      "title": "Resolução BCB nº 277/2022, Título VII (Banco Central)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "exchange-law",
+      "url": "https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2021/lei/l14286.htm",
+      "title": "Lei nº 14.286/2021, art. 3º (Planalto)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cbe-manual",
+      "url": "https://www.bcb.gov.br/content/estabilidadefinanceira/cambiocapitais/Manuais_CBE/Manual_CBE_a_partir_de_2017.pdf",
+      "title": "Manual do Declarante CBE, edição 2026 (Banco Central)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "social-security-agreements",
+      "url": "https://www.gov.br/inss/pt-br/noticias/inss-acordos-internacionais-garantem-direitos-previdenciarios-dentro-e-fora-do-brasil",
+      "title": "Acordos internacionais de previdência (INSS)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "passport",
+      "url": "https://www.gov.br/pt-br/servicos/obter-passaporte-comum-para-brasileiro",
+      "title": "Obter passaporte comum para brasileiro (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "voter-abroad",
+      "url": "https://www.gov.br/mre/pt-br/consulado-porto/servicos-consulares/eleitor-no-exterior",
+      "title": "Eleitor brasileiro no exterior (Consulado-Geral do Brasil no Porto)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "voter-abroad-faq",
+      "url": "https://www.gov.br/mre/pt-br/embaixada-ama/Portugues/servicos-e-atendimentos-consulares/servicos-eleitorais-1/perguntas-frequentes",
+      "title": "Eleições: dúvidas frequentes (Embaixada do Brasil em Amã)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "minors-travel",
+      "url": "https://atos.cnj.jus.br/atos/detalhar/atos-normativos?documento=116",
+      "title": "Resolução CNJ nº 131/2011, arts. 1º e 13 (CNJ)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "civil-code",
+      "url": "https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm",
+      "title": "Código Civil, arts. 108 e 1.245 (Planalto)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "capital-gain",
+      "url": "https://www.gov.br/pt-br/servicos/apurar-imposto-sobre-ganhos-de-capital",
+      "title": "Apurar imposto sobre ganhos de capital (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "eb5-lawful-source",
+      "url": "https://www.uscis.gov/policy-manual/volume-6-part-g-chapter-2",
+      "title": "USCIS Policy Manual, vol. 6, parte G, cap. 2: origem lícita do capital no EB-5",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    }
+  ],
+  "checklists": [
+    {
+      "country": "BR",
+      "sections": [
+        {
+          "id": "tax",
+          "items": [
+            { "id": "exit-notice", "sources": ["exit-notice"] },
+            { "id": "exit-return", "sources": ["exit-return"] },
+            { "id": "paying-sources", "sources": ["fiscal-exit-faq"] },
+            { "id": "mei", "sources": ["fiscal-exit-faq"] },
+            { "id": "cpf-address", "sources": ["cpf-update"] },
+            { "id": "tax-proxy", "sources": ["ecac-proxy"] }
+          ]
+        },
+        {
+          "id": "money",
+          "items": [
+            { "id": "bank-accounts", "sources": ["fiscal-exit-faq", "nonresident-accounts"] },
+            { "id": "foreign-assets", "sources": ["cbe-manual"] }
+          ]
+        },
+        {
+          "id": "social-security",
+          "items": [
+            { "id": "social-security-agreement", "sources": ["social-security-agreements"] }
+          ]
+        },
+        {
+          "id": "family",
+          "items": [
+            { "id": "passports", "sources": ["passport", "voter-abroad"] },
+            { "id": "minors-travel", "sources": ["minors-travel"] },
+            { "id": "voter-registration", "sources": ["voter-abroad", "voter-abroad-faq"] }
+          ]
+        },
+        {
+          "id": "source-of-funds",
+          "items": [
+            { "id": "funds-why", "sources": ["eb5-lawful-source"] },
+            { "id": "sale-deed", "sources": ["civil-code"] },
+            { "id": "property-registry", "sources": ["civil-code"] },
+            { "id": "capital-gain", "sources": ["capital-gain"] },
+            { "id": "tax-returns", "sources": ["eb5-lawful-source", "tax-return-copies"] },
+            { "id": "bank-trail", "sources": ["eb5-lawful-source"] },
+            { "id": "exchange-records", "sources": ["exchange-law", "eb5-lawful-source"] }
+          ]
+        }
+      ]
+    }
+  ]
+}

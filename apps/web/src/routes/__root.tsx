@@ -20,6 +20,7 @@ const destinations = [
   { id: 'home', to: homePath, icon: 'home', adminOnly: false },
   { id: 'family', to: '/family', icon: 'family', adminOnly: false },
   { id: 'compare', to: '/compare', icon: 'countries', adminOnly: false },
+  { id: 'departure', to: '/departure', icon: 'plan', adminOnly: false },
   { id: 'vault', to: '/vault', icon: 'vault', adminOnly: false },
   { id: 'knowledge', to: '/knowledge', icon: 'knowledge', adminOnly: true },
 ] as const;

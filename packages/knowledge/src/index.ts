@@ -1,12 +1,18 @@
 import { createComparisonCatalog } from './comparisons.js';
 import { parseComparisons } from './entries.js';
-import { countryCodeSchema, suggestedRatingsSchema } from '@arca/domain';
+import {
+  countryCodeSchema,
+  departureChecklistViews,
+  departureChecklistsSchema,
+  suggestedRatingsSchema,
+} from '@arca/domain';
 import { z } from 'zod';
 import type { Json } from './canonical.js';
 import {
   comparisonData,
   countryData,
   countryFileData,
+  departureChecklistData,
   suggestedRatingData,
 } from './generated/runtime.js';
 
@@ -49,6 +55,12 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 /** The stars the comparison suggests per country (ADR-0035), or null when the repository has none. */
 export const suggestedRatings =
   suggestedRatingData === null ? null : suggestedRatingsSchema.parse(suggestedRatingData);
+
+/** What to do when leaving a country, per country, with each item's sources (ADR-0037). */
+export const departureChecklists =
+  departureChecklistData === null
+    ? []
+    : departureChecklistViews(departureChecklistsSchema.parse(departureChecklistData));
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z

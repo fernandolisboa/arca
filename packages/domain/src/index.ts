@@ -427,6 +427,13 @@ export {
   suggestedRatingsSchema,
 } from './comparison/suggested.js';
 export {
+  type DepartureChecklistView,
+  type DepartureChecklists,
+  type DepartureSource,
+  departureChecklistViews,
+  departureChecklistsSchema,
+} from './departure/checklist.js';
+export {
   type ComparedCriterion,
   type ComparisonInput,
   type CountryComparison,
