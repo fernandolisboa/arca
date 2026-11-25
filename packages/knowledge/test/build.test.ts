@@ -12,6 +12,7 @@ import {
   todayUtc,
 } from '../scripts/build.ts';
 import { contentHash } from '../scripts/content-hash.ts';
+import { importBuild } from '../scripts/rule-import.ts';
 import type { Json } from '@arca/scripts/json';
 import { baseTree, buildDate, emptyHashes, fixtures, routeVersion, writeTree } from './data.ts';
 
@@ -264,6 +265,20 @@ describe('buildKnowledge', () => {
     expect(await issuesOf(tree)).toContain(
       'study-fields/1.json /codes: Codes are unique and in ascending order',
     );
+
+    // The import's date predates the classifications: only their verification date is let through.
+    const later = classification('study-fields') as { sources: object[] };
+    tree['study-fields/1.json'] = {
+      ...later,
+      sources: later.sources.map((source) => ({ ...source, verifiedAt: '2026-11-20' })),
+      codes: ['2222', '1111'],
+    };
+    const imported = (await importBuild(await writeTree(tree))).issues
+      .map(formatIssue)
+      .filter((issue) => issue.startsWith('study-fields/'));
+    expect(imported).toEqual([
+      'study-fields/1.json /codes: Codes are unique and in ascending order',
+    ]);
   });
 
   describe('validation', () => {

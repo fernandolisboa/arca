@@ -206,8 +206,8 @@ export const VersionView = z.object({
   pins: z.object({
     countries: pin,
     formerCountries: pin,
-    occupations: pin.nullable(),
-    studyFields: pin.nullable(),
+    occupations: pin.optional(),
+    studyFields: pin.optional(),
     officialDomains: z.array(pin).max(10),
   }),
   requirements: z

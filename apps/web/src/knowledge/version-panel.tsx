@@ -124,7 +124,9 @@ function Settings({ view, words }: { readonly view: VersionView; readonly words:
               [
                 view.pins.countries,
                 view.pins.formerCountries,
-                ...[view.pins.occupations, view.pins.studyFields].filter((pin) => pin !== null),
+                ...[view.pins.occupations, view.pins.studyFields].filter(
+                  (pin) => pin !== undefined,
+                ),
                 ...view.pins.officialDomains,
               ].map((pin) => t('knowledge.pin', { id: pin.id, number: pin.number })),
             ),

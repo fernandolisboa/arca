@@ -468,10 +468,7 @@ class Validation {
     };
     if (file.kind === 'country-sets' || file.kind === 'routes') addCommon(file.data);
     if (file.kind === 'routes') {
-      for (const { name, kind } of classificationPins(file.data)) {
-        const pin = file.data[name];
-        if (pin !== undefined) add(kind, pin);
-      }
+      for (const { kind, pin } of classificationPins(file.data)) add(kind, pin);
       for (const pin of file.data.countrySets) {
         const set = add('country-sets', pin) as ParsedOf<'country-sets'>;
         addCommon(set.data);

@@ -184,6 +184,7 @@ export function SearchPicker({
                   event.preventDefault();
                   optionButtons()[0]?.focus();
                 }
+                // Enter never submits a form around the field.
                 if (event.key === 'Enter') {
                   event.preventDefault();
                   if (search.trim() !== '' && first !== undefined) pick(first.value);
