@@ -918,6 +918,54 @@ describe('work periods (ADR-0036)', () => {
   });
 });
 
+describe('residence periods (ADR-0036)', () => {
+  const portugal = { country: 'PT', basis: 'temporary_residence', start: '2023-02', end: 'none' };
+  const brazil = { country: 'BR', basis: 'citizen', start: '1990', end: '2023-01' };
+
+  it('saves residence periods, reads them back, and plays them back to a sharer', async () => {
+    const { alice, bruno, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'residencePeriods', answer: [portugal, brazil] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      residencePeriods: [portugal, brazil],
+    });
+    const answered = (await files.questions(alice))?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'residencePeriods');
+    expect(answered?.answer).toEqual([portugal, brazil]);
+
+    const residenceOf = async (viewer: string) =>
+      (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'residencePeriod');
+    await files.replaceShares(alice, { personId: people.alice, profile: [], finances: [bruno] });
+    expect(await residenceOf(bruno)).toEqual([]);
+    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    const about = { question: 'residencePeriods', about: [people.alice], person: people.alice };
+    expect(await residenceOf(bruno)).toEqual([
+      { kind: 'residencePeriod', ...about, ...portugal },
+      { kind: 'residencePeriod', ...about, ...brazil },
+    ]);
+  });
+
+  it('refuses a country outside the pinned list and a period ending before it starts', async () => {
+    const { alice, people } = await family();
+    const answer = async (residencePeriods: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'residencePeriods', answer: residencePeriods }],
+        }),
+      );
+    expect(await answer([{ country: 'IT' }])).toBe('case_invalid');
+    expect(await answer([{ country: 'PT', start: '2020', end: '2019-06' }])).toBe('case_invalid');
+    expect(await answer([{ basis: 'citizen' }])).toBe('case_invalid');
+  });
+});
+
 describe('playing the case back (spec 0007, R5)', () => {
   it('reads a shared profile as unanswered and a profile never shared as not shared', async () => {
     const { alice, bruno, people } = await family();

@@ -92,8 +92,10 @@ export function useNames() {
           : group,
         options: sorted(options),
       })),
-    field: (key: string) =>
-      i18n.exists(`questions.fields.${key}`) ? t(`questions.fields.${key as FieldKey}`) : key,
+    field: (key: string, question: string) =>
+      i18n.exists(`questions.fields.${key}`)
+        ? t(`questions.fields.${key as FieldKey}`, { question })
+        : key,
   };
 }
 
@@ -484,7 +486,7 @@ function ItemFields({
           key={key}
           questionId={questionId}
           fieldKey={key}
-          label={names.field(key)}
+          label={names.field(key, questionId)}
           input={input}
           value={item[key]}
           optional={optional}

@@ -29,6 +29,8 @@ export const collectionNames = [
   'lineage.links',
   'person.workPeriods',
   'principal.workPeriods',
+  'person.residencePeriods',
+  'principal.residencePeriods',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
@@ -38,15 +40,19 @@ export type CollectionName = (typeof collectionNames)[number];
  * principal), the snapshot list they come from, the record each item binds, and the facts that
  * bound each item's period, which `covers` reads. An absent list is unknown, `[]` none.
  */
-const workPeriods = {
-  list: 'workPeriods',
-  record: 'workPeriod',
-  period: { start: 'workPeriod.start', end: 'workPeriod.end' },
-} as const;
+const periods = <const List extends keyof Person, const Record extends PersonRecord['kind']>(
+  list: List,
+  record: Record,
+) => ({ list, record, period: { start: `${record}.start`, end: `${record}.end` } }) as const;
+
+const workPeriods = periods('workPeriods', 'workPeriod');
+const residencePeriods = periods('residencePeriods', 'residencePeriod');
 
 export const recordCollections = {
   'person.workPeriods': { owner: 'current', ...workPeriods },
   'principal.workPeriods': { owner: 'principal', ...workPeriods },
+  'person.residencePeriods': { owner: 'current', ...residencePeriods },
+  'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
 } as const satisfies Partial<
   Record<
     CollectionName,
