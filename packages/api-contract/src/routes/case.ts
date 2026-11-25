@@ -1,6 +1,8 @@
 import {
   calendarDateSchema,
   caseIntakeDraftSchema,
+  plainSourceSchema,
+  tagSchema,
   countryCodeSchema,
   decimalSchema,
   durationSchema,
@@ -468,6 +470,104 @@ export const getCaseEvaluations = {
   response: { description: 'The evaluations', schema: CaseEvaluations },
 } as const satisfies RouteDefinition<typeof CaseEvaluations>;
 
+const dependsOn = z
+  .array(z.object({ personId: z.uuid(), question: z.enum(questionIds), kept: z.boolean() }))
+  .max(maxCasePeople * questionIds.length);
+
+/** Where to get a document in a country whose citizenship the person holds (ADR-0039). */
+export const DocumentGuideView = z.object({
+  country: countryCodeSchema,
+  onlineUrl: z
+    .url({ protocol: /^https$/ })
+    .max(2000)
+    .nullable(),
+  /** In the issuing country's currency, as units. */
+  cost: z.object({ min: unitsMoney, max: unitsMoney }).nullable(),
+  leadTime: z
+    .object({ min: durationSchema, max: durationSchema, businessDays: z.boolean() })
+    .nullable(),
+  sources: z.array(plainSourceSchema.pick({ url: true, title: true, verifiedAt: true })).max(5),
+});
+export type DocumentGuideView = z.infer<typeof DocumentGuideView>;
+
+/** One document a route version asks for, as it reads for one person or for the unit. */
+export const DocumentItemView = z.object({
+  documentId: slugSchema,
+  title: shownText,
+  original: originalText,
+  /** The open document kind the guides share, such as `birth_certificate`. */
+  kind: tagSchema,
+  /** `unknown` when its condition reads a fact the viewer's case lacks: "may apply". */
+  applies: z.union([z.literal(true), z.literal('unknown')]),
+  /** Null where the sources do not say: Arca does not know, never "not needed". */
+  apostille: z.boolean().nullable(),
+  translation: tagSchema.nullable(),
+  validity: durationSchema.nullable(),
+  note: shownText.nullable(),
+  noteOriginal: originalText,
+  sources,
+  /** For an item that may apply, the questions that would settle it. */
+  dependsOn,
+  /** Empty when no guide covers the kind for the person's citizenships. */
+  guides: z.array(DocumentGuideView).max(10),
+});
+export type DocumentItemView = z.infer<typeof DocumentItemView>;
+
+export const RouteDocuments = z.object({
+  routeId: routeIdSchema,
+  principalId: z.uuid(),
+  /** The version in effect: active, waiting for activation (ADR-0014), or none. */
+  status: z.enum(['active', 'pending_activation', 'unavailable']),
+  route: z
+    .object({ title: shownText, original: originalText, country: countryCodeSchema })
+    .nullable(),
+  version: z.object({ number: z.int().min(1) }).nullable(),
+  newerProposedVersion: z.object({ number: z.int().min(1), from: calendarDateSchema }).nullable(),
+  /**
+   * Null unless a version is active. `not_covered` when it has no document list, so Arca does
+   * not know them yet; a `listed` one with no items asks for none.
+   */
+  documents: z
+    .discriminatedUnion('kind', [
+      z.object({ kind: z.literal('not_covered') }),
+      z.object({
+        kind: z.literal('listed'),
+        /** The version's list is empty: the route asks for no documents, of anyone. */
+        asksNone: z.boolean(),
+        /** The principal, then dependents, then possible dependents. */
+        people: z
+          .array(
+            z.object({
+              personId: z.uuid(),
+              role: z.enum(['principal', 'dependent', 'possible_dependent']),
+              items: z.array(DocumentItemView).max(100),
+            }),
+          )
+          .max(maxCasePeople),
+        /** What the unit hands in once, such as proof of means. */
+        unit: z.array(DocumentItemView).max(100),
+      }),
+    ])
+    .nullable(),
+});
+export type RouteDocuments = z.infer<typeof RouteDocuments>;
+
+export const RouteDocumentsQuery = z.object({
+  routeId: routeIdSchema,
+  /** A case member, as the principal whose unit the checklist covers. */
+  principalId: z.uuid(),
+});
+
+export const getRouteDocuments = {
+  method: 'get',
+  path: '/case/documents',
+  operationId: 'getRouteDocuments',
+  summary:
+    "A route's document checklist for one member of the case as principal, from what the viewer sees and the version in effect: each person's items and the unit's, with sources and where to get each in a country whose citizenship the person holds; nothing is stored; 120 per hour per session (429 rate_limited); 404 not_found outside a case or for a principal who is not a member",
+  query: RouteDocumentsQuery,
+  response: { description: 'The document checklist', schema: RouteDocuments },
+} as const satisfies RouteDefinition<typeof RouteDocuments>;
+
 /** Why a member thinks a requirement may be wrong (spec 0007, R8). */
 export const ruleReportReasons = [
   'outdated',
@@ -585,6 +685,7 @@ export const caseRoutes = {
   answerCaseQuestions,
   getCasePlayback,
   getCaseEvaluations,
+  getRouteDocuments,
   reportRule,
   draftCaseIntake,
   leaveCase,

@@ -2,12 +2,12 @@ import {
   type CalendarDate,
   type DecisionStates,
   type RouteCatalog,
-  buildCaseSnapshot,
   decisiveQuestions,
   evaluateRoute,
   routeResult,
 } from '@arca/domain';
 import type { RuleTexts } from '@arca/knowledge';
+import { translatedText, viewedSnapshot } from './case-snapshot.js';
 import type { CaseRows } from './view.js';
 
 export interface EvaluationSettings {
@@ -31,13 +31,7 @@ export function caseEvaluations(
   rows: CaseRows,
   { catalog, routeIds, states, today, engineCommit, texts }: EvaluationSettings,
 ) {
-  const { snapshot, personIds } = buildCaseSnapshot(rows, today);
-  const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
-  const uuid = (opaque: string) => {
-    const found = uuids.get(opaque);
-    if (found === undefined) throw new Error('A result names a person not in the case');
-    return found;
-  };
+  const { snapshot, uuid, kept, bornOn } = viewedSnapshot(rows, today);
   const context = {
     rulesAsOf: today,
     factsAsOf: today,
@@ -51,19 +45,15 @@ export function caseEvaluations(
       routeResult(evaluateRoute(snapshot, catalog, routeId, principal, context), principal),
     ),
   );
-  const kept = new Set(
-    rows.people.filter((person) => person.keptByMe).flatMap(({ id }) => personIds.get(id) ?? []),
-  );
   return {
     rulesAsOf: today,
     engineCommit,
     results: results.map((result) => {
       // A translated title keeps the version's own English beside it; the content is unchanged.
+      const translated = translatedText(texts, result.routeId);
       const withTranslation = <Item extends { readonly title: string }>(item: Item) => {
-        const translated = texts?.(result.routeId, item.title);
-        return translated === undefined
-          ? { ...item, original: null }
-          : { ...item, title: translated, original: item.title };
+        const { text, original } = translated(item.title);
+        return { ...item, title: text, original };
       };
       // Only an active version's title and country reach the screen (CLAUDE.md rule 5).
       const identity =
@@ -118,13 +108,7 @@ export function caseEvaluations(
         missingDates: result.missingDates,
       };
     }),
-    questions: decisiveQuestions(
-      results,
-      kept,
-      new Set(
-        snapshot.people.filter(({ birthDate }) => birthDate !== undefined).map(({ id }) => id),
-      ),
-    ).map((question) => ({
+    questions: decisiveQuestions(results, kept, bornOn).map((question) => ({
       ...question,
       personId: uuid(question.personId),
     })),

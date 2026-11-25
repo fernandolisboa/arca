@@ -46,6 +46,8 @@ import {
   removeNotificationChannel,
   forgetPushChannel,
   CaseEvaluations,
+  RouteDocuments,
+  RouteDocumentsQuery,
   DestinationComparison,
   adminRoutes,
   caseRoutes,
@@ -1322,7 +1324,7 @@ export function createApp({
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
   const caseAccount = async (
     c: Context<AppEnv>,
-    counted: 'write' | 'playback' | 'evaluations' | 'comparison' | 'reports' | false,
+    counted: 'write' | 'playback' | 'evaluations' | 'documents' | 'comparison' | 'reports' | false,
   ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
@@ -1469,6 +1471,19 @@ export function createApp({
     return evaluations === null
       ? fail(c, 'not_found', 404)
       : c.json(CaseEvaluations.parse(evaluations), 200);
+  });
+  v1.openapi(openApiRoutes.getRouteDocuments, async (c) => {
+    const account = await caseAccount(c, 'documents');
+    if ('refused' in account) return account.refused;
+    const { routeId, principalId } = RouteDocumentsQuery.parse(c.req.query());
+    const documents = await account.cases.routeDocuments(
+      account.current.accountId,
+      routeId,
+      principalId,
+    );
+    return documents === null
+      ? fail(c, 'not_found', 404)
+      : c.json(RouteDocuments.parse(documents), 200);
   });
   v1.openapi(openApiRoutes.getComparison, async (c) => {
     const account = await caseAccount(c, 'comparison');

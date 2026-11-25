@@ -153,6 +153,15 @@ const source = {
   kind: 'official',
   verifiedAt: '2026-11-01',
 };
+const routeDocuments = {
+  routeId: 'us-eb5',
+  principalId: me,
+  status: 'active',
+  route: { title: 'EB-5', original: null, country: 'US' },
+  version: { number: 1 },
+  newerProposedVersion: null,
+  documents: { kind: 'not_covered' },
+};
 const evaluations = {
   rulesAsOf: '2026-11-06',
   engineCommit: 'abc1234',
@@ -244,6 +253,10 @@ function setup({
     evaluations: (accountId: string) => {
       calls.push(['evaluations', accountId]);
       return Promise.resolve(inCase ? evaluations : null);
+    },
+    routeDocuments: (accountId: string, routeId: string, principalId: string) => {
+      calls.push(['routeDocuments', accountId, routeId, principalId]);
+      return Promise.resolve(inCase ? routeDocuments : null);
     },
     reportRule: (accountId: string, request: unknown) => {
       calls.push(['reportRule', accountId, request]);
@@ -367,6 +380,34 @@ describe('the case routes (spec 0007, R3)', () => {
     const outside = await setup({ inCase: false }).call('GET', '/case/evaluations');
     expect(outside.status).toBe(404);
     expect(await errorOf(outside)).toBe('not_found');
+  });
+
+  it("reads a route's document checklist under its per-session limit, and 404 outside a case", async () => {
+    const { call, calls, limited } = setup();
+    const query = `/case/documents?routeId=us-eb5&principalId=${me}`;
+    const response = await call('GET', query);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(routeDocuments);
+    expect(calls).toEqual([['routeDocuments', owner.accountId, 'us-eb5', me]]);
+    expect(limited).toEqual(['case_documents_session']);
+    const outside = await setup({ inCase: false }).call('GET', query);
+    expect(outside.status).toBe(404);
+    expect(await errorOf(outside)).toBe('not_found');
+    const bad = await setup().call('GET', '/case/documents?routeId=us-eb5&principalId=nope');
+    expect(bad.status).toBe(400);
+  });
+
+  it('refuses the document checklist to an unconfirmed account and over the limit', async () => {
+    for (const [options, status, code] of [
+      [{ confirmedAccount: false }, 403, 'account_unconfirmed'],
+      [{ allowed: false }, 429, 'rate_limited'],
+    ] as const) {
+      const { call, calls } = setup(options);
+      const response = await call('GET', `/case/documents?routeId=us-eb5&principalId=${me}`);
+      expect(response.status).toBe(status);
+      expect(await errorOf(response)).toBe(code);
+      expect(calls).toEqual([]);
+    }
   });
 
   it.each(writes)(

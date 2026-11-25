@@ -26,6 +26,7 @@ import {
   type ComparisonCatalog,
   type ComparisonPreferences,
   type DecisionStates,
+  type DocumentGuideEntry,
   type HeldAsset,
   type KnownCodes,
   type RatingSuggestions,
@@ -63,6 +64,7 @@ import {
 } from './comparison.js';
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
+import { type RouteDocumentsView, caseRouteDocuments } from './route-documents.js';
 import { casePlayback } from './playback.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
@@ -152,6 +154,15 @@ export interface CaseFiles {
   /** Every route for each member as principal, from what the viewer sees; null outside a case. */
   readonly evaluations: (accountId: string) => Promise<CaseEvaluationsView | null>;
   /**
+   * One route's document checklist for a member as principal, from what the viewer sees; null
+   * outside a case or for a principal who is not a member.
+   */
+  readonly routeDocuments: (
+    accountId: string,
+    routeId: string,
+    principalId: string,
+  ) => Promise<RouteDocumentsView | null>;
+  /**
    * Reports a requirement of the viewer's own evaluation as possibly wrong (R8); `not_found` when
    * the viewer is in no case or the evaluation holds no such requirement.
    */
@@ -201,6 +212,8 @@ export interface CaseFilesSettings {
     readonly suggestions?: RatingSuggestions;
     /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
     readonly texts?: RuleTexts;
+    /** Where to get each document kind, per issuing country (ADR-0039); none when absent. */
+    readonly guides?: readonly DocumentGuideEntry[];
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */
     readonly today: () => CalendarDate;
@@ -768,6 +781,23 @@ export function createCaseFiles({
 
     evaluations: (accountId) =>
       withEvaluations(accountId, (_tx, _rows, evaluated) => Promise.resolve(evaluated)),
+
+    routeDocuments: async (accountId, routeId, principalId) => {
+      const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined
+          ? null
+          : caseRouteDocuments(rows, routeId, principalId, {
+              catalog,
+              states,
+              today: evaluation.today(),
+              engineCommit: evaluation.engineCommit,
+              guides: evaluation.guides ?? [],
+              ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
+            });
+      });
+    },
 
     reportRule: async (accountId, { routeId, versionNumber, requirementId, reason, note }) => {
       const reported = await withEvaluations(accountId, async (tx, rows, evaluated) => {

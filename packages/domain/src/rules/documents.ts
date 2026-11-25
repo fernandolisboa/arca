@@ -1,11 +1,15 @@
 import type { Duration } from '../calendar/duration.js';
 import type { CaseSnapshot } from '../case/snapshot.js';
 import type { Truth } from '../logic/truth.js';
-import type { CatalogEntry } from './catalog.js';
-import { type VersionContext, prepare } from './context.js';
+import { indexSnapshot } from '../case/graph.js';
+import type { CalendarDate } from '../calendar/calendar-date.js';
+import type { CatalogEntry, RouteCatalog, VersionIdentity } from './catalog.js';
+import { type EvaluationContext, type VersionContext, contextDates, prepare } from './context.js';
+import { selectRouteVersion } from './engine.js';
 import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
+import { type MissingFact, decisiveFacts, distinct } from './missing.js';
 import { type AppliesTo, type DocumentItem, type Source, citations } from './route-version.js';
-import { type Dependent, throughEdges, unitFrame } from './unit.js';
+import { type Dependent, throughEdges, unitFrame, unitGaps } from './unit.js';
 
 /** One document item for one person, or for the unit: it applies, may apply, or does not. */
 export interface DocumentResult {
@@ -22,6 +26,8 @@ export interface DocumentResult {
   readonly sources: readonly Source[];
   /** What its condition read: none without one, one per edge for a dependent. */
   readonly traces: readonly Trace[];
+  /** What the family could answer to settle an item that may apply; empty once it is decided. */
+  readonly missingFacts: readonly MissingFact[];
 }
 
 /** The items one person in the unit hands in. */
@@ -62,6 +68,7 @@ export function documentChecklist(
   const { documents, sources } = prepared.version;
   if (documents === undefined) return { kind: 'not_covered' };
   const { unit, frame } = unitFrame(prepared);
+  const gaps = unitGaps(unit);
   const cite = citations(sources);
   const result = (
     item: DocumentItem,
@@ -79,6 +86,8 @@ export function documentChecklist(
     ...(item.note === undefined ? {} : { note: item.note }),
     sources: cite(item.sources),
     traces,
+    missingFacts:
+      applies === 'unknown' ? distinct(traces.flatMap((trace) => decisiveFacts(trace, gaps))) : [],
   });
   const evaluateAt = (item: DocumentItem, at: Frame): DocumentResult => {
     if (item.condition === undefined) return result(item, true, []);
@@ -112,5 +121,40 @@ export function documentChecklist(
       ...unit.possibleDependents.map((dependent) => dependentDocuments(dependent, true)),
     ],
     unit: itemsFor('unit').map((item) => evaluateAt(item, frame)),
+  };
+}
+
+/** A route's document checklist for one principal, from the version in effect (ADR-0014). */
+export type RouteDocuments =
+  | { readonly kind: 'no_version' }
+  /** The version in effect waits for activation, so none of its content is read (rule 5). */
+  | { readonly kind: 'pending'; readonly pending: VersionIdentity }
+  | {
+      readonly kind: 'active';
+      readonly entry: CatalogEntry;
+      readonly newerProposedVersion?: {
+        readonly identity: VersionIdentity;
+        readonly from: CalendarDate;
+      };
+      readonly checklist: DocumentChecklist;
+    };
+
+/** Selects a route's version as `evaluateRoute` does and computes its document checklist. */
+export function routeDocuments(
+  snapshot: CaseSnapshot,
+  catalog: RouteCatalog,
+  routeId: string,
+  principalId: string,
+  context: EvaluationContext,
+): RouteDocuments {
+  contextDates(indexSnapshot(snapshot), context);
+  const selected = selectRouteVersion(catalog, routeId, context);
+  if (selected.kind !== 'active') return selected;
+  const { entry, newerProposedVersion } = selected;
+  return {
+    kind: 'active',
+    entry,
+    ...(newerProposedVersion === undefined ? {} : { newerProposedVersion }),
+    checklist: documentChecklist(snapshot, entry, principalId, context),
   };
 }

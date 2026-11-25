@@ -74,6 +74,17 @@ export const caseEvaluationsQuery = queryOptions({
   refetchOnWindowFocus: false,
 });
 
+/** One route's document checklist for a member as principal (spec #519). */
+export const routeDocumentsQuery = (routeId: string, principalId: string) =>
+  queryOptions({
+    queryKey: ['case', 'documents', routeId, principalId],
+    queryFn: () => api.call(routes.getRouteDocuments, { routeId, principalId }),
+    networkMode: 'always',
+    retry: false,
+    // Each read counts against a per-session limit, so a tab coming back into view does not read.
+    refetchOnWindowFocus: false,
+  });
+
 /** The caller's destination comparison and their own choices for it (ADR-0026). */
 export const comparisonQuery = queryOptions({
   queryKey: ['comparison'],

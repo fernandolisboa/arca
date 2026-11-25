@@ -15,7 +15,7 @@ import {
 import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
 import { type Expression, childrenOf } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
-import { type MissingFact, decisiveFacts, distinct, traceGaps } from './missing.js';
+import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
 
 /**
  * A dependent: the rules that cover them, and each last edge they were reached by with whether
@@ -234,4 +234,19 @@ export function unitEnvironment(unit: Unit): NonNullable<FactEnvironment['unit']
 function readsFirstEdge(expression: Expression): boolean {
   if (expression.op === 'fact') return resolveFactReference(expression.key)?.target === 'firstEdge';
   return childrenOf(expression).some(readsFirstEdge);
+}
+
+/** What makes each possible dependent possible, and the unit's own open markers. */
+export function unitGaps(unit: Unit): UnitGaps {
+  const byPerson = new Map(
+    unit.possibleDependents.map((member) => [member.personId, member.missingFacts]),
+  );
+  const markers = unit.missingMarkers.map((missing): MissingFact => ({
+    kind: 'marker',
+    ...missing,
+  }));
+  return {
+    member: (personId) => byPerson.get(personId) ?? [],
+    all: () => [...unit.possibleDependents.flatMap((member) => member.missingFacts), ...markers],
+  };
 }
