@@ -65,6 +65,6 @@ describe('readDocumentGuides (ADR-0039)', () => {
 
   it('is null without a file, as the repository has none until a guide is researched', async () => {
     expect(await readDocumentGuides(await dirWith({}), today)).toBeNull();
-    expect(await readDocumentGuides(join(tmpdir(), 'no-such-guides'), today)).toBeNull();
+    expect(await readDocumentGuides(join(await dirWith({}), 'missing'), today)).toBeNull();
   });
 });
