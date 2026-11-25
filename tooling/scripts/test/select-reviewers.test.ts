@@ -258,6 +258,8 @@ const sensitive: readonly (readonly [string, Reviewer])[] = [
   ['packages/i18n/src/catalogs/pt-BR-regions.ts', 'auth-crypto'],
   ['apps/api/test/region-ratings.test.ts', 'ai-safety'],
   ['packages/domain/src/comparison/regions.ts', 'ai-safety'],
+  ['packages/domain/src/comparison/suggested.ts', 'ai-safety'],
+  ['packages/knowledge/test/bands.ts', 'data-access'],
   ['packages/domain/src/reviewed-data/official-sources.ts', 'ai-safety'],
   ['docs/runbooks/session-rule-review.md', 'supply-chain'],
   ['apps/web/src/case.ts', 'auth-crypto'],

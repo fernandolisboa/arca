@@ -106,11 +106,11 @@ const rules: readonly Rule[] = [
   // recognition tracks (ADR-0041) and the comparison's regions (ADR-0042).
   {
     match: anyOf(
-      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|recognition-tracks\/|regions\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|region-ratings|departure-checklists|document-guides|recognition-tracks|rule-texts)\.?)/,
+      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|document-guides\/|recognition-tracks\/|regions\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|region-ratings|bands|departure-checklists|document-guides|recognition-tracks|rule-texts)\.?)/,
       /^packages\/i18n\/src\/catalogs\/pt-BR-(departure|document-guides|recognition|regions)\.ts$/,
       /^apps\/api\/test\/((postgres\/)?session-review|departure-checklists|document-guides|recognition-tracks|region-ratings)/,
       /^packages\/domain\/(src|test)\/(reviewed-data|departure|document-guides|recognition)\//,
-      /^packages\/domain\/(src|test)\/comparison\/regions\./,
+      /^packages\/domain\/(src|test)\/comparison\/(regions|suggested)\./,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),
   },

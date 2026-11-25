@@ -140,10 +140,15 @@ export function refineRatingFile<R extends FileRating>(
 }
 
 /** A ratings file's stars by suggestion key and place, each with its source. */
+export interface RatingLookup {
+  readonly has: (key: string) => boolean;
+  readonly rating: (key: string, place: string) => SuggestedRating | undefined;
+}
+
 export function ratingLookup<R extends FileRating>(
   file: RatingFile<R>,
   placeOf: (rating: R) => string,
-) {
+): RatingLookup {
   const sources = new Map(file.sources.map((source) => [source.id, source]));
   const byKey = new Map(
     file.criteria.map(({ id, ratings }) => [
@@ -152,8 +157,8 @@ export function ratingLookup<R extends FileRating>(
     ]),
   );
   return {
-    has: (key: string) => byKey.has(key),
-    rating: (key: string, place: string): SuggestedRating | undefined => {
+    has: (key) => byKey.has(key),
+    rating: (key, place) => {
       const found = byKey.get(key)?.get(place);
       const source = found === undefined ? undefined : sources.get(found.source);
       if (found === undefined || source === undefined) return undefined;

@@ -321,7 +321,8 @@ export function compareDestinations({
    * country data only, so a region always inherits them.
    */
   const regionScoreOf = (criterion: ComparedCriterion, region: string, country: Scored): Scored => {
-    if (starred(criterion)) {
+    const byStars = starred(criterion);
+    if (byStars) {
       const key = suggestionKeys.get(criterion.id);
       const rating = rated(criterion.id, region);
       const found = key === undefined ? undefined : regions.rating(key, region);
@@ -329,7 +330,7 @@ export function compareDestinations({
         return starScored(criterion.id, rating, found);
       }
     }
-    const countryStars = starred(criterion)
+    const countryStars = byStars
       ? (country.score.rating ?? country.score.suggested?.stars)
       : undefined;
     return {
