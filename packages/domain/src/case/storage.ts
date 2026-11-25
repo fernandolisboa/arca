@@ -10,6 +10,8 @@ import {
   periodInOrder,
   periodOrderMessage,
   personFieldsSchema,
+  qualificationLevelMessage,
+  qualificationsWithinLevel,
   workPeriodFieldsSchema,
 } from './snapshot.js';
 
@@ -53,7 +55,8 @@ export const storedProfileFactsSchema = personFieldsSchema
   })
   .refine((facts) => distinct(facts.recordedInFull ?? []), {
     message: 'A completeness marker is listed once',
-  });
+  })
+  .refine(qualificationsWithinLevel, qualificationLevelMessage);
 
 export const storedProfileSchema = z.strictObject({
   facts: storedProfileFactsSchema,

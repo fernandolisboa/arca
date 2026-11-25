@@ -265,6 +265,68 @@ describe('collections over work periods', () => {
   });
 });
 
+describe('collections over qualifications and registrations', () => {
+  const masterIn = (field: string) => ({
+    op: 'some',
+    over: 'person.qualifications',
+    where: {
+      op: 'all',
+      operands: [
+        { op: 'gte', left: fact('qualification.level'), right: { op: 'int', value: 7 } },
+        { op: 'eq', left: fact('qualification.field'), right: token(field) },
+      ],
+    },
+  });
+  const licensedIn = (country: string) => ({
+    op: 'some',
+    over: 'person.registrations',
+    where: { op: 'eq', left: fact('registration.country'), right: token(country) },
+  });
+  const person = (facts: object) => frame([{ id: 'p1', ...facts }]);
+  const doctor = person({
+    educationLevel: 7,
+    qualifications: [{ level: 7, field: '0912', country: 'BR', completed: '2012-12' }],
+    registrations: [{ country: 'BR', occupation: '2211', since: '2013-02' }],
+  });
+
+  it.each<[string, object, Frame, unknown]>([
+    ['a master’s in the field meets it', masterIn('0912'), doctor, true],
+    ['a master’s in another field does not', masterIn('0613'), doctor, false],
+    [
+      'a field not known may meet it',
+      masterIn('0912'),
+      person({ qualifications: [{ level: 7 }] }),
+      'unknown',
+    ],
+    [
+      'a level not known stays under the education level',
+      masterIn('0912'),
+      person({ educationLevel: 6, qualifications: [{ field: '0912' }] }),
+      false,
+    ],
+    ['no qualifications meet nothing', masterIn('0912'), person({ qualifications: [] }), false],
+    ['unanswered qualifications may meet it', masterIn('0912'), person({}), 'unknown'],
+    ['a licence in the country meets it', licensedIn('BR'), doctor, true],
+    ['a licence elsewhere does not', licensedIn('PT'), doctor, false],
+    [
+      'a licence with no country may meet it',
+      licensedIn('PT'),
+      person({ registrations: [{}] }),
+      'unknown',
+    ],
+    ['unanswered registrations may meet it', licensedIn('PT'), person({}), 'unknown'],
+  ])('%s', (_label, expression, at, expected) => {
+    expect(truthOf(run(expression, at))).toBe(expected);
+  });
+
+  it('asks for the unanswered list, or the unknown fact of a record', () => {
+    expect(gaps(run(masterIn('0912'), person({})))).toEqual(['records qualifications@p1']);
+    expect(gaps(run(licensedIn('PT'), person({ registrations: [{}] })))).toEqual([
+      'registration.country@p1',
+    ]);
+  });
+});
+
 describe('job offers as a record collection (ADR-0036)', () => {
   const personWithOffers = (jobOffers?: readonly object[]) =>
     frame([jobOffers === undefined ? { id: 'p1' } : { id: 'p1', jobOffers }]);

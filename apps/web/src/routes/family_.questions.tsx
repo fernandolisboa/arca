@@ -173,6 +173,7 @@ function Answering({
     countries: questions.countries,
     formerCountries: questions.formerCountries,
     occupations: questions.occupations,
+    studyFields: questions.studyFields,
   };
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-8">

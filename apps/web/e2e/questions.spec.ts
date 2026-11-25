@@ -44,13 +44,23 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await studies
     .getByLabel('Até onde Ana estudou?')
     .selectOption({ label: 'Graduação: bacharelado, licenciatura ou tecnólogo' });
+  await radio(studies, 'Que formações Ana concluiu?', 'Sim');
+  // A list's items follow its question, so each is found by a field only it has.
+  const degree = studies.getByRole('listitem').filter({ hasText: 'Área de formação' });
+  await degree
+    .getByLabel('Nível')
+    .selectOption({ label: 'Graduação: bacharelado, licenciatura ou tecnólogo' });
+  await pickCountry(degree, 'Área de formação', 'Medicina');
+  await pickCountry(degree, 'País que emitiu o diploma', 'Brasil');
   await radio(studies, 'Ana está estudando agora?', 'Não');
   await radio(studies, 'Que idiomas Ana fala?', 'Sim');
-  await studies.getByLabel('Idioma').selectOption({ label: 'português' });
-  await studies.getByLabel('Nível').selectOption({ label: 'Língua materna' });
+  const spoken = studies.getByRole('listitem').filter({ has: page.getByLabel('Idioma') });
+  await spoken.getByLabel('Idioma').selectOption({ label: 'português' });
+  await spoken.getByLabel('Nível').selectOption({ label: 'Língua materna' });
   await studies.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const work = step(page, 'Trabalho');
+  await radio(work, 'Onde Ana tem registro para exercer a profissão?', 'Nenhum');
   await radio(work, 'Quais trabalhos Ana tem ou já teve?', 'Sim');
   await work.getByLabel('Nome para reconhecer este trabalho (opcional)').fill('Cliente dos EUA');
   await pickCountry(work, 'Ocupação', 'Desenvolvedores de software');
@@ -134,6 +144,12 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
       'Trabalho de Ana (Cliente dos EUA): Desenvolvedores de software, prestando serviço, em tempo integral, empresa ou cliente: Estados Unidos, local de trabalho: Brasil, começou em março de 2022, trabalho atual.',
     ),
   ).toBeVisible();
+  await expect(
+    ana.getByText(
+      'Formação de Ana em Medicina (Graduação: bacharelado, licenciatura ou tecnólogo), país: Brasil.',
+    ),
+  ).toBeVisible();
+  await expect(ana.getByText('Registros profissionais de Ana: nenhum.')).toBeVisible();
   await expect(
     ana.getByText('Residência de Ana: Brasil, com cidadania, desde 1985 até hoje.'),
   ).toBeVisible();

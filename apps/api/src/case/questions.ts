@@ -36,7 +36,10 @@ export function questionState(rows: CaseRows, personId: string): QuestionState {
 export function caseQuestions(
   rows: CaseRows,
   countries: PinnedCountries,
-  occupations: readonly string[],
+  classifications: {
+    readonly occupations: readonly string[];
+    readonly studyFields: readonly string[];
+  },
 ): CaseQuestions {
   return {
     people: rows.people
@@ -64,6 +67,7 @@ export function caseQuestions(
       }),
     countries: [...countries.countries],
     formerCountries: [...countries.formerCountries],
-    occupations: [...occupations],
+    occupations: [...classifications.occupations],
+    studyFields: [...classifications.studyFields],
   };
 }

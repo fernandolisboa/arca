@@ -33,6 +33,10 @@ export const collectionNames = [
   'principal.jobOffers',
   'person.residencePeriods',
   'principal.residencePeriods',
+  'person.qualifications',
+  'principal.qualifications',
+  'person.registrations',
+  'principal.registrations',
 ] as const;
 
 export type CollectionName = (typeof collectionNames)[number];
@@ -50,6 +54,8 @@ const periods = <const List extends keyof Person, const Record extends PersonRec
 
 const workPeriods = periods('workPeriods', 'workPeriod');
 const residencePeriods = periods('residencePeriods', 'residencePeriod');
+const qualifications = { list: 'qualifications', record: 'qualification' } as const;
+const registrations = { list: 'registrations', record: 'registration' } as const;
 
 const jobOffers = { list: 'jobOffers', record: 'jobOffer' } as const;
 
@@ -60,6 +66,10 @@ export const recordCollections = {
   'principal.jobOffers': { owner: 'principal', ...jobOffers },
   'person.residencePeriods': { owner: 'current', ...residencePeriods },
   'principal.residencePeriods': { owner: 'principal', ...residencePeriods },
+  'person.qualifications': { owner: 'current', ...qualifications },
+  'principal.qualifications': { owner: 'principal', ...qualifications },
+  'person.registrations': { owner: 'current', ...registrations },
+  'principal.registrations': { owner: 'principal', ...registrations },
 } as const satisfies Partial<
   Record<
     CollectionName,

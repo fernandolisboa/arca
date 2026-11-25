@@ -15,12 +15,14 @@ import {
   countryCodeSchema,
   coupleEdgeSchema,
   custodies,
+  educationLevelSchema,
   immigrationEventKinds,
   incomeKinds,
   isicSections,
   languageLevels,
   occupationCodeSchema,
   parentKinds,
+  studyFieldCodeSchema,
   residenceBases,
   workCapacities,
   workRelations,
@@ -59,10 +61,18 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
   }),
   sentence('noCitizenship', { person }),
   sentence('residence', { person, country: countryCodeSchema }),
-  sentence('education', { person, level: z.number().int().min(0).max(8) }),
+  sentence('education', { person, level: educationLevelSchema }),
   sentence('studying', { person, studying: z.boolean() }),
   sentence('language', { person, language: z.string(), level: z.enum(languageLevels) }),
   sentence('noLanguage', { person }),
+  sentence('qualification', {
+    person,
+    level: educationLevelSchema.optional(),
+    field: studyFieldCodeSchema.optional(),
+    country: countryCodeSchema.optional(),
+    completed: dateValueSchema.optional(),
+  }),
+  sentence('noQualification', { person }),
   sentence('jobOffer', {
     person,
     country: countryCodeSchema,
@@ -87,6 +97,13 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     end: dateOrNone.optional(),
   }),
   sentence('noWorkPeriod', { person }),
+  sentence('registration', {
+    person,
+    country: countryCodeSchema.optional(),
+    occupation: occupationCodeSchema.optional(),
+    since: dateValueSchema.optional(),
+  }),
+  sentence('noRegistration', { person }),
   sentence('residencePeriod', {
     person,
     country: countryCodeSchema,
@@ -204,6 +221,17 @@ function describePerson(
   for (const { id: question, scope, key } of factQuestions) {
     if (!visible[scope]) continue;
     const ask = { question, about, person: id };
+    /** A list read back: unanswered when absent, one sentence for none, else one per item. */
+    const records = <Item>(
+      items: readonly Item[] | undefined,
+      none:
+        'noWorkPeriod' | 'noResidencePeriod' | 'noQualification' | 'noRegistration' | 'noJobOffer',
+      each: (item: Item) => Sentence,
+    ) => {
+      if (items === undefined) unanswered(question);
+      else if (items.length === 0) said.push({ kind: none, ...ask });
+      else said.push(...items.map(each));
+    };
     switch (key) {
       case 'birthDate':
         if (subject.birthDate === undefined) unanswered(question);
@@ -244,35 +272,40 @@ function describePerson(
             said.push({ kind: 'language', ...ask, ...spoken });
         break;
       case 'workPeriods':
-        if (subject.workPeriods === undefined) unanswered(question);
-        else if (subject.workPeriods.length === 0) said.push({ kind: 'noWorkPeriod', ...ask });
-        else
-          for (const period of subject.workPeriods) {
-            said.push({ kind: 'workPeriod', ...ask, ...period });
-          }
+        records(subject.workPeriods, 'noWorkPeriod', (period) => ({
+          kind: 'workPeriod',
+          ...ask,
+          ...period,
+        }));
+        break;
+      case 'qualifications':
+        records(subject.qualifications, 'noQualification', (held) => ({
+          kind: 'qualification',
+          ...ask,
+          ...held,
+        }));
+        break;
+      case 'registrations':
+        records(subject.registrations, 'noRegistration', (held) => ({
+          kind: 'registration',
+          ...ask,
+          ...held,
+        }));
         break;
       case 'jobOffers':
-        if (subject.jobOffers === undefined) unanswered(question);
-        else if (subject.jobOffers.length === 0) said.push({ kind: 'noJobOffer', ...ask });
-        else
-          for (const { annualSalary, ...offer } of subject.jobOffers) {
-            said.push({
-              kind: 'jobOffer',
-              ...ask,
-              ...offer,
-              ...(annualSalary === undefined ? {} : { annualSalary: decimalAmount(annualSalary) }),
-            });
-          }
+        records(subject.jobOffers, 'noJobOffer', ({ annualSalary, ...offer }) => ({
+          kind: 'jobOffer',
+          ...ask,
+          ...offer,
+          ...(annualSalary === undefined ? {} : { annualSalary: decimalAmount(annualSalary) }),
+        }));
         break;
       case 'residencePeriods':
-        if (subject.residencePeriods === undefined) unanswered(question);
-        else if (subject.residencePeriods.length === 0) {
-          said.push({ kind: 'noResidencePeriod', ...ask });
-        } else {
-          for (const period of subject.residencePeriods) {
-            said.push({ kind: 'residencePeriod', ...ask, ...period });
-          }
-        }
+        records(subject.residencePeriods, 'noResidencePeriod', (period) => ({
+          kind: 'residencePeriod',
+          ...ask,
+          ...period,
+        }));
         break;
       case 'immigrationHistory':
         if (subject.immigrationHistory === undefined) unanswered(question);

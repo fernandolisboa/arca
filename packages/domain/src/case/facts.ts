@@ -30,10 +30,13 @@ import {
   type CountryCode,
   type JobOffer,
   type Person,
+  type Qualification,
+  type Registration,
   type Relationship,
   type ResidencePeriod,
   type WorkPeriod,
   custodies,
+  maxEducationLevel,
   isicSections,
   parentKinds,
   residenceBases,
@@ -76,6 +79,8 @@ interface RecordValues {
   readonly workPeriod: WorkPeriod;
   readonly jobOffer: JobOffer;
   readonly residencePeriod: ResidencePeriod;
+  readonly qualification: Qualification;
+  readonly registration: Registration;
 }
 
 export type PersonRecord = {
@@ -91,6 +96,8 @@ export const recordKinds = [
   'workPeriod',
   'jobOffer',
   'residencePeriod',
+  'qualification',
+  'registration',
 ] as const satisfies readonly RecordKind[];
 
 export function isRecordKind(name: string): name is RecordKind {
@@ -209,7 +216,10 @@ export const factCatalog = {
     nonNegative: true,
     derive: ({ environment, personId }) => {
       const level = person(environment, personId).educationLevel;
-      return { value: level === undefined ? integerRange(0, 8) : integerRange(level, level) };
+      return {
+        value:
+          level === undefined ? integerRange(0, maxEducationLevel) : integerRange(level, level),
+      };
     },
   },
   'person.monthlyActiveIncome': {
@@ -500,6 +510,49 @@ export const factCatalog = {
     derive: (binding) => ({
       value: booleanValue(recordOf(binding, 'jobOffer').sponsored ?? 'unknown'),
     }),
+  },
+  /** The qualification's ISCED 2011 level; unknown, any level up to the person's education level. */
+  'qualification.level': {
+    type: { kind: 'integer' },
+    scope: 'qualification',
+    nonNegative: true,
+    derive: (binding) => {
+      const { level } = recordOf(binding, 'qualification');
+      if (level !== undefined) return { value: integerRange(level, level) };
+      const highest = person(binding.environment, binding.personId).educationLevel;
+      return { value: integerRange(0, highest ?? maxEducationLevel) };
+    },
+  },
+  'qualification.field': {
+    type: { kind: 'code', classification: 'studyFields' },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').field) }),
+  },
+  /** A qualification may come from a state that no longer exists, such as the USSR. */
+  'qualification.country': {
+    type: { kind: 'country', formerStates: true },
+    scope: 'qualification',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'qualification').country) }),
+  },
+  'qualification.completed': {
+    type: { kind: 'date' },
+    scope: 'qualification',
+    derive: (binding) => dateFact(recordOf(binding, 'qualification').completed),
+  },
+  'registration.country': {
+    type: { kind: 'country' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').country) }),
+  },
+  'registration.occupation': {
+    type: { kind: 'code', classification: 'occupations' },
+    scope: 'registration',
+    derive: (binding) => ({ value: tokenValue(recordOf(binding, 'registration').occupation) }),
+  },
+  'registration.since': {
+    type: { kind: 'date' },
+    scope: 'registration',
+    derive: (binding) => dateFact(recordOf(binding, 'registration').since),
   },
 } as const satisfies Record<string, FactDefinition>;
 
