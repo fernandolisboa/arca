@@ -9,7 +9,7 @@ Research notes for Spain's non-lucrative residence visa, the stored route `es-no
 The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#526](https://github.com/fernandolisboa/arca/issues/526)).
 
 - **Version audited:** 4
-- **Outcome:** correction, version 5, from version 4's date, 2025-06-16, which keeps version 4 and adds the official document list from Real Decreto 1155/2024, articles 38, 39, 61 and 62. Brazil's document guide needs no new version: none of the new kinds has a Brazilian issuing office. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-es-documents/README.md).
+- **Outcome:** correction, version 5, from version 4's date, 2025-06-16, which keeps every item of version 4 and adds the official document list from Real Decreto 1155/2024, articles 38, 39, 61 and 62. Brazil's document guide needs no new version: none of the new kinds has a Brazilian issuing office. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-es-documents/README.md).
 - **Amendments looked for:** the consolidated text still reads "Última actualización publicada el 22/09/2026", and the BOE's daily summaries of 2026-11-21 to 2026-11-25 hold nothing on foreigners' visas or the IPREM.
 - **Watch next:** the 2027 IPREM or fee version is now version 6 and must keep version 5's documents.
 

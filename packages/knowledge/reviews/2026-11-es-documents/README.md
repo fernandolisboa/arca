@@ -1,6 +1,6 @@
 # Session review 2026-11-es-documents
 
-The documents of Spain's one stored route, `es-non-lucrative` ([#526](https://github.com/fernandolisboa/arca/issues/526), spec [#519](https://github.com/fernandolisboa/arca/issues/519)). Version 5 corrects version 4 from its date, 2025-06-16: it keeps every item of version 4 and adds the route's official document list, `documents` ([ADR-0032](../../../../docs/adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../../../docs/runbooks/session-rule-review.md#documents)). Every source the documents cite was read on 2026-11-25, São Paulo date.
+The documents of Spain's one stored route, `es-non-lucrative` ([#526](https://github.com/fernandolisboa/arca/issues/526), spec [#519](https://github.com/fernandolisboa/arca/issues/519)). Version 5 corrects version 4 from its date, 2025-06-16: it keeps every item of version 4 and adds the route's official document list, `documents` ([ADR-0032](../../../../docs/adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../../../docs/runbooks/session-rule-review.md#documents)). Every source the documents cite was read on 2026-11-25, São Paulo date, and its `verifiedAt` says so.
 
 ## Where the list comes from
 
@@ -41,3 +41,4 @@ The quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-es-documents`, in `a
 7. **The 2027 IPREM or fee version** is now version 6, from its date, and must keep version 5's documents.
 8. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
 9. **One correction no adversarial round saw.** The fee items' quotes changed after round 3, as round 3 asked; only the session, the proposal check and the quote check read the result.
+10. **Shares held by a family member.** Article 62.3 asks the certificate of "la persona interesada"; the item asks it of the principal only, since version 4 counts only the principal's own means.
