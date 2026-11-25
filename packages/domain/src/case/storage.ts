@@ -111,7 +111,7 @@ export const storedRelationshipSchema = z
     message: 'A relationship links two different people',
   });
 
-export const shareScopes = ['profile', 'finances'] as const;
+export const shareScopes = ['profile', 'finances', 'checklist'] as const;
 export const shareScopeSchema = z.enum(shareScopes);
 
 export type StoredProfile = z.infer<typeof storedProfileSchema>;

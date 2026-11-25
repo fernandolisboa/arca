@@ -440,6 +440,14 @@ export const registry: Registry = {
       label: 'dataExport.tables.caseShares',
     },
     {
+      table: 'cases.checklist_mark',
+      strategy: 'delete',
+      owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['route_id', 'document_id', 'state', 'created_at', 'updated_at'],
+      label: 'dataExport.tables.checklistMarks',
+    },
+    {
       table: 'cases.rule_report',
       strategy: 'delete',
       owner: ownedByAccount('reporter_account_id'),

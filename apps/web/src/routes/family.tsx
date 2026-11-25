@@ -971,7 +971,7 @@ function useRelationLine(view: CaseView, names: ReadonlyMap<string, string>) {
 
 /** Who sees the person's data, or what the viewer sees of someone another member keeps. */
 function useSharingLine(view: CaseView) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const memberNames = (accounts: readonly string[]) =>
     accounts
       .map((account) => view.people.find((other) => other.accountId === account)?.displayName)
@@ -980,11 +980,15 @@ function useSharingLine(view: CaseView) {
   return (person: CasePerson) =>
     person.shares === null
       ? t('family.sharedWithMe', {
-          what: person.sharedWithMe.length === 2 ? 'both' : (person.sharedWithMe[0] ?? 'none'),
+          count: person.sharedWithMe.length,
+          what: new Intl.ListFormat(i18n.language, { type: 'conjunction' }).format(
+            person.sharedWithMe.map((scope) => t('family.scope', { scope })),
+          ),
         })
       : t('family.whoSees', {
           profile: memberNames(person.shares.profile) || t('family.nobody'),
           finances: memberNames(person.shares.finances) || t('family.nobody'),
+          checklist: memberNames(person.shares.checklist) || t('family.nobody'),
         });
 }
 
@@ -1202,7 +1206,7 @@ function KeptActions({
   );
 }
 
-/** The members who see this person's profile and finances; none checked until the keeper picks. */
+/** The members who see each part of this person's data; none checked until the keeper picks. */
 function Sharing({
   person,
   others,
@@ -1217,6 +1221,7 @@ function Sharing({
   const { t } = useTranslation();
   const [profile, setProfile] = useState(() => new Set(person.shares?.profile));
   const [finances, setFinances] = useState(() => new Set(person.shares?.finances));
+  const [checklist, setChecklist] = useState(() => new Set(person.shares?.checklist));
   const { pending, failure, run } = useCaseWrite();
   return (
     <form
@@ -1229,6 +1234,7 @@ function Sharing({
               personId: person.id,
               profile: [...profile],
               finances: [...finances],
+              checklist: [...checklist],
             }),
           onDone,
         );
@@ -1251,6 +1257,12 @@ function Sharing({
         people={others}
         checked={finances}
         onChange={setFinances}
+      />
+      <Checks
+        legend={t('family.sharing.checklist')}
+        people={others}
+        checked={checklist}
+        onChange={setChecklist}
       />
       <Button type="submit" disabled={pending} aria-busy={pending}>
         {t('family.sharing.save')}

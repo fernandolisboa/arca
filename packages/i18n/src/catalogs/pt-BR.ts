@@ -617,8 +617,11 @@ export const ptBR = {
     hasAccount: 'Participante do caso',
     noAccount: 'Sem conta',
     sharedWithMe:
-      '{what, select, both {Você vê os dados e as finanças.} profile {Você vê os dados.} finances {Você vê as finanças.} other {Você não vê os dados nem as finanças.}}',
-    whoSees: 'Quem vê os dados: {profile}. Quem vê as finanças: {finances}.',
+      '{count, plural, =0 {Você não vê os dados, as finanças nem a lista de documentos.} other {Você vê {what}.}}',
+    scope:
+      '{scope, select, profile {os dados} finances {as finanças} other {a lista de documentos}}',
+    whoSees:
+      'Quem vê os dados: {profile}. Quem vê as finanças: {finances}. Quem vê a lista de documentos: {checklist}.',
     nobody: 'só você',
     actions: {
       sharing: 'Compartilhamento',
@@ -643,6 +646,7 @@ export const ptBR = {
       lead: 'Ninguém vê nada até você marcar. Dá para mudar quando quiser.',
       profile: 'Dados pessoais, como estudos, trabalho e idiomas',
       finances: 'Finanças, como renda e bens',
+      checklist: 'Lista de documentos, com o que já foi juntado (só para ver)',
       save: 'Salvar compartilhamento',
     },
     handOver: {
@@ -724,9 +728,9 @@ export const ptBR = {
       title: 'Novidades na família',
       joined: '{name} entrou no caso.',
       granted:
-        '{scope, select, profile {Agora você vê os dados de {name}.} other {Agora você vê as finanças de {name}.}}',
+        '{scope, select, profile {Agora você vê os dados de {name}.} finances {Agora você vê as finanças de {name}.} other {Agora você vê a lista de documentos de {name}.}}',
       revoked:
-        '{scope, select, profile {Você não vê mais os dados de {name}.} other {Você não vê mais as finanças de {name}.}}',
+        '{scope, select, profile {Você não vê mais os dados de {name}.} finances {Você não vê mais as finanças de {name}.} other {Você não vê mais a lista de documentos de {name}.}}',
       decide:
         'Em Compartilhamento, escolha o que a pessoa que entrou pode ver das pessoas de quem você cuida.',
       done: 'Entendi',
@@ -1316,6 +1320,36 @@ export const ptBR = {
     leadTime: 'Prazo: de {min} a {max}{business, select, yes {, em dias úteis} other {}}',
     leadTimeExact: 'Prazo: {duration}{business, select, yes {, em dias úteis} other {}}',
     online: 'Pedir pela internet',
+    routeProgress: 'Documentos que a família já tem',
+    listProgress: 'Já tem',
+    progressValue: '{had} de {total}',
+    mark: {
+      group: 'Você já tem “{title}”?',
+      had: 'Já tenho',
+      missing: 'Falta',
+      state: '{state, select, had {Já tem} other {Falta}}',
+      linked: 'No cofre: {name}',
+      linkedUnnamed: 'Ligado a um documento do cofre. Abra o cofre para ver qual.',
+      linkedElsewhere: 'Ligado a um documento que não está no seu cofre.',
+      linkedHere: 'Tem um documento do cofre ligado',
+      unlink: 'Desligar',
+      openVault: 'Abra o cofre para ligar um documento a este item',
+      vaultEmpty: 'Seu cofre ainda não tem documentos.',
+      toVault: 'Guardar um documento',
+      linkLabel: 'Ligar um documento do cofre',
+      linkHint: 'Ele passa a aparecer também em {country}, no cofre.',
+      linkPlaceholder: 'Escolha um documento',
+      link: 'Ligar',
+      hidden: 'Só quem cuida dos dados de {name} vê o que já foi juntado.',
+      failure:
+        '{reason, select, not_found {Não deu para salvar. A pessoa, a regra ou o documento mudou. Atualize a página.} case_limit {Esta pessoa já tem marcações demais nesta rota. Tire as que não precisa mais.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas mudanças em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar desta vez. Tente de novo.}}',
+    },
+    noLongerAsked: {
+      title: 'Não são mais pedidos',
+      lead: 'A regra mudou e não pede mais estes documentos. As marcações ficaram guardadas aqui. Tire as que não precisar.',
+      untitled: 'Documento que a regra não pede mais',
+      clear: 'Tirar marcação',
+    },
   },
   /** Leaving a country (ADR-0038): what to do, and the documents that trace the money. */
   departure,
@@ -2588,6 +2622,7 @@ export const ptBR = {
       caseAssets: 'Bens',
       caseRelationships: 'Vínculos familiares',
       caseShares: 'Com quem você compartilhou dados',
+      checklistMarks: 'O que você marcou nas listas de documentos',
       ruleReports: 'Avisos de regra errada que você enviou',
       correctionRequests: 'Pedidos de correção de regra que você enviou',
       correctionSources: 'Links, textos e arquivos dos seus pedidos de correção',

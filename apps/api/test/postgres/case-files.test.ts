@@ -132,7 +132,7 @@ describe('creating a case (spec 0007, R2)', () => {
         keptByMe: true,
         profile: null,
         finances: null,
-        shares: { profile: [], finances: [] },
+        shares: { profile: [], finances: [], checklist: [] },
         sharedWithMe: [],
       },
     ]);
@@ -233,7 +233,14 @@ describe('joining after an invite (spec 0007, R2)', () => {
         dependsOn: null,
       }),
     );
-    viewOf(await files.replaceShares(alice, { personId: mother, profile: [bruno], finances: [] }));
+    viewOf(
+      await files.replaceShares(alice, {
+        personId: mother,
+        profile: [bruno],
+        finances: [],
+        checklist: [],
+      }),
+    );
     const gina = await account();
     await link(alice, gina);
     const joined = viewOf(await files.addMember(alice, { accountId: gina, personId: mother }));
@@ -247,7 +254,7 @@ describe('joining after an invite (spec 0007, R2)', () => {
     expect((await files.view(gina))?.people.find(({ id }) => id === mother)).toMatchObject({
       keptByMe: true,
       profile: { facts: { studying: false } },
-      shares: { profile: [], finances: [] },
+      shares: { profile: [], finances: [], checklist: [] },
     });
     expect((await files.view(bruno))?.people.find(({ id }) => id === mother)?.profile).toBeNull();
   });
@@ -404,6 +411,7 @@ describe('profiles, finances and shares', () => {
         personId: people.child,
         profile: [bruno],
         finances: [],
+        checklist: [],
       }),
     );
     expect((await seenBy(bruno, people.child))?.profile?.facts).toEqual({ studying: true });
@@ -414,8 +422,19 @@ describe('profiles, finances and shares', () => {
     expect((await seenBy(carla, people.child))?.shares).toBeNull();
     expect((await seenBy(carla, people.child))?.sharedWithMe).toEqual([]);
     expect((await seenBy(alice, people.child))?.sharedWithMe).toEqual([]);
-    expect((await seenBy(alice, people.child))?.shares).toEqual({ profile: [bruno], finances: [] });
-    viewOf(await files.replaceShares(alice, { personId: people.child, profile: [], finances: [] }));
+    expect((await seenBy(alice, people.child))?.shares).toEqual({
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
+    viewOf(
+      await files.replaceShares(alice, {
+        personId: people.child,
+        profile: [],
+        finances: [],
+        checklist: [],
+      }),
+    );
     expect((await seenBy(bruno, people.child))?.profile).toBeNull();
     expect((await seenBy(bruno, people.child))?.sharedWithMe).toEqual([]);
 
@@ -426,6 +445,7 @@ describe('profiles, finances and shares', () => {
             personId: people.child,
             profile: grantees,
             finances: [],
+            checklist: [],
           }),
         ),
       ).toBe('case_invalid');
@@ -436,6 +456,7 @@ describe('profiles, finances and shares', () => {
           personId: people.child,
           profile: [bruno],
           finances: [],
+          checklist: [],
         }),
       ),
     ).toBe('not_found');
@@ -457,6 +478,7 @@ describe('profiles, finances and shares', () => {
       personId: people.child,
       profile: [bruno],
       finances: [bruno],
+      checklist: [],
     });
     expect(refusal(await files.handOver(bruno, { personId: people.child, accountId: bruno }))).toBe(
       'not_found',
@@ -474,7 +496,7 @@ describe('profiles, finances and shares', () => {
     const brunoView = await files.view(bruno);
     expect(brunoView?.people.find(({ id }) => id === people.child)).toMatchObject({
       keptByMe: true,
-      shares: { profile: [], finances: [] },
+      shares: { profile: [], finances: [], checklist: [] },
     });
     expect((await events(alice)).at(-1)).toEqual({
       code: 'person_handed_over',
@@ -872,9 +894,19 @@ describe('work periods (ADR-0036)', () => {
     const workOf = async (viewer: string) =>
       (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'workPeriod');
     // Without a profile share, neither the work periods nor their labels reach another member.
-    await files.replaceShares(alice, { personId: people.alice, profile: [], finances: [bruno] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
     expect(await workOf(bruno)).toEqual([]);
-    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const played = await workOf(bruno);
     expect(played).toEqual([
       {
@@ -956,7 +988,12 @@ describe('a business and a work period at it (ADR-0036)', () => {
     expect(own.assets[0]).toMatchObject({ id: 'a1', operatingSince: '2018-05', employees: 6 });
 
     // With only the profile shared, Bruno reads the work period but not the business it is at.
-    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const profileOnly = await snapshotFor(bruno);
     expect(profileOnly.people[0]?.workPeriods).toEqual([
       { relation: 'owner', capacity: 'manager' },
@@ -974,6 +1011,7 @@ describe('a business and a work period at it (ADR-0036)', () => {
       personId: people.alice,
       profile: [bruno],
       finances: [bruno],
+      checklist: [],
     });
     expect(await seenBy(bruno)).toEqual([owner]);
     const shared = (await files.playback(bruno))?.sentences ?? [];
@@ -1107,9 +1145,19 @@ describe('residence periods (ADR-0036)', () => {
 
     const residenceOf = async (viewer: string) =>
       (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'residencePeriod');
-    await files.replaceShares(alice, { personId: people.alice, profile: [], finances: [bruno] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
     expect(await residenceOf(bruno)).toEqual([]);
-    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const about = { question: 'residencePeriods', about: [people.alice], person: people.alice };
     expect(await residenceOf(bruno)).toEqual([
       { kind: 'residencePeriod', ...about, ...portugal },
@@ -1167,7 +1215,12 @@ describe('playing the case back (spec 0007, R5)', () => {
       child: people.child,
     });
 
-    await files.replaceShares(alice, { personId: people.child, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const after = await files.playback(bruno);
     const child = kinds(after?.sentences ?? [], people.child);
     expect(child.slice(0, 3)).toEqual(['financesHidden', 'born', 'unanswered']);
@@ -1179,7 +1232,12 @@ describe('playing the case back (spec 0007, R5)', () => {
     });
     expect(await files.playback(await account())).toBeNull();
 
-    await files.replaceShares(alice, { personId: people.child, profile: [], finances: [bruno] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [],
+      finances: [bruno],
+      checklist: [],
+    });
     const finances = kinds((await files.playback(bruno))?.sentences ?? [], people.child);
     expect(finances[0]).toBe('profileHidden');
     expect(finances).not.toContain('financesHidden');
@@ -1345,7 +1403,12 @@ describe('leaving the case (spec 0007, R2)', () => {
       to: people.bruno,
       details: {},
     });
-    await files.replaceShares(alice, { personId: people.child, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.child,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     await files.addAsset(bruno, { personId: people.bruno, share: '1', asset: house });
 
     expect(await files.leave(bruno)).toBe('left');
@@ -1356,6 +1419,7 @@ describe('leaving the case (spec 0007, R2)', () => {
     expect(view?.people.find(({ id }) => id === people.child)?.shares).toEqual({
       profile: [],
       finances: [],
+      checklist: [],
     });
     expect(await admin(`SELECT FROM cases.asset WHERE case_id = $1`, [caseId])).toEqual([]);
     expect((await events(bruno)).at(-1)).toEqual({ code: 'member_left', details: { caseId } });

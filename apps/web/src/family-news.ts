@@ -3,7 +3,7 @@
  * members who joined, so each keeper decides what they see, and what other keepers started or
  * stopped sharing with the viewer. Only IDs are stored, never names.
  */
-import type { CasePerson, CaseView } from '@arca/api-contract/client';
+import { type CasePerson, type CaseView, shareScopes } from '@arca/api-contract/client';
 
 export interface Seen {
   readonly caseId: string;
@@ -15,11 +15,11 @@ export interface FamilyNews {
   readonly joined: readonly CasePerson[];
   readonly granted: readonly {
     readonly person: CasePerson;
-    readonly scope: 'profile' | 'finances';
+    readonly scope: CasePerson['sharedWithMe'][number];
   }[];
   readonly revoked: readonly {
     readonly person: CasePerson;
-    readonly scope: 'profile' | 'finances';
+    readonly scope: CasePerson['sharedWithMe'][number];
   }[];
 }
 
@@ -43,7 +43,6 @@ export function newsOf(view: CaseView, seen: Seen | undefined): FamilyNews {
   if (seen?.caseId !== view.caseId) return { joined: [], granted: [], revoked: [] };
   const members = new Set(seen.members);
   const shared = new Set(seen.shared);
-  const scopes = ['profile', 'finances'] as const;
   return {
     joined: view.people.filter(
       (person) =>
@@ -57,7 +56,7 @@ export function newsOf(view: CaseView, seen: Seen | undefined): FamilyNews {
     revoked: view.people.flatMap((person) =>
       person.keptByMe
         ? []
-        : scopes
+        : shareScopes
             .filter(
               (scope) =>
                 shared.has(shareKey(person.id, scope)) && !person.sharedWithMe.includes(scope),
