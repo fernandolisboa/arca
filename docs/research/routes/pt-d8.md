@@ -4,6 +4,14 @@ Research notes for Portugal's D8 residence visa for remote work for employers or
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#525](https://github.com/fernandolisboa/arca/issues/525)), together with [`pt-d7`](pt-d7.md).
+
+- **Version audited:** 7
+- **Outcome:** correction, version 8, from version 7's date, 2026-01-01, which keeps version 7 and adds the official document list from Decreto Regulamentar n.º 84/2007, and Brazil's document guide, version 2. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-pt-documents/README.md).
+- **Watch next:** the 2027 minimum wage version ([#220](https://github.com/fernandolisboa/arca/issues/220)) is now version 9, from 2027-01-01, and keeps version 8's documents; an official page with the consulates' own list (`vistos.mne.gov.pt`), once a host for it is on the official-domain list and readable.
+
 ### 2026-11-20, session review
 
 - **Version audited:** 6
