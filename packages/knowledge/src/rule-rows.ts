@@ -231,6 +231,42 @@ export const approvedOfficialDomainLists = (
   );
 
 /**
+ * Each country's approved official-domain lists (ADR-0031): those its stored route versions pin
+ * that are approved, sorted by key. A country with none is a new country.
+ */
+export function countryPins(
+  rows: RuleRows,
+  reading: RuleRowReading,
+  states: ReadonlyMap<string, string>,
+): ReadonlyMap<string, readonly Pin[]> {
+  const approved = new Map(
+    approvedOfficialDomainLists(rows, reading, states).map(({ id, number }) => [
+      pinKey({ id, number }),
+      { id, number },
+    ]),
+  );
+  const pins = new Map<string, Map<string, Pin>>();
+  for (const row of rows.routeVersions) {
+    const parsed = routeVersionSchema.safeParse(row.content);
+    if (!parsed.success) continue;
+    const { country, officialDomains } = parsed.data;
+    for (const key of officialDomains.map(pinKey)) {
+      const pin = approved.get(key);
+      if (pin === undefined) continue;
+      const held = pins.get(country) ?? new Map<string, Pin>();
+      held.set(key, pin);
+      pins.set(country, held);
+    }
+  }
+  return new Map(
+    [...pins].map(([country, held]) => [
+      country,
+      [...held].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([, pin]) => pin),
+    ]),
+  );
+}
+
+/**
  * Everything a route version pins, by key, as its hash covers it: the countries files, its
  * official-domain lists and its country sets with what they pin. Undefined when one of them is
  * missing or refused.

@@ -13,6 +13,7 @@ import {
   maxQuoteLength,
   minQuoteLength,
   pageLanguages,
+  routeCountry,
   routeVersionSchema,
   verifyAnswers,
 } from '@arca/domain';
@@ -20,18 +21,27 @@ import { hostOf } from '@arca/scripts/host';
 import { parseJsonSubset } from '@arca/scripts/json';
 import { z } from 'zod';
 import type { Json } from '../src/canonical.ts';
-import { checkProposal } from '../src/proposal.ts';
+import { type ProposalTarget, checkProposal } from '../src/proposal.ts';
 import {
   type RouteVersionRow,
   type RuleRowReading,
   type RuleRows,
   casesHashOf,
+  countryPins,
 } from '../src/rule-rows.ts';
 import { formatIssue } from './build.ts';
 import { inlinedRows } from './inline-cases.ts';
 import { readKnowledgeFile } from './load.ts';
 import { importBuild } from './rule-import.ts';
 import { json, literal } from './sql.ts';
+
+/** A version a review lists: the next of a stored route, or the first of a route it names as new. */
+export interface ListedVersion {
+  readonly routeId: string;
+  readonly number: number;
+  /** The route is not stored yet, and this is its first version (ADR-0032, amended 2026-11-25). */
+  readonly newRoute?: true;
+}
 
 /**
  * One session review (ADR-0032): the route versions a Claude Code session the owner asked for
@@ -41,7 +51,7 @@ import { json, literal } from './sql.ts';
 export interface SessionReview {
   readonly id: string;
   readonly migration: string;
-  readonly versions: readonly { readonly routeId: string; readonly number: number }[];
+  readonly versions: readonly ListedVersion[];
 }
 
 /** Every session review, oldest first: a later one is checked against the rows of the earlier. */
@@ -161,6 +171,15 @@ export const sessionReviews: readonly SessionReview[] = [
     ],
   },
   {
+    id: '2026-11-us-routes',
+    migration: 'knowledge_session_review_2026_11_us_routes',
+    versions: [
+      { routeId: 'us-eb2-niw', number: 1, newRoute: true },
+      { routeId: 'us-l1a', number: 1, newRoute: true },
+      { routeId: 'us-eb1c', number: 1, newRoute: true },
+    ],
+  },
+  {
     id: '2026-11-es-documents',
     migration: 'knowledge_session_review_2026_11_es_documents',
     versions: [{ routeId: 'es-non-lucrative', number: 5 }],
@@ -261,25 +280,68 @@ export async function readEvidence(
   );
 }
 
+/**
+ * What a listed version is checked as (ADR-0032): the next version of the route's newest stored
+ * one, or, for a route the listing names as new, the first version of a route of its ID's country
+ * on the official-domain lists that country's stored versions already pin. A review adds no list
+ * and no host, so a country with no stored route is out of its reach, and so is an ID that is
+ * new without the listing saying so, which a mistyped ID would be.
+ */
+export function reviewTarget(
+  rows: RuleRows,
+  reading: RuleRowReading,
+  listed: ListedVersion,
+): ProposalTarget {
+  const base = rows.routeVersions
+    .filter((row) => row.routeId === listed.routeId)
+    .reduce<RouteVersionRow | undefined>(
+      (newest, row) => (newest === undefined || row.number > newest.number ? row : newest),
+      undefined,
+    );
+  if (listed.newRoute !== true) {
+    if (base === undefined) {
+      throw new Error('A review updates a stored route, or lists the route as new');
+    }
+    return { kind: 'update', base: routeVersionSchema.parse(base.content) };
+  }
+  if (base !== undefined) throw new Error('A route listed as new has an ID no stored route has');
+  const country = routeCountry(listed.routeId);
+  const pins = countryPins(rows, reading, new Map()).get(country) ?? [];
+  if (pins.length === 0) {
+    throw new Error(
+      'A new route is of a country whose stored routes pin an approved official-domain list',
+    );
+  }
+  return { kind: 'new', country, pins };
+}
+
 export interface ReviewDirs {
   readonly dataDir: string;
   readonly familiesDir: string;
   readonly reviewsDir: string;
 }
 
+/** The rows the one-time import stored (ADR-0031), and how a read verifies them. */
+export async function importedRows(
+  dataDir: string,
+): Promise<{ readonly rows: RuleRows; readonly reading: RuleRowReading }> {
+  const { issues, rows, datasetFiles } = await importBuild(dataDir);
+  if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
+  return { rows, reading: { datasetFiles, sha256, hostOf } };
+}
+
 /**
- * A review's versions, each checked as the app checks an update request's proposal
- * (`checkProposal`: schema, order, pinned files, cases and coverage) against the rows the database
- * holds when its migration runs: the import, with its cases inline, and every earlier review. A
- * version that fails, or whose evidence does not cover it, throws with its problems.
+ * A review's versions, each checked as the app checks a request's proposal (`checkProposal`:
+ * schema, where it stands, pinned files, cases and coverage; an update request's for a stored
+ * route, a new-route request's for a route listed as new) against the rows the database holds when
+ * its migration runs: the import, with its cases inline, and every earlier review. A version that
+ * fails, or whose evidence does not cover it, throws with its problems.
  */
 export async function reviewedVersions(
   dirs: ReviewDirs,
   review: SessionReview,
 ): Promise<ReviewedVersion[]> {
-  const { issues, rows: imported, datasetFiles } = await importBuild(dirs.dataDir);
-  if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
-  const reading: RuleRowReading = { datasetFiles, sha256, hostOf };
+  const { rows: imported, reading } = await importedRows(dirs.dataDir);
   const inlined = new Map(
     (await inlinedRows(imported, dirs.familiesDir)).map((row) => [
       `${row.routeId}/${String(row.number)}`,
@@ -298,24 +360,20 @@ export async function reviewedVersions(
   if (position === -1) throw new Error(`Review ${review.id} is not listed`);
   for (const each of sessionReviews.slice(0, position + 1)) {
     reviewed = [];
-    for (const { routeId, number } of each.versions) {
+    for (const listed of each.versions) {
+      const { routeId, number } = listed;
       const path = fileOf(dirs.reviewsDir, each, routeId, number);
       const content = await readJson(`${path}.json`);
       const cases = await readJson(`${path}.cases.json`);
-      const base = rows.routeVersions
-        .filter((row) => row.routeId === routeId)
-        .reduce<RouteVersionRow | undefined>(
-          (newest, row) => (newest === undefined || row.number > newest.number ? row : newest),
-          undefined,
-        );
-      if (base === undefined) throw new Error(`${path}: A review updates a stored route`);
-      const checked = await checkProposal(
-        rows,
-        { kind: 'update', base: routeVersionSchema.parse(base.content) },
-        content,
-        cases,
-        reading,
-      );
+      let target: ProposalTarget;
+      try {
+        target = reviewTarget(rows, reading, listed);
+      } catch (error) {
+        throw new Error(`${path}: ${error instanceof Error ? error.message : String(error)}`, {
+          cause: error,
+        });
+      }
+      const checked = await checkProposal(rows, target, content, cases, reading);
       if (!checked.ok) throw new Error(`${path}:\n${checked.problems.join('\n')}`);
       if (checked.entry.version.number !== number) throw new Error(`${path}: Its number`);
       const evidence = await readEvidence(dirs.reviewsDir, each, routeId, number);

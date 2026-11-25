@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-l1a",
+  "texts": [
+    {
+      "en": "L-1A intracompany transferee: manager or executive, including one sent to open a new U.S. office (temporary)",
+      "text": "L-1A, transferência dentro da empresa: gerente ou executivo, inclusive quem é enviado para abrir um novo escritório nos EUA (temporário)"
+    },
+    {
+      "en": "Employed abroad full time 1 continuous year in the last 3 years by the company, its parent, branch, affiliate or subsidiary, as manager, executive or specialist (manager or executive if a new office)",
+      "text": "Trabalhou no exterior em tempo integral 1 ano contínuo nos últimos 3 anos para a empresa, sua matriz, filial, coligada ou subsidiária, como gerente, executivo ou especialista (gerente ou executivo se for escritório novo)"
+    },
+    {
+      "en": "The U.S. and foreign employers are the same company or its parent, branch, affiliate or subsidiary, and do business in the U.S. and at least one other country for the whole stay",
+      "text": "O empregador nos EUA e o do exterior são a mesma empresa ou sua matriz, filial, coligada ou subsidiária, e fazem negócios nos EUA e em pelo menos mais um país durante toda a estadia"
+    },
+    {
+      "en": "The U.S. job is primarily managerial (managing the organization or a function, supervising professionals or managers) or executive (directing its management, setting goals and policies)",
+      "text": "O cargo nos EUA é principalmente gerencial (gerir a organização ou uma área, supervisionar profissionais ou gerentes) ou executivo (dirigir sua gestão, definir metas e políticas)"
+    },
+    {
+      "en": "For a new office (doing business in the U.S. for less than a year): premises secured, and within a year of approval the office will support a managerial or executive job",
+      "text": "Para escritório novo (fazendo negócios nos EUA há menos de um ano): local garantido, e em até um ano da aprovação o escritório vai comportar um cargo gerencial ou executivo"
+    },
+    {
+      "en": "For a new office: the size of the U.S. investment, and the foreign company's financial ability to pay the transferee and to start doing business in the U.S.",
+      "text": "Para escritório novo: o tamanho do investimento nos EUA e a capacidade financeira da empresa estrangeira de pagar o transferido e começar a fazer negócios nos EUA"
+    },
+    {
+      "en": "Form I-129 individual petition for an L worker, filed by the U.S. employer; a new office must file one, a transferee under a blanket petition needs none; a small employer pays half",
+      "text": "Petição individual Form I-129 para trabalhador L, protocolada pelo empregador nos EUA; escritório novo precisa protocolar uma, o transferido sob petição coletiva (blanket) não precisa; pequeno empregador paga metade"
+    },
+    {
+      "en": "Asylum Program Fee paid with an individual Form I-129 (USD 300 for a small employer, none for a nonprofit)",
+      "text": "Asylum Program Fee paga com o Form I-129 individual (USD 300 para pequeno empregador, nada para entidade sem fins lucrativos)"
+    },
+    {
+      "en": "Fraud prevention and detection fee the employer pays on the petition first granting L status; under a blanket petition the transferee pays it at the consulate instead",
+      "text": "Taxa de prevenção e detecção de fraude que o empregador paga na petição que concede o status L pela primeira vez; na petição coletiva (blanket), quem paga é o transferido, no consulado"
+    },
+    {
+      "en": "9-11 Response and Biometric Entry-Exit fee, only for an employer with 50 or more U.S. employees, over half of them in H-1B or L status, on petitions filed by 2027-09-30",
+      "text": "Taxa 9-11 Response and Biometric Entry-Exit, só para empregador com 50 ou mais funcionários nos EUA, mais da metade com status H-1B ou L, em petições protocoladas até 2027-09-30"
+    },
+    {
+      "en": "L visa application fee for the transferee, when the visa is issued at a consulate abroad (not when changing status in the U.S.)",
+      "text": "Taxa do pedido de visto L para o transferido, quando o visto é emitido num consulado fora dos EUA (não na troca de status dentro dos EUA)"
+    },
+    {
+      "en": "L visa application fee for each accompanying family member, when the visa is issued at a consulate abroad (not when changing status in the U.S.)",
+      "text": "Taxa do pedido de visto L para cada familiar que acompanha, quando o visto é emitido num consulado fora dos EUA (não na troca de status dentro dos EUA)"
+    },
+    {
+      "en": "A petition for a new office is approved for up to 1 year; extending it needs proof the U.S. office has been doing business for the previous year",
+      "text": "A petição para escritório novo é aprovada por até 1 ano; para prorrogar, é preciso provar que o escritório nos EUA fez negócios no ano anterior"
+    },
+    {
+      "en": "Stay as a manager or executive: up to 3 years at first, extended in steps of up to 2 years, 7 years at most counting time in H status; a year lived abroad restarts the limit",
+      "text": "Estadia como gerente ou executivo: até 3 anos no início, prorrogada em etapas de até 2 anos, no máximo 7 anos contando o tempo em status H; um ano morando fora dos EUA reinicia o limite"
+    }
+  ]
+}
