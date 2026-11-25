@@ -36,6 +36,7 @@ beforeAll(async () => {
     audit: auditLog(testDatabase.auditDb),
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT', 'US'], formerCountries: ['YUCS'] },
+    occupations: ['2211', '2512'],
     evaluation: {
       rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
       comparisons: comparisonCatalog,
@@ -832,6 +833,87 @@ describe('guided questions (spec 0007, R4)', () => {
   });
 });
 
+describe('work periods (ADR-0036)', () => {
+  const doctor = {
+    label: 'Hospital',
+    occupation: '2211',
+    relation: 'employee',
+    capacity: 'other',
+    fullTime: false,
+    employerCountry: 'BR',
+    workplaceCountry: 'BR',
+    start: '2014-03',
+    end: 'none',
+  };
+  const contractor = { occupation: '2512', relation: 'contractor', start: '2010', end: '2014-02' };
+
+  it('saves work periods, reads them back, and plays them back with their label to a sharer', async () => {
+    const { alice, bruno, people } = await family();
+    const view = viewOf(
+      await files.answerQuestions(alice, {
+        personId: people.alice,
+        answers: [{ questionId: 'workPeriods', answer: [doctor, contractor] }],
+      }),
+    );
+    expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
+      workPeriods: [doctor, contractor],
+    });
+    const questions = await files.questions(alice);
+    expect(questions?.occupations).toEqual(['2211', '2512']);
+    const answered = questions?.people
+      .find(({ personId }) => personId === people.alice)
+      ?.steps.flatMap(({ questions: asked }) => asked)
+      .find(({ id }) => id === 'workPeriods');
+    expect(answered?.answer).toEqual([doctor, contractor]);
+
+    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    const played = (await files.playback(bruno))?.sentences.filter(
+      (said) => said.kind === 'workPeriod',
+    );
+    expect(played).toEqual([
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: [people.alice],
+        person: people.alice,
+        ...doctor,
+      },
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: [people.alice],
+        person: people.alice,
+        ...contractor,
+      },
+    ]);
+    const evaluated = await files.evaluations(alice);
+    expect(evaluated).not.toBeNull();
+  });
+
+  it('refuses an occupation outside the classification and a period ending before it starts', async () => {
+    const { alice, people } = await family();
+    const answer = async (workPeriods: unknown) =>
+      refusal(
+        await files.answerQuestions(alice, {
+          personId: people.alice,
+          answers: [{ questionId: 'workPeriods', answer: workPeriods }],
+        }),
+      );
+    expect(await answer([{ occupation: '9999' }])).toBe('case_invalid');
+    expect(await answer([{ start: '2020', end: '2019-06' }])).toBe('case_invalid');
+    expect(await answer([{ employerCountry: 'IT' }])).toBe('case_invalid');
+    expect(
+      refusal(
+        await files.writeProfile(alice, {
+          personId: people.alice,
+          facts: storedProfileFactsSchema.parse({ workPeriods: [{ occupation: '9999' }] }),
+          dependsOn: null,
+        }),
+      ),
+    ).toBe('case_invalid');
+  });
+});
+
 describe('playing the case back (spec 0007, R5)', () => {
   it('reads a shared profile as unanswered and a profile never shared as not shared', async () => {
     const { alice, bruno, people } = await family();
@@ -947,6 +1029,7 @@ describe('evaluating the case (spec 0007, R6)', () => {
       audit: auditLog(testDatabase.auditDb),
       today: () => new Date('2026-11-06T12:00:00Z'),
       countries: { countries: ['BR'], formerCountries: [] },
+      occupations: ['2211', '2512'],
       evaluation: {
         rules: () => Promise.resolve({ catalog: routeCatalog, routeIds }),
         comparisons: comparisonCatalog,

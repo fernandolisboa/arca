@@ -7,7 +7,7 @@ import {
   type QuestionInput,
 } from '@arca/api-contract/client';
 import type { Messages } from '@arca/i18n';
-import { Button, ChoiceGroup } from '@arca/ui';
+import { Button, ChoiceGroup, SearchPicker } from '@arca/ui';
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CountryField } from '../forms/country-field.js';
@@ -35,6 +35,7 @@ export interface QuestionContext {
   readonly names: ReadonlyMap<string, string>;
   readonly countries: readonly string[];
   readonly formerCountries: readonly string[];
+  readonly occupations: readonly string[];
 }
 
 type FieldKey = keyof Messages['questions']['fields'];
@@ -45,6 +46,8 @@ const yesNo = { yes: 'yes', no: 'no', unknown: 'unknown' } as const;
 type YesNo = (typeof yesNo)[keyof typeof yesNo];
 const noneDate = 'none';
 const yearPattern = '\\d{4}';
+// The stored limit of a display name (`displayNameSchema`).
+const labelLength = 80;
 const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
@@ -71,12 +74,31 @@ export function useNames() {
         value: code,
         label: `${code} · ${currencies.of(code) ?? code}`,
       })),
+    // ISCO-08 codes under their major group, the code's first digit.
+    occupationGroups: (codes: readonly string[]) =>
+      Object.entries(
+        Object.groupBy(
+          codes.map((code) => ({
+            value: code,
+            label: i18n.exists(`occupations.${code}`)
+              ? t(`occupations.${code}` as 'occupations.2211')
+              : code,
+          })),
+          ({ value }) => value.slice(0, 1),
+        ),
+      ).map(([group, options = []]) => ({
+        title: i18n.exists(`occupationGroups.${group}`)
+          ? t(`occupationGroups.${group}` as 'occupationGroups.2')
+          : group,
+        options: sorted(options),
+      })),
     field: (key: string) =>
       i18n.exists(`questions.fields.${key}`) ? t(`questions.fields.${key as FieldKey}`) : key,
   };
 }
 
 export function FieldEditor({
+  questionId,
   fieldKey,
   label,
   hint,
@@ -86,6 +108,7 @@ export function FieldEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly fieldKey: string;
   readonly label: string;
   readonly hint?: string;
@@ -176,12 +199,39 @@ export function FieldEditor({
     case 'date':
       return (
         <DateEditor
-          fieldKey={fieldKey}
+          noneLabel={t('questions.date.none', { field: fieldKey, question: questionId })}
           label={label}
           {...(hint === undefined ? {} : { hint })}
           input={input}
           value={value}
           optional={optional}
+          onChange={onChange}
+        />
+      );
+    case 'occupation':
+      return (
+        <SearchPicker
+          label={label}
+          {...(hint === undefined ? {} : { hint })}
+          placeholder={t('questions.pick')}
+          value={chosenValue}
+          groups={[...names.occupationGroups(context.occupations), { options: unknownOption }]}
+          labels={{
+            search: t('questions.occupationPicker.search'),
+            none: t('questions.occupationPicker.none'),
+            clear: t('questions.occupationPicker.clear'),
+            close: t('questions.occupationPicker.close'),
+          }}
+          layout="list"
+          onChange={choose}
+        />
+      );
+    case 'label':
+      return (
+        <LabelEditor
+          label={label}
+          hint={t('questions.labelHint')}
+          value={value}
           onChange={onChange}
         />
       );
@@ -205,8 +255,38 @@ export function FieldEditor({
 const yesNoOf = (value: unknown): YesNo | '' =>
   value === true ? yesNo.yes : value === false ? yesNo.no : value === null ? yesNo.unknown : '';
 
+/** A short name, sent without outer spaces; left empty, the item has none. */
+function LabelEditor({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  readonly label: string;
+  readonly hint: string;
+  readonly value: unknown;
+  readonly onChange: (value: unknown) => void;
+}) {
+  const [text, setText] = useState(() => (typeof value === 'string' ? value : ''));
+  return (
+    <TextField
+      label={label}
+      hint={hint}
+      autoComplete="off"
+      maxLength={labelLength}
+      value={text}
+      onChange={(event) => {
+        const typed = event.currentTarget.value;
+        setText(typed);
+        const trimmed = typed.trim();
+        onChange(trimmed === '' ? undefined : trimmed);
+      }}
+    />
+  );
+}
+
 function DateEditor({
-  fieldKey,
+  noneLabel,
   label,
   hint,
   input,
@@ -214,7 +294,7 @@ function DateEditor({
   optional,
   onChange,
 }: {
-  readonly fieldKey: string;
+  readonly noneLabel: string;
   readonly label: string;
   readonly hint?: string;
   readonly input: Extract<FieldInput, { kind: 'date' }>;
@@ -294,7 +374,7 @@ function DateEditor({
       <div className="flex flex-wrap gap-4">
         {input.none === true && (
           <Check
-            label={t('questions.date.none', { field: fieldKey })}
+            label={noneLabel}
             checked={value === noneDate}
             onChange={(checked) => {
               if (checked) onChange(noneDate);
@@ -384,11 +464,13 @@ function MoneyEditor({
 }
 
 function ItemFields({
+  questionId,
   fields,
   item,
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly fields: readonly QuestionField[];
   readonly item: Record_;
   readonly onChange: (item: Record_) => void;
@@ -400,6 +482,7 @@ function ItemFields({
       {fields.map(({ key, input, optional }) => (
         <FieldEditor
           key={key}
+          questionId={questionId}
           fieldKey={key}
           label={names.field(key)}
           input={input}
@@ -422,6 +505,7 @@ function ItemFields({
 type ListMode = 'has' | 'none' | 'unknown' | '';
 
 function ListEditor({
+  questionId,
   legend,
   hint,
   fields,
@@ -430,6 +514,7 @@ function ListEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly legend: string;
   readonly hint?: string;
   readonly fields: readonly QuestionField[];
@@ -479,6 +564,7 @@ function ListEditor({
             >
               <p className="font-medium">{t('questions.list.item', { number: index + 1 })}</p>
               <ItemFields
+                questionId={questionId}
                 fields={fields}
                 item={item}
                 context={context}
@@ -516,6 +602,7 @@ function ListEditor({
 }
 
 export function QuestionEditor({
+  questionId,
   input,
   legend,
   hint,
@@ -525,6 +612,7 @@ export function QuestionEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly input: QuestionInput;
   readonly legend: string;
   readonly hint?: string;
@@ -540,6 +628,7 @@ export function QuestionEditor({
     case 'list':
       return (
         <ListEditor
+          questionId={questionId}
           legend={legend}
           {...hinted}
           fields={input.fields}
@@ -577,6 +666,7 @@ export function QuestionEditor({
     case 'relationships':
       return (
         <RelationshipsEditor
+          questionId={questionId}
           legend={legend}
           {...hinted}
           input={input}
@@ -588,6 +678,7 @@ export function QuestionEditor({
     default:
       return (
         <FieldEditor
+          questionId={questionId}
           fieldKey=""
           label={legend}
           {...hinted}
@@ -657,6 +748,7 @@ function PeopleEditor({
 }
 
 function RelationshipsEditor({
+  questionId,
   legend,
   hint,
   input,
@@ -664,6 +756,7 @@ function RelationshipsEditor({
   onChange,
   context,
 }: {
+  readonly questionId: string;
   readonly legend: string;
   readonly hint?: string;
   readonly input: Extract<QuestionInput, { kind: 'relationships' }>;
@@ -694,6 +787,7 @@ function RelationshipsEditor({
         >
           <p className="font-medium">{title(row)}</p>
           <ItemFields
+            questionId={questionId}
             fields={row['kind'] === 'parent' ? input.parent : input.couple}
             item={row}
             context={context}

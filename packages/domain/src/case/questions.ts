@@ -16,6 +16,8 @@ import {
   isicSections,
   languageLevels,
   parentKinds,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
 import {
   type StoredAsset,
@@ -59,6 +61,8 @@ export const choiceSets = {
   immigrationEvent: immigrationEventKinds,
   parentKind: parentKinds,
   custody: custodies,
+  workRelation: workRelations,
+  workCapacity: workCapacities,
 } as const;
 export type ChoiceSet = keyof typeof choiceSets;
 
@@ -71,7 +75,11 @@ export type FieldInput =
   | { readonly kind: 'yesNo' }
   | { readonly kind: 'money' }
   /** A share of an asset, more than 0 and at most 1, as a decimal string. */
-  | { readonly kind: 'share' };
+  | { readonly kind: 'share' }
+  /** An ISCO-08 occupation code, picked by its name. */
+  | { readonly kind: 'occupation' }
+  /** A short name that tells items apart on screen; kept with the profile, never in the snapshot. */
+  | { readonly kind: 'label' };
 
 export interface QuestionField<Key extends string = string> {
   readonly key: Key;
@@ -165,6 +173,25 @@ export const questionFlow = [
       fields: [
         needed('language', { kind: 'language' }),
         needed('level', { kind: 'choice', set: 'languageLevel' }),
+      ],
+    },
+  },
+  {
+    id: 'workPeriods',
+    step: 'work',
+    target: fact('workPeriods'),
+    input: {
+      kind: 'list',
+      fields: [
+        maybe('label', { kind: 'label' }),
+        maybe('occupation', { kind: 'occupation' }),
+        maybe('relation', { kind: 'choice', set: 'workRelation' }),
+        maybe('capacity', { kind: 'choice', set: 'workCapacity' }),
+        maybe('fullTime', { kind: 'yesNo' }),
+        maybe('employerCountry', { kind: 'country' }),
+        maybe('workplaceCountry', { kind: 'country' }),
+        maybe('start', partialDate),
+        maybe('end', { ...partialDate, none: true }),
       ],
     },
   },
@@ -282,6 +309,8 @@ export interface QuestionState {
 export interface KnownCodes {
   readonly countries: ReadonlySet<string>;
   readonly formerCountries: ReadonlySet<string>;
+  /** The occupation codes of the current occupations classification. */
+  readonly occupations: ReadonlySet<string>;
 }
 
 const languages: ReadonlySet<string> = new Set(languageCodes);
@@ -334,6 +363,9 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
     if (field.kind === 'language') return typeof entry === 'string' && languages.has(entry);
+    if (field.kind === 'occupation') {
+      return typeof entry === 'string' && known.occupations.has(entry);
+    }
     if (field.kind !== 'country') return true;
     return (
       typeof entry === 'string' &&

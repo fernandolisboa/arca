@@ -19,8 +19,12 @@ import {
   incomeKinds,
   isicSections,
   languageLevels,
+  occupationCodeSchema,
   parentKinds,
+  workCapacities,
+  workRelations,
 } from './snapshot.js';
+import { displayNameSchema } from './storage.js';
 
 /**
  * The case read back as sentences (spec 0007, R5): each a kind and typed values, never text, so
@@ -65,6 +69,20 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
     temporary: z.boolean(),
   }),
   sentence('noJobOffer', { person }),
+  sentence('workPeriod', {
+    person,
+    /** The person's own name for the job, added by whoever sees their profile; never a model's. */
+    label: displayNameSchema.optional(),
+    occupation: occupationCodeSchema.optional(),
+    relation: z.enum(workRelations).optional(),
+    capacity: z.enum(workCapacities).optional(),
+    fullTime: z.boolean().optional(),
+    employerCountry: countryCodeSchema.optional(),
+    workplaceCountry: countryCodeSchema.optional(),
+    start: dateValueSchema.optional(),
+    end: dateOrNone.optional(),
+  }),
+  sentence('noWorkPeriod', { person }),
   sentence('immigrationEvent', {
     person,
     country: countryCodeSchema,
@@ -213,6 +231,14 @@ function describePerson(
           for (const spoken of subject.languages)
             said.push({ kind: 'language', ...ask, ...spoken });
         break;
+      case 'workPeriods':
+        if (subject.workPeriods === undefined) unanswered(question);
+        else if (subject.workPeriods.length === 0) said.push({ kind: 'noWorkPeriod', ...ask });
+        else
+          for (const period of subject.workPeriods) {
+            said.push({ kind: 'workPeriod', ...ask, ...period });
+          }
+        break;
       case 'jobOffers':
         if (subject.jobOffers === undefined) unanswered(question);
         else if (subject.jobOffers.length === 0) said.push({ kind: 'noJobOffer', ...ask });
@@ -320,6 +346,24 @@ export function describeCase(
     }),
   );
   return [...people, ...relationships, ...assets];
+}
+
+/**
+ * The sentences with each work period's label, which the snapshot leaves out: `labels` gives a
+ * person's labels in the order of their work periods, as the profile stores them.
+ */
+export function labelWorkPeriods(
+  sentences: readonly Sentence[],
+  labels: (personId: string) => readonly (string | undefined)[],
+): Sentence[] {
+  const seen = new Map<string, number>();
+  return sentences.map((said) => {
+    if (said.kind !== 'workPeriod') return said;
+    const index = seen.get(said.person) ?? 0;
+    seen.set(said.person, index + 1);
+    const label = labels(said.person)[index];
+    return label === undefined ? said : { ...said, label };
+  });
 }
 
 /** The sentences with every person ID renamed, such as the snapshot's opaque IDs to the case's. */

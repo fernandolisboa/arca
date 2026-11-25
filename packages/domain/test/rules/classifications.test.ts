@@ -4,8 +4,8 @@ import { routeVersionSchema } from '../../src/rules/route-version.js';
 import { type PinnedClassifications } from '../../src/rules/check.js';
 import { type OfficialHosts, checkRouteVersion } from '../../src/rules/validate.js';
 
-// No catalog fact reads a classification code yet (the case records that do come with spec 0007's
-// next tickets), so these tests add fixture facts to the catalog the checker reads.
+// No catalog fact reads a field-of-study code yet (qualifications come with spec 0007's next
+// tickets), so these tests add fixture facts to the catalog the checker reads.
 vi.mock('../../src/case/facts.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/case/facts.js')>();
   const unknown = (): ReturnType<FactDefinition['derive']> => ({ value: { type: 'token' } });
@@ -111,6 +111,25 @@ const bothPinned = {
 };
 
 describe('classification codes in a route version', () => {
+  it('checks a work period’s occupation against the pinned occupations', () => {
+    const doctor = (code: string) => ({
+      op: 'some',
+      over: 'principal.workPeriods',
+      where: {
+        op: 'eq',
+        left: { op: 'fact', key: 'workPeriod.occupation' },
+        right: { op: 'token', value: code },
+      },
+    });
+    expect(issues([doctor('2211')], bothPinned)).toEqual([]);
+    expect(issues([doctor('9999')], bothPinned)).toEqual([
+      '/requirements/0/expression/where: The values are outside the domain of the fact',
+    ]);
+    expect(issues([doctor('2211')])).toEqual([
+      '/requirements/0/expression/where/left: Occupation codes need the version to pin occupations',
+    ]);
+  });
+
   it('accepts codes of the pinned classifications', () => {
     expect(issues([occupationIn('2211', '2512'), fieldsIntersect('0912')], bothPinned)).toEqual([]);
   });

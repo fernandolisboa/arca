@@ -51,6 +51,20 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await studies.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const work = step(page, 'Trabalho');
+  await radio(work, 'Onde Ana trabalha ou já trabalhou?', 'Sim');
+  await work.getByLabel('Nome para reconhecer este trabalho (opcional)').fill('Cliente dos EUA');
+  await pickCountry(work, 'Ocupação', 'Desenvolvedores de software');
+  await work
+    .getByLabel('Forma de trabalho')
+    .selectOption({ label: 'Prestando serviço (PJ, freelancer ou autônomo para uma empresa)' });
+  await work.getByLabel('Cargo de chefia').selectOption({ label: 'Não sei' });
+  await radio(work, 'É em tempo integral?', 'Sim');
+  await pickCountry(work, 'País da empresa ou do cliente', 'Estados Unidos');
+  await pickCountry(work, 'País de onde trabalha', 'Brasil');
+  const workStart = group(work, 'Desde quando');
+  await workStart.getByLabel('Ano').fill('2022');
+  await workStart.getByLabel('Mês').selectOption({ label: 'março' });
+  await group(work, 'Até quando').getByLabel('Ainda trabalha aqui').check();
   await radio(work, 'Ana tem oferta de emprego em outro país?', 'Nenhum');
   await work.getByRole('button', { name: 'Salvar e continuar' }).click();
 
@@ -109,6 +123,11 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await expect(ana.getByText(/^Nascimento de Ana: abril de 1985 \(\d+ anos\)\.$/)).toBeVisible();
   await expect(
     ana.getByText(/^Renda de Ana: R\$\s9\.000,50 por mês, de trabalho \(Brasil\)\.$/),
+  ).toBeVisible();
+  await expect(
+    ana.getByText(
+      'Trabalho de Ana (Cliente dos EUA): Desenvolvedores de software, prestando serviço, em tempo integral, empresa ou cliente: Estados Unidos, local de trabalho: Brasil, começou em março de 2022, trabalho atual.',
+    ),
   ).toBeVisible();
   await expect(
     page

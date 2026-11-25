@@ -5,8 +5,12 @@ import {
   coupleEdgeSchema,
   distinct,
   incomeSchema,
+  maxWorkPeriods,
   parentEdgeSchema,
+  periodInOrder,
+  periodOrderMessage,
   personFieldsSchema,
+  workPeriodFieldsSchema,
 } from './snapshot.js';
 
 /**
@@ -25,6 +29,16 @@ export const displayNameSchema = z
   .max(80)
   .refine((name) => name === name.trim(), { message: 'A name has no outer spaces' });
 
+/**
+ * A work period as the profile stores it: with an optional label that tells jobs apart on screen,
+ * which stays with the profile and never enters the snapshot or a model call (ADR-0036).
+ */
+export const storedWorkPeriodSchema = workPeriodFieldsSchema
+  .extend({ label: displayNameSchema.optional() })
+  .refine(periodInOrder, periodOrderMessage);
+
+export type StoredWorkPeriod = z.infer<typeof storedWorkPeriodSchema>;
+
 /** The completeness markers a profile holds; the assets marker is in the finances. */
 export const profileMarkers = completenessMarkers.filter(
   (marker): marker is Exclude<typeof marker, 'assets'> => marker !== 'assets',
@@ -34,6 +48,7 @@ export const profileMarkers = completenessMarkers.filter(
 export const storedProfileFactsSchema = personFieldsSchema
   .omit({ id: true, incomes: true, financiallyDependentOn: true, recordedInFull: true })
   .extend({
+    workPeriods: z.array(storedWorkPeriodSchema).max(maxWorkPeriods).optional(),
     recordedInFull: z.array(z.enum(profileMarkers)).max(profileMarkers.length).optional(),
   })
   .refine((facts) => distinct(facts.recordedInFull ?? []), {

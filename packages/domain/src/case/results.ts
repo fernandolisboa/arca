@@ -3,6 +3,7 @@ import type { Truth } from '../logic/truth.js';
 import { unitsAmount } from '../money/currency.js';
 import type { Money } from '../money/money.js';
 import type { EvaluationStatus, RouteEvaluation } from '../rules/engine.js';
+import type { RecordList } from '../rules/expression.js';
 import { resolveFactReference } from '../rules/fact-reference.js';
 import type { MissingFact } from '../rules/missing.js';
 import type { Source } from '../rules/route-version.js';
@@ -39,7 +40,20 @@ export const questionForFact = {
   'lineage.edgeKind': 'relationships',
   'lineage.childBirthDate': 'birthDate',
   'lineage.citizenshipsAtChildBirth': 'citizenships',
+  'workPeriod.employerCountry': 'workPeriods',
+  'workPeriod.workplaceCountry': 'workPeriods',
+  'workPeriod.relation': 'workPeriods',
+  'workPeriod.occupation': 'workPeriods',
+  'workPeriod.capacity': 'workPeriods',
+  'workPeriod.fullTime': 'workPeriods',
+  'workPeriod.start': 'workPeriods',
+  'workPeriod.end': 'workPeriods',
 } as const satisfies Record<FactKey, QuestionId>;
+
+/** The guided question that records each list of a person's records. */
+const questionForRecords = {
+  workPeriods: 'workPeriods',
+} as const satisfies Record<RecordList, QuestionId>;
 
 const questionForMarker = {
   spouses: 'allSpouses',
@@ -108,6 +122,8 @@ function asked(
       return [{ personId: missing.personId, question: questionForMarker[missing.marker] }];
     case 'relationship':
       return relationshipQuestion(endpoints(missing.edge), kept);
+    case 'records':
+      return [{ personId: missing.personId, question: questionForRecords[missing.list] }];
   }
 }
 

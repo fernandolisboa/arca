@@ -194,8 +194,36 @@ describe('CaseSnapshot', () => {
         people: [{ id: 'p1', jobOffers: [{ country: 'QM', sector: 'Z', temporary: true }] }],
       },
     ],
+    [
+      'a work period that ends before it starts',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ start: '2020-05', end: '2020-04' }] }] },
+    ],
+    [
+      'a label on a work period, which stays with the profile',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ label: 'Clínica' }] }] },
+    ],
+    [
+      'an occupation that is not an ISCO-08 unit group code',
+      { ...base, people: [{ id: 'p1', workPeriods: [{ occupation: '22' }] }] },
+    ],
+    [
+      'more work periods than the limit',
+      { ...base, people: [{ id: 'p1', workPeriods: Array.from({ length: 21 }, () => ({})) }] },
+    ],
   ])('rejects %s', (_label, input) => {
     expect(accepts(input)).toBe(false);
+  });
+
+  it('accepts work periods with any part unknown, ongoing ones, and one that starts and ends in a month', () => {
+    for (const workPeriods of [
+      [],
+      [{}],
+      [{ start: '2021-03', end: 'none' }],
+      [{ start: '2020-05', end: '2020-05' }],
+      [{ occupation: '2211', relation: 'owner', capacity: 'executive', fullTime: true }],
+    ]) {
+      expect(accepts({ ...base, people: [{ id: 'p1', workPeriods }] })).toBe(true);
+    }
   });
 
   it('accepts unknown, none and dates for things that may not have happened', () => {

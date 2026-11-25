@@ -767,7 +767,7 @@ export const ptBR = {
       yearFormat: 'Use os quatro números do ano, como 1985.',
       months:
         '{month, select, 01 {janeiro} 02 {fevereiro} 03 {março} 04 {abril} 05 {maio} 06 {junho} 07 {julho} 08 {agosto} 09 {setembro} 10 {outubro} 11 {novembro} 12 {dezembro} other {}}',
-      none: '{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}',
+      none: '{question, select, workPeriods {Ainda trabalha aqui} other {{field, select, lost {Ainda tem} end {Ainda estão juntos} sold {Ainda tem} other {Nunca}}}}',
     },
     amount: 'Valor',
     currency: 'Moeda',
@@ -795,6 +795,21 @@ export const ptBR = {
       parentKind: 'Filiação',
       custody: 'Guarda',
       custodyStart: 'Guarda desde quando',
+      label: 'Nome para reconhecer este trabalho (opcional)',
+      occupation: 'Ocupação',
+      relation: 'Forma de trabalho',
+      capacity: 'Cargo de chefia',
+      fullTime: 'É em tempo integral?',
+      employerCountry: 'País da empresa ou do cliente',
+      workplaceCountry: 'País de onde trabalha',
+    },
+    labelHint:
+      'Só aparece para quem vê os dados desta pessoa, como “Hospital” ou “Cliente dos EUA”.',
+    occupationPicker: {
+      search: 'Buscar ocupação',
+      none: 'Nenhuma ocupação com esse nome',
+      clear: 'Limpar a ocupação',
+      close: 'Fechar a lista de ocupações',
     },
     choice: {
       citizenshipBasis:
@@ -814,6 +829,10 @@ export const ptBR = {
       parentKind: '{value, select, biological {Biológica} adoptive {Adotiva} other {}}',
       custody:
         '{value, select, full {Guarda total} shared {Guarda compartilhada} none {Sem guarda} other {}}',
+      workRelation:
+        '{value, select, employee {Com carteira ou contrato de trabalho} contractor {Prestando serviço (PJ, freelancer ou autônomo para uma empresa)} self_employed {Por conta própria, para vários clientes} owner {Na própria empresa, como dono ou sócio} other {}}',
+      workCapacity:
+        '{value, select, executive {Diretoria ou alta gestão} manager {Gerência ou coordenação de equipe} other {Sem cargo de chefia}}',
     },
     asked: {
       birthDate: 'Quando {name} nasceu?',
@@ -822,6 +841,7 @@ export const ptBR = {
       educationLevel: 'Até onde {name} estudou?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
+      workPeriods: 'Onde {name} trabalha ou já trabalhou?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
       incomes: 'Quanto {name} recebe por mês?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
@@ -841,6 +861,8 @@ export const ptBR = {
       educationLevel: 'Vale o último curso que concluiu.',
       incomes: 'Anote cada fonte de renda separadamente.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
+      workPeriods:
+        'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       immigrationHistory: 'Vistos e residências concedidos também contam.',
       relationships: 'Para incluir ou tirar um vínculo, use a área da família.',
     },
@@ -931,6 +953,8 @@ export const ptBR = {
       noLanguage: 'Idiomas de {person}: nenhum.',
       jobOffer: 'Oferta de emprego para {person}: {country}, na área de {sector}{temporary}.',
       noJobOffer: 'Ofertas de emprego para {person}: nenhuma.',
+      workPeriod: 'Trabalho de {person}{label}: {occupation}{details}.',
+      noWorkPeriod: 'Trabalhos de {person}: nenhum anotado.',
       immigrationEvent: 'Imigração de {person}: {event}, {country}{date}.',
       noImmigrationEvent: 'Imigração de {person}: nenhum visto, residência ou problema.',
       dependsOn: '{person} depende do dinheiro de {people}.',
@@ -959,6 +983,18 @@ export const ptBR = {
       from: ' de {date}',
       custodySince: ', guarda desde {date}',
       temporary: ', temporária',
+      label: ' ({label})',
+      noOccupation: 'ocupação não informada',
+      relation:
+        ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} other {na própria empresa}}',
+      capacity:
+        ', {capacity, select, executive {na diretoria} manager {em cargo de gerência} other {sem cargo de chefia}}',
+      fullTime: ', {fullTime, select, yes {em tempo integral} other {em tempo parcial}}',
+      employerCountry: ', empresa ou cliente: {country}',
+      workplaceCountry: ', local de trabalho: {country}',
+      between: ', de {start} a {end}',
+      startedIn: ', começou em {date}',
+      current: ', trabalho atual',
       parentKind: ', filiação {parentKind, select, biological {biológica} other {adotiva}}',
       custody:
         ', {custody, select, full {guarda total} shared {guarda compartilhada} other {sem guarda}}',
@@ -1706,6 +1742,7 @@ export const ptBR = {
       firstEdge: 'do primeiro vínculo do caminho',
       lineage: 'do elo da linha de ascendência',
       ancestor: 'do ascendente',
+      workPeriod: 'do trabalho',
     },
     fact: {
       person: {
@@ -1743,14 +1780,28 @@ export const ptBR = {
         childBirthDate: 'nascimento do filho',
         citizenshipsAtChildBirth: 'cidadanias no nascimento do filho',
       },
+      workPeriod: {
+        employerCountry: 'país da empresa',
+        workplaceCountry: 'país onde trabalha',
+        relation: 'forma de trabalho',
+        occupation: 'ocupação',
+        capacity: 'cargo de chefia',
+        fullTime: 'tempo integral',
+        start: 'início',
+        end: 'fim',
+      },
     },
     collection: {
       unit: {
         members: 'as pessoas da unidade',
         dependents: 'os dependentes da unidade',
       },
+      person: {
+        workPeriods: 'os trabalhos da pessoa avaliada',
+      },
       principal: {
         ancestors: 'os ascendentes do requerente principal',
+        workPeriods: 'os trabalhos do requerente principal',
       },
       lineage: {
         links: 'os elos da linha de ascendência',
@@ -1796,6 +1847,8 @@ export const ptBR = {
       some: 'Pelo menos um item, entre {over}{generations},',
       every: 'Cada item, entre {over}{generations},',
       sum: 'Soma, entre {over}{generations},',
+      covers:
+        '{continuous, select, true {Pelo menos {atLeast} sem interrupção} other {Pelo menos {atLeast} somados}}{windowed, select, true { nos últimos {window}} other {}}, entre {over},',
     },
     where: 'em que:',
     ofValue: 'do valor:',

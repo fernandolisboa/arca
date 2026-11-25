@@ -1,10 +1,19 @@
-import { type CalendarDate, compareDates, elapsedSince } from '../calendar/calendar-date.js';
+import {
+  type CalendarDate,
+  compareDates,
+  daysBetween,
+  elapsedSince,
+  firstDate,
+  tryAddDays,
+  trySubtractDuration,
+} from '../calendar/calendar-date.js';
 import type { Duration } from '../calendar/duration.js';
 import {
   type FactBinding,
   type FactEnvironment,
   type FactType,
   type LineageBinding,
+  type PersonRecord,
   deriveFact,
 } from '../case/facts.js';
 import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
@@ -23,6 +32,7 @@ import {
 import { type Truth, and, compareIntervals, not, or } from '../logic/truth.js';
 import {
   type BooleanValue,
+  type DateValueRange,
   type NumberValue,
   type TokenListValue,
   type TokenValue,
@@ -34,7 +44,14 @@ import {
 import type { CurrencyCode } from '../money/currency.js';
 import { type Decimal, scaledDecimal } from '../money/decimal.js';
 import { type CurrencyPair, type FxRate, convert } from '../money/fx.js';
-import { type CollectionName, type Expression, isNonNegative } from './expression.js';
+import {
+  type CollectionName,
+  type Expression,
+  type RecordList,
+  isNonNegative,
+  isRecordCollection,
+  recordCollections,
+} from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 
 /** A country set or a literal list of tokens. */
@@ -57,6 +74,14 @@ export interface Frame {
   /** The first edge of the path a dependent rule reached the candidate by. */
   readonly firstEdge?: Relationship;
   readonly lineage?: LineageBinding;
+  /** Inside a record collection, the record in focus; `current` is its owner. */
+  readonly record?: PersonRecord;
+}
+
+/** A person's list of records that is not recorded at all, so it may hold anything. */
+export interface UnknownRecords {
+  readonly personId: string;
+  readonly list: RecordList;
 }
 
 /**
@@ -74,8 +99,14 @@ export interface Trace {
     readonly membership: Truth;
     readonly uncertainEdges?: readonly Relationship[];
   };
-  /** A collection that may hold people who are not recorded, and the markers whose absence opens it. */
-  readonly incomplete?: { readonly missingMarkers: readonly MissingMarker[] };
+  /**
+   * A collection that may hold people or records that are not recorded: the markers whose absence
+   * opens it, or the person's list that is unknown.
+   */
+  readonly incomplete?: {
+    readonly missingMarkers: readonly MissingMarker[];
+    readonly records?: UnknownRecords;
+  };
   /** On a fact, the completeness markers whose absence leaves its value open. */
   readonly missingMarkers?: readonly MissingMarker[];
   readonly missingRates?: readonly CurrencyPair[];
@@ -211,6 +242,8 @@ export function evaluate(expression: Expression, frame: Frame): Trace {
     case 'every':
     case 'sum':
       return collection(expression, frame);
+    case 'covers':
+      return covers(expression, frame);
   }
 }
 
@@ -276,6 +309,12 @@ function bindingFor(target: string, frame: Frame): FactBinding {
         environment,
         personId: frame.current,
         ...(frame.firstEdge === undefined ? {} : { edge: frame.firstEdge }),
+      };
+    case 'workPeriod':
+      return {
+        environment,
+        personId: frame.current,
+        ...(frame.record === undefined ? {} : { record: frame.record }),
       };
     default:
       return {
@@ -393,7 +432,7 @@ interface Counted {
 type CollectionExpression = Extract<Expression, { op: 'count' | 'some' | 'every' | 'sum' }>;
 
 function collection(expression: CollectionExpression, frame: Frame): Trace {
-  const { items, complete, missingMarkers } = itemsOf(
+  const { items, complete, missingMarkers, records } = itemsOf(
     expression.over,
     expression.generations,
     frame,
@@ -425,8 +464,136 @@ function collection(expression: CollectionExpression, frame: Frame): Trace {
     op: expression.op,
     value: aggregate(expression, counted, complete, frame),
     children: traces,
-    ...(complete ? {} : { incomplete: { missingMarkers } }),
+    ...(complete ? {} : { incomplete: incompleteOf(missingMarkers, records) }),
   };
+}
+
+function incompleteOf(
+  missingMarkers: readonly MissingMarker[],
+  records: UnknownRecords | undefined,
+): NonNullable<Trace['incomplete']> {
+  return { missingMarkers, ...(records === undefined ? {} : { records }) };
+}
+
+/** A span of days, from `from` up to, not including, `to`. */
+interface Span {
+  readonly from: CalendarDate;
+  readonly to: CalendarDate;
+}
+
+/**
+ * Whether the periods cover `atLeast` of the window (see the `covers` operator). What certainly
+ * counts (items that meet `where`, at their narrowest dates) and what possibly counts (items that
+ * may, at their widest; the whole window when the list is unknown) bound the answer: coverage only
+ * grows with more or longer spans, so the first meeting it is true and the second missing it false.
+ */
+function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame): Trace {
+  const reference =
+    expression.at === undefined ? frame.at : frame.referenceDates.get(expression.at);
+  if (reference === undefined) {
+    return {
+      op: 'covers',
+      value: booleanValue('unknown'),
+      children: [],
+      ...(expression.at === undefined ? {} : { missingDate: expression.at }),
+    };
+  }
+  assertRecordedBy(frame.environment.snapshot, reference);
+  if (!isRecordCollection(expression.over)) throw new RangeError('Unchecked covers');
+  const { period } = recordCollections[expression.over];
+  const { items, complete, records } = itemsOf(expression.over, undefined, frame);
+  const window: Span = {
+    from:
+      expression.window === undefined
+        ? firstDate
+        : (trySubtractDuration(reference, expression.window as Duration) ?? firstDate),
+    to: reference,
+  };
+  const certain: Span[] = [];
+  const possible: Span[] = complete ? [] : [window];
+  const traces = items.map((item): Trace => {
+    const condition =
+      expression.where === undefined ? undefined : evaluate(expression.where, item.frame);
+    const holds: Truth = condition === undefined ? true : truthOf(condition);
+    const start = readFact(period.start, undefined, item.frame);
+    const end = readFact(period.end, undefined, item.frame);
+    const starts = start.value as DateValueRange;
+    const ends = end.value as DateValueRange;
+    // Dates count inside the window only: any two outside it on the same side are as good.
+    const inside = (date: CalendarDate) => earlier(later(date, window.from), window.to);
+    const from = inside;
+    const to = (date: CalendarDate) => inside(dayAfter(date));
+    const narrowest = span(from(starts.max), to(ends.min));
+    const widest = span(from(starts.min), to(ends.max));
+    if (holds === true && narrowest !== undefined) certain.push(narrowest);
+    if (holds !== false && widest !== undefined) possible.push(widest);
+    const unsettled = [
+      condition,
+      from(starts.min) === from(starts.max) ? undefined : start,
+      to(ends.min) === to(ends.max) ? undefined : end,
+    ];
+    return {
+      op: 'item',
+      value: booleanValue(holds),
+      children: unsettled.filter((trace) => trace !== undefined),
+      item: { personId: item.frame.current, membership: true },
+    };
+  });
+  const duration = expression.atLeast as Duration;
+  const meets = (spans: readonly Span[]): boolean =>
+    expression.continuous
+      ? joined(spans).some(({ from, to }) => elapsedSince(from, duration, to))
+      : coveredDays(spans) >= daysBack(reference, duration);
+  const truth: Truth = meets(certain) ? true : meets(possible) ? 'unknown' : false;
+  return {
+    op: 'covers',
+    value: booleanValue(truth),
+    children: traces,
+    ...(complete ? {} : { incomplete: incompleteOf([], records) }),
+  };
+}
+
+function dayAfter(date: CalendarDate): CalendarDate {
+  return tryAddDays(date, 1) ?? date;
+}
+
+const later = (left: CalendarDate, right: CalendarDate) =>
+  compareDates(left, right) > 0 ? left : right;
+
+const earlier = (left: CalendarDate, right: CalendarDate) =>
+  compareDates(left, right) < 0 ? left : right;
+
+/** The days from `from` up to `to`, or undefined when there are none. */
+function span(from: CalendarDate, to: CalendarDate): Span | undefined {
+  return compareDates(from, to) < 0 ? { from, to } : undefined;
+}
+
+/** The spans with touching and overlapping ones joined, in order. */
+function joined(spans: readonly Span[]): Span[] {
+  const sorted = [...spans].sort((left, right) => compareDates(left.from, right.from));
+  const result: Span[] = [];
+  for (const span of sorted) {
+    const last = result.at(-1);
+    if (last !== undefined && compareDates(span.from, last.to) <= 0) {
+      result[result.length - 1] = {
+        from: last.from,
+        to: compareDates(span.to, last.to) > 0 ? span.to : last.to,
+      };
+    } else {
+      result.push(span);
+    }
+  }
+  return result;
+}
+
+function coveredDays(spans: readonly Span[]): number {
+  return joined(spans).reduce((total, { from, to }) => total + daysBetween(from, to), 0);
+}
+
+/** The days `duration` spans back from `reference`; more than any span holds when it runs off. */
+function daysBack(reference: CalendarDate, duration: Duration): number {
+  const start = trySubtractDuration(reference, duration);
+  return start === undefined ? Number.POSITIVE_INFINITY : daysBetween(start, reference);
 }
 
 /**
@@ -488,9 +655,14 @@ function itemsOf(
   over: CollectionName,
   generations: number | undefined,
   frame: Frame,
-): { items: Item[]; complete: boolean; missingMarkers: readonly MissingMarker[] } {
+): {
+  items: Item[];
+  complete: boolean;
+  missingMarkers: readonly MissingMarker[];
+  records?: UnknownRecords;
+} {
   const { environment } = frame;
-  const at = (current: string, lineage?: LineageBinding): Frame => {
+  const at = (current: string, lineage?: LineageBinding, record?: PersonRecord): Frame => {
     const { at: date, referenceDates, countrySets } = frame;
     return {
       environment,
@@ -499,8 +671,23 @@ function itemsOf(
       countrySets,
       current,
       ...(lineage === undefined ? {} : { lineage }),
+      ...(record === undefined ? {} : { record }),
     };
   };
+  if (isRecordCollection(over)) {
+    const { owner, list, record } = recordCollections[over];
+    const personId = owner === 'principal' ? environment.principalId : frame.current;
+    const values = environment.snapshot.person(personId)[list];
+    return {
+      items: (values ?? []).map((value): Item => ({
+        frame: at(personId, undefined, { kind: record, value }),
+        membership: true,
+      })),
+      complete: values !== undefined,
+      missingMarkers: [],
+      ...(values === undefined ? { records: { personId, list } } : {}),
+    };
+  }
   switch (over) {
     case 'unit.members':
     case 'unit.dependents': {
