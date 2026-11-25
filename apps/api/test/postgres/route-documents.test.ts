@@ -290,7 +290,7 @@ describe('a route’s document checklist (spec #519)', () => {
     expect(unit.map(({ documentId }) => documentId)).toEqual(['bank-statement']);
   });
 
-  it('reads apart a route with no document list and one that asks for none', async () => {
+  it('reads apart a route with no document list, one that asks for none and one whose items do not apply', async () => {
     const { ana, people } = await family();
     const absent = fixtureEntry({ documents: undefined });
     const none = fixtureEntry({ number: 2, documents: [] });
@@ -307,6 +307,20 @@ describe('a route’s document checklist (spec #519)', () => {
     );
     expect(empty.documents).toMatchObject({ kind: 'listed', asksNone: true, unit: [] });
     expect(empty.documents?.kind === 'listed' && empty.documents.people[1]?.items).toEqual([]);
+    const pensionOnly = fixtureEntry({
+      number: 3,
+      documents: fixtureVersion.documents.filter(({ id }) => id === 'pension'),
+    });
+    const noneApply = await read(
+      ana,
+      people.ana,
+      filesWith([pensionOnly], new Map([[identityKey(pensionOnly.identity), 'active']])),
+    );
+    expect(noneApply.documents).toMatchObject({ kind: 'listed', asksNone: false, unit: [] });
+    expect(
+      noneApply.documents?.kind === 'listed' &&
+        noneApply.documents.people.flatMap(({ items }) => items),
+    ).toEqual([]);
   });
 
   it('shows a version waiting for activation as pending, with none of its content (rule 5)', async () => {

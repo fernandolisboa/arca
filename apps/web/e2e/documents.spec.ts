@@ -215,5 +215,12 @@ test('opens a route’s document checklist from the results and reads two people
     documents: { kind: 'listed', asksNone: true, people: [], unit: [] },
   });
   await expect(page.getByText('Esta rota não pede nenhum documento.')).toBeVisible();
+  await answer({
+    ...documents,
+    documents: { kind: 'listed', asksNone: false, people: [], unit: [] },
+  });
+  await expect(
+    page.getByText('Nenhum documento desta rota vale para esta família agora.'),
+  ).toBeVisible();
   expect(problems).toEqual([]);
 });

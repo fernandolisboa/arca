@@ -199,9 +199,9 @@ function Checklist({
                 ? []
                 : [
                     {
-                      id: unitList,
+                      id: unitRole,
                       title: t('checklist.unitTitle'),
-                      role: unitList,
+                      role: unitRole,
                       items: documents.unit,
                     },
                   ]),
@@ -223,8 +223,8 @@ interface List {
 }
 
 /** Wide enough for the lists side by side. */
-const unitList = 'unit' as const;
 const sideBySideQuery = '(min-width: 48rem)';
+const unitRole = 'unit' as const;
 
 /** Side by side from a tablet up, each person a column; a tab per person on a phone. */
 function Lists({
