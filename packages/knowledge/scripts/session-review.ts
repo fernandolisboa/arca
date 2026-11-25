@@ -189,6 +189,21 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_es_telework',
     versions: [{ routeId: 'es-international-telework', number: 1, newRoute: true }],
   },
+  {
+    id: '2026-11-pl-documents',
+    migration: 'knowledge_session_review_2026_11_pl_documents',
+    versions: [{ routeId: 'pl-descent', number: 4 }],
+  },
+  {
+    id: '2026-11-pt-d2',
+    migration: 'knowledge_session_review_2026_11_pt_d2',
+    versions: [{ routeId: 'pt-d2', number: 1, newRoute: true }],
+  },
+  {
+    id: '2026-11-lv-documents',
+    migration: 'knowledge_session_review_2026_11_lv_documents',
+    versions: [{ routeId: 'lv-capital-investment', number: 6 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

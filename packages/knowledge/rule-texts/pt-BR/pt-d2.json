@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "routeId": "pt-d2",
+  "texts": [
+    {
+      "en": "D2 residence visa for independent professional activity or for immigrant entrepreneurs",
+      "text": "Visto de residência D2 para atividade profissional independente ou para imigrantes empreendedores"
+    },
+    {
+      "en": "Not a citizen of an EU or EEA state or of Switzerland, Portugal included: the foreigners law, and so this visa, does not apply to them",
+      "text": "Não ser cidadão de um país da UE ou do EEE nem da Suíça, Portugal incluído: a lei de estrangeiros, e portanto este visto, não se aplica a eles"
+    },
+    {
+      "en": "One of: a contract or written proposal for services in a liberal profession, or a company contract; investments made; means in Portugal and an intent to invest; a project in a certified incubator",
+      "text": "Uma das opções: contrato ou proposta escrita de prestação de serviços numa profissão liberal, ou contrato de sociedade; investimento já feito; recursos em Portugal e intenção de investir; projeto numa incubadora certificada"
+    },
+    {
+      "en": "Independent professional: an activity on the list of professions used to identify IRS taxpayers; for a profession that needs special qualifications in Portugal, qualified to practise it",
+      "text": "Profissional independente: atividade que conste da lista de profissões usada para identificar contribuintes do IRS; numa profissão que exige qualificações especiais em Portugal, estar habilitado a exercê-la"
+    },
+    {
+      "en": "Means a month of the 2026 minimum wage net of 11% social security (EUR 818.80, from EUR 920) for the principal, plus 50% of it per other adult, 30% per minor and per dependent adult child",
+      "text": "Recursos por mês de um salário mínimo português de 2026 descontada a contribuição de 11% para a previdência (EUR 818,80, calculado sobre EUR 920) para o requerente principal, mais 50% dele por outro adulto e 30% por menor de idade e por filho maior dependente"
+    },
+    {
+      "en": "Means assured for as long as the means portaria asks: for independent work, the visa stay with its extension, measured by their availability in Portugal; at least 12 months for an investor",
+      "text": "Recursos garantidos pelo prazo que a portaria de meios de subsistência pede: para trabalho independente, a estada do visto com a prorrogação, aferidos pela disponibilidade em Portugal; pelo menos 12 meses para quem investe"
+    },
+    {
+      "en": "Incubator path, Startup Visa rules: 18 or older, no permanent residence in the Schengen area, taxes and social security in order where applicable, no criminal record, own means of 12 times the IAS",
+      "text": "Caminho da incubadora, regras do programa Startup Visa: ter 18 anos ou mais, não ter residência permanente no Espaço Schengen, estar em dia com o fisco e a segurança social quando se aplica, não ter antecedentes criminais e ter recursos próprios de 12 vezes o IAS (Indexante dos Apoios Sociais)"
+    },
+    {
+      "en": "Certified incubator path: a project in Portugal with internationalizable goods or services, focused on technology and innovative products, which a certified incubator wants to host",
+      "text": "Caminho da incubadora certificada: projeto em Portugal com bens ou serviços que possam ser vendidos para outros países, focado em tecnologia e produtos inovadores, que uma incubadora certificada queira acolher"
+    },
+    {
+      "en": "Incubator path: potential for qualified jobs and, within 5 years, turnover over EUR 325,000 a year or assets over EUR 325,000; able to form a company where applicable; each founder essential",
+      "text": "Caminho da incubadora: potencial para empregos qualificados e, em até 5 anos, faturamento acima de EUR 325.000 por ano ou ativos acima de EUR 325.000; capacidade de abrir empresa quando se aplica; cada fundador essencial"
+    },
+    {
+      "en": "Incubator path, home-country startup under 4 years old, to operate in Portugal: potential for at least 5 jobs besides founders in 24 months; executive role or 10% of capital or votes; positive equity",
+      "text": "Caminho da incubadora, para startup aberta no país de origem há menos de 4 anos e que vai atuar em Portugal: potencial para pelo menos 5 empregos além dos fundadores em 24 meses; cargo executivo ou 10% do capital ou dos votos; patrimônio líquido positivo"
+    },
+    {
+      "en": "Each applicant: no entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
+      "text": "Cada requerente: nenhuma proibição de entrada em vigor depois de um afastamento de Portugal, e nenhum alerta de retorno ou de recusa de entrada e estadia no Sistema de Informação Schengen ou no sistema de fronteiras de Portugal"
+    },
+    {
+      "en": "Each applicant: no conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
+      "text": "Cada requerente: nenhuma condenação por crime que Portugal pune com mais de um ano de prisão, mesmo que a pena não tenha sido cumprida ou tenha sido suspensa"
+    },
+    {
+      "en": "Each applicant: no danger to public order, security, national defence or public health, and no illegal entry or stay in Portugal that bars a residence visa under article 144.º, n.º 1",
+      "text": "Cada requerente: não representar perigo para a ordem pública, a segurança, a defesa nacional ou a saúde pública, e não ter entrada ou permanência ilegal em Portugal que impeça o visto de residência pelo artigo 144.º, n.º 1"
+    },
+    {
+      "en": "Consular fee for processing the residence visa application of a principal aged 18 or over",
+      "text": "Taxa consular do pedido de visto de residência de requerente principal com 18 anos ou mais"
+    },
+    {
+      "en": "Consular fee for processing the residence visa application of a principal aged 6 to 17, which the consulate may waive",
+      "text": "Taxa consular do pedido de visto de residência de requerente principal de 6 a 17 anos, que o consulado pode dispensar"
+    },
+    {
+      "en": "Consular fee for the residence visa application of each accompanying family member aged 18 or over",
+      "text": "Taxa consular do pedido de visto de residência de cada familiar que acompanha, com 18 anos ou mais"
+    },
+    {
+      "en": "Consular fee for the residence visa application of each child aged 6 to 17, which the consulate may waive; children under 6 pay nothing",
+      "text": "Taxa consular do pedido de visto de residência de cada filho de 6 a 17 anos, que o consulado pode dispensar; menores de 6 anos não pagam"
+    },
+    {
+      "en": "Decision on the residence visa application, within the legal time limit of 60 days",
+      "text": "Decisão sobre o pedido de visto de residência, dentro do prazo legal de 60 dias"
+    },
+    {
+      "en": "Residence visa: two entries and a stay of four months in Portugal, to apply there for the residence permit",
+      "text": "Visto de residência: duas entradas e estadia de quatro meses em Portugal, para pedir lá a autorização de residência"
+    },
+    {
+      "en": "First temporary residence permit, counted from the issue of the card; then renewable for successive periods of three years",
+      "text": "Primeira autorização de residência temporária, contada da emissão do cartão; depois, renovável por períodos sucessivos de três anos"
+    },
+    {
+      "en": "Visa application on its own form, on paper or electronic; for a minor or an incapable person, signed by the legal representative",
+      "text": "Pedido de visto no formulário próprio, em papel ou eletrônico; para menor ou incapaz, assinado pelo representante legal"
+    },
+    {
+      "en": "Two identical passport-type colour photographs with a plain background, current and showing the applicant clearly, or a facial image captured digitally, as the case may be",
+      "text": "Duas fotos iguais, tipo passaporte, coloridas, com fundo liso, atuais e que mostrem bem o requerente, ou imagem do rosto captada digitalmente, conforme o caso"
+    },
+    {
+      "en": "Passport or other valid travel document",
+      "text": "Passaporte ou outro documento de viagem válido"
+    },
+    {
+      "en": "Criminal record certificate from the competent authority of the country of nationality or of the country where the applicant has lived for more than a year; not asked under 16",
+      "text": "Certidão de antecedentes criminais da autoridade competente do país de nacionalidade ou do país onde o requerente mora há mais de um ano; não se pede a menores de 16 anos"
+    },
+    {
+      "en": "Valid travel insurance covering the medical expenses needed, including urgent medical care and possible repatriation",
+      "text": "Seguro de viagem válido que cubra as despesas médicas necessárias, incluindo atendimento médico urgente e eventual repatriação"
+    },
+    {
+      "en": "For a minor under 18 subject to parental responsibilities, or an adult under a protective measure (maior acompanhado), the authorization for the application",
+      "text": "Para menor de 18 anos sob poder familiar, ou adulto sob medida de proteção (maior acompanhado), a autorização para o pedido"
+    },
+    {
+      "en": "Proof of means of subsistence, as the means portaria defines them for the type of visa applied for",
+      "text": "Comprovante de meios de subsistência, como a portaria de meios os define para o tipo de visto pedido"
+    },
+    {
+      "en": "Independent professional: a company contract, or a contract or written proposal of contract for services",
+      "text": "Profissional independente: contrato de sociedade, ou contrato ou proposta escrita de contrato de prestação de serviços"
+    },
+    {
+      "en": "Independent professional, where it applies: a statement from the body that checks the requirements of a profession subject to special qualifications in Portugal",
+      "text": "Profissional independente, quando se aplica: declaração da entidade que verifica os requisitos de uma profissão que exige qualificações especiais em Portugal"
+    },
+    {
+      "en": "Entrepreneur: proof of the investment operations made",
+      "text": "Empreendedor: comprovante dos investimentos já feitos"
+    },
+    {
+      "en": "Entrepreneur: proof of financial means available in Portugal, including from a financial institution there, and of the intent to invest in Portugal, duly described and identified",
+      "text": "Empreendedor: comprovante de recursos financeiros disponíveis em Portugal, inclusive obtidos numa instituição financeira de lá, e da intenção de investir em Portugal, com o investimento descrito e identificado"
+    },
+    {
+      "en": "Entrepreneur: a statement from IAPMEI proving an incubation contract with a certified incubator",
+      "text": "Empreendedor: declaração do IAPMEI que comprova um contrato de incubação com uma incubadora certificada"
+    },
+    {
+      "en": "Proof of the family ties",
+      "text": "Comprovante do vínculo familiar"
+    },
+    {
+      "en": "Proof of stable and regular resources sufficient for the visa applicant and the family members who go with them, for the stay applied for or 12 months, whichever is shorter",
+      "text": "Comprovante de recursos estáveis e regulares suficientes para o requerente do visto e os familiares que vão com ele, pelo período de estada pedido ou por 12 meses, o que for menor"
+    },
+    {
+      "en": "To enter Portugal it must be valid at least three months beyond the planned stay",
+      "text": "Para entrar em Portugal, ele precisa valer pelo menos três meses além da estada prevista"
+    },
+    {
+      "en": "An applicant who proves it cannot be obtained may be exempted",
+      "text": "Quem comprovar que não consegue contratar esse seguro pode ser dispensado"
+    }
+  ]
+}
