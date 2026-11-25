@@ -988,7 +988,12 @@ describe('a business and a work period at it (ADR-0036)', () => {
     expect(own.assets[0]).toMatchObject({ id: 'a1', operatingSince: '2018-05', employees: 6 });
 
     // With only the profile shared, Bruno reads the work period but not the business it is at.
-    await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
+    await files.replaceShares(alice, {
+      personId: people.alice,
+      profile: [bruno],
+      finances: [],
+      checklist: [],
+    });
     const profileOnly = await snapshotFor(bruno);
     expect(profileOnly.people[0]?.workPeriods).toEqual([
       { relation: 'owner', capacity: 'manager' },
@@ -1006,6 +1011,7 @@ describe('a business and a work period at it (ADR-0036)', () => {
       personId: people.alice,
       profile: [bruno],
       finances: [bruno],
+      checklist: [],
     });
     expect(await seenBy(bruno)).toEqual([owner]);
     const shared = (await files.playback(bruno))?.sentences ?? [];
