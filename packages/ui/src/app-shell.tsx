@@ -31,11 +31,15 @@ export interface AppShellLabels {
   /** The button that switches the bars and the side column to icons only, and back. */
   readonly collapseMenu: string;
   readonly expandMenu: string;
+  /** The tooltip of the mark and the name. */
+  readonly home: string;
 }
 
 export interface AppShellProps {
   /** Shown beside the mark in every bar. */
   readonly title: ReactNode;
+  /** Where the mark and the name lead. */
+  readonly homeHref: string;
   readonly skipToContentLabel: string;
   /** The navigation items whose page exists, in order. */
   readonly items: readonly NavItem[];
@@ -137,6 +141,7 @@ function dockAt(narrow: boolean, wide: boolean): string {
  */
 export function AppShell({
   title,
+  homeHref,
   skipToContentLabel,
   items,
   settings,
@@ -145,7 +150,7 @@ export function AppShell({
   onDockEdgeChange,
   onCollapseChange,
   labels,
-  link,
+  link: Link,
   children,
 }: AppShellProps) {
   const layout = { ...defaultLayout, ...chosen };
@@ -233,11 +238,16 @@ export function AppShell({
     </div>
   );
 
-  const brand = (
-    <div className="flex min-w-0 items-center gap-2">
+  const brandLink = (nameHidden: boolean, onNavigate?: () => void) => (
+    <Link
+      href={homeHref}
+      title={labels.home}
+      className={`flex min-h-touch ${nameHidden ? 'min-w-touch justify-center' : 'min-w-0'} items-center gap-2 rounded-control ${focusRing}`}
+      {...(onNavigate === undefined ? {} : { onClick: onNavigate })}
+    >
       <Mark size={36} />
-      <div className="min-w-0">{title}</div>
-    </div>
+      <div className={nameHidden ? 'sr-only' : 'min-w-0'}>{title}</div>
+    </Link>
   );
 
   const collapseLabel = collapsed ? labels.expandMenu : labels.collapseMenu;
@@ -279,7 +289,7 @@ export function AppShell({
         className={`sticky top-0 z-40 border-b border-line bg-surface pt-[env(safe-area-inset-top)] ${slideClass} ${barsAway ? '-translate-y-full has-[:focus-visible]:translate-y-0' : ''} ${side ? 'md:hidden' : ''}`}
       >
         <div className="mx-auto flex h-bar w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          {brand}
+          {brandLink(false, menuOpen ? leaveMenu : undefined)}
           {(narrowMenu || wideMenu) && menuToggle(at(narrowMenu, wideMenu))}
           {top && (
             <nav
@@ -289,7 +299,7 @@ export function AppShell({
             >
               <NavList
                 items={items}
-                link={link}
+                link={Link}
                 place="bar"
                 shape="row"
                 direction="row"
@@ -297,7 +307,7 @@ export function AppShell({
                 hideLabel={collapsed}
               />
               {settings !== undefined && (
-                <NavLink item={settings} link={link} place="bar" shape="row" iconOnly />
+                <NavLink item={settings} link={Link} place="bar" shape="row" iconOnly />
               )}
               {collapseToggle(false)}
             </nav>
@@ -341,18 +351,13 @@ export function AppShell({
           data-hidden={autoHide && !sideShown ? '' : undefined}
           className={`fixed inset-y-0 left-0 z-20 hidden ${collapsed ? 'w-[calc(72px+env(safe-area-inset-left))]' : 'w-[calc(216px+env(safe-area-inset-left))]'} flex-col gap-6 border-r border-line bg-surface pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] pl-[calc(0.75rem+env(safe-area-inset-left))] pr-3 md:flex ${slideClass} ${autoHide ? 'shadow-lg shadow-ink/15' : ''} ${autoHide && !sideShown ? '-translate-x-full has-[:focus-visible]:translate-x-0' : ''}`}
         >
-          {collapsed ? (
-            <div className="flex justify-center">
-              <Mark size={36} />
-              <div className="sr-only">{title}</div>
-            </div>
-          ) : (
-            <div className="px-1">{brand}</div>
-          )}
+          <div className={collapsed ? 'flex justify-center' : 'px-1'}>
+            {brandLink(collapsed, autoHide ? leaveSide : undefined)}
+          </div>
           <div className="flex-1">
             <NavList
               items={items}
-              link={link}
+              link={Link}
               place="side"
               shape="row"
               direction="column"
@@ -363,7 +368,7 @@ export function AppShell({
           {settings !== undefined && (
             <NavLink
               item={settings}
-              link={link}
+              link={Link}
               place="side"
               shape="row"
               hideLabel={collapsed}
@@ -389,7 +394,7 @@ export function AppShell({
           edge="bottom"
           label={labels.navigation}
           items={withSettings}
-          link={link}
+          link={Link}
           inert={menuOpen}
           collapsed={collapsed}
           hidden={barsAway}
@@ -402,7 +407,7 @@ export function AppShell({
           edge={layout.dockEdge}
           label={labels.navigation}
           items={withSettings}
-          link={link}
+          link={Link}
           inert={menuOpen}
           collapsed={collapsed}
           hidden={barsAway}
@@ -415,7 +420,7 @@ export function AppShell({
         <MenuPanel
           id={menuId}
           groups={groups}
-          link={link}
+          link={Link}
           toggle={toggleRef}
           onClose={closeMenu}
           onNavigate={leaveMenu}

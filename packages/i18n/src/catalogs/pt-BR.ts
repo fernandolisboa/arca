@@ -15,6 +15,7 @@ export const ptBR = {
     accountGroup: 'Sua conta',
     collapseMenu: 'Recolher menu',
     expandMenu: 'Expandir menu',
+    home: 'Página inicial',
     nav: {
       home: 'Início',
       family: 'Família',
