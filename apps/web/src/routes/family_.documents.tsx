@@ -4,6 +4,7 @@ import {
   type DocumentGuideView,
   type DocumentItemView,
   type RouteDocuments,
+  type SetChecklistMarkRequest,
   markStates,
 } from '@arca/api-contract/client';
 import {
@@ -18,7 +19,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { type ReactNode, createContext, use, useId, useMemo, useState } from 'react';
-import { caseQuery, routeDocumentsQuery, sessionQuery } from '../api.js';
+import { caseQuery, routeDocumentsKey, routeDocumentsQuery, sessionQuery } from '../api.js';
 import { markFailure, setChecklistMark } from '../checklist-marks.js';
 import { CountryFlag, FlagLead } from '../country-flag.js';
 import { type OpenedDocument, documentsQuery } from '../documents.js';
@@ -140,7 +141,7 @@ function Documents() {
 }
 
 /** What marking an item needs: the route, and the viewer's own vault documents while it is open. */
-interface MarkingContext {
+interface MarkingSettings {
   readonly routeId: string;
   /** The route's country, which linking files a document under. */
   readonly country: string | undefined;
@@ -148,7 +149,7 @@ interface MarkingContext {
   readonly documents: readonly OpenedDocument[] | undefined;
 }
 
-const MarkingContext = createContext<MarkingContext>({
+const MarkingContext = createContext<MarkingSettings>({
   routeId: '',
   country: undefined,
   documents: undefined,
@@ -307,7 +308,7 @@ function Checklist({
             showOriginal={showOriginal}
           />
         ))}
-      {documents?.kind === 'listed' && documents.noLongerAsked.length > 0 && (
+      {documents !== null && documents.noLongerAsked.length > 0 && (
         <NoLongerAsked marks={documents.noLongerAsked} name={name} words={words} />
       )}
     </div>
@@ -320,10 +321,7 @@ function NoLongerAsked({
   name,
   words,
 }: {
-  readonly marks: Extract<
-    NonNullable<RouteDocuments['documents']>,
-    { kind: 'listed' }
-  >['noLongerAsked'];
+  readonly marks: NonNullable<RouteDocuments['documents']>['noLongerAsked'];
   readonly name: (id: string) => string;
   readonly words: KnowledgeWords;
 }) {
@@ -670,10 +668,10 @@ function useSaveMark(personId: string, documentId: string) {
   const { routeId } = use(MarkingContext);
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (mark: { state: 'had' | 'missing'; vaultDocumentId: string | null } | null) =>
+    mutationFn: (mark: SetChecklistMarkRequest['mark']) =>
       setChecklistMark(passkeys, { routeId, personId, documentId, mark }),
     onSuccess: async (_saved, mark) => {
-      await queryClient.invalidateQueries({ queryKey: ['case', 'documents', routeId] });
+      await queryClient.invalidateQueries({ queryKey: routeDocumentsKey(routeId) });
       if (mark?.vaultDocumentId != null) {
         await queryClient.invalidateQueries({ queryKey: ['documents'] });
       }
@@ -756,9 +754,11 @@ function VaultLink({
     return (
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-small">
         <span className="break-words">
-          {linked?.label === undefined
-            ? t('checklist.mark.linkedUnnamed')
-            : t('checklist.mark.linked', { name: linked.label.name })}
+          {linked?.label !== undefined
+            ? t('checklist.mark.linked', { name: linked.label.name })
+            : documents === undefined
+              ? t('checklist.mark.linkedUnnamed')
+              : t('checklist.mark.linkedElsewhere')}
         </span>
         <button
           type="button"

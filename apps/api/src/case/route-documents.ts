@@ -29,12 +29,10 @@ export interface SeenMark {
 
 /**
  * One route's document checklist for one member as principal (spec #519), from what the viewer
- * sees, as `caseEvaluations` reads it: a hidden fact is an unknown one, so an item that reads it
- * may apply. Only an active version's content leaves (rule 5). Each item is named field by field,
- * so the traces and missing facts, with their case-internal IDs, stay here: what an item depends on
- * leaves as the questions that settle it, as the results' questions do. Each list carries the
- * marks the viewer sees on it, keyed on the item's ID (the unit's on the principal), and the marks
- * on items the version no longer lists come apart. Null when the principal is not a member.
+ * sees: a hidden fact is an unknown one, so an item that reads it may apply. Only an active
+ * version's content leaves (rule 5), and each item is named field by field so traces and missing
+ * facts, with their case-internal IDs, stay here. Marks are keyed on the item's ID, the unit's on
+ * the principal. Null when the principal is not a member.
  */
 export function caseRouteDocuments(
   rows: CaseRows,
@@ -128,12 +126,12 @@ export function caseRouteDocuments(
   const markOf = new Map(
     marks.map(({ personId, documentId, mark }) => [`${personId}:${documentId}`, mark]),
   );
-  // Row-level security shows a person's share rows only to their keeper and to its grantees.
-  const marksShown = (personUuid: string) =>
-    rows.people.some(({ id, keptByMe }) => id === personUuid && keptByMe) ||
-    rows.shares.some((share) => share.personId === personUuid && share.scope === 'checklist');
   const editable = (personUuid: string) =>
     rows.people.some(({ id, keptByMe }) => id === personUuid && keptByMe);
+  // Row-level security shows a person's share rows only to their keeper and to its grantees.
+  const marksShown = (personUuid: string) =>
+    editable(personUuid) ||
+    rows.shares.some((share) => share.personId === personUuid && share.scope === 'checklist');
   // An item that does not apply leaves nothing, not even its truth, since that tells a fact.
   const list = (items: readonly DocumentResult[], holder: string) => {
     const holderUuid = uuid(holder);
@@ -153,6 +151,32 @@ export function caseRouteDocuments(
       items: shown,
     };
   };
+  /** Marks on items the version in effect does not list, every mark when it has no list. */
+  const noLongerAsked = (seen: readonly SeenMark[]) => {
+    const dropped = new Map(
+      droppedItems(
+        catalog,
+        states,
+        entry,
+        seen.map(({ documentId }) => documentId),
+      ).map((each) => [each.documentId, each.title]),
+    );
+    return seen.flatMap(({ personId, documentId, mark }) => {
+      if (!dropped.has(documentId)) return [];
+      const old = dropped.get(documentId);
+      const shownTitle = old === undefined ? undefined : translated(old);
+      return [
+        {
+          personId,
+          documentId,
+          title: shownTitle?.text ?? null,
+          original: shownTitle?.original ?? null,
+          editable: editable(personId),
+          mark,
+        },
+      ];
+    });
+  };
   const listed = (listedChecklist: Extract<typeof checklist, { kind: 'listed' }>) => {
     const people = [
       { person: listedChecklist.principal, role: 'principal' as const },
@@ -167,36 +191,13 @@ export function caseRouteDocuments(
     }));
     const unit = list(listedChecklist.unit, principal);
     const inChecklist = new Set(people.map(({ personId }) => personId));
-    const ours = marks.filter(({ personId }) => inChecklist.has(personId));
-    const dropped = new Map(
-      droppedItems(
-        catalog,
-        states,
-        entry,
-        ours.map(({ documentId }) => documentId),
-      ).map((each) => [each.documentId, each.title]),
-    );
     return {
       kind: 'listed' as const,
       asksNone: entry.version.documents?.length === 0,
       people,
       unit,
       progress: routeProgress([...people, unit].map(({ progress }) => progress)),
-      noLongerAsked: ours.flatMap(({ personId, documentId, mark }) => {
-        if (!dropped.has(documentId)) return [];
-        const old = dropped.get(documentId);
-        const shownTitle = old === undefined ? undefined : translated(old);
-        return [
-          {
-            personId,
-            documentId,
-            title: shownTitle?.text ?? null,
-            original: shownTitle?.original ?? null,
-            editable: editable(personId),
-            mark,
-          },
-        ];
-      }),
+      noLongerAsked: noLongerAsked(marks.filter(({ personId }) => inChecklist.has(personId))),
     };
   };
   return {
@@ -208,7 +209,10 @@ export function caseRouteDocuments(
       newerProposedVersion === undefined
         ? null
         : { number: newerProposedVersion.identity.number, from: newerProposedVersion.from },
-    documents: checklist.kind === 'not_covered' ? { kind: 'not_covered' } : listed(checklist),
+    documents:
+      checklist.kind === 'not_covered'
+        ? { kind: 'not_covered' as const, noLongerAsked: noLongerAsked(marks) }
+        : listed(checklist),
   };
 }
 

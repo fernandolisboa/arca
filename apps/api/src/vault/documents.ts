@@ -135,6 +135,34 @@ const uuidArray = (values: readonly string[]): SQL =>
         sql`, `,
       )}]`;
 
+/** Locks the account's own confirmed documents; false when any of them is not one. */
+export async function lockOwnDocuments(
+  tx: Transaction,
+  accountId: string,
+  documentIds: readonly string[],
+): Promise<boolean> {
+  const owned = await tx.execute<{ id: string }>(sql`
+    SELECT id FROM vault.document
+     WHERE owner_id = ${accountId} AND confirmed_at IS NOT NULL
+       AND id IN ${listOf(documentIds)}
+     FOR UPDATE`);
+  return owned.rows.length === documentIds.length;
+}
+
+/** Files documents `lockOwnDocuments` locked under a country, keeping the ones already there. */
+export async function fileUnderCountry(
+  tx: Transaction,
+  accountId: string,
+  documentIds: readonly string[],
+  country: string,
+): Promise<void> {
+  await tx.execute(sql`
+    INSERT INTO vault.document_country (document_id, owner_id, country)
+    SELECT id, ${accountId}::uuid, ${country}::text
+      FROM unnest(${uuidArray(documentIds)}) AS id
+    ON CONFLICT DO NOTHING`);
+}
+
 interface DocumentRow extends Record<string, unknown> {
   readonly id: string;
   readonly owner_id: string;
@@ -501,22 +529,15 @@ export function createDocuments({ db, storage, audit, countries }: DocumentSetti
       asAccount(accountId, async (tx) => {
         // A code that left the dataset can still be taken off the documents filed under it.
         if (filed && !knownCountries.has(country)) return 'unknown_country';
-        const owned = await tx.execute<{ id: string }>(sql`
-          SELECT id FROM vault.document
-           WHERE owner_id = ${accountId} AND confirmed_at IS NOT NULL
-             AND id IN ${listOf(documentIds)}
-           FOR UPDATE`);
-        if (owned.rows.length !== documentIds.length) return 'not_found';
-        await tx.execute(
-          filed
-            ? sql`INSERT INTO vault.document_country (document_id, owner_id, country)
-                  SELECT id, ${accountId}::uuid, ${country}::text
-                    FROM unnest(${uuidArray(documentIds)}) AS id
-                  ON CONFLICT DO NOTHING`
-            : sql`DELETE FROM vault.document_country
-                   WHERE owner_id = ${accountId} AND country = ${country}
-                     AND document_id IN ${listOf(documentIds)}`,
-        );
+        if (!(await lockOwnDocuments(tx, accountId, documentIds))) return 'not_found';
+        if (filed) {
+          await fileUnderCountry(tx, accountId, documentIds, country);
+        } else {
+          await tx.execute(sql`
+            DELETE FROM vault.document_country
+             WHERE owner_id = ${accountId} AND country = ${country}
+               AND document_id IN ${listOf(documentIds)}`);
+        }
         return 'changed';
       }),
 

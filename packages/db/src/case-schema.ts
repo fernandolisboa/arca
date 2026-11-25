@@ -677,6 +677,7 @@ export const checklistMark = cases.table(
       foreignColumns: [vaultDocument.id, vaultDocument.ownerId],
     }).onDelete('set null'),
     index('checklist_mark_vault_document_id_idx').on(table.vaultDocumentId),
+    index('checklist_mark_case_route_idx').on(table.caseId, table.routeId),
     check('checklist_mark_state', inList(table.state, checklistMarkStates)),
     check(
       'checklist_mark_route_id_format',

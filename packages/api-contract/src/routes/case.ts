@@ -546,6 +546,25 @@ const ChecklistList = z.object({
   items: z.array(DocumentItemView).max(100),
 });
 
+/** Marks a person may hold on one route, past which a new one answers 409 case_limit. */
+export const maxChecklistMarks = 200;
+
+/** Marks the viewer sees on items the version in effect no longer lists. */
+const NoLongerAsked = z
+  .array(
+    z.object({
+      personId: z.uuid(),
+      documentId: slugSchema,
+      /** From the newest earlier version that listed it; null when none did. */
+      title: shownText.nullable(),
+      original: originalText,
+      /** The viewer keeps the person, so may take the mark off. */
+      editable: z.boolean(),
+      mark: ChecklistMarkView,
+    }),
+  )
+  .max(maxCasePeople * maxChecklistMarks);
+
 export const RouteDocuments = z.object({
   routeId: routeIdSchema,
   principalId: z.uuid(),
@@ -558,11 +577,12 @@ export const RouteDocuments = z.object({
   newerProposedVersion: z.object({ number: z.int().min(1), from: calendarDateSchema }).nullable(),
   /**
    * Null unless a version is active. `not_covered` when it has no document list, so Arca does
-   * not know them yet; a `listed` one with no items asks for none.
+   * not know them yet and every mark is no longer asked; a `listed` one with no items asks for
+   * none.
    */
   documents: z
     .discriminatedUnion('kind', [
-      z.object({ kind: z.literal('not_covered') }),
+      z.object({ kind: z.literal('not_covered'), noLongerAsked: NoLongerAsked }),
       z.object({
         kind: z.literal('listed'),
         /** The version's list is empty: the route asks for no documents, of anyone. */
@@ -580,21 +600,7 @@ export const RouteDocuments = z.object({
         unit: ChecklistList,
         /** Over every list; null when some list's marks are not shown. */
         progress: ChecklistProgress.nullable(),
-        /** Marks the viewer sees on items the version in effect no longer lists. */
-        noLongerAsked: z
-          .array(
-            z.object({
-              personId: z.uuid(),
-              documentId: slugSchema,
-              /** From the newest earlier version that listed it; null when none did. */
-              title: shownText.nullable(),
-              original: originalText,
-              /** The viewer keeps the person, so may take the mark off. */
-              editable: z.boolean(),
-              mark: ChecklistMarkView,
-            }),
-          )
-          .max(maxCasePeople * 200),
+        noLongerAsked: NoLongerAsked,
       }),
     ])
     .nullable(),
@@ -616,9 +622,6 @@ export const getRouteDocuments = {
   query: RouteDocumentsQuery,
   response: { description: 'The document checklist', schema: RouteDocuments },
 } as const satisfies RouteDefinition<typeof RouteDocuments>;
-
-/** Marks a person may hold on one route, past which a new one answers 409 case_limit. */
-export const maxChecklistMarks = 200;
 
 export const SetChecklistMarkRequest = z.strictObject({
   routeId: routeIdSchema,

@@ -1258,6 +1258,7 @@ export const ptBR = {
       state: '{state, select, had {Já tem} other {Falta}}',
       linked: 'No cofre: {name}',
       linkedUnnamed: 'Ligado a um documento do cofre. Abra o cofre para ver qual.',
+      linkedElsewhere: 'Ligado a um documento que não está no seu cofre.',
       linkedHere: 'Tem um documento do cofre ligado',
       unlink: 'Desligar',
       openVault: 'Abra o cofre para ligar um documento a este item',
@@ -1272,7 +1273,7 @@ export const ptBR = {
         '{reason, select, not_found {Não deu para salvar. A pessoa, a regra ou o documento mudou. Atualize a página.} case_limit {Esta pessoa já tem marcações demais nesta rota. Tire as que não precisa mais.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas mudanças em pouco tempo. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar desta vez. Tente de novo.}}',
     },
     noLongerAsked: {
-      title: 'Não pedidos mais',
+      title: 'Não são mais pedidos',
       lead: 'A regra mudou e não pede mais estes documentos. As marcações ficaram guardadas aqui. Tire as que não precisar.',
       untitled: 'Documento que a regra não pede mais',
       clear: 'Tirar marcação',

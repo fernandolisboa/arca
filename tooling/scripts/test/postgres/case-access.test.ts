@@ -1173,6 +1173,15 @@ describe('checklist marks (spec #519)', () => {
       expect(
         await refused(
           client,
+          `INSERT INTO cases.checklist_mark
+             (case_id, person_id, route_id, document_id, state, vault_document_id, vault_owner_id)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had', $3, $4)`,
+          [family.caseId, people.child, brunos, bruno],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect(
+        await refused(
+          client,
           `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
            VALUES ($1, $2, 'pt-d7', 'passport', 'had')`,
           [family.caseId, people.bruno],
@@ -1216,6 +1225,21 @@ describe('checklist marks (spec #519)', () => {
       ),
     );
     expect(await as('app_api', bruno, marks)).toEqual([mark]);
+    // The checklist share reads, never writes.
+    await as('app_api', bruno, async (client) => {
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.checklist_mark (case_id, person_id, route_id, document_id, state)
+           VALUES ($1, $2, 'pt-d7', 'passport', 'had')`,
+          [caseId, people.child],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect(
+        (await client.query(`UPDATE cases.checklist_mark SET state = 'missing'`)).rowCount,
+      ).toBe(0);
+      expect((await client.query('DELETE FROM cases.checklist_mark')).rowCount).toBe(0);
+    });
     expect(await as('app_api', diana, marks)).toEqual([]);
     expect(await as('app_api', undefined, marks)).toEqual([]);
     expect(

@@ -61,6 +61,7 @@ import { randomBytes } from 'node:crypto';
 import { type SQL, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { AuditLog, AuditRecord } from '../audit/log.js';
+import { fileUnderCountry, lockOwnDocuments } from '../vault/documents.js';
 import {
   type DestinationComparisonView,
   type EvaluatedAsOf,
@@ -613,6 +614,11 @@ export function createCaseFiles({
 
     handOver: (accountId, { personId, accountId: newKeeper }) =>
       write(accountId, async (tx) => {
+        // A link names the keeper's own vault document, which the next keeper can neither open nor see.
+        await tx.execute(sql`
+          UPDATE cases.checklist_mark
+             SET vault_document_id = NULL, vault_owner_id = NULL, updated_at = now()
+           WHERE person_id = ${personId} AND vault_owner_id IS NOT NULL`);
         const handed = await tx.execute<{ handed: boolean }>(
           sql`SELECT cases.hand_over(${personId}, ${newKeeper}) AS handed`,
         );
@@ -875,12 +881,7 @@ export function createCaseFiles({
         const { state, vaultDocumentId } = mark;
         if (
           vaultDocumentId !== null &&
-          !(await one(
-            tx,
-            sql`SELECT FROM vault.document
-                 WHERE id = ${vaultDocumentId} AND owner_id = ${accountId}
-                   AND confirmed_at IS NOT NULL`,
-          ))
+          !(await lockOwnDocuments(tx, accountId, [vaultDocumentId]))
         ) {
           return 'not_found';
         }
@@ -899,10 +900,7 @@ export function createCaseFiles({
             SET state = excluded.state, vault_document_id = excluded.vault_document_id,
                 vault_owner_id = excluded.vault_owner_id, updated_at = now()`);
         if (vaultDocumentId !== null && country !== undefined) {
-          await tx.execute(sql`
-            INSERT INTO vault.document_country (document_id, owner_id, country)
-            VALUES (${vaultDocumentId}, ${accountId}, ${country})
-            ON CONFLICT DO NOTHING`);
+          await fileUnderCountry(tx, accountId, [vaultDocumentId], country);
         }
         return 'set';
       });

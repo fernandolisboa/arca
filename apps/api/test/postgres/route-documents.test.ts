@@ -300,7 +300,7 @@ describe('a route’s document checklist (spec #519)', () => {
       people.ana,
       filesWith([absent], new Map([[identityKey(absent.identity), 'active']])),
     );
-    expect(notCovered.documents).toEqual({ kind: 'not_covered' });
+    expect(notCovered.documents).toEqual({ kind: 'not_covered', noLongerAsked: [] });
     const empty = await read(
       ana,
       people.ana,
@@ -600,6 +600,22 @@ describe('checklist marks (spec #519)', () => {
         mark: { state: 'missing', linked: false, vaultDocumentId: null },
       },
     ]);
+
+    // A version with no document list asks nothing the family knows of, so every mark comes apart.
+    const uncovered = fixtureEntry({
+      number: 4,
+      effectiveFrom: '2026-09-01',
+      documents: undefined,
+    });
+    const fourth = await read(
+      ana,
+      people.ana,
+      filesWith([...all, uncovered], states([...all, uncovered])),
+    );
+    expect(
+      fourth.documents?.kind === 'not_covered' &&
+        fourth.documents.noLongerAsked.map(({ documentId }) => documentId).toSorted(),
+    ).toEqual(['enrollment', 'passport']);
   });
 
   it('shows marks to a member the keeper shared the checklist with, read only, and to no one else', async () => {
@@ -651,5 +667,12 @@ describe('checklist marks (spec #519)', () => {
     expect(await files.setMark(bruno, mark(people.child, 'birth-certificate', null))).toBe(
       'not_found',
     );
+
+    // Handed over, the child keeps the mark but not Ana's link, which Bruno could never open.
+    viewOf(await files.handOver(ana, { personId: people.child, accountId: bruno }));
+    const handed = listedOf(await read(bruno, people.ana));
+    expect(
+      handed.people[1]?.items.find(({ documentId }) => documentId === 'birth-certificate')?.mark,
+    ).toEqual({ state: 'had', linked: false, vaultDocumentId: null });
   });
 });

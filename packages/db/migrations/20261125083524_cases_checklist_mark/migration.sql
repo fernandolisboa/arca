@@ -17,6 +17,7 @@ CREATE TABLE "cases"."checklist_mark" (
 --> statement-breakpoint
 ALTER TABLE "cases"."checklist_mark" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 CREATE INDEX "checklist_mark_vault_document_id_idx" ON "cases"."checklist_mark" ("vault_document_id");--> statement-breakpoint
+CREATE INDEX "checklist_mark_case_route_idx" ON "cases"."checklist_mark" ("case_id","route_id");--> statement-breakpoint
 ALTER TABLE "cases"."checklist_mark" ADD CONSTRAINT "checklist_mark_person_fkey" FOREIGN KEY ("person_id","case_id") REFERENCES "cases"."person"("id","case_id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "cases"."checklist_mark" ADD CONSTRAINT "checklist_mark_vault_document_fkey" FOREIGN KEY ("vault_document_id","vault_owner_id") REFERENCES "vault"."document"("id","owner_id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "cases"."share" DROP CONSTRAINT "share_scope", ADD CONSTRAINT "share_scope" CHECK ("scope" IN ('profile', 'finances', 'checklist'));--> statement-breakpoint

@@ -266,7 +266,7 @@ test('opens a route’s document checklist from the results and reads two people
     await page.route('**/v1/case/documents?*', (request) => request.fulfill({ json: body }));
     await page.reload();
   };
-  await answer({ ...documents, documents: { kind: 'not_covered' } });
+  await answer({ ...documents, documents: { kind: 'not_covered', noLongerAsked: [] } });
   await expect(
     page.getByText('O Arca ainda não sabe quais documentos esta rota pede.'),
   ).toBeVisible();

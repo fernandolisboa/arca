@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "312e7092-79c9-4f0a-8bf6-a30e6955b3f1",
+  "id": "54807d41-b6c7-4a05-9830-96d88b5b99da",
   "prevIds": [
     "244d296c-ff31-492c-be06-65a042703c8d"
   ],
@@ -44,6 +44,27 @@
         "n|tbl|cases.checklist_mark",
         "n|sch|cases",
         "n|col|cases.checklist_mark.vault_document_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "checklist_mark",
+        "checklist_mark_case_route_idx"
+      ],
+      "writes": [
+        "s|idx|cases.checklist_mark_case_route_idx",
+        "n|idx|cases.checklist_mark_case_route_idx",
+        "e|idx|cases.checklist_mark_case_route_idx",
+        "n|rel|cases.checklist_mark_case_route_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.checklist_mark",
+        "n|sch|cases",
+        "n|col|cases.checklist_mark.case_id",
+        "n|col|cases.checklist_mark.route_id"
       ]
     },
     {
@@ -355,6 +376,37 @@
         "columns": [
           {
             "value": "vault_document_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "checklist_mark",
+        "name": "checklist_mark_case_route_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "case_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "route_id",
             "isExpression": false,
             "asc": true,
             "nullsFirst": false,

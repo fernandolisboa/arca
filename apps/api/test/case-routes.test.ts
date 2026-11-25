@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { CaseView } from '@arca/api-contract/routes';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
@@ -160,7 +161,7 @@ const routeDocuments = {
   route: { title: 'EB-5', original: null, country: 'US' },
   version: { number: 1 },
   newerProposedVersion: null,
-  documents: { kind: 'not_covered' },
+  documents: { kind: 'not_covered', noLongerAsked: [] },
 };
 const evaluations = {
   rulesAsOf: '2026-11-06',
@@ -261,6 +262,10 @@ function setup({
     reportRule: (accountId: string, request: unknown) => {
       calls.push(['reportRule', accountId, request]);
       return Promise.resolve(inCase ? 'reported' : 'not_found');
+    },
+    setMark: (accountId: string, request: unknown) => {
+      calls.push(['setMark', accountId, request]);
+      return Promise.resolve('set');
     },
     leave: (accountId: string) => {
       calls.push(['leave', accountId]);
@@ -493,6 +498,29 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(response.status).toBe(403);
     expect(await errorOf(response)).toBe('step_up_required');
     expect(refused.calls).toEqual([]);
+  });
+
+  it('links a vault document to a mark only in the vault_unlock window, and marks without one', async () => {
+    const mark = (vaultDocumentId: string | null) => ({
+      routeId: 'pt-d7',
+      personId: child,
+      documentId: 'birth-certificate',
+      mark: { state: 'had', vaultDocumentId },
+    });
+    const closed = setup();
+    const linked = await closed.call('POST', '/case/documents/marks', mark(randomUUID()));
+    expect(linked.status).toBe(403);
+    expect(await errorOf(linked)).toBe('step_up_required');
+    expect(closed.calls).toEqual([]);
+
+    const plain = mark(null);
+    expect((await closed.call('POST', '/case/documents/marks', plain)).status).toBe(200);
+    const cleared = { ...plain, mark: null };
+    expect((await closed.call('POST', '/case/documents/marks', cleared)).status).toBe(200);
+    expect(closed.calls).toEqual([
+      ['setMark', owner.accountId, plain],
+      ['setMark', owner.accountId, cleared],
+    ]);
   });
 
   it('adds a member taking over a person only with a sensitive_settings step-up for both', async () => {

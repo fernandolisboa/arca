@@ -307,7 +307,6 @@ test('shares a document with a linked account and takes the access back', async 
   expect(problems).toEqual([]);
 });
 
-/** Adds a synthetic text file to the open vault. */
 async function downloaded(page: Page, row: ReturnType<Page['getByRole']>) {
   const download = page.waitForEvent('download');
   await row.getByRole('button', { name: 'Baixar' }).click();
