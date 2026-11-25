@@ -57,7 +57,7 @@ function Departure() {
 }
 
 /** The catalog's key for a section or item the reviewed file names; a test holds them in step. */
-type DepartureKey = `departure.section.${'tax'}` | `departure.item.${'mei'}.${'title' | 'body'}`;
+type DepartureKey = 'departure.section.tax' | `departure.item.mei.${'title' | 'body'}`;
 
 function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
   const { t, i18n } = useTranslation();
