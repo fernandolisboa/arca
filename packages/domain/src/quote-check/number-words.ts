@@ -1,6 +1,6 @@
 /**
  * Whole numbers from 2 to 99 a law writes in words ("quatro meses", "twenty-one", "dieciocho",
- * 五年), for the value check of a quote (ADR-0027). A word reads as a number only in the languages
+ * "sešus", 五年), for the value check of a quote (ADR-0027). A word reads as a number only in the languages
  * a page is likely written in, the country's main language and English, so a word that is a
  * number in one language and something else in another ("dos", "sei") never states a value by
  * accident, and a number word that is also an English word ("due", "once") is not read at all. 1
@@ -196,10 +196,53 @@ const italian: Spelling = {
   compoundUnits: { 1: ['uno'], 2: ['due'] },
 };
 
+const latvianUnit = (stem: string) =>
+  ['i', 'as', 'us', 'u', 'iem', 'ām', 'os', 'ās'].map((ending) => `${stem}${ending}`);
+
+// Latvian units 2 to 9 decline by gender and case ("sešus mēnešus", "četrpadsmit gadu").
+const latvian: Spelling = {
+  units: [
+    ['nulle'],
+    [],
+    latvianUnit('div'),
+    // "trim" is also an English word, and English is read too.
+    ['trīs', 'triju', 'trijos', 'trijās'],
+    latvianUnit('četr'),
+    latvianUnit('piec'),
+    latvianUnit('seš'),
+    latvianUnit('septiņ'),
+    latvianUnit('astoņ'),
+    latvianUnit('deviņ'),
+    ['desmit'],
+    ['vienpadsmit'],
+    ['divpadsmit'],
+    ['trīspadsmit'],
+    ['četrpadsmit'],
+    ['piecpadsmit'],
+    ['sešpadsmit'],
+    ['septiņpadsmit'],
+    ['astoņpadsmit'],
+    ['deviņpadsmit'],
+  ],
+  tens: [
+    ['divdesmit'],
+    ['trīsdesmit'],
+    ['četrdesmit'],
+    ['piecdesmit'],
+    ['sešdesmit'],
+    ['septiņdesmit'],
+    ['astoņdesmit'],
+    ['deviņdesmit'],
+  ],
+  join: (ten, unit) => [`${ten} ${unit}`],
+  compoundUnits: { 1: ['viens', 'viena', 'vienu', 'vienam', 'vienai', 'vienā'] },
+};
+
 const spellings: Readonly<Record<string, Spelling>> = {
   en: english,
   es: spanish,
   it: italian,
+  lv: latvian,
   pt: portuguese,
 };
 
@@ -231,7 +274,7 @@ const joiners = new Set(['and', 'e', 'y']);
  * languages with tables, so "cinco mil" or "three hundred" never reads as its first word.
  */
 const multiplier =
-  /^(?:\p{L}*(?:cent|cient|zent|nhent)\p{L}*|hundreds?|thousands?|millions?|billions?|mil|mila|mille|milhão|milhões|millón|millones|milione|milioni|miliardo|miliardi)$/u;
+  /^(?:\p{L}*(?:cent|cient|zent|nhent)\p{L}*|\p{L}*simt\p{L}*|tūksto\p{L}*|miljon\p{L}*|hundreds?|thousands?|millions?|billions?|mil|mila|mille|milhão|milhões|millón|millones|milione|milioni|miliardo|miliardi)$/u;
 
 /** Every word any number of the language is written with. */
 const vocabularies = new Map<Spelling, ReadonlySet<string>>();

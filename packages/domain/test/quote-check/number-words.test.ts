@@ -29,6 +29,10 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['二十一歳', '21', ['ja']],
     ['六箇月', '6', ['ja']],
     ['UNDER EIGHTEEN', '18', ['en']],
+    ['derīgi sešus mēnešus', '6', ['lv', 'en']],
+    ['trīs mēnešus', '3', ['lv']],
+    ['četrpadsmit gadu vecumu', '14', ['lv']],
+    ['divdesmit vienu gadu', '21', ['lv']],
   ])('reads "%s" as %s', (text, value, languages) => {
     expect(writesNumberInWords(text, value, languages)).toBe(true);
   });
@@ -59,6 +63,9 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['十分な資産', '10', ['ja'], 'a numeral with no counter'],
     ['quatro meses', '4', ['da'], 'a language with no table'],
     ['four months', '5', ['en'], 'another number'],
+    ['trim the list', '3', ['lv', 'en'], 'a Latvian number that is an English word'],
+    ['divdesmit vienu gadu', '1', ['lv'], 'the unit of a larger Latvian number'],
+    ['divsimt eiro', '2', ['lv'], 'a number of Latvian hundreds'],
     ['four months', '4.5', ['en'], 'a value with decimals'],
   ])('does not read "%s" as %s: %s', (text, value, languages) => {
     expect(writesNumberInWords(text, value, languages)).toBe(false);
@@ -76,6 +83,7 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['US', 'en'],
     ['AR', 'es'],
     ['JP', 'ja'],
+    ['LV', 'lv'],
   ])('takes %s laws to be written in %s', (country, language) => {
     expect(likelyLanguage(country)).toBe(language);
   });
