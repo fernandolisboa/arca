@@ -11,7 +11,8 @@ export type Edit =
   | {
       readonly kind: 'rating';
       readonly criterion: string;
-      readonly country: string;
+      /** A country or one of its regions (ADR-0042). */
+      readonly place: string;
       /** Undefined takes the rating away. */
       readonly rating: number | undefined;
     }
@@ -28,16 +29,24 @@ export type Edit =
   | { readonly kind: 'rename'; readonly criterion: string; readonly name: string }
   | { readonly kind: 'remove'; readonly criterion: string };
 
+/** The person's stars for a criterion in a place; undefined takes them away. */
+export const ratingEdit = (criterion: string, place: string, rating: number | undefined): Edit => ({
+  kind: 'rating',
+  criterion,
+  place,
+  rating,
+});
+
 function without<T>(record: Readonly<Record<string, T>>, key: string): Record<string, T> {
   return Object.fromEntries(Object.entries(record).filter(([each]) => each !== key));
 }
 
 function rated(preferences: Preferences, edit: Extract<Edit, { kind: 'rating' }>): Preferences {
-  const byCountry = without(preferences.ratings[edit.criterion] ?? {}, edit.country);
-  if (edit.rating !== undefined) byCountry[edit.country] = edit.rating;
+  const byPlace = without(preferences.ratings[edit.criterion] ?? {}, edit.place);
+  if (edit.rating !== undefined) byPlace[edit.place] = edit.rating;
   const ratings = without(preferences.ratings, edit.criterion);
   // The API refuses a criterion with no ratings left, so its key goes with the last one.
-  if (Object.keys(byCountry).length > 0) ratings[edit.criterion] = byCountry;
+  if (Object.keys(byPlace).length > 0) ratings[edit.criterion] = byPlace;
   return { ...preferences, ratings };
 }
 

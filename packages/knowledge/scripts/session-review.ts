@@ -210,6 +210,24 @@ export const sessionReviews: readonly SessionReview[] = [
     versions: [{ routeId: 'au-skilled-independent', number: 4 }],
   },
   {
+    id: '2026-11-us-employer',
+    migration: 'knowledge_session_review_2026_11_us_employer',
+    versions: [
+      { routeId: 'us-eb3', number: 1, newRoute: true },
+      { routeId: 'us-eb2-job-offer', number: 1, newRoute: true },
+    ],
+  },
+  {
+    id: '2026-11-lv-remote-work',
+    migration: 'knowledge_session_review_2026_11_lv_remote_work',
+    versions: [{ routeId: 'lv-remote-work', number: 1, newRoute: true }],
+  },
+  {
+    id: '2026-11-pt-d3',
+    migration: 'knowledge_session_review_2026_11_pt_d3',
+    versions: [{ routeId: 'pt-d3', number: 1, newRoute: true }],
+  },
+  {
     id: '2026-11-jp-documents',
     migration: 'knowledge_session_review_2026_11_jp_documents',
     versions: [

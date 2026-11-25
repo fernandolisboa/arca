@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "routeId": "lv-remote-work",
+  "texts": [
+    {
+      "en": "Latvian long-stay visa for remote work for an employer registered in another OECD state, or as a self-employed person registered in an OECD state: up to one year, and one more",
+      "text": "Visto de longa duração da Letônia para trabalho remoto, para empregador registrado em outro país da OCDE ou como autônomo registrado em país da OCDE: até um ano, com possibilidade de mais um ano"
+    },
+    {
+      "en": "Not a citizen of an EU or EEA state or of Switzerland, Latvia included: the law's visas are for third-country nationals",
+      "text": "Não ser cidadão de país da UE ou do EEE nem da Suíça, inclusive da Letônia: os vistos da lei são para cidadãos de outros países"
+    },
+    {
+      "en": "Not a citizen of Russia, whose citizens have no right to a visa for remote work",
+      "text": "Não ser cidadão da Rússia, cujos cidadãos não têm direito ao visto para trabalho remoto"
+    },
+    {
+      "en": "Works today for an employer seated outside Latvia, the same one for at least the last 6 months; a self-employed person, contractor or business owner is possible",
+      "text": "Trabalha hoje para empregador sediado fora da Letônia, o mesmo empregador há pelo menos 6 meses; autônomo, prestador de serviços ou dono de empresa conta como possível"
+    },
+    {
+      "en": "The employer is registered in an OECD member state other than Latvia; a self-employed person is registered as such in an OECD member state",
+      "text": "O empregador está registrado em um país membro da OCDE que não a Letônia; o autônomo está registrado como autônomo em um país membro da OCDE"
+    },
+    {
+      "en": "Pay of at least 2.5 times the average monthly gross wage in Latvia of the previous year, as last published by the Central Statistical Bureau; self-employed: income of the last six months",
+      "text": "Salário de pelo menos 2,5 vezes o salário bruto médio mensal na Letônia no ano anterior, conforme o último dado do Escritório Central de Estatística; autônomo: renda dos últimos seis meses"
+    },
+    {
+      "en": "The employer confirms the work can be done remotely; a self-employed person states the field of work and how it can be done remotely",
+      "text": "O empregador confirma que o trabalho pode ser feito a distância; o autônomo informa a área de trabalho e como ela pode ser feita a distância"
+    },
+    {
+      "en": "Means for a stay over 30 days of at least the minimum monthly wage (EUR 780 in 2026), and for lodging to be paid, or proof it is paid; multiple entry: the first stay and a statement",
+      "text": "Recursos de pelo menos o salário mínimo mensal (780 euros em 2026) para estadia acima de 30 dias, e para a hospedagem, paga ou com prova de pagamento; múltiplas entradas: a primeira estadia e uma declaração"
+    },
+    {
+      "en": "A health insurance policy with an insurer limit of at least EUR 42,600, valid for the whole expected stay; for a multiple-entry visa, the first stay and a statement that later trips need a policy",
+      "text": "Seguro-saúde com cobertura mínima de 42.600 euros, válido por toda a estadia prevista; para visto de múltiplas entradas, a primeira estadia e uma declaração de que as próximas viagens exigem seguro"
+    },
+    {
+      "en": "The policy pays at least for emergency medical help, in-patient treatment of a critical condition, transport to the nearest medical institution and transport home on serious illness or death",
+      "text": "O seguro cobre pelo menos atendimento de emergência, internação por estado crítico, transporte até o hospital mais próximo e retorno ao país onde mora em caso de doença grave ou morte"
+    },
+    {
+      "en": "None of the refusal grounds, such as missing documents, a purpose that does not match them, an entry ban, or a criminal conviction within the times the law sets",
+      "text": "Nenhum motivo de recusa, como documentos faltantes, finalidade incompatível com eles, proibição de entrada ou condenação criminal dentro dos prazos que a lei fixa"
+    },
+    {
+      "en": "Citizens of the states Regulations No. 554 list (for some territories, people born or living there) and people stateless or protected abroad undergo an extra check; decision up to 60 days",
+      "text": "Cidadãos dos países da lista do Regulamento nº 554 (para alguns territórios, quem nasceu ou mora lá) e apátridas ou protegidos no exterior passam por verificação extra; decisão em até 60 dias"
+    },
+    {
+      "en": "Filed no earlier than three months before planned entry, at the Latvian mission for the place of residence, or at the Office when lawfully in Latvia, by three working days before a visa held ends",
+      "text": "Pedido feito no máximo três meses antes da entrada prevista, na representação da Letônia do lugar de residência, ou no Escritório quando já na Letônia legalmente, até três dias úteis antes do fim do visto que a pessoa tem"
+    },
+    {
+      "en": "State fee for examining the long-stay visa request; EUR 180 when filed less than three working days before the lawful stay in Latvia ends",
+      "text": "Taxa estatal de análise do pedido de visto de longa duração; 180 euros quando o pedido é feito menos de três dias úteis antes do fim da estadia legal na Letônia"
+    },
+    {
+      "en": "The long-stay visa for remote work",
+      "text": "O visto de longa duração para trabalho remoto"
+    },
+    {
+      "en": "One more remote work visa may be requested; after it ends, no new long-stay visa on the same ground for six months",
+      "text": "É possível pedir mais um visto para trabalho remoto; quando ele termina, não há novo visto de longa duração pelo mesmo motivo por seis meses"
+    },
+    {
+      "en": "Decision on the visa, or up to 60 days when more information or a check is needed",
+      "text": "Decisão sobre o visto, ou até 60 dias quando são necessárias mais informações ou uma verificação"
+    },
+    {
+      "en": "Valid travel document, valid at least three months beyond the visa requested, with at least two blank pages; a copy goes with a request filed at the Office online or by post",
+      "text": "Documento de viagem válido por pelo menos três meses além do visto pedido, com pelo menos duas páginas em branco; vai uma cópia quando o pedido é feito ao Escritório on-line ou pelo correio"
+    },
+    {
+      "en": "Visa application form, filled in",
+      "text": "Formulário de pedido de visto preenchido"
+    },
+    {
+      "en": "Photograph taken or scanned when the application is filed",
+      "text": "Foto tirada ou digitalizada na hora do pedido"
+    },
+    {
+      "en": "Copy of the health insurance policy, with an insurer limit of at least EUR 42,600",
+      "text": "Cópia da apólice de seguro-saúde, com cobertura mínima de 42.600 euros"
+    },
+    {
+      "en": "Documents on the place of stay",
+      "text": "Documentos sobre o lugar onde vai morar"
+    },
+    {
+      "en": "Documents proving the financial means to stay in Latvia and to return home or leave for another country",
+      "text": "Documentos que comprovam recursos para ficar na Letônia e voltar ao país onde mora ou seguir para outro país"
+    },
+    {
+      "en": "A ticket both ways, or enough money for fuel when travelling by own vehicle",
+      "text": "Passagem de ida e volta, ou dinheiro suficiente para o combustível quando a viagem é de veículo próprio"
+    },
+    {
+      "en": "Employee: document on the current employment issued by the tax administration or social insurance institution of an OECD member state",
+      "text": "Empregado: documento do emprego atual emitido pela administração tributária ou pela previdência social de um país membro da OCDE"
+    },
+    {
+      "en": "Employee: confirmation by the employer of at least six months of employment with it, the pay, and that the work can be done remotely",
+      "text": "Empregado: declaração do empregador de pelo menos seis meses de vínculo com ele, do salário e de que o trabalho pode ser feito a distância"
+    },
+    {
+      "en": "Self-employed: document of an OECD member state's tax administration or social insurance institution on the registration as self-employed and the income of the last six months",
+      "text": "Autônomo: documento da administração tributária ou da previdência social de um país membro da OCDE sobre o registro como autônomo e a renda dos últimos seis meses"
+    },
+    {
+      "en": "Self-employed: a free-form statement on the field of work and how the activity can be done remotely",
+      "text": "Autônomo: declaração em formato livre sobre a área de trabalho e como a atividade pode ser feita a distância"
+    }
+  ]
+}

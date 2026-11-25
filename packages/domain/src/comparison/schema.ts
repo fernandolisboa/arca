@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { countryCodeSchema } from '../case/snapshot.js';
+import { placeCodeSchema } from './regions.js';
 import { decimalSchema } from '../money/decimal.js';
 import { slugSchema } from '../rules/expression.js';
 import {
@@ -141,7 +142,7 @@ function preferencesSchema<
         .record(
           anyCriterionId,
           z
-            .record(countryCodeSchema, z.number().int().min(1).max(5))
+            .record(placeCodeSchema, z.number().int().min(1).max(5))
             .refine((byCountry) => Object.keys(byCountry).length > 0, {
               message: 'A criterion with no ratings is left out',
             }),

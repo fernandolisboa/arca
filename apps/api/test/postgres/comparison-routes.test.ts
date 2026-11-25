@@ -204,6 +204,18 @@ describe('the destination comparison (ADR-0026, #315)', () => {
     expect(scores(pending)).toEqual(scores(answer));
   });
 
+  it('keeps the caller’s stars for a region beside the country’s (ADR-0042)', async () => {
+    const { cases, write } = setup();
+    const { alice } = await family(cases);
+    const response = await write(alice, {
+      ...nothingChosen,
+      ratings: { climate: { PT: 5, 'PT-20': 2 } },
+    });
+    expect(response.status).toBe(200);
+    const written = (await response.json()) as DestinationComparison;
+    expect(written.preferences.ratings).toEqual({ climate: { PT: 5, 'PT-20': 2 } });
+  });
+
   it('saves the caller’s preferences, names a new own criterion and answers the new ranking', async () => {
     const { cases, write, comparison, limited } = setup();
     const { alice } = await family(cases);
@@ -290,6 +302,12 @@ describe('the destination comparison (ADR-0026, #315)', () => {
 
   it.each<[string, unknown, number, string]>([
     ['a weight above 5', { ...nothingChosen, weights: { safety: 6 } }, 400, 'invalid_request'],
+    [
+      'a rating for a place that is not a country or an ISO 3166-2 region',
+      { ...nothingChosen, ratings: { climate: { 'pt-20': 3 } } },
+      400,
+      'invalid_request',
+    ],
     [
       'a rating of 0',
       { ...nothingChosen, ratings: { climate: { PT: 0 } } },
