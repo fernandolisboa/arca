@@ -29,7 +29,8 @@ const reviewId = '2026-11-us-documents';
  * Who hands in which us-eb5 v10 document, on the synthetic blended family of the version's own
  * cases: a spouse (p2), a biological child (p3), an adopted child (p5), a stepchild (p7) and a
  * possible adopted child (p6). Items with no condition apply; the consular ones may apply, since no
- * fact says the visa is issued abroad; relationship records follow the dependent's edge, and a possible dependent's items only may apply.
+ * fact says the visa is issued abroad; relationship records follow the dependent's edge, and a
+ * possible dependent's items only may apply.
  */
 describe('us-eb5 v10 documents on a synthetic family (spec #519)', () => {
   let version: ReviewedVersion;
@@ -59,6 +60,12 @@ describe('us-eb5 v10 documents on a synthetic family (spec #519)', () => {
       engineCommit: 'test',
     });
 
+  const listed = () => {
+    const result = checklist();
+    if (result.kind !== 'listed') throw new Error(result.kind);
+    return result;
+  };
+
   const truths = (items: readonly DocumentResult[]) =>
     Object.fromEntries(items.map(({ documentId, applies }) => [documentId, applies]));
 
@@ -77,8 +84,7 @@ describe('us-eb5 v10 documents on a synthetic family (spec #519)', () => {
     );
 
   it("lists the investor's petition evidence and visa papers", () => {
-    const result = checklist();
-    if (result.kind !== 'listed') throw new Error(result.kind);
+    const result = listed();
     expect(truths(result.principal.items)).toEqual({
       'investor-petition': true,
       'regional-center-records': 'unknown',
@@ -114,8 +120,7 @@ describe('us-eb5 v10 documents on a synthetic family (spec #519)', () => {
       { 'marriage-record-dependent': false, 'adoption-records': 'unknown' },
     ],
   ])('lists %s (%s) their own papers', (personId, _who, relationship) => {
-    const result = checklist();
-    if (result.kind !== 'listed') throw new Error(result.kind);
+    const result = listed();
     const person = result.dependents.find((each) => each.personId === personId);
     expect(person?.possible).toBe(personId === 'p6');
     expect(truths(person?.items ?? [])).toEqual({

@@ -21,13 +21,13 @@ export const documentGuide: Readonly<
     birth_certificate: {
       office: 'Cartório de Registro Civil',
       request:
-        'Peça a certidão no cartório onde o nascimento foi registrado ou, em versão eletrônica, em qualquer cartório, pelo Serp. A lei dá até 5 dias para a entrega. A primeira certidão de nascimento é gratuita; as outras são gratuitas para quem é reconhecidamente pobre.',
+        'Peça a certidão no cartório onde o nascimento foi registrado ou, em versão eletrônica, em qualquer cartório, pelo Sistema Eletrônico dos Registros Públicos (Serp). A lei dá até 5 dias para a entrega. A primeira certidão de nascimento é gratuita; as outras são gratuitas para quem é reconhecidamente pobre.',
       apostille,
     },
     court_records: {
       office: 'Justiça Federal, pelo Sistema de Certidão Unificada',
       request:
-        'Escolha o tipo de certidão (criminal, cível ou eleitoral) e os TRFs, da 1ª à 5ª Região, e informe o CPF e o e-mail. A certidão negativa sai na hora, para baixar; se houver registro, ela chega só por e-mail, em até seis horas.',
+        'Escolha o tipo de certidão (criminal, cível ou eleitoral) e os Tribunais Regionais Federais, da 1ª à 5ª Região, e informe o CPF e o e-mail. A certidão negativa sai na hora, para baixar; se houver registro, ela chega só por e-mail, em até seis horas.',
       apostille,
     },
     fund_transfer_records: {
@@ -55,7 +55,7 @@ export const documentGuide: Readonly<
     tax_return: {
       office: 'Receita Federal',
       request:
-        'Baixe as cópias das declarações em PDF no Portal de Serviços, com conta gov.br prata ou ouro, na hora. As cópias de GFIP se pedem pelo chat; as de Dacon, DMED, Dimob, PER/DCOMP, LCDPR e da declaração de imposto de renda da pessoa física anterior a 2008, por processo; as outras que não dá para baixar, menos a declaração da pessoa física e o recibo dela, em atendimento presencial agendado. O prazo estimado é de até 30 dias. Vale para declarações de pessoa física e de empresa; para as de empresa, quem pede precisa estar no quadro de sócios e administradores do CNPJ.',
+        'Baixe as cópias das declarações em PDF no Portal de Serviços, com conta gov.br prata ou ouro, na hora. As cópias de GFIP se pedem pelo chat; as de Dacon, DMED, Dimob, PER/DCOMP, LCDPR e da declaração de imposto de renda da pessoa física anterior a 2008, por processo. As outras que não dá para baixar se pedem em atendimento presencial agendado, menos a declaração da pessoa física e o recibo dela. O prazo estimado é de até 30 dias. Vale para declarações de pessoa física e de empresa; para as de empresa, quem pede precisa estar no quadro de sócios e administradores do CNPJ.',
     },
     vaccination_record: {
       office: 'Ministério da Saúde, pelo Meu SUS Digital',

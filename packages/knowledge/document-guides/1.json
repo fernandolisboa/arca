@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "number": 1,
   "officialDomains": ["gov.br", "jus.br"],
-  "wordingSha256": "a06cb7bc4a9692f86a1dd4cc2863f828f0c04f3ce666d39fd573ebb8118afa0e",
+  "wordingSha256": "d94e22b4ccdcee8422c777a9d8ccaefa1e5a417dcf9a67f961f834d6db985312",
   "sources": [
     {
       "id": "passport",
