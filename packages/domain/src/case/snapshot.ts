@@ -176,15 +176,31 @@ export const studyFieldCodeSchema = z.string().regex(/^[0-9]{4}$/);
 export const maxQualifications = 20;
 export const maxRegistrations = 20;
 
-/** A qualification (ADR-0036): its level, field of study, the country that awarded it and when. */
+/**
+ * Where a course stands: finished, still being taken, or left unfinished. Absent reads as
+ * completed, as every qualification was before the status existed.
+ */
+export const qualificationStatuses = ['completed', 'studying', 'incomplete'] as const;
+export type QualificationStatus = (typeof qualificationStatuses)[number];
+
+/**
+ * A qualification (ADR-0036): its level, field of study, the country of the school, whether it was
+ * finished and when. Only a finished one is held: rules never read a course still being taken or
+ * left unfinished.
+ */
 export const qualificationSchema = z.strictObject({
   level: educationLevelSchema.optional(),
   field: studyFieldCodeSchema.optional(),
   country: countryCodeSchema.optional(),
+  status: z.enum(qualificationStatuses).optional(),
   completed: dateValueSchema.optional(),
 });
 
 export type Qualification = z.infer<typeof qualificationSchema>;
+
+/** Whether the person holds the qualification: finished, or recorded before the status existed. */
+export const isHeld = ({ status }: Qualification): boolean =>
+  status === undefined || status === 'completed';
 
 /** A professional registration (ADR-0036): the occupation, the country it is held in, since when. */
 export const registrationSchema = z.strictObject({
@@ -195,7 +211,7 @@ export const registrationSchema = z.strictObject({
 
 export type Registration = z.infer<typeof registrationSchema>;
 
-/** No qualification is above the education level, when both are known. */
+/** No held qualification is above the education level, when both are known. */
 export const qualificationsWithinLevel = ({
   educationLevel,
   qualifications,
@@ -204,7 +220,12 @@ export const qualificationsWithinLevel = ({
   readonly qualifications?: readonly Qualification[] | undefined;
 }): boolean =>
   educationLevel === undefined ||
-  (qualifications ?? []).every(({ level }) => level === undefined || level <= educationLevel);
+  (qualifications ?? []).every(
+    (qualification) =>
+      !isHeld(qualification) ||
+      qualification.level === undefined ||
+      qualification.level <= educationLevel,
+  );
 
 export const qualificationLevelMessage = {
   message: 'A qualification is not above the education level',

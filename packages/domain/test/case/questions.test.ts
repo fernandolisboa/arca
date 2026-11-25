@@ -197,8 +197,8 @@ describe('answering the guided questions (spec 0007, R4)', () => {
 
   it('saves qualifications and registrations, leaving out what is not known', () => {
     const qualifications = [
-      { level: 7, field: '0912', country: 'BR', completed: '2012-12' },
-      { level: 6, country: 'YUCS' },
+      { level: 7, field: '0912', country: 'BR', status: 'completed', completed: '2012-12' },
+      { level: 6, country: 'YUCS', status: 'incomplete' },
     ];
     const registrations = [{ country: 'BR', occupation: '2211', since: '2013-02' }, {}];
     const applied = apply(empty, { educationLevel: 7, qualifications, registrations });
@@ -221,6 +221,23 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     if (!held.ok) throw new Error('refused');
     expect(apply(held.state, { educationLevel: 6 }).ok).toBe(false);
     expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
+  });
+
+  it('takes an unfinished course above the education level, which it never raises', () => {
+    const dropped = [{ level: 6, field: '0613', status: 'incomplete' }];
+    const studying = [{ level: 7, status: 'studying' }];
+    expect(apply(empty, { educationLevel: 3, qualifications: dropped }).ok).toBe(true);
+    expect(apply(empty, { educationLevel: 6, qualifications: studying }).ok).toBe(true);
+    expect(apply(empty, { qualifications: [{ status: 'incomplete', completed: '2010' }] }).ok).toBe(
+      false,
+    );
+  });
+
+  it('reads a qualification recorded without a status as a finished one', () => {
+    const state = { ...empty, facts: { qualifications: [{ level: 6 }] } };
+    expect(answerOf(question('qualifications'), state)).toEqual([
+      { level: 6, status: 'completed' },
+    ]);
   });
 
   it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {

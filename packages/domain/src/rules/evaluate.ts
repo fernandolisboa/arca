@@ -20,7 +20,7 @@ import {
 } from '../case/facts.js';
 import { type MissingMarker, assertRecordedBy } from '../case/graph.js';
 import { ancestorLines } from '../case/paths.js';
-import type { Person, Relationship } from '../case/snapshot.js';
+import { type Person, type Relationship, isHeld } from '../case/snapshot.js';
 import {
   addNumbers,
   compareNumbers,
@@ -575,7 +575,7 @@ function recordsOf(person: Person, kind: RecordKind): readonly PersonRecord[] | 
     case 'residencePeriod':
       return person.residencePeriods?.map((value) => ({ kind, value }));
     case 'qualification':
-      return person.qualifications?.map((value) => ({ kind, value }));
+      return person.qualifications?.filter(isHeld).map((value) => ({ kind, value }));
     case 'registration':
       return person.registrations?.map((value) => ({ kind, value }));
   }

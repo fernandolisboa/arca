@@ -10,7 +10,7 @@ import { CountryFlag } from '../country-flag.js';
 
 export type CountryFieldProps = Pick<
   SearchPickerProps,
-  'label' | 'hint' | 'value' | 'onChange' | 'placeholder' | 'clearLabel' | 'groups'
+  'label' | 'hint' | 'value' | 'onChange' | 'placeholder' | 'clearLabel' | 'groups' | 'labelHidden'
 >;
 
 /** Countries shown together, under a title when they are not the plain list. */

@@ -754,7 +754,7 @@ export const ptBR = {
     noneKept: 'Você ainda não cuida dos dados de ninguém no caso.',
     loadFailure: 'Não conseguimos carregar as perguntas agora.',
     retry: 'Tentar de novo',
-    person: 'De quem são as respostas?',
+    person: 'Respostas de',
     stepsTitle: 'Etapas',
     steps: {
       basics: 'Dados básicos',
@@ -765,7 +765,11 @@ export const ptBR = {
       family: 'Família',
     },
     progress: '{answered} de {total} respondidas',
-    next: 'Salvar e continuar',
+    stepProgress: '{answered}/{total}',
+    stepOption: 'Etapa {position} de {steps} · {step} ({answered}/{total})',
+    position: 'Etapa {position} de {steps} · {answered} de {total} respondidas',
+    previous: 'Voltar',
+    next: 'Salvar e ir para {step}',
     save: 'Salvar',
     saved: 'Respostas salvas.',
     back: 'Voltar para a área da família',
@@ -774,11 +778,25 @@ export const ptBR = {
     no: 'Não',
     pick: 'Escolha uma opção',
     list: {
-      has: 'Sim',
-      none: 'Nenhum',
-      add: 'Adicionar',
+      add: '+ {question, select, citizenships {Adicionar cidadania} qualifications {Adicionar curso} languages {Adicionar idioma} workPeriods {Adicionar trabalho} registrations {Adicionar registro} jobOffers {Adicionar oferta} incomes {Adicionar renda} assets {Adicionar bem} residencePeriods {Adicionar país} immigrationHistory {Adicionar visto ou ocorrência} other {Adicionar}}',
+      none: '{question, select, citizenships {Nenhuma cidadania} qualifications {Não fez nenhum} languages {Nenhum idioma} workPeriods {Nunca trabalhou} registrations {Não tem registro} jobOffers {Não tem oferta} incomes {Não tem renda} assets {Não tem bens} residencePeriods {Nenhum país} immigrationHistory {Nunca teve} other {Nenhum}}',
+      or: 'ou',
+      change: 'Mudar',
+      edit: 'Editar',
+      editItem: 'Editar {item}',
+      done: 'Pronto',
       remove: 'Remover',
-      item: 'Item {number}',
+      item: '{question, select, citizenships {Cidadania} qualifications {Curso} languages {Idioma} workPeriods {Trabalho} registrations {Registro} jobOffers {Oferta} incomes {Renda} assets {Bem} residencePeriods {País} immigrationHistory {Ocorrência} other {Item}} {number}',
+    },
+    summary: {
+      date: '{date, select, none {{field, select, lost {ainda tem} sold {ainda tem} other {{question, select, workPeriods {até hoje} residencePeriods {até hoje} other {ainda juntos}}}}} other {{field, select, acquired {desde {date}} start {desde {date}} since {desde {date}} operatingSince {desde {date}} lost {perdeu em {date}} end {até {date}} completed {concluiu em {date}} sold {vendeu em {date}} valuedAt {em {date}} other {em {date}}}}}',
+    },
+    languagePicker: {
+      common: 'Mais comuns',
+      search: 'Buscar idioma',
+      none: 'Nenhum idioma com esse nome',
+      clear: 'Limpar o idioma',
+      close: 'Fechar a lista de idiomas',
     },
     date: {
       year: 'Ano',
@@ -796,12 +814,13 @@ export const ptBR = {
     formerCountries: 'Países que não existem mais',
     fields: {
       country:
-        '{question, select, qualifications {País que emitiu o diploma} registrations {País do registro} other {País}}',
+        '{question, select, qualifications {País da escola} registrations {País do registro} other {País}}',
       acquired: 'Desde quando',
       lost: 'Até quando',
       basis: '{question, select, residencePeriods {Situação no país} other {Como conseguiu}}',
       language: 'Idioma',
-      level: 'Nível',
+      level: '{question, select, qualifications {Tipo de curso} other {Nível}}',
+      status: 'Situação',
       sector: 'Área',
       temporary: 'É um trabalho temporário?',
       kind: 'Tipo',
@@ -863,6 +882,10 @@ export const ptBR = {
     choice: {
       citizenshipBasis:
         '{value, select, birth {Nascimento} descent {Descendência} naturalization {Naturalização} marriage {Casamento} investment {Investimento} other {Outro jeito}}',
+      qualificationLevel:
+        '{value, select, 3 {Ensino médio técnico} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Pós-graduação: especialização, MBA ou mestrado} 8 {Doutorado} other {}}',
+      qualificationStatus:
+        '{value, select, completed {Concluído} studying {Cursando} incomplete {Não concluiu} other {}}',
       educationLevel:
         '{value, select, 0 {Educação infantil} 1 {Ensino fundamental, anos iniciais} 2 {Ensino fundamental, anos finais} 3 {Ensino médio} 4 {Curso técnico depois do ensino médio} 5 {Curso superior de curta duração} 6 {Graduação: bacharelado, licenciatura ou tecnólogo} 7 {Mestrado ou especialização} 8 {Doutorado} other {}}',
       languageLevel:
@@ -889,36 +912,37 @@ export const ptBR = {
       birthDate: 'Quando {name} nasceu?',
       citizenships: 'Quais cidadanias {name} tem ou já teve?',
       residenceCountry: 'Em que país {name} mora hoje?',
-      educationLevel: 'Até onde {name} estudou?',
+      educationLevel: 'Qual o maior nível de estudo que {name} concluiu?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
-      qualifications: 'Que formações {name} concluiu?',
-      workPeriods: 'Quais trabalhos {name} tem ou já teve?',
-      registrations: 'Onde {name} tem registro para exercer a profissão?',
+      qualifications: 'Que cursos técnicos ou superiores {name} fez?',
+      workPeriods: 'Onde {name} trabalha ou já trabalhou?',
+      registrations: '{name} tem registro em conselho ou ordem profissional?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
-      incomes: 'Quanto {name} recebe por mês?',
+      incomes: 'De onde vem a renda de {name}?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
       residencePeriods: 'Em quais países {name} já morou?',
       assets: 'Quais bens {name} tem?',
       allAssets: 'Esses são todos os bens de {name}?',
-      immigrationHistory:
-        '{name} já teve visto ou residência em algum país, ou problema com imigração?',
+      immigrationHistory: '{name} já teve visto, residência ou algum problema com imigração?',
       allSpouses: 'Esses são todos os casamentos de {name}, inclusive os que acabaram?',
       allPartners: 'Essas são todas as uniões estáveis de {name}?',
       allChildren: 'Esses são todos os filhos de {name}?',
       allParents: 'Esses são todos os pais de {name}?',
-      relationships: 'Detalhes dos vínculos de {name}',
+      relationships: 'Conte um pouco mais sobre os vínculos de {name}',
     },
     hint: {
-      birthDate: 'Sem o dia, vale só o mês e o ano, ou só o ano.',
-      citizenships: 'Conte também uma cidadania que já perdeu.',
-      educationLevel: 'Vale o último curso que concluiu.',
-      incomes: 'Anote cada fonte de renda separadamente.',
+      birthDate: 'Se não souber o dia, preencha só o mês e o ano, ou só o ano.',
+      citizenships: 'Inclua também uma cidadania que perdeu ou renunciou.',
+      educationLevel:
+        'Conta só o que terminou. Se largou a faculdade, marque o ensino médio e anote o curso logo abaixo.',
+      studying: 'Conta curso técnico, faculdade ou pós.',
+      languages: 'Inclua a língua materna.',
+      incomes: 'Uma fonte por vez, com o valor que entra por mês.',
       assets: 'Contas, investimentos, imóveis, empresa, previdência e veículos.',
       qualifications:
-        'Anote cada curso concluído, como técnico, graduação, especialização, mestrado ou doutorado. O país é o da escola que emitiu o diploma.',
-      registrations:
-        'É a inscrição em conselho ou ordem, como CRM, CREA ou OAB. Anote um registro por país.',
+        'Um curso por vez, incluindo os que não terminou ou ainda está fazendo. O país é o da escola.',
+      registrations: 'Como CRM, CREA ou OAB. Um registro por país.',
       workPeriods:
         'Anote o trabalho atual e os anteriores, um por vez. Algumas rotas pedem anos de experiência ou um tempo mínimo na mesma empresa.',
       jobOffers:
@@ -935,7 +959,7 @@ export const ptBR = {
       no: 'Pode haver mais',
     },
     people: {
-      some: 'Sim',
+      some: 'Sim, de alguém',
       nobody: 'Não depende de ninguém',
     },
     noRelationships: 'Nenhum vínculo anotado ainda.',
@@ -1061,6 +1085,7 @@ export const ptBR = {
       field: ' em {field}',
       issuedIn: ', país: {country}',
       completed: ', concluída em {date}',
+      status: '{status, select, studying {, em andamento} incomplete {, não concluída} other {}}',
       relation:
         ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} owner {na própria empresa} other {}}',
       capacity:

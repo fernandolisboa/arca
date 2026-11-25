@@ -11,10 +11,10 @@ import { Button, ChoiceGroup, SearchPicker } from '@arca/ui';
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CountryField } from '../forms/country-field.js';
-import { dangerLinkClass } from '../forms/text-link.js';
+import { dangerLinkClass, textLinkClass } from '../forms/text-link.js';
 import { SelectField } from '../forms/select-field.js';
 import { TextField } from '../forms/text-field.js';
-import { formatDateValue } from './format.js';
+import { formatAmount, formatDateValue } from './format.js';
 import {
   amountText,
   amountValue,
@@ -74,10 +74,13 @@ const noneDate = 'none';
 const yearPattern = '\\d{4}';
 // The stored limit of a display name (`displayNameSchema`).
 const labelLength = 80;
-const listModes = { has: 'has', none: 'none', unknown: 'unknown' } as const;
 const scalar = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 const countPattern = /^[0-9]{1,8}$/;
+// Offered first in the language picker: Portuguese, then the languages of the usual destinations.
+const commonLanguages: readonly string[] = ['pt', 'en', 'es', 'it', 'fr', 'de'];
+// A choice with this many answers or fewer shows them all as buttons instead of a list.
+const fewChoices = 3;
 
 export function useNames() {
   const { t, i18n } = useTranslation();
@@ -115,8 +118,20 @@ export function useNames() {
     language: (code: string) => languages.of(code) ?? code,
     countryOptions: (codes: readonly string[]) =>
       sorted(codes.map((code) => ({ value: code, label: regions.of(code) ?? code }))),
-    languageOptions: () =>
-      sorted(languageCodes.map((code) => ({ value: code, label: languages.of(code) ?? code }))),
+    /** The languages the locale can name, the most asked first; a bare code helps nobody. */
+    languageGroups: (commonTitle: string) => {
+      const named = languageCodes.flatMap((code) => {
+        const label = languages.of(code);
+        return label === undefined || label === code ? [] : [{ value: code, label }];
+      });
+      return [
+        {
+          title: commonTitle,
+          options: named.filter(({ value }) => commonLanguages.includes(value)),
+        },
+        { options: sorted(named.filter(({ value }) => !commonLanguages.includes(value))) },
+      ];
+    },
     currencyOptions: () =>
       currencyCodes.map((code) => ({
         value: code,
@@ -146,6 +161,7 @@ export function FieldEditor({
   optional,
   onChange,
   context,
+  labelHidden = false,
 }: {
   readonly questionId: string;
   readonly fieldKey: string;
@@ -156,6 +172,8 @@ export function FieldEditor({
   readonly optional: boolean;
   readonly onChange: (value: unknown) => void;
   readonly context: QuestionContext;
+  /** Keeps the field's own label for screen readers only, where the screen shows the question. */
+  readonly labelHidden?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const names = useNames();
@@ -167,6 +185,7 @@ export function FieldEditor({
   const pick = (options: readonly { value: string; label: string }[]) => (
     <SelectField
       label={label}
+      labelHidden={labelHidden}
       {...(hint === undefined ? {} : { hint })}
       placeholder={t('questions.pick')}
       value={chosenValue}
@@ -180,6 +199,7 @@ export function FieldEditor({
       return (
         <CountryField
           label={label}
+          labelHidden={labelHidden}
           {...(hint === undefined ? {} : { hint })}
           placeholder={t('questions.pick')}
           value={chosenValue}
@@ -196,12 +216,54 @@ export function FieldEditor({
       );
     }
     case 'language':
-      return pick(names.languageOptions());
+      return (
+        <SearchPicker
+          label={label}
+          labelHidden={labelHidden}
+          {...(hint === undefined ? {} : { hint })}
+          placeholder={t('questions.pick')}
+          value={chosenValue}
+          groups={[
+            ...names.languageGroups(t('questions.languagePicker.common')),
+            { options: unknownOption },
+          ]}
+          labels={{
+            search: t('questions.languagePicker.search'),
+            none: t('questions.languagePicker.none'),
+            clear: t('questions.languagePicker.clear'),
+            close: t('questions.languagePicker.close'),
+          }}
+          layout="list"
+          onChange={choose}
+        />
+      );
     case 'choice': {
       const values: readonly (string | number)[] = choiceSets[input.set];
+      if (values.length <= fewChoices) {
+        return (
+          <ChoiceGroup
+            inline
+            legendHidden={labelHidden}
+            legend={label}
+            {...(hint === undefined ? {} : { description: hint })}
+            choices={[
+              ...values.map((choice) => ({
+                value: String(choice),
+                label: t(`questions.choice.${input.set}`, { value: String(choice) }),
+              })),
+              ...unknownOption,
+            ]}
+            value={chosenValue}
+            onChange={(chosen) => {
+              onChange(values.find((choice) => String(choice) === chosen) ?? null);
+            }}
+          />
+        );
+      }
       return (
         <SelectField
           label={label}
+          labelHidden={labelHidden}
           {...(hint === undefined ? {} : { hint })}
           placeholder={t('questions.pick')}
           value={value === null ? unknownValue : scalar(value)}
@@ -222,6 +284,8 @@ export function FieldEditor({
     case 'yesNo':
       return (
         <ChoiceGroup<YesNo | ''>
+          inline
+          legendHidden={labelHidden}
           legend={label}
           {...(hint === undefined ? {} : { description: hint })}
           choices={[
@@ -240,6 +304,7 @@ export function FieldEditor({
         <DateEditor
           noneLabel={t('questions.date.none', { field: fieldKey, question: questionId })}
           label={label}
+          labelHidden={labelHidden}
           {...(hint === undefined ? {} : { hint })}
           input={input}
           value={value}
@@ -256,6 +321,7 @@ export function FieldEditor({
       return (
         <SearchPicker
           label={label}
+          labelHidden={labelHidden}
           {...(hint === undefined ? {} : { hint })}
           placeholder={t('questions.pick')}
           value={chosenValue}
@@ -275,6 +341,7 @@ export function FieldEditor({
       return (
         <LabelEditor
           label={label}
+          labelHidden={labelHidden}
           hint={t('questions.labelHint')}
           value={value}
           onChange={onChange}
@@ -302,6 +369,7 @@ export function FieldEditor({
       return (
         <TextField
           label={label}
+          labelHidden={labelHidden}
           {...(hint === undefined ? {} : { hint })}
           inputMode="numeric"
           autoComplete="off"
@@ -313,11 +381,20 @@ export function FieldEditor({
         />
       );
     case 'money':
-      return <MoneyEditor label={label} value={value} optional={optional} onChange={onChange} />;
+      return (
+        <MoneyEditor
+          label={label}
+          labelHidden={labelHidden}
+          value={value}
+          optional={optional}
+          onChange={onChange}
+        />
+      );
     case 'share':
       return (
         <TextField
           label={label}
+          labelHidden={labelHidden}
           inputMode="decimal"
           autoComplete="off"
           value={typeof value === 'string' ? percentFromShare(value) : ''}
@@ -335,11 +412,13 @@ const yesNoOf = (value: unknown): YesNo | '' =>
 /** A short name, sent without outer spaces; left empty, the item has none. */
 function LabelEditor({
   label,
+  labelHidden,
   hint,
   value,
   onChange,
 }: {
   readonly label: string;
+  readonly labelHidden: boolean;
   readonly hint: string;
   readonly value: unknown;
   readonly onChange: (value: unknown) => void;
@@ -348,6 +427,7 @@ function LabelEditor({
   return (
     <TextField
       label={label}
+      labelHidden={labelHidden}
       hint={hint}
       autoComplete="off"
       maxLength={labelLength}
@@ -365,6 +445,7 @@ function LabelEditor({
 function DateEditor({
   noneLabel,
   label,
+  labelHidden,
   hint,
   input,
   value,
@@ -373,6 +454,7 @@ function DateEditor({
 }: {
   readonly noneLabel: string;
   readonly label: string;
+  readonly labelHidden: boolean;
   readonly hint?: string;
   readonly input: Extract<FieldInput, { kind: 'date' }>;
   readonly value: unknown;
@@ -392,10 +474,12 @@ function DateEditor({
   const days = Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, '0'));
   return (
     <fieldset className="flex flex-col gap-2" aria-labelledby={legendId}>
-      <legend id={legendId} className="font-medium">
+      <legend id={legendId} className={labelHidden ? 'sr-only' : 'font-medium'}>
         {label}
       </legend>
-      {hint !== undefined && <p className="-mt-1 text-small text-muted">{hint}</p>}
+      {hint !== undefined && (
+        <p className={labelHidden ? 'sr-only' : '-mt-1 text-small text-muted'}>{hint}</p>
+      )}
       {value !== null && value !== noneDate && (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <TextField
@@ -501,11 +585,13 @@ function Check({
 /** An amount and its currency; an optional one left empty is not answered, and may be "Não sei". */
 function MoneyEditor({
   label,
+  labelHidden,
   value,
   optional,
   onChange,
 }: {
   readonly label: string;
+  readonly labelHidden: boolean;
   readonly value: unknown;
   readonly optional: boolean;
   readonly onChange: (value: unknown) => void;
@@ -527,7 +613,7 @@ function MoneyEditor({
   };
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="font-medium">{label}</legend>
+      <legend className={labelHidden ? 'sr-only' : 'font-medium'}>{label}</legend>
       {value !== null && (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <TextField
@@ -617,8 +703,71 @@ function ItemFields({
   );
 }
 
-type ListMode = 'has' | 'none' | 'unknown' | '';
+/** An item's answered fields as short phrases, in the question's order, for its collapsed row. */
+function useItemSummary(questionId: string, fields: readonly QuestionField[]) {
+  const { t, i18n } = useTranslation();
+  const names = useNames();
+  const phrase = (key: string, input: FieldInput, value: unknown): string | undefined => {
+    if (value === null || value === undefined || value === '') return undefined;
+    switch (input.kind) {
+      case 'country':
+        return typeof value === 'string' ? names.country(value) : undefined;
+      case 'language':
+        return typeof value === 'string' ? names.language(value) : undefined;
+      case 'choice':
+        return typeof value === 'string' || typeof value === 'number'
+          ? t(`questions.choice.${input.set}`, { value: String(value) })
+          : undefined;
+      case 'occupation':
+        return typeof value === 'string' && i18n.exists(`occupations.${value}`)
+          ? t(`occupations.${value}` as 'occupations.2211')
+          : undefined;
+      case 'studyField':
+        return typeof value === 'string' && i18n.exists(`studyFields.${value}`)
+          ? t(`studyFields.${value}` as 'studyFields.0912')
+          : undefined;
+      case 'label':
+        return typeof value === 'string' ? value : undefined;
+      case 'date':
+        return typeof value === 'string'
+          ? t('questions.summary.date', {
+              field: key,
+              question: questionId,
+              date: value === noneDate ? 'none' : formatDateValue(value, i18n.language),
+            })
+          : undefined;
+      case 'money':
+        return isRecord(value) &&
+          typeof value['amount'] === 'string' &&
+          typeof value['currency'] === 'string' &&
+          value['amount'] !== ''
+          ? formatAmount({ amount: value['amount'], currency: value['currency'] }, i18n.language)
+          : undefined;
+      case 'share':
+        return typeof value === 'string' && shareFromPercent(percentFromShare(value)) !== undefined
+          ? `${percentFromShare(value)}%`
+          : undefined;
+      default:
+        return undefined;
+    }
+  };
+  return (item: Record_): readonly string[] =>
+    fields.flatMap(({ key, input }) => phrase(key, input, item[key]) ?? []);
+}
 
+/** Whether an item still lacks an answer its question needs, so it opens for editing. */
+const lacksNeeded = (fields: readonly QuestionField[], item: Record_) =>
+  fields.some(
+    (field) =>
+      !field.optional &&
+      (field.onlyWhen === undefined || item[field.onlyWhen.key] === field.onlyWhen.value) &&
+      item[field.key] === undefined,
+  );
+
+/**
+ * A list question: each item a row that opens to edit, a button to add one, and, while nothing is
+ * listed, "none" or "Não sei" as quieter answers.
+ */
 function ListEditor({
   questionId,
   legend,
@@ -639,80 +788,158 @@ function ListEditor({
   readonly context: QuestionContext;
 }) {
   const { t } = useTranslation();
+  const legendId = useId();
+  const summary = useItemSummary(questionId, fields);
   const items = Array.isArray(value) ? value.filter(isRecord) : [];
-  const [mode, setMode] = useState<ListMode>(() =>
-    value === null ? 'unknown' : !Array.isArray(value) ? '' : items.length === 0 ? 'none' : 'has',
-  );
   // Each item keeps its key when another is removed, so its editors keep their own typed text.
   const lastKeyRef = useRef(items.length);
   const [keys, setKeys] = useState(() => items.map((_, index) => index));
+  const [open, setOpen] = useState<ReadonlySet<number>>(
+    () => new Set(items.flatMap((item, index) => (lacksNeeded(fields, item) ? [index] : []))),
+  );
   const keyAt = (index: number) => keys[index] ?? -1 - index;
-  const added = () => {
-    lastKeyRef.current += 1;
-    return lastKeyRef.current;
+  const toggle = (key: number, opened: boolean) => {
+    const next = new Set(open);
+    if (opened) next.add(key);
+    else next.delete(key);
+    setOpen(next);
   };
+  const add = () => {
+    lastKeyRef.current += 1;
+    const key = lastKeyRef.current;
+    setKeys([...keys, key]);
+    toggle(key, true);
+    onChange([...items, {}]);
+  };
+  // A list that cannot be "Não sei", such as assets, always reads as a list: empty is nothing yet.
+  const settled = canBeUnknown && (value === null || (Array.isArray(value) && items.length === 0));
   return (
-    <div className="flex flex-col gap-3">
-      <ChoiceGroup
-        legend={legend}
-        {...(hint === undefined ? {} : { description: hint })}
-        choices={[
-          { value: listModes.has, label: t('questions.list.has') },
-          { value: listModes.none, label: t('questions.list.none') },
-          ...(canBeUnknown ? [{ value: listModes.unknown, label: t('questions.unknown') }] : []),
-        ]}
-        value={mode}
-        onChange={(chosen) => {
-          setMode(chosen);
-          if (chosen === 'has' && items.length === 0) setKeys([added()]);
-          onChange(
-            chosen === 'unknown' ? null : chosen === 'none' ? [] : items.length > 0 ? items : [{}],
-          );
-        }}
-      />
-      {mode === 'has' && (
-        <ol className="flex flex-col gap-3">
-          {items.map((item, index) => (
-            <li
-              key={keyAt(index)}
-              className="flex flex-col gap-3 rounded-control border border-line p-3"
-            >
-              <p className="font-medium">{t('questions.list.item', { number: index + 1 })}</p>
-              <ItemFields
-                questionId={questionId}
-                fields={fields}
-                item={item}
-                context={context}
-                onChange={(next) => {
-                  onChange(items.map((entry, at) => (at === index ? next : entry)));
-                }}
-              />
-              <button
-                type="button"
-                className={dangerLinkClass}
-                onClick={() => {
-                  setKeys(keys.filter((_, at) => at !== index));
-                  onChange(items.filter((_, at) => at !== index));
-                }}
+    <fieldset className="flex flex-col gap-3" aria-labelledby={legendId}>
+      <legend id={legendId} className="sr-only">
+        {legend}
+      </legend>
+      {hint !== undefined && <p className="sr-only">{hint}</p>}
+      {items.length > 0 && (
+        <ol className="flex flex-col gap-2">
+          {items.map((item, index) => {
+            const key = keyAt(index);
+            const phrases = summary(item);
+            const title =
+              phrases.slice(0, 2).join(' · ') ||
+              t('questions.list.item', { question: questionId, number: index + 1 });
+            const rest = phrases.slice(2).join(' · ');
+            return (
+              <li
+                key={key}
+                className={`flex flex-col gap-3 rounded-control border bg-surface p-3 ${open.has(key) ? 'border-primary' : 'border-line'}`}
               >
-                {t('questions.list.remove')}
-              </button>
-            </li>
-          ))}
-          <li>
-            <Button
-              type="button"
-              onClick={() => {
-                setKeys([...keys, added()]);
-                onChange([...items, {}]);
-              }}
-            >
-              {t('questions.list.add')}
-            </Button>
-          </li>
+                {open.has(key) ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <ItemFields
+                        questionId={questionId}
+                        fields={fields}
+                        item={item}
+                        context={context}
+                        onChange={(next) => {
+                          onChange(items.map((entry, at) => (at === index ? next : entry)));
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        className={dangerLinkClass}
+                        onClick={() => {
+                          setKeys(keys.filter((_, at) => at !== index));
+                          toggle(key, false);
+                          onChange(items.filter((_, at) => at !== index));
+                        }}
+                      >
+                        {t('questions.list.remove')}
+                      </button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          toggle(key, false);
+                        }}
+                      >
+                        {t('questions.list.done')}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{title}</p>
+                      {rest !== '' && <p className="text-small text-muted">{rest}</p>}
+                    </div>
+                    <button
+                      type="button"
+                      className={textLinkClass}
+                      aria-label={t('questions.list.editItem', { item: title })}
+                      onClick={() => {
+                        toggle(key, true);
+                      }}
+                    >
+                      {t('questions.list.edit')}
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ol>
       )}
-    </div>
+      {settled ? (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>
+            {value === null
+              ? t('questions.unknown')
+              : t('questions.list.none', { question: questionId })}
+          </span>
+          <button
+            type="button"
+            className={textLinkClass}
+            onClick={() => {
+              onChange(undefined);
+            }}
+          >
+            {t('questions.list.change')}
+          </button>
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Button type="button" variant="secondary" onClick={add}>
+            {t('questions.list.add', { question: questionId })}
+          </Button>
+          {items.length === 0 && canBeUnknown && (
+            <span className="flex flex-wrap items-center gap-x-3 text-small text-muted">
+              {t('questions.list.or')}
+              <button
+                type="button"
+                className={textLinkClass}
+                onClick={() => {
+                  onChange([]);
+                }}
+              >
+                {t('questions.list.none', { question: questionId })}
+              </button>
+              <button
+                type="button"
+                className={textLinkClass}
+                onClick={() => {
+                  onChange(null);
+                }}
+              >
+                {t('questions.unknown')}
+              </button>
+            </span>
+          )}
+        </div>
+      )}
+    </fieldset>
   );
 }
 
@@ -757,16 +984,18 @@ export function QuestionEditor({
       return <PeopleEditor legend={legend} value={value} onChange={onChange} context={context} />;
     case 'complete': {
       const names = (related ?? []).map((id) => context.names.get(id) ?? '');
+      const listed =
+        names.length === 0
+          ? t('questions.relatedNone')
+          : t('questions.related', {
+              names: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(names),
+            });
       return (
         <ChoiceGroup
+          inline
+          legendHidden
           legend={legend}
-          description={
-            names.length === 0
-              ? t('questions.relatedNone')
-              : t('questions.related', {
-                  names: new Intl.ListFormat(undefined, { type: 'conjunction' }).format(names),
-                })
-          }
+          before={<p className="text-muted">{listed}</p>}
           choices={[
             { value: 'yes', label: t('questions.complete.yes') },
             { value: 'no', label: t('questions.complete.no') },
@@ -802,6 +1031,7 @@ export function QuestionEditor({
           optional
           onChange={onChange}
           context={context}
+          labelHidden
         />
       );
   }
@@ -835,6 +1065,8 @@ function PeopleEditor({
   return (
     <div className="flex flex-col gap-3">
       <ChoiceGroup
+        inline
+        legendHidden
         legend={legend}
         choices={[
           { value: 'some', label: t('questions.people.some') },
@@ -892,8 +1124,8 @@ function RelationshipsEditor({
   };
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="font-medium">{legend}</legend>
-      {hint !== undefined && <p className="-mt-1 text-small text-muted">{hint}</p>}
+      <legend className="sr-only">{legend}</legend>
+      {hint !== undefined && <p className="sr-only">{hint}</p>}
       {rows.length === 0 && <p className="text-muted">{t('questions.noRelationships')}</p>}
       {rows.map((row) => (
         <div

@@ -16,6 +16,7 @@ import {
   isicSections,
   languageLevels,
   parentKinds,
+  qualificationStatuses,
   residenceBases,
   workCapacities,
   workRelations,
@@ -55,6 +56,9 @@ export const choiceSets = {
   citizenshipBasis: citizenshipBases,
   /** ISCED 2011 levels. */
   educationLevel: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+  /** The ISCED 2011 levels a course can lead to: technical secondary and above. */
+  qualificationLevel: [3, 4, 5, 6, 7, 8],
+  qualificationStatus: qualificationStatuses,
   languageLevel: languageLevels,
   isicSection: isicSections as readonly string[],
   incomeKind: incomeKinds,
@@ -185,10 +189,11 @@ export const questionFlow = [
     input: {
       kind: 'list',
       fields: [
-        maybe('level', { kind: 'choice', set: 'educationLevel' }),
+        maybe('level', { kind: 'choice', set: 'qualificationLevel' }),
         maybe('field', { kind: 'studyField' }),
+        needed('status', { kind: 'choice', set: 'qualificationStatus' }),
         maybe('country', { kind: 'country', formerStates: true }),
-        maybe('completed', partialDate),
+        onlyWhen('status', 'completed')(maybe('completed', partialDate)),
       ],
     },
   },
@@ -500,6 +505,12 @@ export function answerOf(question: Question, state: QuestionState): unknown {
   const { target } = question;
   switch (target.kind) {
     case 'fact':
+      // A qualification recorded before the status existed was a finished one.
+      if (target.key === 'qualifications') {
+        return state.facts.qualifications?.map((held) =>
+          held.status === undefined ? { ...held, status: 'completed' } : held,
+        );
+      }
       return mapList(question.input, state.facts[target.key], moneyAnswer);
     case 'marker':
       return state.facts.recordedInFull?.includes(target.marker) === true ? true : undefined;

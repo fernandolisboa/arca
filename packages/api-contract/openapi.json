@@ -6385,6 +6385,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -7888,6 +7896,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -9398,6 +9414,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -10914,6 +10938,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -12418,6 +12450,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -13928,6 +13968,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -15462,6 +15510,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -16899,6 +16955,14 @@
                               "type": "string",
                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                             },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "completed",
+                                "studying",
+                                "incomplete"
+                              ]
+                            },
                             "completed": {
                               "anyOf": [
                                 {
@@ -17593,6 +17657,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -19314,6 +19386,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -20845,6 +20925,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -22476,6 +22564,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -23980,6 +24076,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -25746,6 +25850,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -27506,6 +27618,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -29010,6 +29130,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -30526,6 +30654,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -32036,6 +32172,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -33545,6 +33689,14 @@
                                             "country": {
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
                                             },
                                             "completed": {
                                               "anyOf": [
@@ -35259,6 +35411,14 @@
                                               "type": "string",
                                               "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                                             },
+                                            "status": {
+                                              "type": "string",
+                                              "enum": [
+                                                "completed",
+                                                "studying",
+                                                "incomplete"
+                                              ]
+                                            },
                                             "completed": {
                                               "anyOf": [
                                                 {
@@ -36970,6 +37130,14 @@
                               "country": {
                                 "type": "string",
                                 "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "completed",
+                                  "studying",
+                                  "incomplete"
+                                ]
                               },
                               "completed": {
                                 "anyOf": [
