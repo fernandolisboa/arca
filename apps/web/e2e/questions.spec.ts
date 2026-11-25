@@ -51,7 +51,7 @@ test('fills a family in step by step, with "Não sei", and reads it back', async
   await studies.getByRole('button', { name: 'Salvar e continuar' }).click();
 
   const work = step(page, 'Trabalho');
-  await radio(work, 'Onde Ana trabalha ou já trabalhou?', 'Sim');
+  await radio(work, 'Quais trabalhos Ana tem ou já teve?', 'Sim');
   await work.getByLabel('Nome para reconhecer este trabalho (opcional)').fill('Cliente dos EUA');
   await pickCountry(work, 'Ocupação', 'Desenvolvedores de software');
   await work

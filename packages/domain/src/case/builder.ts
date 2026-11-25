@@ -4,6 +4,7 @@ import {
   type CompletenessMarker,
   type Relationship,
   caseSnapshotSchema,
+  workPeriodFieldsSchema,
 } from './snapshot.js';
 import type { StoredAsset, StoredFinances, StoredProfile, StoredRelationship } from './storage.js';
 
@@ -58,12 +59,14 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
     const workPeriods = profile?.facts.workPeriods;
     return {
       ...profile?.facts,
-      // Labels stay with the profile: the snapshot holds codes and dates only (ADR-0036).
+      // Only the snapshot's own fields pass, so a label stays with the profile (ADR-0036).
       ...(workPeriods === undefined
         ? {}
         : {
             workPeriods: workPeriods.map((period) =>
-              Object.fromEntries(Object.entries(period).filter(([key]) => key !== 'label')),
+              Object.fromEntries(
+                Object.entries(period).filter(([key]) => key in workPeriodFieldsSchema.shape),
+              ),
             ),
           }),
       id: personId(id),

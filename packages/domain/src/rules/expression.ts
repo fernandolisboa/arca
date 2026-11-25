@@ -38,19 +38,15 @@ export type CollectionName = (typeof collectionNames)[number];
  * principal), the snapshot list they come from, the record each item binds, and the facts that
  * bound each item's period, which `covers` reads. An absent list is unknown, `[]` none.
  */
+const workPeriods = {
+  list: 'workPeriods',
+  record: 'workPeriod',
+  period: { start: 'workPeriod.start', end: 'workPeriod.end' },
+} as const;
+
 export const recordCollections = {
-  'person.workPeriods': {
-    owner: 'current',
-    list: 'workPeriods',
-    record: 'workPeriod',
-    period: { start: 'workPeriod.start', end: 'workPeriod.end' },
-  },
-  'principal.workPeriods': {
-    owner: 'principal',
-    list: 'workPeriods',
-    record: 'workPeriod',
-    period: { start: 'workPeriod.start', end: 'workPeriod.end' },
-  },
+  'person.workPeriods': { owner: 'current', ...workPeriods },
+  'principal.workPeriods': { owner: 'principal', ...workPeriods },
 } as const satisfies Partial<
   Record<
     CollectionName,

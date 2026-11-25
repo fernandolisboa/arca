@@ -62,6 +62,7 @@ function questionsWith(answers: Record<string, Record<string, unknown>>): CaseQu
     })),
     countries: ['BR', 'IT', 'PT', 'US'],
     formerCountries: [],
+    occupations: [],
   };
 }
 

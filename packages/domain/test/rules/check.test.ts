@@ -456,6 +456,16 @@ describe('record collections and covers (ADR-0036)', () => {
     ],
     ['covers over people', covers('unit.members'), ': covers reads a collection of periods'],
     [
+      'covers of no time',
+      covers('person.workPeriods', { atLeast: 'P0D' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
+      'covers in an empty window',
+      covers('person.workPeriods', { window: 'P0Y0M' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
       'covers at an undeclared date',
       covers('person.workPeriods', { at: 'arrival' }),
       ': Reference date arrival is not declared by the version',

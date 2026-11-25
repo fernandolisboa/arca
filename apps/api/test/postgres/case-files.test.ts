@@ -867,10 +867,13 @@ describe('work periods (ADR-0036)', () => {
       .find(({ id }) => id === 'workPeriods');
     expect(answered?.answer).toEqual([doctor, contractor]);
 
+    const workOf = async (viewer: string) =>
+      (await files.playback(viewer))?.sentences.filter((said) => said.kind === 'workPeriod');
+    // Without a profile share, neither the work periods nor their labels reach another member.
+    await files.replaceShares(alice, { personId: people.alice, profile: [], finances: [bruno] });
+    expect(await workOf(bruno)).toEqual([]);
     await files.replaceShares(alice, { personId: people.alice, profile: [bruno], finances: [] });
-    const played = (await files.playback(bruno))?.sentences.filter(
-      (said) => said.kind === 'workPeriod',
-    );
+    const played = await workOf(bruno);
     expect(played).toEqual([
       {
         kind: 'workPeriod',

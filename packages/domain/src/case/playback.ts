@@ -71,7 +71,7 @@ export const sentenceSchema = z.discriminatedUnion('kind', [
   sentence('noJobOffer', { person }),
   sentence('workPeriod', {
     person,
-    /** The person's own name for the job, added by whoever sees their profile; never a model's. */
+    /** The person's own name for the work period, added by whoever sees their profile; never a model's. */
     label: displayNameSchema.optional(),
     occupation: occupationCodeSchema.optional(),
     relation: z.enum(workRelations).optional(),

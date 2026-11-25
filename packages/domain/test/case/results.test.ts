@@ -70,6 +70,17 @@ describe('decisiveQuestions (spec 0007, R6)', () => {
     ]);
   });
 
+  it('asks an unanswered list of records, and a fact of one of its items, as the list question', () => {
+    const unanswered: MissingFact = { kind: 'records', personId: 'p1', list: 'workPeriods' };
+    const start: MissingFact = { kind: 'fact', reference: 'workPeriod.start', personId: 'p1' };
+    expect(
+      decisiveQuestions(
+        [{ missingFacts: [unanswered] }, { missingFacts: [start] }],
+        new Set(['p1']),
+      ),
+    ).toEqual([{ personId: 'p1', question: 'workPeriods', decides: 2, kept: true }]);
+  });
+
   it("asks a lineage fact about the child of the next person in the line, not the ancestor's", () => {
     const line = ['grandparent', 'parent', 'p1'];
     const read = (reference: string): MissingFact => ({

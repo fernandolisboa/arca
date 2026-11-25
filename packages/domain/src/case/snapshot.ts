@@ -166,7 +166,7 @@ export const personFieldsSchema = z.strictObject({
   incomes: z.array(incomeSchema).max(20).optional(),
   immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
   jobOffers: z.array(jobOfferSchema).max(10).optional(),
-  /** Jobs and engagements, past and current, in any order. */
+  /** Work periods, past and current, in any order. */
   workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),

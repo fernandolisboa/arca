@@ -841,7 +841,7 @@ export const ptBR = {
       educationLevel: 'Até onde {name} estudou?',
       studying: '{name} está estudando agora?',
       languages: 'Que idiomas {name} fala?',
-      workPeriods: 'Onde {name} trabalha ou já trabalhou?',
+      workPeriods: 'Quais trabalhos {name} tem ou já teve?',
       jobOffers: '{name} tem oferta de emprego em outro país?',
       incomes: 'Quanto {name} recebe por mês?',
       dependsOn: '{name} depende do dinheiro de alguém do caso?',
@@ -986,7 +986,7 @@ export const ptBR = {
       label: ' ({label})',
       noOccupation: 'ocupação não informada',
       relation:
-        ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} other {na própria empresa}}',
+        ', {relation, select, employee {com carteira ou contrato de trabalho} contractor {prestando serviço} self_employed {por conta própria} owner {na própria empresa} other {}}',
       capacity:
         ', {capacity, select, executive {na diretoria} manager {em cargo de gerência} other {sem cargo de chefia}}',
       fullTime: ', {fullTime, select, yes {em tempo integral} other {em tempo parcial}}',
@@ -1806,8 +1806,8 @@ export const ptBR = {
       },
       workPeriod: {
         employerCountry: 'país da empresa',
-        workplaceCountry: 'país onde trabalha',
-        relation: 'forma de trabalho',
+        workplaceCountry: 'país de onde a pessoa atua',
+        relation: 'forma de contratação',
         occupation: 'ocupação',
         capacity: 'cargo de chefia',
         fullTime: 'tempo integral',
@@ -1872,7 +1872,7 @@ export const ptBR = {
       every: 'Cada item, entre {over}{generations},',
       sum: 'Soma, entre {over}{generations},',
       covers:
-        '{continuous, select, true {Pelo menos {atLeast} sem interrupção} other {Pelo menos {atLeast} somados}}{windowed, select, true { nos últimos {window}} other {}}, entre {over},',
+        '{continuous, select, true {Pelo menos {atLeast} sem interrupção} other {Pelo menos {atLeast} no total}}{windowed, select, true { nos últimos {window}} other {}}, entre {over},',
     },
     where: 'em que:',
     ofValue: 'do valor:',

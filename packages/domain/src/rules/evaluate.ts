@@ -502,7 +502,7 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
   if (!isRecordCollection(expression.over)) throw new RangeError('Unchecked covers');
   const { period } = recordCollections[expression.over];
   const { items, complete, records } = itemsOf(expression.over, undefined, frame);
-  const window: Span = {
+  const lookBack: Span = {
     from:
       expression.window === undefined
         ? firstDate
@@ -510,7 +510,7 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
     to: reference,
   };
   const certain: Span[] = [];
-  const possible: Span[] = complete ? [] : [window];
+  const possible: Span[] = complete ? [] : [lookBack];
   const traces = items.map((item): Trace => {
     const condition =
       expression.where === undefined ? undefined : evaluate(expression.where, item.frame);
@@ -520,13 +520,21 @@ function covers(expression: Extract<Expression, { op: 'covers' }>, frame: Frame)
     const starts = start.value as DateValueRange;
     const ends = end.value as DateValueRange;
     // Dates count inside the window only: any two outside it on the same side are as good.
-    const inside = (date: CalendarDate) => earlier(later(date, window.from), window.to);
-    const from = inside;
-    const to = (date: CalendarDate) => inside(dayAfter(date));
+    const from = (date: CalendarDate) => earlier(later(date, lookBack.from), lookBack.to);
+    const to = (date: CalendarDate) => from(dayAfter(date));
     const narrowest = span(from(starts.max), to(ends.min));
     const widest = span(from(starts.min), to(ends.max));
+    // An item that cannot reach into the window can change nothing, so nothing of it is asked.
+    if (widest === undefined) {
+      return {
+        op: 'item',
+        value: booleanValue(false),
+        children: [],
+        item: { personId: item.frame.current, membership: true },
+      };
+    }
     if (holds === true && narrowest !== undefined) certain.push(narrowest);
-    if (holds !== false && widest !== undefined) possible.push(widest);
+    if (holds !== false) possible.push(widest);
     const unsettled = [
       condition,
       from(starts.min) === from(starts.max) ? undefined : start,

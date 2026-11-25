@@ -163,6 +163,29 @@ describe('covers: time in periods inside a trailing window (ADR-0036)', () => {
         ),
       ),
     ).toEqual(['workPeriod.capacity@p1']);
+    // Nothing of a period that cannot reach into the window is asked.
+    expect(
+      gaps(
+        run(
+          managerYear,
+          worker([
+            { start: '2000-01-01', end: '2005-12-31' },
+            { capacity: 'manager', start: '2025-11', end: 'none' },
+          ]),
+        ),
+      ),
+    ).toEqual(['workPeriod.start@p1']);
+    expect(
+      gaps(
+        run(
+          managerYear,
+          worker([
+            { capacity: 'manager', end: '2020-12-31' },
+            { start: '2025-01-01', end: '2025-12-31' },
+          ]),
+        ),
+      ),
+    ).toEqual(['workPeriod.capacity@p1']);
     expect(gaps(run(managerYear, worker([{ capacity: 'manager', start: '2024-01' }])))).toEqual([
       'workPeriod.start@p1',
       'workPeriod.end@p1',

@@ -247,6 +247,9 @@ class Checker {
         if (!isRecordCollection(expression.over)) {
           return this.fail(path, 'covers reads a collection of periods');
         }
+        if (![expression.atLeast, expression.window ?? 'P1D'].every(isPositive)) {
+          return this.fail(path, 'covers needs a time and a window longer than zero');
+        }
         const inner = this.collection(expression.over, undefined, scope, path);
         if (inner === undefined) return undefined;
         if (
@@ -491,3 +494,5 @@ function fitsDomain(target: TokenDomain, values: TokenDomain): boolean {
   if (typeof target === 'string' || typeof values === 'string') return target === values;
   return target.length === values.length && target.every((value) => values.includes(value));
 }
+
+const isPositive = (duration: string) => /[1-9]/.test(duration);
