@@ -41,6 +41,70 @@
     {
       "en": "Mercosur temporary residence: up to two years",
       "text": "Residência temporária do Mercosul: até dois anos"
+    },
+    {
+      "en": "Passport valid for at least a year from the application date; a Bolivian national may present a valid identity card (DNI) instead",
+      "text": "Passaporte válido por pelo menos um ano a partir da data do pedido; cidadãos bolivianos podem apresentar a carteira de identidade (DNI) válida"
+    },
+    {
+      "en": "Recent colour photograph on a white background, facing the camera, whole face, neutral expression, eyes open, no glasses or hat",
+      "text": "Foto recente colorida, com fundo branco, olhando para a câmera, rosto inteiro, expressão neutra, olhos abertos, sem acessórios como óculos ou gorro"
+    },
+    {
+      "en": "Taken as close as possible to the application and uploaded as a JPG or PNG file",
+      "text": "Tirada o mais perto possível da data do pedido e enviada em arquivo JPG ou PNG"
+    },
+    {
+      "en": "From age 18, a criminal record certificate, or an equivalent document, from the country of origin or of a country lived in during the last 5 years",
+      "text": "A partir dos 18 anos, certidão de antecedentes criminais, ou documento equivalente, do país de origem ou de um país onde morou nos últimos 5 anos"
+    },
+    {
+      "en": "Apostilled or legalized if issued abroad; an official translation unless in Spanish or English; uploaded as a PDF",
+      "text": "Apostilamento ou legalização se emitido fora do Chile; tradução oficial se não estiver em espanhol ou inglês; envio em PDF"
+    },
+    {
+      "en": "Apostilled or legalized if issued abroad; an official translation unless in Spanish or English; a PDF uploaded within 60 days of issue (public body) or 30 days (private body)",
+      "text": "Apostilamento ou legalização se emitido fora do Chile; tradução oficial se não estiver em espanhol ou inglês; envio em PDF em até 60 dias da emissão (órgão público) ou 30 dias (entidade privada)"
+    },
+    {
+      "en": "For a spouse, a partner or a child of 18 or over, a criminal record certificate from the country of origin",
+      "text": "Para cônjuge, companheiro ou filho de 18 anos ou mais, certidão de antecedentes criminais do país de origem"
+    },
+    {
+      "en": "For a spouse, the marriage certificate",
+      "text": "Para o cônjuge, a certidão de casamento"
+    },
+    {
+      "en": "For a partner (conviviente), a document proving the cohabitation",
+      "text": "Para o companheiro (conviviente), um documento que comprove a convivência"
+    },
+    {
+      "en": "For a child, the birth certificate",
+      "text": "Para um filho, a certidão de nascimento"
+    },
+    {
+      "en": "For a child under 18, a sworn statement of care made before a notary by the child's father or mother",
+      "text": "Para um filho menor de 18 anos, declaração juramentada de cuidados feita em cartório pelo pai ou pela mãe da criança ou adolescente"
+    },
+    {
+      "en": "For a spouse, a partner, a child with a disability or a child of 18 or over: the principal's sworn statement before a notary that they will bear the costs of the stay",
+      "text": "Para cônjuge, companheiro, filho com deficiência ou filho de 18 anos ou mais: declaração juramentada do titular, feita em cartório, de que vai arcar com os custos da estadia"
+    },
+    {
+      "en": "For a spouse, a partner, a child with a disability or a child of 18 or over: proof that the principal has enough means for their upkeep, by the Social Development Ministry's indicators",
+      "text": "Para cônjuge, companheiro, filho com deficiência ou filho de 18 anos ou mais: prova de que o titular tem recursos para o sustento, pelos indicadores do Ministério de Desenvolvimento Social"
+    },
+    {
+      "en": "For a child of the principal's spouse or partner, the marriage certificate or cohabitation proof of the principal and the child's parent",
+      "text": "Para um filho do cônjuge ou companheiro do titular, a certidão de casamento ou prova de convivência entre o titular e o pai ou a mãe da criança"
+    },
+    {
+      "en": "For a child with a disability, applying from abroad: a certificate from the competent official institution of the country of origin",
+      "text": "Para um filho com deficiência, pedindo de fora do Chile: certificado da instituição oficial competente do país de origem"
+    },
+    {
+      "en": "For a child between 18 and 24 who is studying: an enrollment or regular student certificate from an institution the State of Chile recognizes",
+      "text": "Para um filho entre 18 e 24 anos que estuda: certificado de matrícula ou de aluno regular de uma instituição reconhecida pelo Estado chileno"
     }
   ]
 }
