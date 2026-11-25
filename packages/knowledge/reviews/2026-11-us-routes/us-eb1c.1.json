@@ -132,7 +132,7 @@
     },
     {
       "id": "children",
-      "title": "Unmarried biological children under 21 (age as 8 U.S.C. 1153(h) counts it); born out of wedlock, via the father only if legitimated as 8 U.S.C. 1101(b)(1)(C) requires or with a bona fide relationship",
+      "title": "Unmarried biological children under 21; born out of wedlock, via the father only if legitimated as 8 U.S.C. 1101(b)(1)(C) requires or with a bona fide relationship",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -172,7 +172,7 @@
     },
     {
       "id": "adopted-children",
-      "title": "Unmarried adopted children under 21 (age per 8 U.S.C. 1153(h)) adopted under 16, or 18 if a natural sibling adopted by the same parent, after 2 years in the adopter's custody and home or if battered",
+      "title": "Unmarried adopted children under 21 adopted under 16, or 18 if a natural sibling adopted by the same parent, after 2 years in the adopter's custody and home or if battered",
       "path": ["child"],
       "condition": {
         "op": "all",
@@ -284,7 +284,7 @@
     },
     {
       "id": "stepchildren",
-      "title": "Unmarried stepchildren under 21 (age as 8 U.S.C. 1153(h) counts it) whose parent married the principal before they turned 18",
+      "title": "Unmarried stepchildren under 21 whose parent married the principal before they turned 18",
       "path": ["spouse", "child"],
       "condition": {
         "op": "all",

@@ -3,12 +3,13 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type ReadPage, checkItems, machineReadableUrls, maxQuotes } from '@arca/domain';
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { RuleRows } from '../src/rule-rows.ts';
+import type { RuleRowReading, RuleRows } from '../src/rule-rows.ts';
 import {
   type Evidence,
   type ReviewDirs,
   type ReviewedVersion,
   evidenceProblems,
+  importedRows,
   quotedPages,
   readEvidence,
   reviewMigrationFile,
@@ -90,27 +91,25 @@ describe('migrations that touch the rule rows (ADR-0032)', () => {
 
 describe('what a listed version is checked as (ADR-0032, amended 2026-11-25)', () => {
   let rows: RuleRows;
+  let reading: RuleRowReading;
+  const target = (listed: Parameters<typeof reviewTarget>[2]) =>
+    reviewTarget(rows, reading, listed);
   beforeAll(async () => {
-    const path = join(dirs.reviewsDir, '2026-11-us', 'us-eb5.9.json');
-    const content: unknown = JSON.parse(await readFile(path, 'utf8'));
-    rows = {
-      routeVersions: [
-        { routeId: 'us-eb5', number: 9, content, contentHash: 'a'.repeat(64), cases: null },
-      ],
-      countrySets: [],
-      officialDomainLists: [],
-    } as unknown as RuleRows;
-  });
+    ({ rows, reading } = await importedRows(dirs.dataDir));
+  }, buildTimeout);
 
   it('updates a stored route from its newest version', () => {
-    expect(reviewTarget(rows, { routeId: 'us-eb5', number: 10 })).toMatchObject({
+    const newest = Math.max(
+      ...rows.routeVersions.filter((row) => row.routeId === 'us-eb5').map((row) => row.number),
+    );
+    expect(target({ routeId: 'us-eb5', number: newest + 1 })).toMatchObject({
       kind: 'update',
-      base: { routeId: 'us-eb5', number: 9 },
+      base: { routeId: 'us-eb5', number: newest },
     });
   });
 
   it("adds a route listed as new on the lists its country's stored routes pin", () => {
-    expect(reviewTarget(rows, { routeId: 'us-new', number: 1, newRoute: true })).toEqual({
+    expect(target({ routeId: 'us-new', number: 1, newRoute: true })).toEqual({
       kind: 'new',
       country: 'US',
       pins: [{ id: 'us', number: 1 }],
@@ -118,20 +117,20 @@ describe('what a listed version is checked as (ADR-0032, amended 2026-11-25)', (
   });
 
   it('refuses a new ID the listing does not name as new, which a typo would be', () => {
-    expect(() => reviewTarget(rows, { routeId: 'us-eb6', number: 10 })).toThrow(
+    expect(() => target({ routeId: 'us-eb6', number: 10 })).toThrow(
       'A review updates a stored route, or lists the route as new',
     );
   });
 
   it('refuses a route listed as new whose ID is stored', () => {
-    expect(() => reviewTarget(rows, { routeId: 'us-eb5', number: 1, newRoute: true })).toThrow(
+    expect(() => target({ routeId: 'us-eb5', number: 1, newRoute: true })).toThrow(
       'A route listed as new has an ID no stored route has',
     );
   });
 
   it('refuses a new route of a country with no stored route, which would need a new list', () => {
-    expect(() => reviewTarget(rows, { routeId: 'ee-nomad', number: 1, newRoute: true })).toThrow(
-      'A new route is of a country whose stored routes pin an official-domain list',
+    expect(() => target({ routeId: 'ee-nomad', number: 1, newRoute: true })).toThrow(
+      'A new route is of a country whose stored routes pin an approved official-domain list',
     );
   });
 });

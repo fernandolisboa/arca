@@ -27,7 +27,7 @@ import {
   type RuleRowReading,
   type RuleRows,
   casesHashOf,
-  pinKey,
+  countryPins,
 } from '../src/rule-rows.ts';
 import { buildKnowledge, formatIssue } from './build.ts';
 import { inlinedRows } from './inline-cases.ts';
@@ -269,7 +269,11 @@ export async function readEvidence(
  * and no host, so a country with no stored route is out of its reach, and so is an ID that is
  * new without the listing saying so, which a mistyped ID would be.
  */
-export function reviewTarget(rows: RuleRows, listed: ListedVersion): ProposalTarget {
+export function reviewTarget(
+  rows: RuleRows,
+  reading: RuleRowReading,
+  listed: ListedVersion,
+): ProposalTarget {
   const base = rows.routeVersions
     .filter((row) => row.routeId === listed.routeId)
     .reduce<RouteVersionRow | undefined>(
@@ -284,24 +288,28 @@ export function reviewTarget(rows: RuleRows, listed: ListedVersion): ProposalTar
   }
   if (base !== undefined) throw new Error('A route listed as new has an ID no stored route has');
   const country = routeCountry(listed.routeId);
-  const pins = new Map(
-    rows.routeVersions.flatMap((row) => {
-      const stored = routeVersionSchema.safeParse(row.content);
-      return stored.success && stored.data.country === country
-        ? stored.data.officialDomains.map((pin) => [pinKey(pin), pin] as const)
-        : [];
-    }),
-  );
-  if (pins.size === 0) {
-    throw new Error('A new route is of a country whose stored routes pin an official-domain list');
+  const pins = countryPins(rows, reading, new Map()).get(country) ?? [];
+  if (pins.length === 0) {
+    throw new Error(
+      'A new route is of a country whose stored routes pin an approved official-domain list',
+    );
   }
-  return { kind: 'new', country, pins: [...pins.values()] };
+  return { kind: 'new', country, pins };
 }
 
 export interface ReviewDirs {
   readonly dataDir: string;
   readonly familiesDir: string;
   readonly reviewsDir: string;
+}
+
+/** The rows the one-time import stored (ADR-0031), and how a read verifies them. */
+export async function importedRows(
+  dataDir: string,
+): Promise<{ readonly rows: RuleRows; readonly reading: RuleRowReading }> {
+  const { issues, rows, countryFiles } = await buildKnowledge(dataDir, importDate);
+  if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
+  return { rows, reading: { countryFiles, sha256, hostOf } };
 }
 
 /**
@@ -315,9 +323,7 @@ export async function reviewedVersions(
   dirs: ReviewDirs,
   review: SessionReview,
 ): Promise<ReviewedVersion[]> {
-  const { issues, rows: imported, countryFiles } = await buildKnowledge(dirs.dataDir, importDate);
-  if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
-  const reading: RuleRowReading = { countryFiles, sha256, hostOf };
+  const { rows: imported, reading } = await importedRows(dirs.dataDir);
   const inlined = new Map(
     (await inlinedRows(imported, dirs.familiesDir)).map((row) => [
       `${row.routeId}/${String(row.number)}`,
@@ -343,7 +349,7 @@ export async function reviewedVersions(
       const cases = await readJson(`${path}.cases.json`);
       let target: ProposalTarget;
       try {
-        target = reviewTarget(rows, listed);
+        target = reviewTarget(rows, reading, listed);
       } catch (error) {
         throw new Error(`${path}: ${error instanceof Error ? error.message : String(error)}`, {
           cause: error,

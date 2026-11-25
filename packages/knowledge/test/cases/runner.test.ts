@@ -96,6 +96,17 @@ describe('runCases', () => {
     expect((await run(tree)).problems).toEqual([]);
   });
 
+  it('still asks a version with neither requirements nor assessments for a failing case', async () => {
+    const empty = routeVersion({ requirements: [], assessments: [] });
+    const tree = { ...withCases([eligible]), 'routes/qm-work/1.json': empty };
+    expect((await run(tree)).problems).toEqual(
+      expect.arrayContaining([
+        'routes/qm-work/1.cases.json: No case is not_eligible',
+        'routes/qm-work/1.cases.json: No case is missing_information',
+      ]),
+    );
+  });
+
   it('runs only the newest of a superseded case, and refuses duplicate IDs', async () => {
     const old = {
       ...eligible,

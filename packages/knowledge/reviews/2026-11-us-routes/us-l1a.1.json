@@ -90,7 +90,7 @@
     {
       "id": "employment-abroad",
       "title": "Employed abroad full time 1 continuous year in the last 3 years by the company, its parent, branch, affiliate or subsidiary, as manager, executive or specialist (manager or executive if a new office)",
-      "evidence": ["principal.monthlyActiveIncome"],
+      "evidence": ["principal.monthlyActiveIncome", "principal.residenceCountry"],
       "sources": ["usc-1101-l", "cfr-214-2-l"]
     },
     {
