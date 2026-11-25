@@ -91,6 +91,18 @@ describe('digitsApart', () => {
   });
 });
 
+describe('full-width digits', () => {
+  it('reads them as plain ones, as Japanese text writes figures', () => {
+    expect(numbersIn('発行日から３か月以内')).toEqual(new Set(['3']));
+    expect(statesValue(number('18'), '１８歳に達する前日までに入国してください。')).toBe(true);
+    expect(percentagesIn('５０％')).toEqual(new Set(['0.5']));
+  });
+
+  it('reads no other compatibility character as a digit', () => {
+    expect(numbersIn('73² ①')).toEqual(new Set(['73']));
+  });
+});
+
 describe('percentagesIn', () => {
   it.each([
     ['Segundo ou mais adultos 50 %', ['0.5']],

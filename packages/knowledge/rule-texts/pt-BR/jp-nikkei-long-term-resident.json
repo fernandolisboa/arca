@@ -57,6 +57,186 @@
     {
       "en": "Papers to land or change to this status: family status papers, means for the stay with yearly income, tax and social insurance records (also of any payer or supporter), and a guarantor in Japan",
       "text": "Documentos para entrar ou mudar para este status: documentos de estado civil, recursos para a estadia com renda anual, registros de impostos e de seguro social (também de quem paga ou sustenta) e um fiador no Japão"
+    },
+    {
+      "en": "Application for a certificate of eligibility on form 6-3 of the ordinance, filed at a regional immigration services bureau in Japan",
+      "text": "Pedido de certificado de elegibilidade no formulário 6-3 da portaria, entregue em um escritório regional da imigração no Japão"
+    },
+    {
+      "en": "From abroad, an agent files it in Japan: for this status, a relative living in Japan",
+      "text": "De fora do Japão, um representante entrega o pedido lá: para este status, um parente que mora no Japão"
+    },
+    {
+      "en": "One photo, taken in the 6 months before the application and meeting the ordinance's photo requirements, attached to the application",
+      "text": "Uma foto, tirada nos 6 meses antes do pedido e dentro das regras de foto da portaria, colada ao formulário"
+    },
+    {
+      "en": "Standard-size return envelope with the address written and postage stamps for simplified registered mail",
+      "text": "Envelope de resposta de tamanho padrão, com o endereço escrito e selos para carta registrada simples"
+    },
+    {
+      "en": "Family register record (koseki or joseki tohon, all entries) of the Japanese grandparent, from the municipal office in Japan",
+      "text": "Registro de família (koseki ou joseki tohon, com todos os dados) do avô ou da avó de nacionalidade japonesa, emitido pela prefeitura no Japão"
+    },
+    {
+      "en": "If filed with an office in Japan: certificates of acceptance of the grandparents' and parents' marriage and death notices and of the applicant's birth notice",
+      "text": "Se foram registrados em um órgão no Japão: certidões de recebimento dos registros de casamento e óbito dos avós e dos pais e do registro de nascimento do requerente"
+    },
+    {
+      "en": "If the applicant will live with someone in Japan: that person's resident record (juminhyo) listing the whole household, with the My Number left out",
+      "text": "Se o requerente for morar com alguém no Japão: o registro de residência (juminhyo) dessa pessoa, com toda a família da casa e sem o My Number"
+    },
+    {
+      "en": "If the applicant proves their own means: a bank balance certificate in their name, and a certificate of planned employment or a job offer from a company in Japan",
+      "text": "Se o próprio requerente comprova os meios: extrato de saldo bancário em seu nome e declaração de contratação ou carta de oferta de emprego de uma empresa no Japão"
+    },
+    {
+      "en": "If a payer in Japan covers the stay: the payer's resident tax certificate (taxed or not) and tax payment certificate for the latest year, showing total income and tax paid",
+      "text": "Se alguém no Japão paga a estadia: as certidões de imposto de residente (tributado ou não) e de pagamento de impostos do último ano dessa pessoa, com renda total e imposto pago"
+    },
+    {
+      "en": "Letter of guarantee (mimoto hoshosho) from a guarantor living in Japan",
+      "text": "Carta de garantia (mimoto hoshosho) de um fiador que mora no Japão"
+    },
+    {
+      "en": "The guarantor is usually a Japanese national or a permanent resident living in Japan",
+      "text": "O fiador costuma ser um japonês ou um residente permanente que mora no Japão"
+    },
+    {
+      "en": "Criminal record certificate of the applicant, issued by an authority of their home country",
+      "text": "Atestado de antecedentes criminais do requerente, emitido por um órgão do país de origem"
+    },
+    {
+      "en": "Attach a Japanese translation of any paper in a foreign language",
+      "text": "Junte uma tradução para o japonês de todo papel em língua estrangeira"
+    },
+    {
+      "en": "Marriage certificates of the grandparents and of the parents, issued by an authority of their home country",
+      "text": "Certidões de casamento dos avós e dos pais, emitidas por um órgão do país de origem"
+    },
+    {
+      "en": "Birth certificates of the parents and of the applicant, issued by an authority of their home country",
+      "text": "Certidões de nascimento dos pais e do requerente, emitidas por um órgão do país de origem"
+    },
+    {
+      "en": "If one exists: the certificate of acknowledgment (ninchi) of the applicant, issued by an authority of their home country",
+      "text": "Se existir: o documento de reconhecimento de paternidade (ninchi) do requerente, emitido por um órgão do país de origem"
+    },
+    {
+      "en": "Official records showing that the grandparents and parents existed, such as their passports, death certificates or driving licences",
+      "text": "Documentos oficiais que mostrem que os avós e os pais existiram, como passaportes, certidões de óbito ou carteiras de motorista"
+    },
+    {
+      "en": "Official records proving the applicant is who they say, such as an identity card, driving licence, military service certificate or voter's card",
+      "text": "Documentos oficiais que provem a identidade do requerente, como carteira de identidade, carteira de motorista, certificado de reservista ou título de eleitor"
+    },
+    {
+      "en": "To ask for a 5-year stay: proof of Japanese, by 6 months at a listed school, a B1-level result (JLPT N2, N3 with 104 points or BJT 400) or a year at a Japanese school",
+      "text": "Para pedir 5 anos de estadia: prova de japonês, com 6 meses em escola autorizada, resultado de nível B1 (JLPT N2, N3 com 104 pontos ou BJT 400) ou um ano em escola japonesa"
+    },
+    {
+      "en": "Not asked of a minor",
+      "text": "Não é exigido de menor de idade"
+    },
+    {
+      "en": "Valid passport bearing a visa from a Japanese consular officer, to land in Japan",
+      "text": "Passaporte válido com visto de um consulado japonês, para entrar no Japão"
+    },
+    {
+      "en": "Birth certificate of the family member, issued by an authority of their home country",
+      "text": "Certidão de nascimento do familiar, emitida por um órgão do país de origem"
+    },
+    {
+      "en": "Marriage certificate, issued by an authority of the home country",
+      "text": "Certidão de casamento, emitida por um órgão do país de origem"
+    },
+    {
+      "en": "If the marriage was filed with an office in Japan: certificate of acceptance of the marriage notice",
+      "text": "Se o casamento foi registrado em um órgão no Japão: certidão de recebimento do registro de casamento"
+    },
+    {
+      "en": "Questionnaire (shitsumonsho) on the agency's form, which has a Portuguese version",
+      "text": "Questionário (shitsumonsho) no formulário da agência, que tem versão em português"
+    },
+    {
+      "en": "Evidence of the couple's contact: 2 or 3 snapshots of both together, faces clearly shown and not edited in apps, and records such as social media or call logs",
+      "text": "Provas do convívio do casal: 2 ou 3 fotos dos dois juntos, com rostos nítidos e sem edição em aplicativo, e registros como redes sociais ou ligações"
+    },
+    {
+      "en": "Criminal record certificate, issued by an authority of the home country",
+      "text": "Atestado de antecedentes criminais, emitido por um órgão do país de origem"
+    },
+    {
+      "en": "For a child, only one of Japanese descent supported by a long-term resident. Attach a Japanese translation of any paper in a foreign language",
+      "text": "Para filho, só se for descendente de japonês sustentado por residente de longa duração. Junte uma tradução para o japonês de todo papel em língua estrangeira"
+    },
+    {
+      "en": "Official records proving the person is who they say, such as an identity card, driving licence, military service certificate or voter's card",
+      "text": "Documentos oficiais que provem a identidade da pessoa, como carteira de identidade, carteira de motorista, certificado de reservista ou título de eleitor"
+    },
+    {
+      "en": "For a child of Japanese descent supported by a long-term resident: official records showing the grandparents and parents existed, such as passports or death certificates",
+      "text": "Para filho descendente de japonês sustentado por residente de longa duração: documentos oficiais que mostrem que os avós e os pais existiram, como passaportes ou certidões de óbito"
+    },
+    {
+      "en": "If one exists: the child's certificate of acknowledgment (ninchi), issued by an authority of the home country",
+      "text": "Se existir: o documento de reconhecimento de paternidade (ninchi) do filho, emitido por um órgão do país de origem"
+    },
+    {
+      "en": "If the birth was filed with an office in Japan: certificate of acceptance of the child's birth notice",
+      "text": "Se o nascimento foi registrado em um órgão no Japão: certidão de recebimento do registro de nascimento do filho"
+    },
+    {
+      "en": "Certificate that the adoption was made, issued by an authority of the home country",
+      "text": "Documento que comprove a adoção, emitido por um órgão do país de origem"
+    },
+    {
+      "en": "If the adoption was filed with an office in Japan: certificate of acceptance of the adoption notice",
+      "text": "Se a adoção foi registrada em um órgão no Japão: certidão de recebimento do registro de adoção"
+    },
+    {
+      "en": "For a child: a statement of reasons explaining why the child must be supported, in any format",
+      "text": "Para filho: carta explicando por que ele precisa ser sustentado, em formato livre"
+    },
+    {
+      "en": "The guarantor is usually the third-generation descendant or whoever supports the family member",
+      "text": "O fiador costuma ser o descendente de terceira geração ou quem sustenta o familiar"
+    },
+    {
+      "en": "The supporter's resident tax certificate (taxed or not) and tax payment certificate for the latest year from their municipal office in Japan, showing total income and tax paid",
+      "text": "Certidões de imposto de residente (tributado ou não) e de pagamento de impostos do último ano de quem sustenta, emitidas pela prefeitura no Japão, com renda total e imposto pago"
+    },
+    {
+      "en": "The supporter's resident record (juminhyo) from their municipal office in Japan, listing the whole household, with the My Number left out",
+      "text": "Registro de residência (juminhyo) de quem sustenta, emitido pela prefeitura no Japão, com toda a família da casa e sem o My Number"
+    },
+    {
+      "en": "Proof of the supporter's work: a certificate of employment; if self-employed, copies of the tax return and any business licence; if not working, copies of bank passbooks",
+      "text": "Prova do trabalho de quem sustenta: declaração do empregador; se autônomo, cópias da declaração de imposto e da licença do negócio, se houver; se sem trabalho, cópias de extratos bancários"
+    },
+    {
+      "en": "Asked of the spouse, not of a minor",
+      "text": "Exigido do cônjuge, não de menor de idade"
+    },
+    {
+      "en": "A biological child admitted as a minor must land by the day before turning 18, whatever the certificate's validity",
+      "text": "O filho biológico admitido como menor precisa entrar no Japão até a véspera de completar 18 anos, qualquer que seja a validade do certificado"
+    },
+    {
+      "en": "Documents on yearly income, as part of the proof that the costs of the whole stay can be paid",
+      "text": "Comprovantes de renda anual, como parte da prova de que os custos de toda a estadia podem ser pagos"
+    },
+    {
+      "en": "Documents on taxation and tax payment, and on social insurance enrolment and contributions paid",
+      "text": "Comprovantes de tributação e pagamento de impostos, e de inscrição e contribuições pagas à previdência social"
+    },
+    {
+      "en": "If someone else pays the costs or supports the applicant: that person's yearly income documents and their tax and social insurance records",
+      "text": "Se outra pessoa paga os custos ou sustenta o requerente: os comprovantes de renda anual dela e os de impostos e previdência social"
+    },
+    {
+      "en": "If someone else pays the costs or there is a supporter: that person's yearly income documents and their tax and social insurance records",
+      "text": "Se outra pessoa paga os custos ou sustenta o familiar: os comprovantes de renda anual dela e os de impostos e previdência social"
     }
   ]
 }

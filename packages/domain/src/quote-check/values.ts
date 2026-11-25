@@ -99,6 +99,13 @@ const readings = (token: string) =>
     .map((decimal) => readToken(token, decimal))
     .filter((read) => read !== undefined);
 
+/** Full-width digits (０ to ９, as Japanese text writes figures) as plain ones, one for one. */
+function halfWidthDigits(text: string): string {
+  return text.replace(/[\uff10-\uff19]/gu, (digit) =>
+    String.fromCharCode(digit.charCodeAt(0) - 0xfee0),
+  );
+}
+
 /**
  * Every number a text may state, each read with a dot, a comma or no decimal mark, so
  * `1.800.000`, `1,800,000`, `1 800 000` and `920,00` all read as the numbers they write. A run
@@ -108,7 +115,7 @@ const readings = (token: string) =>
  */
 export function numbersIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
-  for (const [token] of text.matchAll(numberToken)) {
+  for (const [token] of halfWidthDigits(text).matchAll(numberToken)) {
     const whole = readings(token);
     const pieces = whole.length > 0 ? [] : token.split(spaceRun).flatMap(readings);
     for (const read of [...whole, ...pieces]) found.add(read);
@@ -134,7 +141,7 @@ function dividedByHundred(decimal: string): string {
 export function percentagesIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
   // Each figure is found once and the sign looked for after it, so a long text stays linear.
-  for (const match of text.matchAll(numberToken)) {
+  for (const match of halfWidthDigits(text).matchAll(numberToken)) {
     const [token] = match;
     const end = match.index + token.length;
     if (!percentSign.test(text.slice(end, end + 2))) continue;
