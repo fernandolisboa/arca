@@ -3,6 +3,7 @@ import {
   type FactType,
   type PersonRecord,
   classifications,
+  isRecordKind,
 } from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
@@ -431,6 +432,7 @@ class Checker {
 }
 
 function reachable(target: FactTarget, scope: CheckScope): boolean {
+  if (isRecordKind(target)) return scope.record === target;
   switch (target) {
     case 'principal':
       return true;
@@ -445,9 +447,6 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
     case 'lineage':
     case 'ancestor':
       return scope.lineage !== undefined;
-    case 'workPeriod':
-    case 'jobOffer':
-      return scope.record === target;
   }
 }
 

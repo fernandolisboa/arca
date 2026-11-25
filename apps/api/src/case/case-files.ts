@@ -182,7 +182,7 @@ export interface CaseFilesSettings {
   readonly today: () => Date;
   /** The pinned countries the guided questions offer and accept. */
   readonly countries: PinnedCountries;
-  /** The occupation codes work periods may name (ADR-0036). */
+  /** The occupation codes work periods and job offers may name (ADR-0036). */
   readonly occupations: readonly string[];
   readonly evaluation: {
     /** The rules in the database (ADR-0031): the engine's catalog and every route it has. */

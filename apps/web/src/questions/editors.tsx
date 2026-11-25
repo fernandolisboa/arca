@@ -437,9 +437,9 @@ function MoneyEditor({
   const names = useNames();
   const money = isRecord(value) ? value : {};
   const amount = typeof money['amount'] === 'string' ? money['amount'] : '';
-  const [currency, setCurrency] = useState(() =>
-    typeof money['currency'] === 'string' ? money['currency'] : 'BRL',
-  );
+  // An optional amount left empty sends nothing, so the chosen currency is kept here until then.
+  const [chosenCurrency, setCurrency] = useState('BRL');
+  const currency = typeof money['currency'] === 'string' ? money['currency'] : chosenCurrency;
   const [text, setText] = useState(() => amountText(amount));
   const send = (typed: string, chosen: string) => {
     onChange(

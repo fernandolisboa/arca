@@ -80,6 +80,10 @@ export const recordKinds = [
   'jobOffer',
 ] as const satisfies readonly PersonRecord['kind'][];
 
+export function isRecordKind(value: string): value is PersonRecord['kind'] {
+  return (recordKinds as readonly string[]).includes(value);
+}
+
 /**
  * Who a fact is about: the person in focus, the edge a dependent was reached by, a lineage, or
  * one of the person's records.
@@ -446,11 +450,11 @@ export const factCatalog = {
     scope: 'jobOffer',
     nonNegative: true,
     derive: (binding) => {
-      const sum = new MoneySum(binding.environment);
-      const salary = jobOfferOf(binding).annualSalary;
-      if (salary === undefined) sum.open([], true);
-      else sum.add(toExact(salary), true);
-      return sum.result();
+      const salary = new MoneySum(binding.environment);
+      const stated = jobOfferOf(binding).annualSalary;
+      if (stated === undefined) salary.open([], true);
+      else salary.add(toExact(stated), true);
+      return salary.result();
     },
   },
   /** Whether the employer will sponsor the application. */

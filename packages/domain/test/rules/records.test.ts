@@ -266,7 +266,7 @@ describe('collections over work periods', () => {
 });
 
 describe('job offers as a record collection (ADR-0036)', () => {
-  const offerer = (jobOffers?: readonly object[]) =>
+  const personWithOffers = (jobOffers?: readonly object[]) =>
     frame([jobOffers === undefined ? { id: 'p1' } : { id: 'p1', jobOffers }]);
 
   /** "A sponsored offer in QM as a software developer paying at least 40,000 euros a year." */
@@ -296,12 +296,12 @@ describe('job offers as a record collection (ADR-0036)', () => {
     annualSalary: { amount: 4_500_000, currency: 'EUR' },
     ...fields,
   });
-  const dollars = (amount: number) => ({ annualSalary: { amount, currency: 'USD' } });
+  const salaryInDollars = (amount: number) => ({ annualSalary: { amount, currency: 'USD' } });
 
   it.each<[string, readonly object[] | undefined, boolean | 'unknown', readonly string[]]>([
     ['a salary above the threshold', [offer()], true, []],
-    ['a salary in dollars that converts above it', [offer(dollars(9_000_000))], true, []],
-    ['a salary in dollars that converts below it', [offer(dollars(7_000_000))], false, []],
+    ['a salary in dollars that converts above it', [offer(salaryInDollars(9_000_000))], true, []],
+    ['a salary in dollars that converts below it', [offer(salaryInDollars(7_000_000))], false, []],
     [
       'a salary below it',
       [offer({ annualSalary: { amount: 3_000_000, currency: 'EUR' } })],
@@ -325,7 +325,7 @@ describe('job offers as a record collection (ADR-0036)', () => {
     ['no offers', [], false, []],
     ['offers unanswered', undefined, 'unknown', ['records jobOffers@p1']],
   ])('%s', (_label, offers, expected, missing) => {
-    const trace = run(salaryOffer, offerer(offers));
+    const trace = run(salaryOffer, personWithOffers(offers));
     expect(truthOf(trace)).toBe(expected);
     expect(gaps(trace)).toEqual(missing);
   });
@@ -333,9 +333,17 @@ describe('job offers as a record collection (ADR-0036)', () => {
   it('leaves a salary in a currency with no rate unknown, asking nothing of the family', () => {
     const trace = run(
       salaryOffer,
-      offerer([offer(dollars(0)), offer({ annualSalary: { amount: 9_000_000, currency: 'GBP' } })]),
+      personWithOffers([
+        offer(salaryInDollars(0)),
+        offer({ annualSalary: { amount: 9_000_000, currency: 'GBP' } }),
+      ]),
     );
     expect(truthOf(trace)).toBe('unknown');
     expect(gaps(trace)).toEqual([]);
+    const rates = (node: Trace): unknown[] => [
+      ...(node.missingRates ?? []),
+      ...node.children.flatMap(rates),
+    ];
+    expect(rates(trace)).toEqual([{ from: 'GBP', to: 'EUR' }]);
   });
 });

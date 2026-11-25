@@ -3,6 +3,7 @@ import {
   type FactKey,
   factCatalog,
   isFactKey,
+  isRecordKind,
   recordKinds,
 } from '../case/facts.js';
 
@@ -39,8 +40,7 @@ export function resolveFactReference(reference: string): ResolvedFact | undefine
   if (head === 'person') return lookup(reference, 'current');
   if (head === 'unit') return lookup(reference, 'unit');
   if (head === 'edge') return lookup(reference, 'edge');
-  const record = recordKinds.find((kind) => kind === head);
-  if (record !== undefined) return lookup(reference, record);
+  if (head !== undefined && isRecordKind(head)) return lookup(reference, head);
   if (head === 'firstEdge') {
     const resolved = lookup(`edge.${tail}`, 'firstEdge');
     return resolved?.definition.readsLinkedPerson === true ? undefined : resolved;

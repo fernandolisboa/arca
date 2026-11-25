@@ -32,6 +32,7 @@ export function sentenceText(
         : start === undefined
           ? when('until', end)
           : when('startedIn', start);
+  const occupation = (code: string) => t(`occupations.${code}` as 'occupations.2211');
   switch (said.kind) {
     case 'profileHidden':
       return t('playback.sentence.profileHidden', { person: name(said.person) });
@@ -108,7 +109,7 @@ export function sentenceText(
           said.occupation === undefined
             ? ''
             : t('playback.part.offerOccupation', {
-                occupation: t(`occupations.${said.occupation}` as 'occupations.2211'),
+                occupation: occupation(said.occupation),
               }),
           said.annualSalary === undefined
             ? ''
@@ -127,7 +128,7 @@ export function sentenceText(
         occupation:
           said.occupation === undefined
             ? t('playback.part.noOccupation')
-            : t(`occupations.${said.occupation}` as 'occupations.2211'),
+            : occupation(said.occupation),
         details: [
           said.relation === undefined
             ? ''

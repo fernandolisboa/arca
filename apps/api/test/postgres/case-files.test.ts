@@ -1159,24 +1159,27 @@ describe('job offers with occupation, salary and sponsorship (#510)', () => {
     annualSalary: { amount: '48000', currency: 'EUR' },
     sponsored: true,
   };
-  const older = { country: 'US', sector: 'J', temporary: true };
+  const offerBeforeNewFields = { country: 'US', sector: 'J', temporary: true };
 
-  it('saves the new fields, reads them back, plays them back, and keeps older offers', async () => {
+  it('saves the new fields, reads them back, plays them back, and keeps offerBeforeNewFields offers', async () => {
     const { alice, people } = await family();
     const view = viewOf(
       await files.answerQuestions(alice, {
         personId: people.alice,
-        answers: [{ questionId: 'jobOffers', answer: [offer, older] }],
+        answers: [{ questionId: 'jobOffers', answer: [offer, offerBeforeNewFields] }],
       }),
     );
     expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
-      jobOffers: [{ ...offer, annualSalary: { amount: 4_800_000, currency: 'EUR' } }, older],
+      jobOffers: [
+        { ...offer, annualSalary: { amount: 4_800_000, currency: 'EUR' } },
+        offerBeforeNewFields,
+      ],
     });
     const answered = (await files.questions(alice))?.people
       .find(({ personId }) => personId === people.alice)
       ?.steps.flatMap(({ questions: asked }) => asked)
       .find(({ id }) => id === 'jobOffers');
-    expect(answered?.answer).toEqual([offer, older]);
+    expect(answered?.answer).toEqual([offer, offerBeforeNewFields]);
     const played = (await files.playback(alice))?.sentences.filter(
       (said) => said.kind === 'jobOffer',
     );
@@ -1193,7 +1196,7 @@ describe('job offers with occupation, salary and sponsorship (#510)', () => {
         question: 'jobOffers',
         about: [people.alice],
         person: people.alice,
-        ...older,
+        ...offerBeforeNewFields,
       },
     ]);
     expect(await files.evaluations(alice)).not.toBeNull();
@@ -1208,15 +1211,17 @@ describe('job offers with occupation, salary and sponsorship (#510)', () => {
           answers: [{ questionId: 'jobOffers', answer: jobOffers }],
         }),
       );
-    expect(await answer([{ ...older, occupation: '9999' }])).toBe('case_invalid');
-    expect(await answer([{ ...older, annualSalary: { amount: '-1', currency: 'EUR' } }])).toBe(
-      'case_invalid',
-    );
+    expect(await answer([{ ...offerBeforeNewFields, occupation: '9999' }])).toBe('case_invalid');
+    expect(
+      await answer([{ ...offerBeforeNewFields, annualSalary: { amount: '-1', currency: 'EUR' } }]),
+    ).toBe('case_invalid');
     expect(
       refusal(
         await files.writeProfile(alice, {
           personId: people.alice,
-          facts: storedProfileFactsSchema.parse({ jobOffers: [{ ...older, occupation: '9999' }] }),
+          facts: storedProfileFactsSchema.parse({
+            jobOffers: [{ ...offerBeforeNewFields, occupation: '9999' }],
+          }),
           dependsOn: null,
         }),
       ),
