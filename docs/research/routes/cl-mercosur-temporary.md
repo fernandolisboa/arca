@@ -4,6 +4,14 @@ Research notes for Chile's Mercosur temporary residence, route `cl-mercosur-temp
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Versions audited:** 5
+- **Outcome:** a correction, version 6 from version 5's date, 2022-05-14, which keeps every item and adds the official document list from the migration service's subcategory 15 page and its dependents page. Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-cl-documents/README.md).
+- **Watch next:** the revised Decreto N.º 177 the service announced on 2026-11-10; any later version must keep version 6's documents.
+
 ### 2026-11-20
 
 A session review ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), on the owner's request: version 5, correcting version 4 from 2022-05-14, active once its pull request merges. It adds the fees by nationality (in an assessment's title for the principal, a USD 15 cost for each adult dependent), the from-abroad, documents and family-papers assessments, the sworn statement of costs, and drops Decreto N.º 177, article 46, which governs another subcategory. Ley Chile was read through BCN's JSON service (a lead); `www.bcn.cl` refused GitHub's quote check for every norm but the Civil Code, so version 5 cites only the Civil Code there. Rounds and leftovers: [review README](../../../packages/knowledge/reviews/2026-11-cl/README.md).
