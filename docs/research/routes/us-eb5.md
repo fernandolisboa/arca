@@ -4,6 +4,14 @@ Research notes for the U.S. EB-5 immigrant investor route, route `us-eb5` in `pa
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#524](https://github.com/fernandolisboa/arca/issues/524)).
+
+- **Version audited:** 9
+- **Outcome:** correction, version 10, from version 9's date, 2026-11-30, which keeps version 9 and adds the official document list, and Brazil's document guide, version 1. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-us-documents/README.md).
+- **Watch next:** the 2027-01-01 amounts are now version 11 ([#219](https://github.com/fernandolisboa/arca/issues/219)), and it keeps version 10's documents; the final rule after 91 FR 40676, which would move the petition's evidence and drop the engagement evidence.
+
 ### 2026-11-19, session review
 
 The [session rule review](../../runbooks/session-rule-review.md) ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md)), run on version 8.
