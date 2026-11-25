@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic, United Kingdom and Ireland sections, and Spain's EU-regime rule, on 2026-11-07; Spain's fees, durations and visa requirements on 2026-11-11; Latvia's, Australia's, Japan's, Argentina's, Paraguay's and Iceland's routes on 2026-11-20; Spain's international telework route on 2026-11-25.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic, United Kingdom and Ireland sections, and Spain's EU-regime rule, on 2026-11-07; Spain's fees, durations and visa requirements on 2026-11-11; Latvia's, Australia's, Japan's, Argentina's, Paraguay's and Iceland's routes on 2026-11-20; Spain's international telework route and Latvia's remote work route on 2026-11-25.
 
 ## Spain
 
@@ -76,6 +76,8 @@ The law took effect when its regulation was published, on 2022-02-12, and the ve
 ## Latvia
 
 Temporary residence for an investment in a company's share capital is now the stored route `lv-capital-investment`, first verified on 2026-11-07 against the laws on likumi.lv. Latvia replaced its Immigration Law: the new one, adopted again on 2026-08-20 after the President returned it, took effect on 2026-09-15, which is the version's start. The [old law](https://likumi.lv/ta/id/68522-imigracijas-likums) lost force that day, as its page on likumi.lv shows. The investor grounds changed with it: buying real estate no longer gives a residence permit; the share-capital route stays, with the same amounts but a permit of up to two years instead of five; and a new route for EUR 150,000 placed for five years with a state-established alternative investment fund manager (art. 27(1) point 36) is not modeled: press reports quote the migration office saying the fund does not exist yet (**unverified**, pmlp.gov.lv did not answer the sandbox), and a bill sent to committee on 2026-09-10 would delete it ([LV portāls](https://lvportals.lv/skaidrojumi/394430-stajas-speka-jaunais-imigracijas-likums-2026), run by the official publisher).
+
+The long-stay visa for remote work is the stored route [`lv-remote-work`](routes/lv-remote-work.md), version 1 from 2026-09-15, written by a session review on 2026-11-25; it has no dependents, since the law gives family members no visa on that ground.
 
 The share-capital route needs EUR 50,000 invested in a company with at most 50 employees and turnover or balance sheet of at most EUR 10 million (at most 10 foreign investors per company), or EUR 100,000 in one with more than 50 employees (its Latvian subsidiaries counted) and turnover or balance sheet above EUR 10 million, plus EUR 10,000 paid once to the state budget. A company with more than 50 employees and turnover of EUR 10 million or less fits neither tier. The requirement reads the smaller tier: liquid assets of at least EUR 60,000, which the engine adds from the two amounts. The company's size and the yearly taxes it must pay for the permit to stay valid (EUR 40,000, or EUR 100,000 for the larger tier) are assessments, since the case records no company. Citizens of Russia and Belarus have no right to this permit; a dual citizen of either is read as excluded.
 
