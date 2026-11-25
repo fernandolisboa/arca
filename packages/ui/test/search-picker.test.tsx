@@ -1,14 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { matchesSearch } from '../src/patterns/field.js';
 import { SearchPicker, foundGroups } from '../src/patterns/search-picker.js';
-
-const plain = (text: string) =>
-  text
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .trim();
-const matches = (label: string, search: string) => plain(label).includes(plain(search));
 
 const groups = [
   {
@@ -27,20 +20,39 @@ const groups = [
 const words = { label: 'Ocupação', placeholder: 'Escolha' };
 const labels = { search: 'Buscar', none: 'Nada encontrado.', clear: 'Limpar', close: 'Fechar' };
 
+describe('matchesSearch', () => {
+  it.each([
+    ['Letônia', 'leto'],
+    ['Letônia', 'LETÔ'],
+    ['Médicos clínicos gerais', 'medico'],
+    ['Japão', '  japao '],
+    ['Portugal', ''],
+  ])('finds %s for %j', (name, search) => {
+    expect(matchesSearch(name, search)).toBe(true);
+  });
+
+  it.each([
+    ['Portugal', 'porto'],
+    ['Chile', 'china'],
+  ])('leaves %s out for %j', (name, search) => {
+    expect(matchesSearch(name, search)).toBe(false);
+  });
+});
+
 describe('foundGroups', () => {
   it('keeps the options whose label answers the search, ignoring accents and case', () => {
-    expect(foundGroups(groups, 'MEDICO', matches)).toEqual([
+    expect(foundGroups(groups, 'MEDICO')).toEqual([
       { ...groups[0], id: '0', options: [{ value: '2211', label: 'Médicos clínicos gerais' }] },
     ]);
   });
 
   it('keys each group by its place among the groups given, whatever the search drops', () => {
-    expect(foundGroups(groups, 'enfermagem', matches).map(({ id }) => id)).toEqual(['1']);
+    expect(foundGroups(groups, 'enfermagem').map(({ id }) => id)).toEqual(['1']);
   });
 
   it('keeps every option for an empty search, and none for one nothing answers', () => {
-    expect(foundGroups(groups, '', matches).flatMap(({ options }) => options)).toHaveLength(3);
-    expect(foundGroups(groups, 'astronauta', matches)).toEqual([]);
+    expect(foundGroups(groups, '').flatMap(({ options }) => options)).toHaveLength(3);
+    expect(foundGroups(groups, 'astronauta')).toEqual([]);
   });
 });
 
@@ -54,7 +66,6 @@ describe('SearchPicker', () => {
         placeholder={words.placeholder}
         groups={groups}
         labels={labels}
-        matches={matches}
         lead={(code) => <i data-code={code} />}
         {...(layout === undefined ? {} : { layout })}
       />,

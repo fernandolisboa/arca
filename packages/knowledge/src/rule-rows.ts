@@ -6,7 +6,6 @@ import {
   type RouteVersion,
   type RuleCaseSummary,
   type VersionIdentity,
-  classifications,
   countrySetSchema,
   identityKey,
   officialDomainListSchema,
@@ -18,7 +17,7 @@ import {
 import { type Json, canonicalize } from './canonical.js';
 import { caseSummaries } from './cases.js';
 import { createRouteCatalog } from './catalog.js';
-import { classificationKinds } from './datasets.js';
+import { classificationPins } from './datasets.js';
 
 /** A route version as the `knowledge.route_version` table holds it (ADR-0031). */
 export interface RouteVersionRow {
@@ -239,10 +238,7 @@ export const approvedOfficialDomainLists = (
 function routePins(files: PinnedFiles, version: RouteVersion): Record<string, Json> | undefined {
   const pinned = files.commonPins(version);
   if (pinned === undefined) return undefined;
-  for (const name of classifications) {
-    const pin = version[name];
-    if (pin === undefined) continue;
-    const key = keyOf(classificationKinds[name], pin.id, pin.number);
+  for (const { key } of classificationPins(version)) {
     const content = files.datasetFiles[key];
     if (content === undefined) return undefined;
     pinned[key] = content;

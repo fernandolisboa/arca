@@ -1,5 +1,6 @@
 import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from 'react';
 import { Icon } from '../icon.js';
+import { fieldControlClass, matchesSearch } from './field.js';
 
 export interface SearchPickerOption {
   readonly value: string;
@@ -37,17 +38,13 @@ export interface SearchPickerProps {
   readonly clearLabel?: string;
   readonly groups: readonly SearchPickerGroup[];
   readonly labels: SearchPickerLabels;
-  /** Whether an option's label answers the search, such as ignoring accents and case. */
-  readonly matches: (label: string, search: string) => boolean;
+  /** Whether an option's label answers the search; by default, ignoring accents and case. */
+  readonly matches?: (label: string, search: string) => boolean;
   /** Drawn before an option's label, in the field and in the picker, such as a flag. */
   readonly lead?: (value: string) => ReactNode;
   /** Short labels in a grid of tiles, or long ones in a list of one or two columns. */
   readonly layout?: 'grid' | 'list';
 }
-
-/** A field's box at the touch target's height, shared with the native select. */
-export const fieldControlClass =
-  'min-h-touch rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
 const optionClass =
   'flex min-h-touch w-full items-center gap-2 rounded-control border border-line px-3 py-2 text-left hover:bg-soft focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-soft aria-pressed:font-medium';
@@ -70,7 +67,7 @@ const layoutClass = {
 export function foundGroups(
   groups: readonly SearchPickerGroup[],
   search: string,
-  matches: SearchPickerProps['matches'],
+  matches: (label: string, search: string) => boolean = matchesSearch,
 ): (SearchPickerGroup & { readonly id: string })[] {
   return groups
     .map((group, position) => ({
@@ -97,7 +94,7 @@ export function SearchPicker({
   clearLabel,
   groups,
   labels,
-  matches,
+  matches = matchesSearch,
   lead,
   layout = 'grid',
 }: SearchPickerProps) {
@@ -120,7 +117,6 @@ export function SearchPicker({
   const optionButtons = () => [
     ...(optionsRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? []),
   ];
-  // Arrows walk the options in reading order; up from the first one goes back to the search.
   const walk = (event: KeyboardEvent) => {
     const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
     if (step === undefined) return;
@@ -188,7 +184,6 @@ export function SearchPicker({
                   event.preventDefault();
                   optionButtons()[0]?.focus();
                 }
-                // Enter takes the first option found, and never submits a form around the field.
                 if (event.key === 'Enter') {
                   event.preventDefault();
                   if (search.trim() !== '' && first !== undefined) pick(first.value);

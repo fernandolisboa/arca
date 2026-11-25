@@ -44,7 +44,7 @@ describe('classification labels', () => {
     'write %s in Brazilian Portuguese, never in spellings or words of Portugal',
     (_name, labels) => {
       const portugal =
-        /\b(?:equipa|registo|utilizador|camião|autocarro|comboio|telemóvel|facto|contacto|projecto)s?\b|electr|óptic|[cp]ç/iu;
+        /\b(?:equipa|registo|utilizador|camião|autocarro|comboio|telemóvel|facto|contacto|projecto)s?\b|electr|óptic|acç|ecç/iu;
       expect(Object.values(labels).filter((label) => portugal.test(label))).toEqual([]);
     },
   );

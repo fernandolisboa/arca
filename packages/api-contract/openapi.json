@@ -32513,6 +32513,46 @@
                             "number"
                           ]
                         },
+                        "occupations": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
+                        "studyFields": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
                         "officialDomains": {
                           "type": "array",
                           "items": {
@@ -32538,6 +32578,8 @@
                       "required": [
                         "countries",
                         "formerCountries",
+                        "occupations",
+                        "studyFields",
                         "officialDomains"
                       ]
                     },

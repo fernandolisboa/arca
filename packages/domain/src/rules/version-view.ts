@@ -110,6 +110,9 @@ export interface VersionView {
   readonly pins: {
     readonly countries: Pin;
     readonly formerCountries: Pin;
+    /** The classification files the version pins (ADR-0036), or null. */
+    readonly occupations: Pin | null;
+    readonly studyFields: Pin | null;
     readonly officialDomains: readonly Pin[];
   };
   readonly requirements: readonly {
@@ -345,6 +348,8 @@ export function versionView({
     pins: {
       countries: version.countries,
       formerCountries: version.formerCountries,
+      occupations: version.occupations ?? null,
+      studyFields: version.studyFields ?? null,
       officialDomains: version.officialDomains,
     },
     requirements: version.requirements.map(({ id, title, expression, sources }) =>

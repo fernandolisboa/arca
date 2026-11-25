@@ -2,6 +2,7 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { PinnedFileRow, RuleRows } from '../src/rule-rows.ts';
+import { classificationKinds } from '../src/datasets.ts';
 import { type KnowledgeBuild, buildKnowledge, formatIssue } from './build.ts';
 import type { CalendarDate } from '@arca/domain';
 import { parseCalendarDate } from '@arca/domain';
@@ -108,16 +109,21 @@ export async function importMigrationFile(migrationsDir: string): Promise<string
 
 /**
  * The classification files (ADR-0036) came after the import and are verified after its date, so a
- * build on that date reports them; no imported row pins them, and the real build checks them.
+ * build on that date reports their `verifiedAt`; no imported row pins them, and the real build
+ * checks that date. Any other issue in them still fails an import build.
  */
-const laterDatasets = ['occupations/', 'study-fields/'];
+const laterDatasets = new Set<string>(Object.values(classificationKinds));
+const verifiedLater = /^\/sources\/[0-9]+\/verifiedAt$/;
 
 /** The data directory built on the import's date, as the import read it. */
 export async function importBuild(dataDir: string): Promise<KnowledgeBuild> {
   const build = await buildKnowledge(dataDir, importDate);
   return {
     ...build,
-    issues: build.issues.filter(({ file }) => !laterDatasets.some((dir) => file.startsWith(dir))),
+    issues: build.issues.filter(
+      ({ file, path }) =>
+        !laterDatasets.has(file.split('/')[0] ?? '') || !verifiedLater.test(path ?? ''),
+    ),
   };
 }
 

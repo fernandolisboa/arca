@@ -62,7 +62,25 @@ describe('checkProposal (ADR-0031)', { timeout: 120_000 }, () => {
     expect(result.entry.identity.number).toBe(result.entry.version.number);
   });
 
+  it('takes a version that pins the classifications, hashed with their files', async () => {
+    const { rows, next, reading, check } = await setUp();
+    const pinned = next({
+      occupations: { id: 'occupations', number: 1 },
+      studyFields: { id: 'study-fields', number: 1 },
+    });
+    const result = await check(pinned);
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.hash).toBe(routeVersionContentHash(rows, pinned, reading));
+    expect(result.hash).not.toBe(routeVersionContentHash(rows, next(), reading));
+  });
+
   it.each<[string, (setup: Awaited<ReturnType<typeof setUp>>) => Json, RegExp]>([
+    [
+      'a pin to a classification file that does not exist',
+      ({ next }) => next({ occupations: { id: 'occupations', number: 2 } }),
+      /pinned file is missing/,
+    ],
     [
       'a number that is not the next',
       ({ base, next }) => next({ number: base.number + 2 }),

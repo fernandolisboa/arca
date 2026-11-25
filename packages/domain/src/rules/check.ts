@@ -58,7 +58,7 @@ export interface CheckContext {
 /** The codes of the classification files a route version pins, by the name of each pin. */
 export type PinnedClassifications = Readonly<Partial<Record<Classification, ReadonlySet<string>>>>;
 
-const classificationNames: Readonly<Record<Classification, string>> = {
+const classificationLabels: Readonly<Record<Classification, string>> = {
   occupations: 'Occupation',
   studyFields: 'Field-of-study',
 };
@@ -254,7 +254,7 @@ class Checker {
     ) {
       return this.fail(
         path,
-        `${classificationNames[type.classification]} codes need the version to pin ${type.classification}`,
+        `${classificationLabels[type.classification]} codes need the version to pin ${type.classification}`,
       );
     }
     return typeOf(type, this.context.currency);

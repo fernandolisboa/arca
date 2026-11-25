@@ -259,6 +259,11 @@ describe('buildKnowledge', () => {
     expect(await issuesOf(tree)).toContain(
       'routes/qm-work/1.json /occupations: The pinned occupations file occupations 2 exists and is valid',
     );
+
+    tree['study-fields/1.json'] = { ...classification('study-fields'), codes: ['2222', '1111'] };
+    expect(await issuesOf(tree)).toContain(
+      'study-fields/1.json /codes: Codes are unique and in ascending order',
+    );
   });
 
   describe('validation', () => {

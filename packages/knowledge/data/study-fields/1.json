@@ -6,8 +6,8 @@
   "sources": [
     {
       "id": "eurostat-iscedf13",
-      "url": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/codelist/ESTAT/ISCEDF13/latest?format=TSV&lang=en",
-      "title": "ISCED-F 2013 code list ISCEDF13 (Eurostat, for the UNESCO classification)",
+      "url": "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/codelist/ESTAT/ISCEDF13/2.3?format=TSV&lang=en",
+      "title": "ISCED-F 2013 code list ISCEDF13, version 2.3 (Eurostat, for the UNESCO classification)",
       "kind": "official",
       "verifiedAt": "2026-11-25"
     }

@@ -15,7 +15,6 @@ import {
   checkCountrySet,
   checkRouteVersion,
   checkVersionOrder,
-  classifications,
   compareDates,
   comparisonSeriesId,
   comparisonVersionSchema,
@@ -26,7 +25,7 @@ import {
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import type { z } from 'zod';
-import { classificationKinds } from '../src/datasets.ts';
+import { classificationPins } from '../src/datasets.ts';
 import { contentHash } from './content-hash.ts';
 import {
   type ClassificationFile,
@@ -155,7 +154,10 @@ class Validation {
       if (file.kind === 'official-domains') this.checkHostSources(file);
       if (file.kind === 'occupations' || file.kind === 'study-fields') {
         this.checkVerified(file.raw, file.data.sources, '/sources');
-        this.checkUnique(file.raw, file.data.codes, '/codes');
+        const { codes } = file.data;
+        if (codes.some((code, index) => index > 0 && (codes[index - 1] ?? '') >= code)) {
+          this.report(file.raw, 'Codes are unique and in ascending order', '/codes');
+        }
       }
       if (file.kind === 'former-countries')
         this.checkVerified(file.raw, file.data.sources, '/sources');
@@ -334,11 +336,9 @@ class Validation {
     });
     const known = { current, former: formerCodes, setsWithFormer };
     const codes: Partial<Record<Classification, ReadonlySet<string>>> = {};
-    for (const name of classifications) {
-      const pin = data[name];
-      if (pin === undefined) continue;
-      const file = this.resolve(raw, classificationKinds[name], pin, `/${name}`);
-      if (file !== undefined) codes[name] = new Set(file.data.codes);
+    for (const { name, kind, pin } of classificationPins(data)) {
+      const pinned = this.resolve(raw, kind, pin, `/${name}`);
+      if (pinned !== undefined) codes[name] = new Set(pinned.data.codes);
     }
     const official = this.officialHosts(raw, data.officialDomains);
     if (official !== undefined) {
@@ -468,9 +468,9 @@ class Validation {
     };
     if (file.kind === 'country-sets' || file.kind === 'routes') addCommon(file.data);
     if (file.kind === 'routes') {
-      for (const name of classifications) {
+      for (const { name, kind } of classificationPins(file.data)) {
         const pin = file.data[name];
-        if (pin !== undefined) add(classificationKinds[name], pin);
+        if (pin !== undefined) add(kind, pin);
       }
       for (const pin of file.data.countrySets) {
         const set = add('country-sets', pin) as ParsedOf<'country-sets'>;

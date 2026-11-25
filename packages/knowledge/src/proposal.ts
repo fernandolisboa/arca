@@ -5,14 +5,13 @@ import {
   type RouteVersion,
   checkRouteVersion,
   checkVersionOrder,
-  classifications,
   identityKey,
   routeVersionSchema,
 } from '@arca/domain';
 import { z } from 'zod';
 import { runVersionCases } from './case-run.js';
 import { type CasesFile, casesFileSchema } from './cases.js';
-import { classificationKinds } from './datasets.js';
+import { classificationPins } from './datasets.js';
 import type { Json } from './canonical.js';
 import {
   type PinnedFileRow,
@@ -212,17 +211,7 @@ export async function checkProposal(
       .map(({ id }) => id),
   );
   const pinnedCodes = Object.fromEntries(
-    classifications.flatMap((name) => {
-      const pin = version[name];
-      return pin === undefined
-        ? []
-        : [
-            [
-              name,
-              codesOf(reading, `${classificationKinds[name]}/${pin.id}/${String(pin.number)}`),
-            ],
-          ];
-    }),
+    classificationPins(version).map(({ name, key }) => [name, codesOf(reading, key)]),
   );
   problems.push(
     ...checkRouteVersion(

@@ -3,7 +3,7 @@
  * come from the knowledge package's occupations dataset; a test keeps the two in step.
  */
 export const occupationGroups = {
-  '0': 'Forças Armadas',
+  '0': 'Ocupações das Forças Armadas',
   '1': 'Diretores e gerentes',
   '2': 'Profissionais das ciências e intelectuais',
   '3': 'Técnicos e profissionais de nível médio',
@@ -42,7 +42,7 @@ export const occupations = {
   '1342': 'Gerentes de serviços de saúde',
   '1343': 'Gerentes de serviços de cuidado de idosos',
   '1344': 'Gerentes de serviços de assistência social',
-  '1345': 'Gestores de educação',
+  '1345': 'Gerentes de educação',
   '1346': 'Gerentes de agências bancárias, financeiras e de seguros',
   '1349': 'Gerentes de serviços profissionais, outros',
   '1411': 'Gerentes de hotéis',

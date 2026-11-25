@@ -28,9 +28,8 @@ export { NextActionCard, type NextActionCardProps } from './patterns/next-action
 export { ProgressBar, type ProgressBarProps } from './patterns/progress-bar.js';
 export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
 export { ScaleChoice, type ScaleChoiceProps } from './patterns/scale-choice.js';
+export { fieldControlClass, matchesSearch } from './patterns/field.js';
 export {
-  fieldControlClass,
-  foundGroups,
   SearchPicker,
   type SearchPickerGroup,
   type SearchPickerLabels,

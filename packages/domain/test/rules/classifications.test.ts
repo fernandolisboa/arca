@@ -5,7 +5,7 @@ import { type PinnedClassifications } from '../../src/rules/check.js';
 import { type OfficialHosts, checkRouteVersion } from '../../src/rules/validate.js';
 
 // No catalog fact reads a classification code yet (the case records that do come with spec 0007's
-// next tickets), so these tests add two fixture facts to the catalog the checker reads.
+// next tickets), so these tests add fixture facts to the catalog the checker reads.
 vi.mock('../../src/case/facts.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/case/facts.js')>();
   const unknown = (): ReturnType<FactDefinition['derive']> => ({ value: { type: 'token' } });
@@ -13,6 +13,11 @@ vi.mock('../../src/case/facts.js', async (importOriginal) => {
     ...actual.factCatalog,
     'person.fixtureOccupation': {
       type: { kind: 'code', classification: 'occupations' },
+      scope: 'person',
+      derive: unknown,
+    },
+    'person.fixtureStudyField': {
+      type: { kind: 'code', classification: 'studyFields' },
       scope: 'person',
       derive: unknown,
     },
@@ -130,7 +135,7 @@ describe('classification codes in a route version', () => {
     ]);
   });
 
-  it('keeps an occupation code out of a field-of-study fact', () => {
+  it('keeps a field-of-study code out of an occupation fact', () => {
     expect(
       issues(
         [
@@ -138,6 +143,21 @@ describe('classification codes in a route version', () => {
             op: 'eq',
             left: { op: 'fact', key: 'principal.fixtureOccupation' },
             right: { op: 'token', value: '0912' },
+          },
+        ],
+        bothPinned,
+      ),
+    ).toEqual(['/requirements/0/expression: The values are outside the domain of the fact']);
+  });
+
+  it('refuses comparing an occupation with a field of study', () => {
+    expect(
+      issues(
+        [
+          {
+            op: 'eq',
+            left: { op: 'fact', key: 'principal.fixtureOccupation' },
+            right: { op: 'fact', key: 'principal.fixtureStudyField' },
           },
         ],
         bothPinned,
