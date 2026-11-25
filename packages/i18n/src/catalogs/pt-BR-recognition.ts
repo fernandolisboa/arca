@@ -22,7 +22,7 @@ export const recognition = {
   item: {
     'es-language': {
       title: 'Espanhol nível B2',
-      body: 'A Espanha pede espanhol B2 para homologar o diploma. Ficam de fora quem tem nacionalidade de um país de língua espanhola e quem cursou em espanhol pelo menos 75% da carga horária do curso, ou a formação anterior a ele. Quem fez em espanhol menos de 75% do curso precisa do certificado.',
+      body: 'A Espanha pede espanhol B2 para homologar o diploma. Ficam de fora quem tem nacionalidade de um país de língua espanhola e quem cursou em espanhol pelo menos 75% da carga horária do curso, ou a formação anterior a ele. Fora esses casos, é preciso o certificado.',
     },
     'es-documents': {
       title: 'Diploma e histórico traduzidos e apostilados',
@@ -46,7 +46,7 @@ export const recognition = {
     },
     'es-specialty-exam': {
       title: 'Prova do MIR',
-      body: 'Para começar a residência em 2027, as inscrições foram de 1 a 14 de setembro de 2026 e a prova é em 23 de janeiro de 2027. Exige o diploma já homologado e espanhol C1, salvo para quem cursou a faculdade em espanhol num país de língua espanhola ou fez 2 anos de residência na Espanha. Quem não é da UE só se inscreve se o país de origem tiver convênio de cooperação com a Espanha em vigor ou se estiver na Espanha com autorização legal de estadia. Quem não tem autorização de residência na Espanha disputa no máximo 968 das 9.676 vagas de Medicina.',
+      body: 'Para começar a residência em 2027, as inscrições foram de 1 a 14 de setembro de 2026 e a prova é em 23 de janeiro de 2027. Exige o diploma já homologado e espanhol C1, salvo para quem cursou a faculdade em espanhol num país de língua espanhola ou fez 2 anos de residência na Espanha. Quem não é da UE, não é familiar de cidadão da UE e não tem residência legal na Espanha só se inscreve se o país de origem tiver convênio de cooperação com a Espanha em vigor ou se estiver na Espanha com autorização legal de estadia. Quem não tem autorização de residência na Espanha disputa no máximo 968 das 9.676 vagas de Medicina.',
     },
     'pt-recognition-request': {
       title: 'Pedir o reconhecimento específico',

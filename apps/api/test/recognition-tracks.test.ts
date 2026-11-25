@@ -21,7 +21,13 @@ function appFor(
     confirmed = true,
     inCase = true,
     limited = false,
-  }: { confirmed?: boolean; inCase?: boolean; limited?: boolean } = {},
+    tracks = recognitionTracks,
+  }: {
+    confirmed?: boolean;
+    inCase?: boolean;
+    limited?: boolean;
+    tracks?: typeof recognitionTracks;
+  } = {},
 ) {
   const hits: string[] = [];
   const calls: unknown[][] = [];
@@ -29,7 +35,12 @@ function appFor(
     recognitionHolders: (accountId: string, tracks: readonly { id: string }[]) => {
       calls.push([accountId, tracks.map(({ id }) => id)]);
       return Promise.resolve(
-        inCase ? tracks.map(({ id }) => ({ trackId: id, personIds: [doctor] })) : null,
+        inCase
+          ? tracks.map(({ id }, index) => ({
+              trackId: id,
+              personIds: index === tracks.length - 1 ? [doctor] : [],
+            }))
+          : null,
       );
     },
   } as unknown as CaseFiles;
@@ -57,7 +68,7 @@ function appFor(
     },
     cases,
     accountConfirmed: () => Promise.resolve(confirmed),
-    recognitionTracks,
+    recognitionTracks: tracks,
   });
   return { app, calls, hits };
 }
@@ -91,6 +102,16 @@ describe('GET /v1/recognition-tracks (ADR-0040)', () => {
     const unconfirmed = appFor(owner, { confirmed: false });
     await unconfirmed.app.request('/v1/recognition-tracks');
     expect(unconfirmed.calls).toEqual([]);
+  });
+
+  it('puts the tracks that concern someone first', async () => {
+    const [physician] = recognitionTracks;
+    if (physician === undefined) throw new Error('no track');
+    const { app } = appFor(owner, {
+      tracks: [physician, { ...physician, id: 'nurse', occupations: ['2221'] }],
+    });
+    const body = (await (await app.request('/v1/recognition-tracks')).json()) as Body;
+    expect(body.tracks.map(({ id }) => id)).toEqual(['nurse', 'physician']);
   });
 
   it('counts each read of the case per session, and refuses past the limit', async () => {
