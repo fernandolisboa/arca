@@ -377,7 +377,7 @@
       },
       "validity": "P60D",
       "note": "Apostilled or legalized if issued abroad; an official translation unless in Spanish or English; uploaded as a PDF",
-      "sources": ["sermig-mercosur", "agreement-records", "codigo-civil"]
+      "sources": ["sermig-mercosur", "codigo-civil"]
     },
     {
       "id": "passport-dependent",

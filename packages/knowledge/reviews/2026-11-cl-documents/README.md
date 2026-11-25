@@ -7,7 +7,6 @@ The documents of Chile's one stored route, `cl-mercosur-temporary` ([#527](https
 - The migration service's subcategory 15 page ("Mercosur: Principio de reciprocidad internacional", updated 2025-12-18): the principal's required documents, the passport's year of validity, the 60 days of the criminal record certificate and the general criteria for documents (official translation unless in Spanish or English, apostille or legalization, PDF, 60 days for public bodies' papers).
 - The service's dependents page (updated 2025-12-16): each dependent's papers, by tie (spouse or partner; child under 18; child with a disability; child between 18 and 24 studying), and the same general criteria.
 - Civil Code, article 26: majority at 18, for "mayores de edad".
-- The Residence Agreement's article 4.1, c), as Paraguay's Ley N.º 3578/2008 prints it, already cited by version 5, for the principal's criminal record.
 
 ## What version 6 adds
 
@@ -20,13 +19,13 @@ The documents of Chile's one stored route, `cl-mercosur-temporary` ([#527](https
 - **Spouse, partner, child with a disability or of 18 or over:** the principal's notarized sworn statement to bear the costs and proof of the principal's means by the Social Development Ministry's indicators; possible for minors, since a disability is not recorded.
 - **Apostille and translation** are notes, not fields: the pages say "apostille or legalization" and an official translation unless in Spanish or English, which the fields cannot hold.
 
-New kinds: `parental_care_statement`, `support_undertaking`, `enrollment_certificate`. **Brazil's document guide** needs no new version: `passport`, `police_certificate`, `birth_certificate` and `marriage_certificate` are in it; the rest have no entry yet (leftover 4).
+Version 6 is the route's first document list. It reuses `passport`, `photograph`, `police_certificate`, `marriage_certificate`, `birth_certificate`, `family_relationship_proof`, `means_of_subsistence_proof` and `disability_or_health_proof`, and adds three kinds no route had: `parental_care_statement` (a parent's statement that they care for the child, not a travel authorization like `parental_authorization`), `support_undertaking` (the principal's own statement to bear the costs, not a third party's guarantee like `letter_of_guarantee`) and `enrollment_certificate`. **Brazil's document guide** needs no new version: `passport`, `police_certificate`, `birth_certificate` and `marriage_certificate` are in it; the rest have no entry yet (leftover 4).
 
 ## Rounds
 
-One adversarial round, one reviewer checking every item, its quotes and its pt-BR text against the two pages and looking for anything missing. No item asked the wrong paper of the wrong person. Fixed: the enrollment certificate now stops at 24, as the page's heading says; the spouse's and partner's own sentences for the cost statement and the means proof are quoted; every foreign paper's note now carries the general criteria in full (PDF, 60 days for a public body's paper, 30 for a private one), quoted as one passage; the principal's criminal record reads "a country lived in", not "each"; pt-BR wording ("declaração juramentada", gender-neutral notes). The fixes were not read by a second adversarial round; the repository's reviewers, the proposal check and the quote check read them.
+One adversarial round, one reviewer checking every item, its quotes and its pt-BR text against the two pages and looking for anything missing. No item asked the wrong paper of the wrong person. Fixed: the enrollment certificate now stops at 24, as the page's heading says; the spouse's and partner's own sentences for the cost statement and the means proof are quoted; every foreign paper's note now carries the general criteria in full (PDF, 60 days for a public body's paper, 30 for a private one), quoted as one passage; the principal's criminal record reads "a country lived in", not "each"; pt-BR wording ("declaração juramentada", gender-neutral notes). The fixes were not read by a second adversarial round; the repository's reviewers, the proposal check and the quote check read them. The reviewers then asked for: a test of the conditions, the principal's certificate no longer citing the agreement (no quote of it), the kinds explained, and pt-BR wording; done.
 
-The proposal check and the quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-cl-documents`, in `apps/api`), pass on the final files. The quote check read the Civil Code on 2026-11-25, so its `verifiedAt` now says so.
+The proposal check and the quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-cl-documents`, in `apps/api`), pass on the final files. `test/cl-mercosur-temporary-documents.test.ts` checks the conditions by tie and age on the review's cases.
 
 ## Leftover
 
