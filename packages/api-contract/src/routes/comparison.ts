@@ -11,6 +11,7 @@ import {
   maxOwnCriterionName,
   ownCriterionIdSchema,
   plainSourceSchema,
+  regionCodeSchema,
   slugSchema,
   sourceSchema,
   weightSchema,
@@ -89,6 +90,22 @@ export const CriterionScore = z.object({
       stale: z.boolean(),
     })
     .optional(),
+  /**
+   * On a region: it has no stars or data of its own on this criterion, so it takes its country's
+   * score (ADR-0042), which the country's line explains.
+   */
+  inherited: z.literal(true).optional(),
+});
+
+/** A region inside a country (ADR-0042), scored with the caller's weights; visas stay national. */
+export const ComparedRegion = z.object({
+  /** Its ISO 3166-2 code, such as `PT-20`; the caller's ratings for it are keyed by it. */
+  region: regionCodeSchema,
+  /** Its place among the country's regions; null while it has no total. */
+  rank: z.int().min(1).nullable(),
+  total: decimalSchema.nullable(),
+  coverage: z.int().min(0).max(100),
+  scores: z.array(CriterionScore).max(maxCriterionKeys),
 });
 
 export const ComparedCountry = z.object({
@@ -102,6 +119,8 @@ export const ComparedCountry = z.object({
   scores: z.array(CriterionScore).max(maxCriterionKeys),
   /** The best status the caller has over the country's routes; it never changes the score. */
   routeStatus: RouteResult.shape.status.nullable(),
+  /** The country's regions, ranked; empty when Arca has no regional data for it. */
+  regions: z.array(ComparedRegion).max(100),
 });
 
 export const DestinationComparison = z.object({

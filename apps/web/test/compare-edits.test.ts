@@ -29,6 +29,13 @@ describe('Comparison edits', () => {
       },
     ],
     [
+      'rates a region beside its country (ADR-0042)',
+      { kind: 'rating', criterion: 'climate', country: 'PT-20', rating: 3 },
+      {
+        ratings: { climate: { PT: 4, ES: 5, 'PT-20': 3 }, 'own-0000000a': { PT: 3 } },
+      },
+    ],
+    [
       'adds a rating to a new criterion',
       {
         kind: 'rating',

@@ -491,6 +491,16 @@ export {
   suggestedRatingsSchema,
 } from './comparison/suggested.js';
 export {
+  type RegionRatings,
+  type RegionSuggestions,
+  noRegionSuggestions,
+  placeCodeSchema,
+  regionCodeSchema,
+  regionCountry,
+  regionRatingsSchema,
+  regionSuggestions,
+} from './comparison/regions.js';
+export {
   type DepartureChecklistView,
   type DepartureChecklists,
   type DepartureSource,
@@ -520,6 +530,7 @@ export {
   type ComparisonInput,
   type CountryComparison,
   type CriterionScore,
+  type RegionComparison,
   type DestinationComparison,
   type IndicatorReading,
   compareDestinations,

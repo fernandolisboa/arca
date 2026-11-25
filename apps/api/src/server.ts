@@ -1,3 +1,4 @@
+import { regionSuggestions } from '@arca/domain';
 import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
@@ -6,6 +7,7 @@ import {
   recognitionTracks,
   occupationCodes,
   pinnedCountries,
+  regionRatings,
   studyFieldCodes,
   createRuleTexts,
   shippedRuleTexts,
@@ -580,6 +582,7 @@ const app = createApp({
       ...(suggestedRatings === null
         ? {}
         : { suggestions: comparisonRatingSuggestions(suggestedRatings) }),
+      ...(regionRatings === null ? {} : { regions: regionSuggestions(regionRatings) }),
       texts: createRuleTexts(shippedRuleTexts, sha256),
       guides: documentGuides,
       states: () => knowledgeDecisions().states(),

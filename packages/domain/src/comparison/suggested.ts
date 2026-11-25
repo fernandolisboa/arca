@@ -8,7 +8,7 @@ import { plainName } from './names.js';
  * Stars the comparison suggests for one criterion in one country (ADR-0035), with the measured value
  * behind them: a decimal string, or a token such as `es`, which the screen words.
  */
-const suggestedRatingSchema = z.strictObject({
+export const suggestedRatingSchema = z.strictObject({
   country: countryCodeSchema,
   stars: z.number().int().min(1).max(5),
   value: z.string().regex(/^(?:-?\d{1,9}(?:\.\d{1,3})?|[a-z][a-z-]{0,19})$/),

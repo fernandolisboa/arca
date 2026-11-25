@@ -1,20 +1,20 @@
 import type { DestinationComparison } from '@arca/api-contract/client';
-import { StarRating, StatusChip, cardClass } from '@arca/ui';
+import { StatusChip, cardClass } from '@arca/ui';
 import { Link } from '@tanstack/react-router';
 import { Fragment, useId, useState } from 'react';
 import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
-import { ReadingLines, SuggestionLines } from './country-card.js';
+import { PlaceHeader, StarCell, TotalCell, stickyCell } from './cells.js';
+import { ReadingLines, SuggestionLines } from './criterion-lines.js';
 import type { Edit, Preferences } from './edits.js';
-import { measured, type CompareWords, type Criterion } from './words.js';
+import { RegionRows } from './regions.js';
+import { measured, type CompareWords, type ComparedCountry, type Criterion } from './words.js';
 
-type ComparedCountry = DestinationComparison['countries'][number];
 type Change = (edit: Edit) => void;
 
 const weights = [0, 1, 2, 3, 4, 5] as const;
-const stickyCell = 'sticky left-0 z-10 bg-surface';
 
 /**
  * The comparison on a wide screen: a country per row, a criterion per column with its weight on
@@ -164,38 +164,25 @@ function CountryRow({
 }) {
   const { t } = words;
   const [open, setOpen] = useState(false);
+  const [regionsOpen, setRegionsOpen] = useState(false);
   const detailsId = useId();
+  const regionsId = useId();
   const name = words.country(country.country);
   const scores = new Map(country.scores.map((score) => [score.criterion, score]));
   const read = criteria.filter((criterion) => {
     const score = scores.get(criterion.id);
     return score?.reading !== undefined || score?.suggested !== undefined;
   });
-  const total = country.total === null ? null : words.decimal(country.total);
   return (
     <Fragment>
       <tr className="border-b border-line align-top">
-        <th scope="row" className={`${stickyCell} p-3 text-left font-medium`}>
-          <span className="flex items-baseline gap-2">
-            {country.rank !== null && (
-              // The number is drawn by CSS, so the row's name reads "1º lugar Portugal" once.
-              <span
-                aria-hidden="true"
-                data-rank={country.rank}
-                className={`tabular-nums before:content-[attr(data-rank)] ${country.rank === 1 ? 'text-primary' : 'text-muted'}`}
-              />
-            )}
-            <span>
-              {country.rank !== null && (
-                <span className="sr-only">
-                  {t('compare.place', { rank: String(country.rank) })}{' '}
-                </span>
-              )}
-              <FlagLead code={country.country} />
-              {name}
-            </span>
-          </span>
-        </th>
+        <PlaceHeader
+          rank={country.rank}
+          rankLabel={t('compare.place', { rank: String(country.rank) })}
+        >
+          <FlagLead code={country.country} />
+          {name}
+        </PlaceHeader>
         <td className="p-3">
           <span className="flex flex-col items-start gap-1">
             {country.routeStatus !== null && (
@@ -236,63 +223,51 @@ function CountryRow({
                 {t('compare.hide')}
               </button>
             </span>
+            {country.regions.length > 0 && (
+              <button
+                type="button"
+                className={`${textLinkClass} text-small whitespace-nowrap`}
+                aria-expanded={regionsOpen}
+                aria-label={
+                  regionsOpen
+                    ? t('compare.regions.hideLabel', { country: name })
+                    : t('compare.regions.showLabel', { country: name, n: country.regions.length })
+                }
+                {...(regionsOpen ? { 'aria-controls': regionsId } : {})}
+                onClick={() => {
+                  setRegionsOpen(!regionsOpen);
+                }}
+              >
+                {regionsOpen
+                  ? t('compare.regions.hide')
+                  : t('compare.regions.show', { n: country.regions.length })}
+              </button>
+            )}
           </span>
         </td>
-        <td className="p-3 whitespace-nowrap">
-          {total === null ? (
-            <span className="text-small text-muted">{t('compare.noTotal')}</span>
-          ) : (
-            <span className="flex flex-col">
-              <span className="font-display text-lead tabular-nums">
-                <span aria-hidden="true">{total}</span>
-                <span className="sr-only">{t('compare.totalLabel', { total })}</span>
-              </span>
-              <span className="text-caption text-muted">
-                {t('compare.coverage', { coverage: String(country.coverage) })}
-              </span>
-            </span>
-          )}
-        </td>
+        <TotalCell total={country.total} coverage={country.coverage} words={words} />
         {criteria.map((criterion) => {
           const score = scores.get(criterion.id);
-          const objective = measured(criterion);
-          const label = words.label(criterion);
           return (
             <td
               key={criterion.id}
               className={`p-3 ${weightOf(criterion) === 0 ? 'opacity-60' : ''}`}
             >
-              {objective ? (
+              {measured(criterion) ? (
                 <span
                   className={`tabular-nums ${score?.score == null ? 'text-small text-muted' : ''}`}
                 >
                   {score?.score == null ? t('compare.noData') : words.decimal(score.score)}
                 </span>
               ) : (
-                <StarRating
-                  compact
-                  legend={t('compare.ratingFor', { criterion: label, country: name })}
-                  caption={t('compare.rating')}
-                  value={preferences.ratings[criterion.id]?.[country.country]}
-                  onChange={(stars) => {
-                    change({
-                      kind: 'rating',
-                      criterion: criterion.id,
-                      country: country.country,
-                      rating: stars,
-                    });
-                  }}
-                  onClear={() => {
-                    change({
-                      kind: 'rating',
-                      criterion: criterion.id,
-                      country: country.country,
-                      rating: undefined,
-                    });
-                  }}
-                  starLabel={(n) => t('compare.star', { n })}
-                  clearLabel={t('compare.clearStarsFor', { criterion: label, country: name })}
+                <StarCell
+                  criterion={criterion}
+                  place={country.country}
+                  placeName={name}
+                  rating={preferences.ratings[criterion.id]?.[country.country]}
                   suggested={score?.suggested?.stars}
+                  change={change}
+                  words={words}
                 />
               )}
             </td>
@@ -337,6 +312,18 @@ function CountryRow({
             </ul>
           </td>
         </tr>
+      )}
+      {regionsOpen && (
+        <RegionRows
+          id={regionsId}
+          country={country}
+          criteria={criteria}
+          columns={columns}
+          weightOf={weightOf}
+          preferences={preferences}
+          change={change}
+          words={words}
+        />
       )}
     </Fragment>
   );

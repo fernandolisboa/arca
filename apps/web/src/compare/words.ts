@@ -9,6 +9,9 @@ export type Reading = NonNullable<
 export type Suggested = NonNullable<
   DestinationComparison['countries'][number]['scores'][number]['suggested']
 >;
+export type ComparedCountry = DestinationComparison['countries'][number];
+export type ComparedRegion = ComparedCountry['regions'][number];
+export type CriterionScore = ComparedCountry['scores'][number];
 
 /** Criteria read from country data; the others are scored from the person's own stars. */
 export const measured = (criterion: Criterion) =>
@@ -28,6 +31,8 @@ export function useCompareWords() {
       criterion.kind === 'own'
         ? criterion.name
         : labelled(`compare.criterion.${criterion.id}`, criterion.title),
+    /** A region's name (ADR-0042); one the catalog lacks shows its ISO 3166-2 code. */
+    region: (code: string) => labelled(`regions.${code}`, code),
     /** The value behind an objective score with its year, such as "4,49 homicídios… (2023)". */
     reading: (criterion: Criterion, { value, year }: Reading) => {
       const indicator = criterion.kind === 'own' ? undefined : criterion.indicator;
@@ -44,10 +49,18 @@ export function useCompareWords() {
             : t('compare.valueUnit', { value: shown, unit: indicator.unit });
       return t('compare.inYear', { reading: phrase, year: String(year) });
     },
-    /** Why Arca suggests the stars it does, such as "Desemprego: 4,2% (2025)". */
-    suggestionReason: ({ key, value, year }: Suggested) => {
-      const phraseKey = `compare.suggested.reason.${key}`;
-      if (!i18n.exists(phraseKey)) return value;
+    /**
+     * Why Arca suggests the stars it does, such as "desemprego de 4,2% (2025)". A region's reason
+     * has its own wording where the value means something else there, as housing does.
+     */
+    suggestionReason: ({ key, value, year }: Suggested, regional = false) => {
+      const regionKeys = regional
+        ? [`compare.regionReason.${key}.${value}`, `compare.regionReason.${key}`]
+        : [];
+      const phraseKey = [...regionKeys, `compare.suggested.reason.${key}`].find((each) =>
+        i18n.exists(each),
+      );
+      if (phraseKey === undefined) return value;
       const numeric = /^-?\d/.test(value);
       const reason = t(phraseKey as 'compare.suggested.reason.jobs', {
         value: numeric ? words.decimal(value) : value,

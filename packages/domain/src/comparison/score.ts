@@ -10,6 +10,7 @@ import type { Source } from '../rules/route-version.js';
 import { isStale } from '../rules/staleness.js';
 import type { ComparisonPreferences } from './schema.js';
 import type { ComparisonEntry } from './select.js';
+import { type RegionSuggestions, noRegionSuggestions } from './regions.js';
 import { type RatingSuggestions, type SuggestedRating, noRatingSuggestions } from './suggested.js';
 
 /** A criterion as one person's comparison counts it: from the version, or one they created. */
@@ -56,6 +57,21 @@ export interface CriterionScore {
     /** Its source was verified more than 90 days before today (spec 0002, R9). */
     readonly stale: boolean;
   };
+  /**
+   * The region has no own stars or data on this criterion, so it takes its country's score
+   * (ADR-0042); the country's line says where that score comes from.
+   */
+  readonly inherited?: true;
+}
+
+/** One region of a country, scored like the country with its own data where it has some. */
+export interface RegionComparison {
+  readonly region: string;
+  /** Its place among the country's regions; null while it has no total. */
+  readonly rank: number | null;
+  readonly total: Decimal | null;
+  readonly coverage: number;
+  readonly scores: readonly CriterionScore[];
 }
 
 export type CountryComparison = (
@@ -68,6 +84,8 @@ export type CountryComparison = (
   /** The known weight over all weight, as a whole percentage rounded down. */
   readonly coverage: number;
   readonly scores: readonly CriterionScore[];
+  /** The country's regions, ranked; empty when the data has none (ADR-0042). */
+  readonly regions: readonly RegionComparison[];
 };
 
 export interface DestinationComparison {
@@ -88,6 +106,8 @@ export interface ComparisonInput {
   readonly today: CalendarDate;
   /** Suggested stars for personal and own criteria (ADR-0035); none when absent. */
   readonly suggestions?: RatingSuggestions;
+  /** The regions of each country and their suggested stars (ADR-0042); none when absent. */
+  readonly regions?: RegionSuggestions;
 }
 
 /** The weight an own criterion has until the person sets one: the middle of the scale. */
@@ -159,7 +179,7 @@ interface Scored {
 }
 
 interface Totalled {
-  readonly country: string;
+  readonly place: string;
   readonly total: Ratio | null;
   readonly coverage: Ratio;
   readonly halfKnown: boolean;
@@ -175,8 +195,8 @@ function byRanking(left: Totalled, right: Totalled): number {
   }
   const coverage = compareRatios(right.coverage, left.coverage);
   if (coverage !== 0) return coverage;
-  if (left.country === right.country) return 0;
-  return left.country < right.country ? -1 : 1;
+  if (left.place === right.place) return 0;
+  return left.place < right.place ? -1 : 1;
 }
 
 /**
@@ -190,6 +210,7 @@ export function compareDestinations({
   countries,
   today,
   suggestions = noRatingSuggestions,
+  regions = noRegionSuggestions,
 }: ComparisonInput): DestinationComparison {
   const versionCriteria = entry?.version.criteria ?? [];
   const indicators = new Map(
@@ -229,27 +250,41 @@ export function compareDestinations({
     }),
   );
 
+  const rated = (criterion: string, place: string) => {
+    const byPlace = ownValue(preferences.ratings, criterion);
+    return byPlace === undefined ? undefined : ownValue(byPlace, place);
+  };
+  const starScored = (
+    criterion: string,
+    rating: number | undefined,
+    found: SuggestedRating | undefined,
+  ): Scored => {
+    const suggested =
+      found === undefined ? undefined : { ...found, stale: isStale(found.source, today) };
+    const stars = rating ?? suggested?.stars;
+    if (stars === undefined) return { score: { criterion, score: null } };
+    const exact = starScore(stars);
+    return {
+      score: {
+        criterion,
+        score: oneDecimal(exact),
+        ...(rating === undefined ? {} : { rating }),
+        ...(suggested === undefined ? {} : { suggested }),
+      },
+      exact,
+    };
+  };
+  const starred = (criterion: ComparedCriterion) => {
+    const definition = knowledge.get(criterion.id);
+    return definition === undefined || definition.kind === 'personal';
+  };
+
   const scoreOf = (criterion: ComparedCriterion, country: string): Scored => {
     const definition = knowledge.get(criterion.id);
     if (definition === undefined || definition.kind === 'personal') {
-      const byCountry = ownValue(preferences.ratings, criterion.id);
-      const rating = byCountry === undefined ? undefined : ownValue(byCountry, country);
       const key = suggestionKeys.get(criterion.id);
       const found = key === undefined ? undefined : suggestions.rating(key, country);
-      const suggested =
-        found === undefined ? undefined : { ...found, stale: isStale(found.source, today) };
-      const stars = rating ?? suggested?.stars;
-      if (stars === undefined) return { score: { criterion: criterion.id, score: null } };
-      const exact = starScore(stars);
-      return {
-        score: {
-          criterion: criterion.id,
-          score: oneDecimal(exact),
-          ...(rating === undefined ? {} : { rating }),
-          ...(suggested === undefined ? {} : { suggested }),
-        },
-        exact,
-      };
+      return starScored(criterion.id, rated(criterion.id, country), found);
     }
     const indicator = indicators.get(definition.indicator);
     const countryValue = indicator?.values.find((value) => value.country === country);
@@ -275,9 +310,31 @@ export function compareDestinations({
       : { score: { criterion: criterion.id, score: oneDecimal(exact), reading }, exact };
   };
 
+  /**
+   * A region's score on one criterion (ADR-0042): the person's stars for the region, else the
+   * region's own data, else its country's score, marked as inherited. Objective criteria read
+   * country data only, so a region always inherits them.
+   */
+  const regionScoreOf = (criterion: ComparedCriterion, region: string, country: Scored): Scored => {
+    if (starred(criterion)) {
+      const key = suggestionKeys.get(criterion.id);
+      const rating = rated(criterion.id, region);
+      const found = key === undefined ? undefined : regions.rating(key, region);
+      if (rating !== undefined || found !== undefined) {
+        return starScored(criterion.id, rating, found);
+      }
+    }
+    return {
+      score: { criterion: criterion.id, score: country.score.score, inherited: true },
+      ...(country.exact === undefined ? {} : { exact: country.exact }),
+    };
+  };
+
   const weightTotal = BigInt(criteria.reduce((sum, criterion) => sum + criterion.weight, 0));
-  const totalled = [...new Set(countries)].map((country): Totalled => {
-    const scored = criteria.map((criterion) => ({ criterion, ...scoreOf(criterion, country) }));
+  const totalOf = (
+    place: string,
+    scored: readonly (Scored & { readonly criterion: ComparedCriterion })[],
+  ): Totalled => {
     let weighted = zero;
     let known = 0n;
     for (const { criterion, exact } of scored) {
@@ -287,21 +344,48 @@ export function compareDestinations({
       known += weight;
     }
     return {
-      country,
+      place,
       total: known === 0n ? null : ratio(weighted.n, weighted.d * known),
       coverage: weightTotal === 0n ? zero : ratio(known, weightTotal),
       halfKnown: weightTotal > 0n && 2n * known >= weightTotal,
       scores: scored.map(({ score }) => score),
     };
-  });
-
-  const shown = (each: Totalled) => ({
-    country: each.country,
+  };
+  const figures = (each: Totalled) => ({
     total: each.total === null ? null : oneDecimal(each.total),
     coverage: wholePercentDown(each.coverage),
     scores: each.scores,
   });
-  const visible = totalled.filter((each) => !hidden.has(each.country));
+
+  const totalled = [...new Set(countries)].map((country) => {
+    const scored = criteria.map((criterion) => ({ criterion, ...scoreOf(criterion, country) }));
+    const regionTotals = regions
+      .regionsOf(country)
+      .map((region) =>
+        totalOf(
+          region,
+          scored.map(({ criterion, ...each }) => ({
+            criterion,
+            ...regionScoreOf(criterion, region, each),
+          })),
+        ),
+      )
+      .sort(byRanking);
+    let rank = 0;
+    const ranked: RegionComparison[] = regionTotals.map((each) => ({
+      region: each.place,
+      rank: each.total === null ? null : ++rank,
+      ...figures(each),
+    }));
+    return { ...totalOf(country, scored), regions: ranked };
+  });
+
+  const shown = (each: (typeof totalled)[number]) => ({
+    country: each.place,
+    ...figures(each),
+    regions: each.regions,
+  });
+  const visible = totalled.filter((each) => !hidden.has(each.place));
   return {
     criteria,
     countries: [
@@ -314,7 +398,7 @@ export function compareDestinations({
         .sort(byRanking)
         .map((each) => ({ ...shown(each), group: 'few-data' as const, rank: null })),
       ...totalled
-        .filter((each) => hidden.has(each.country))
+        .filter((each) => hidden.has(each.place))
         .map((each) => ({ ...shown(each), group: 'hidden' as const, rank: null })),
     ],
   };
