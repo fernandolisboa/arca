@@ -300,7 +300,12 @@ const documentStorage = objectStorageFor(environment);
 async function documentService() {
   const { audit } = await authParts();
   if (documentStorage === undefined) throw new Error('no object store is connected');
-  return createDocuments({ db: connected().db, storage: documentStorage.storage, audit });
+  return createDocuments({
+    db: connected().db,
+    storage: documentStorage.storage,
+    audit,
+    countries: pinnedCountries.countries,
+  });
 }
 
 /** The account's channels on the app_api pool, audited on app_audit. */
@@ -552,6 +557,8 @@ const app = createApp({
             documentService().then((documents) =>
               documents.confirmReplacements(accountId, documentIds),
             ),
+          changeCountry: (accountId, change) =>
+            documentService().then((documents) => documents.changeCountry(accountId, change)),
           delete: (accountId, documentIds) =>
             documentService().then((documents) => documents.delete(accountId, documentIds)),
         },

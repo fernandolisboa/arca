@@ -276,6 +276,14 @@ export const registry: Registry = {
       label: 'dataExport.tables.vaultDocumentsSharedWithYou',
     },
     {
+      table: 'vault.document_country',
+      strategy: 'delete',
+      owner: ownedByAccount('owner_id'),
+      pool: 'app_jobs',
+      export: ['country', 'created_at'],
+      label: 'dataExport.tables.vaultDocumentCountries',
+    },
+    {
       table: 'vault.document_replacement',
       strategy: 'delete',
       owner: ownedByAccount('owner_id'),

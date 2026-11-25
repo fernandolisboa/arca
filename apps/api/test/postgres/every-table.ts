@@ -134,6 +134,10 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       [sharedId, sharerId, accountId],
     );
     await insert(
+      `INSERT INTO vault.document_country (document_id, owner_id, country) VALUES ($1, $2, 'PT')`,
+      [ownedId, accountId],
+    );
+    await insert(
       `INSERT INTO vault.document_replacement
          (document_id, owner_id, size, sha256, object_key, label, recipients)
        VALUES ($1, $2, 512, $3, $4, decode('01', 'hex'), '{}')`,

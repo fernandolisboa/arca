@@ -85,6 +85,7 @@ export const openApiRoutes = {
   replaceDocuments: toOpenApiRoute(routes.replaceDocuments),
   confirmReplacements: toOpenApiRoute(routes.confirmReplacements),
   deleteDocuments: toOpenApiRoute(routes.deleteDocuments),
+  changeDocumentCountry: toOpenApiRoute(routes.changeDocumentCountry),
   getCase: toOpenApiRoute(routes.getCase),
   createCase: toOpenApiRoute(routes.createCase),
   addCasePerson: toOpenApiRoute(routes.addCasePerson),

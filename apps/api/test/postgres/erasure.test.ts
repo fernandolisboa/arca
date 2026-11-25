@@ -42,7 +42,7 @@ const erasureWith = (
     jobsDb: testDatabase.jobsDb,
     audit,
     notices,
-    documents: createDocuments({ db: testDatabase.jobsDb, storage: objects, audit }),
+    documents: createDocuments({ db: testDatabase.jobsDb, storage: objects, audit, countries: [] }),
     corrections: createCorrectionContents({ db: testDatabase.jobsDb, storage: objects }),
     registry: checked,
   });

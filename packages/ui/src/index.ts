@@ -30,6 +30,8 @@ export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
 export { ScaleChoice, type ScaleChoiceProps } from './patterns/scale-choice.js';
 export { fieldControlClass, matchesSearch } from './patterns/field.js';
 export {
+  SearchPickButton,
+  type SearchPickButtonProps,
   SearchPicker,
   type SearchPickerGroup,
   type SearchPickerLabels,

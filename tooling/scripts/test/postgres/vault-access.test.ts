@@ -144,6 +144,7 @@ describe('the vault schema access matrix (spec 0005, R2)', () => {
       ...Object.keys(tables),
       'discarded_object',
       'document',
+      'document_country',
       'document_recipient',
       'document_replacement',
     ].sort();

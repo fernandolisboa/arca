@@ -65,6 +65,7 @@ export const vaultLimits = {
 export const documentLimits = {
   create: { name: 'document_create_account', limit: 60, windowSeconds: hour },
   confirm: { name: 'document_confirm_account', limit: 60, windowSeconds: hour },
+  countries: { name: 'document_countries_account', limit: 120, windowSeconds: hour },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Case writes and rule reports per account; the case's playback, evaluations and comparison per session (spec 0007, ADR-0026). */

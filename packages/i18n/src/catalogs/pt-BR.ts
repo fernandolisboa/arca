@@ -2046,7 +2046,34 @@ export const ptBR = {
         unlinked: 'alguém que não está mais conectado a você',
         confirmState: 'Conferi, pode usar esta lista',
       },
-      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} moved {Pronto, seus documentos já usam a chave nova.} opened {A chave antiga está aberta neste dispositivo.} other {Pronto.}}',
+      /** Document countries: the destinations an owner files documents under, as a label. */
+      countries: {
+        label: 'Países',
+        lead: 'Separe os documentos pelo país de destino. O mesmo documento pode ficar em mais de um país, e o arquivo fica guardado uma vez só.',
+        all: 'Todos',
+        allTitle: 'Todos os documentos',
+        unfiled: 'Sem país',
+        tally: '{count, plural, one {documento} other {documentos}}',
+        choose: 'Escolher um país',
+        chooseLabel: 'Separar documentos para qual país?',
+        countryLead:
+          'O que você adicionar aqui já entra neste país. Um documento que serve para outro país também pode ficar nos dois.',
+        emptyCountry:
+          'Nenhum documento neste país ainda. Adicione um novo ou traga um que já está no cofre.',
+        emptyUnfiled: 'Todos os documentos do cofre já estão em algum país.',
+        bring: 'Trazer do cofre',
+        bringLegend: 'Marque os documentos do cofre que você também vai usar neste país.',
+        bringNone: 'Todos os seus documentos já estão neste país.',
+        bringLimit: 'Dá para trazer até {count} documentos de cada vez.',
+        bringSubmit:
+          '{count, plural, =0 {Trazer} one {Trazer 1 documento} other {Trazer # documentos}}',
+        bringCancel: 'Cancelar',
+        of: 'Países deste documento',
+        remove: 'Tirar {country} deste documento',
+        useIn: 'Usar em outro país',
+        useInLabel: 'Usar “{name}” em qual país?',
+      },
+      done: '{done, select, added {Documento guardado no cofre.} saved {Documento baixado neste dispositivo.} deleted {Documento apagado.} shared {Compartilhamento salvo.} confirmed {Lista de compartilhamento confirmada.} moved {Pronto, seus documentos já usam a chave nova.} opened {A chave antiga está aberta neste dispositivo.} brought {Documentos trazidos do cofre para este país.} filed {País adicionado ao documento.} unfiled {País tirado do documento. O arquivo continua no cofre.} other {Pronto.}}',
       failure:
         '{reason, select, too_large {Esse arquivo passa de {maxSize}, o limite de cada documento.} quota {O cofre está cheio. Cabem até {maxDocuments} documentos ou {maxBytes}.} changed {O cofre mudou em outro dispositivo. Atualize a página e tente de novo.} not_opened {Não deu para abrir esse documento. O arquivo guardado não é o que deveria ser.} unconfirmed {Sua conta ainda espera a confirmação de quem convidou você. Depois disso, você pode guardar documentos.} not_shared {O compartilhamento não foi salvo. Alguém pode ter perdido a conexão com você. Atualize a página e tente de novo.} sharing_invalid {Compartilhar está desligado porque a lista de compartilhamento não confere.} nothing_retained {Este cofre não tem chave antiga para abrir.} wrong_secret {Esse segredo não abre a chave antiga. Confira e tente de novo.} cancelled {Não deu para confirmar com a chave de acesso. Tente de novo quando quiser.} limited {Muitas tentativas. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu certo desta vez. Tente de novo.}}',
     },
@@ -2315,6 +2342,7 @@ export const ptBR = {
       accountLinks: 'Conexões entre contas',
       vaultDocuments: 'Documentos do cofre',
       vaultDocumentsSharedWithYou: 'Documentos compartilhados com você',
+      vaultDocumentCountries: 'Países em que você separou seus documentos',
       vaultDocumentReplacements: 'Novas versões de documentos ainda não confirmadas',
       vaultDiscardedObjects: 'Arquivos de documentos apagados, aguardando a limpeza diária',
       vaultEnvelopes: 'Envelopes do cofre',
