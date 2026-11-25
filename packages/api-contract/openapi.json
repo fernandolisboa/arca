@@ -32514,10 +32514,7 @@
                           ]
                         },
                         "occupations": {
-                          "type": [
-                            "object",
-                            "null"
-                          ],
+                          "type": "object",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -32534,10 +32531,7 @@
                           ]
                         },
                         "studyFields": {
-                          "type": [
-                            "object",
-                            "null"
-                          ],
+                          "type": "object",
                           "properties": {
                             "id": {
                               "type": "string",
@@ -32578,8 +32572,6 @@
                       "required": [
                         "countries",
                         "formerCountries",
-                        "occupations",
-                        "studyFields",
                         "officialDomains"
                       ]
                     },
