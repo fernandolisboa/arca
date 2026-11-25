@@ -1,0 +1,790 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fb2bbe7c-f10b-4fa0-8a84-c6ad25c54c33",
+  "prevIds": [
+    "244d296c-ff31-492c-be06-65a042703c8d"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move"
+      ],
+      "writes": [
+        "s|tbl|cases.plan_move",
+        "n|tbl|cases.plan_move",
+        "e|tbl|cases.plan_move",
+        "n|rel|cases.plan_move",
+        "n|type|cases.plan_move",
+        "n|rel|cases.plan_move_pkey",
+        "n|rel|cases.plan_move_id_case_id_key",
+        "n|rel|cases.plan_move_case_id_position_key",
+        "n|rel|cases.plan_move_case_id_route_id_principal_id_key"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|tbl|cases.plan_move_dependent",
+        "n|tbl|cases.plan_move_dependent",
+        "e|tbl|cases.plan_move_dependent",
+        "n|rel|cases.plan_move_dependent",
+        "n|type|cases.plan_move_dependent",
+        "n|rel|cases.plan_move_dependent_pkey"
+      ],
+      "reads": [
+        "n|sch|cases"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "plan_move",
+        "plan_move_principal_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.plan_move_principal_id_idx",
+        "n|idx|cases.plan_move_principal_id_idx",
+        "e|idx|cases.plan_move_principal_id_idx",
+        "n|rel|cases.plan_move_principal_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|col|cases.plan_move.principal_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "cases",
+        "plan_move_dependent",
+        "plan_move_dependent_person_id_idx"
+      ],
+      "writes": [
+        "s|idx|cases.plan_move_dependent_person_id_idx",
+        "n|idx|cases.plan_move_dependent_person_id_idx",
+        "e|idx|cases.plan_move_dependent_person_id_idx",
+        "n|rel|cases.plan_move_dependent_person_id_idx"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|col|cases.plan_move_dependent.person_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move"
+      ],
+      "writes": [
+        "s|fk|cases.plan_move.plan_move_principal_fkey",
+        "n|fk|cases.plan_move.plan_move_principal_fkey",
+        "e|fk|cases.plan_move.plan_move_principal_fkey",
+        "n|con|cases.plan_move.plan_move_principal_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.plan_move.principal_id",
+        "n|col|cases.plan_move.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|fk|cases.plan_move_dependent.plan_move_dependent_move_fkey",
+        "n|fk|cases.plan_move_dependent.plan_move_dependent_move_fkey",
+        "e|fk|cases.plan_move_dependent.plan_move_dependent_move_fkey",
+        "n|con|cases.plan_move_dependent.plan_move_dependent_move_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|col|cases.plan_move_dependent.move_id",
+        "n|col|cases.plan_move_dependent.case_id",
+        "n|col|cases.plan_move.id",
+        "n|col|cases.plan_move.case_id",
+        "e|uniqueness|cases.plan_move.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|fk|cases.plan_move_dependent.plan_move_dependent_person_fkey",
+        "n|fk|cases.plan_move_dependent.plan_move_dependent_person_fkey",
+        "e|fk|cases.plan_move_dependent.plan_move_dependent_person_fkey",
+        "n|con|cases.plan_move_dependent.plan_move_dependent_person_fkey"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|tbl|cases.person",
+        "n|sch|cases",
+        "n|col|cases.plan_move_dependent.person_id",
+        "n|col|cases.plan_move_dependent.case_id",
+        "n|col|cases.person.id",
+        "n|col|cases.person.case_id",
+        "e|uniqueness|cases.person.case_id.id"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move.plan_move_select_member",
+        "n|pol|cases.plan_move.plan_move_select_member",
+        "e|pol|cases.plan_move.plan_move_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move.plan_move_insert_member",
+        "n|pol|cases.plan_move.plan_move_insert_member",
+        "e|pol|cases.plan_move.plan_move_insert_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move.plan_move_delete_member",
+        "n|pol|cases.plan_move.plan_move_delete_member",
+        "e|pol|cases.plan_move.plan_move_delete_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move_dependent.plan_move_dependent_select_member",
+        "n|pol|cases.plan_move_dependent.plan_move_dependent_select_member",
+        "e|pol|cases.plan_move_dependent.plan_move_dependent_select_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move_dependent"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move_dependent.plan_move_dependent_insert_member",
+        "n|pol|cases.plan_move_dependent.plan_move_dependent_insert_member",
+        "e|pol|cases.plan_move_dependent.plan_move_dependent_insert_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move_dependent"
+      ]
+    },
+    {
+      "statementType": "create_policy",
+      "statementTarget": [
+        "table",
+        "cases",
+        "plan_move_dependent"
+      ],
+      "writes": [
+        "s|pol|cases.plan_move_dependent.plan_move_dependent_delete_member",
+        "n|pol|cases.plan_move_dependent.plan_move_dependent_delete_member",
+        "e|pol|cases.plan_move_dependent.plan_move_dependent_delete_member"
+      ],
+      "reads": [
+        "n|tbl|cases.plan_move_dependent",
+        "n|sch|cases",
+        "n|role|app_api",
+        "e|rls|cases.plan_move_dependent"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "plan_move",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "name": "plan_move_dependent",
+        "isRlsEnabled": true,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "stage",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "route_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "principal_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "move_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "case_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "person_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_principal_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "principal_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_person_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "person_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_principal_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "principal_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_move_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "move_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "plan_move",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_person_fkey",
+        "nameExplicit": true,
+        "columns": [
+          "person_id",
+          "case_id"
+        ],
+        "schemaTo": "cases",
+        "tableTo": "person",
+        "columnsTo": [
+          "id",
+          "case_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_pkey",
+        "columns": [
+          "move_id",
+          "person_id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_id_case_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "case_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_case_id_position_key",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "position"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_case_id_route_id_principal_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "case_id",
+          "route_id",
+          "principal_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_position_range",
+        "value": "\"position\" BETWEEN 0 AND 19",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_stage_range",
+        "value": "\"stage\" BETWEEN 1 AND 6",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_route_id_shape",
+        "value": "\"route_id\" ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"plan_move\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_insert_member",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "cases.is_member(\"cases\".\"plan_move\".\"case_id\")",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move",
+        "name": "plan_move_delete_member",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"plan_move\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_select_member",
+        "as": "PERMISSIVE",
+        "for": "SELECT",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"plan_move_dependent\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_insert_member",
+        "as": "PERMISSIVE",
+        "for": "INSERT",
+        "roles": [
+          "app_api"
+        ],
+        "using": null,
+        "withCheck": "cases.is_member(\"cases\".\"plan_move_dependent\".\"case_id\")",
+        "entityType": "policies"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "cases",
+        "table": "plan_move_dependent",
+        "name": "plan_move_dependent_delete_member",
+        "as": "PERMISSIVE",
+        "for": "DELETE",
+        "roles": [
+          "app_api"
+        ],
+        "using": "cases.is_member(\"cases\".\"plan_move_dependent\".\"case_id\")",
+        "withCheck": null,
+        "entityType": "policies"
+      }
+    }
+  ]
+}
