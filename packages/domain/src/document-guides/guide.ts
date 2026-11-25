@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { type Duration, durationSchema, orderedDurationRange } from '../calendar/duration.js';
+import {
+  type Duration,
+  durationSchema,
+  durationUnits,
+  orderedDurationRange,
+} from '../calendar/duration.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import { type CurrencyCode, currencyCodeSchema } from '../money/currency.js';
 import {
@@ -86,6 +91,9 @@ export const documentGuidesSchema = z
             [...path, 'leadTime'],
             'A duration range uses one unit and its minimum is not above its maximum',
           );
+        }
+        if (leadTime?.businessDays === true && durationUnits(leadTime.max).join() !== 'days') {
+          issue([...path, 'leadTime', 'businessDays'], 'Business days count a range in days');
         }
         citations.push({ path, sources });
       });

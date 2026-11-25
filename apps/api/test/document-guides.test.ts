@@ -36,10 +36,15 @@ function wordingProblems(
       )
       .map(([kind]) => `${country}/${kind} carries a link in its wording, not in onlineUrl`),
   );
+  const actual = sha256(wording);
   const hash =
-    pinnedSha256 === null || pinnedSha256 === sha256(wording)
-      ? []
-      : ['the wording differs from what the file pins'];
+    pinnedSha256 === null
+      ? entries.length === 0
+        ? []
+        : ['the file lists entries but pins no wording']
+      : pinnedSha256 === actual
+        ? []
+        : [`the wording differs from what the file pins: its SHA-256 is ${actual}`];
   return [...unworded, ...unlisted, ...links, ...hash];
 }
 
@@ -65,7 +70,13 @@ describe('the document guides’ wording (ADR-0039)', () => {
         BR: { birth_certificate: { office: 'Cartório sintético', request: 'Peça on-line.' } },
       };
       expect(wordingProblems(entries, sha256(wording), changed)).toEqual([
-        'the wording differs from what the file pins',
+        `the wording differs from what the file pins: its SHA-256 is ${sha256(changed)}`,
+      ]);
+    });
+
+    it('fails when the file lists entries but pins no wording', () => {
+      expect(wordingProblems(entries, null, wording)).toEqual([
+        'the file lists entries but pins no wording',
       ]);
     });
 

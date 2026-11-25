@@ -9,7 +9,7 @@ export interface DocumentGuideWording {
 /**
  * The document guides' wording (ADR-0039), keyed by issuing country and document kind, apart from
  * the main catalog: it carries costs and deadlines the reviewed file's sources back, so a change
- * here goes to the same reviewers and needs a new numbered guide file (`wordingSha256`). Empty
+ * here goes to the same reviewers and changes the guide file's `wordingSha256`. Empty
  * until a guide is researched.
  */
 export const documentGuide: Readonly<

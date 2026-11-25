@@ -137,6 +137,11 @@ describe('documentGuidesSchema (ADR-0039)', () => {
       { leadTime: { min: 'P1D', max: 'P2D', businessDays: false } },
       'leadTime.businessDays',
     ],
+    [
+      'business days on a range in months',
+      { leadTime: { min: 'P1M', max: 'P2M', businessDays: true } },
+      'leadTime.businessDays',
+    ],
   ])('refuses %s', (_, change, path) => {
     expect(paths(withEntries([{ ...birthCertificate, ...change }], [source('registry')]))).toEqual([
       `guides.0.entries.0.${path}`,
