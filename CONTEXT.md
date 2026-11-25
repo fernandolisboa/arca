@@ -177,6 +177,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Recipient | Destinatário | Anything a vault document or identity is encrypted to: another vault identity's public key, a passkey (through its PRF output) or the recovery secret |
 | Vault envelope | Envelope do cofre | The vault identity encrypted to one unlock method: a passkey (PRF) or the vault recovery secret |
 | Share | Compartilhamento | Giving another adult access to one document by encrypting it to their recipient too |
+| Document country | País do documento (the list: Países) | A destination a document's owner files it under in the vault, to gather what that country needs; a document can be under several; an organizing label the owner sets, never a statement of what a route requires |
 | Account link | Conexão entre contas | The confirmed connection between an inviter and the account they invited, which lets them share documents |
 | Sharing state | Lista de compartilhamento | Shown when the owner confirms a change to it. The owner's own record of which recipients each document is encrypted to and which fingerprint is pinned for each person, tagged with the share key so the server cannot change it |
 | Share key | (technical only) | A secret kept only inside a person's vault envelopes that tags their sharing state; replaced when the vault identity rotates |

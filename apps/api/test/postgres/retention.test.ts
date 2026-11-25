@@ -45,6 +45,7 @@ const retentionWith = (ownedRules?: readonly OwnedExpiryRule[]): Retention =>
       db: testDatabase.jobsDb,
       storage: memoryObjectStorage(),
       audit: auditLog(testDatabase.auditDb),
+      countries: [],
     }),
     corrections: createCorrectionContents({
       db: testDatabase.jobsDb,

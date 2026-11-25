@@ -100,9 +100,14 @@ const notices = once(async () => {
 const jobStorage = () =>
   objectStorageFor(readDeploymentEnvironment())?.storage ?? unconnectedObjectStorage;
 
-/** The documents on the app_jobs pool. */
+/** The documents on the app_jobs pool, which erase and expire but never file a document. */
 const jobDocuments = () =>
-  createDocuments({ db: jobsDatabase(), storage: jobStorage(), audit: auditLog(auditDatabase()) });
+  createDocuments({
+    db: jobsDatabase(),
+    storage: jobStorage(),
+    audit: auditLog(auditDatabase()),
+    countries: [],
+  });
 
 /** Correction request contents on the app_jobs pool. */
 const jobCorrections = () =>

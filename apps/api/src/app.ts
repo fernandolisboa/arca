@@ -9,6 +9,7 @@ import {
   confirmDocumentUpload,
   confirmInvite,
   confirmReplacements,
+  changeDocumentCountry,
   createDocument,
   createInvite,
   deleteDocuments,
@@ -1215,6 +1216,7 @@ export function createApp({
       current.accountId,
       createDocument.body.parse(await c.req.json()),
     );
+    if (outcome === 'unknown_country') return fail(c, 'invalid_request', 400);
     if (outcome === 'no_vault') return fail(c, 'not_found', 404);
     if (outcome === 'over_quota') return fail(c, 'document_quota', 409);
     return c.json(outcome, 200);
@@ -1297,6 +1299,24 @@ export function createApp({
     }
     const outcome = await documents.delete(current.accountId, request.documentIds);
     return outcome === 'not_found' ? fail(c, 'not_found', 404) : c.json({}, 200);
+  });
+
+  // A document's countries are its owner's organizing label, changed with the vault open.
+  v1.openapi(openApiRoutes.changeDocumentCountry, async (c) => {
+    const current = await signedIn(c);
+    if (current === null || documents === undefined || authLimits === undefined) {
+      return unauthorized(c);
+    }
+    if (!(await unlocked(current))) return fail(c, 'step_up_required', 403);
+    const limited = await overLimit(c, authLimits, documentLimits.countries, current.accountId);
+    if (limited !== undefined) return limited;
+    const outcome = await documents.changeCountry(
+      current.accountId,
+      changeDocumentCountry.body.parse(await c.req.json()),
+    );
+    if (outcome === 'unknown_country') return fail(c, 'invalid_request', 400);
+    if (outcome === 'not_found') return fail(c, 'not_found', 404);
+    return c.json({}, 200);
   });
 
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
