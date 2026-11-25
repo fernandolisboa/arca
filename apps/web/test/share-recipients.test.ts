@@ -131,6 +131,7 @@ const openedOf = (id: string, size = 1000): OpenedDocument => ({
     createdAt: '2026-01-01T00:00:00Z',
     ownerId: owner.accountId,
     sharedWith: [],
+    countries: [],
   },
   label: { name: `${id}.txt`, type: 'text/plain' },
   stale: true,

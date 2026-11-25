@@ -1464,6 +1464,9 @@ const SealedLabel = z
   .regex(/^[A-Za-z0-9_-]+$/)
   .refine((label) => label.length % 4 !== 1, 'whole bytes');
 
+/** A document country: a current country's ISO 3166-1 alpha-2 code. */
+const DocumentCountry = z.string().regex(/^[A-Z]{2}$/);
+
 export const CreateDocumentRequest = z.strictObject({
   /** The document type's catalog key, such as `passport`; never a name or a number. */
   typeKey: z.string().regex(/^[a-z][a-z0-9_.-]{0,63}$/),
@@ -1472,6 +1475,8 @@ export const CreateDocumentRequest = z.strictObject({
   /** The ciphertext's SHA-256, which the upload must match. */
   sha256: Sha256,
   label: SealedLabel,
+  /** The document country it starts under; none when left out. */
+  country: DocumentCountry.optional(),
 });
 export type CreateDocumentRequest = z.infer<typeof CreateDocumentRequest>;
 
@@ -1488,7 +1493,7 @@ export const createDocument = {
   path: '/vault/documents',
   operationId: 'createDocument',
   summary:
-    'Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited',
+    'Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 400 invalid_request for a country outside the country dataset, 429 rate_limited',
   body: CreateDocumentRequest,
   response: { description: 'Pending document', schema: CreateDocumentResponse },
 } as const satisfies RouteDefinition<typeof CreateDocumentResponse>;
@@ -1528,6 +1533,11 @@ export const VaultDocument = z.object({
   ownerId: z.uuid(),
   /** For the owner, the accounts it is shared with; empty for a recipient. */
   sharedWith: z.array(z.uuid()),
+  /**
+   * Its document countries: the destinations its owner files it under, in code order; empty for
+   * a recipient. An organizing label, never a statement of what a route requires.
+   */
+  countries: z.array(DocumentCountry),
 });
 export type VaultDocument = z.infer<typeof VaultDocument>;
 
@@ -1540,6 +1550,8 @@ export const DocumentsResponse = z.object({
   documents: z.array(VaultDocument).max(documentPageSize),
   /** Pass as `after` for the next page; null on the last page. */
   next: z.uuid().nullable(),
+  /** The country dataset's current codes, the countries a document may be filed under. */
+  countries: z.array(DocumentCountry).max(400),
 });
 export type DocumentsResponse = z.infer<typeof DocumentsResponse>;
 
@@ -1701,6 +1713,26 @@ export const deleteDocuments = {
   response: { description: 'Deleted', schema: DeleteDocumentsResponse },
 } as const satisfies RouteDefinition<typeof DeleteDocumentsResponse>;
 
+export const DocumentCountryChange = z.strictObject({
+  documentIds,
+  country: DocumentCountry,
+  /** Whether the documents end up under the country (true) or out of it (false). */
+  filed: z.boolean(),
+});
+export type DocumentCountryChange = z.infer<typeof DocumentCountryChange>;
+
+export const DocumentCountryChangeResponse = z.object({});
+
+export const changeDocumentCountry = {
+  method: 'post',
+  path: '/vault/documents/countries',
+  operationId: 'changeDocumentCountry',
+  summary:
+    "Files confirmed documents the account owns under one country, or takes them out of it, all of them or none; a document already as asked stays as it is; within the session's vault_unlock window; 401 without a session, 403 step_up_required, 404 not_found unless every document is a confirmed one of the account, 400 invalid_request when filing under a country outside the country dataset, 429 rate_limited",
+  body: DocumentCountryChange,
+  response: { description: 'Changed', schema: DocumentCountryChangeResponse },
+} as const satisfies RouteDefinition<typeof DocumentCountryChangeResponse>;
+
 export * from './case.js';
 export * from './comparison.js';
 export * from './knowledge.js';
@@ -1764,6 +1796,7 @@ export const routes = {
   replaceDocuments,
   confirmReplacements,
   deleteDocuments,
+  changeDocumentCountry,
   ...caseRoutes,
   ...comparisonRoutes,
   ...knowledgeRoutes,

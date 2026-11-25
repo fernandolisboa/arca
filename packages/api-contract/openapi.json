@@ -4871,7 +4871,7 @@
     "/vault/documents": {
       "post": {
         "operationId": "createDocument",
-        "summary": "Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 429 rate_limited",
+        "summary": "Adds a pending document and says where to upload its ciphertext; 401 without a session, 403 account_unconfirmed, 403 step_up_required outside a vault_unlock window, 404 not_found before the vault is set up, 409 document_quota past 300 documents or 1 GiB, 400 invalid_request for a country outside the country dataset, 429 rate_limited",
         "requestBody": {
           "required": true,
           "content": {
@@ -4896,6 +4896,10 @@
                     "type": "string",
                     "maxLength": 43691,
                     "pattern": "^[A-Za-z0-9_-]+$"
+                  },
+                  "country": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
                   }
                 },
                 "required": [
@@ -5059,6 +5063,13 @@
                               "type": "string",
                               "format": "uuid"
                             }
+                          },
+                          "countries": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}$"
+                            }
                           }
                         },
                         "required": [
@@ -5069,7 +5080,8 @@
                           "label",
                           "createdAt",
                           "ownerId",
-                          "sharedWith"
+                          "sharedWith",
+                          "countries"
                         ]
                       },
                       "maxItems": 50
@@ -5080,11 +5092,20 @@
                         "null"
                       ],
                       "format": "uuid"
+                    },
+                    "countries": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$"
+                      },
+                      "maxItems": 400
                     }
                   },
                   "required": [
                     "documents",
-                    "next"
+                    "next",
+                    "countries"
                   ]
                 }
               }
@@ -5693,6 +5714,86 @@
         "responses": {
           "200": {
             "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vault/documents/countries": {
+      "post": {
+        "operationId": "changeDocumentCountry",
+        "summary": "Files confirmed documents the account owns under one country, or takes them out of it, all of them or none; a document already as asked stays as it is; within the session's vault_unlock window; 401 without a session, 403 step_up_required, 404 not_found unless every document is a confirmed one of the account, 400 invalid_request when filing under a country outside the country dataset, 429 rate_limited",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "documentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 32
+                  },
+                  "country": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
+                  },
+                  "filed": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "documentIds",
+                  "country",
+                  "filed"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed",
             "content": {
               "application/json": {
                 "schema": {

@@ -195,6 +195,81 @@ test('keeps documents encrypted on the server, and changes one only after a vaul
   expect(problems).toEqual([]);
 });
 
+test('files documents under countries: added there, brought from the vault, used in two countries', async ({
+  page,
+}) => {
+  const problems = watchProblems(page);
+  const { credential, userId } = await createdPrfCredential(page);
+  const { email } = await seedAccount(credential, userId, { confirmed: true });
+  await signIn(page, email);
+  await openVaultPage(page);
+  await setUp(page);
+
+  const add = async (name: string) => {
+    const created = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' && response.url().endsWith('/v1/vault/documents'),
+    );
+    const chooser = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Adicionar documento' }).click();
+    await (
+      await chooser
+    ).setFiles({ name, mimeType: 'text/plain', buffer: Buffer.from(`synthetic ${name}`) });
+    await expect(page.getByText('Documento guardado no cofre.')).toBeVisible();
+    return (await created).request().postDataJSON() as { country?: string };
+  };
+  const passport = 'passaporte-exemplo.txt';
+  const certificate = 'certidao-exemplo.txt';
+  expect((await add(passport)).country).toBeUndefined();
+
+  await page.getByRole('button', { name: 'Escolher um país' }).click();
+  const picker = page.getByRole('dialog', { name: 'Separar documentos para qual país?' });
+  await picker.getByRole('searchbox').fill('Portugal');
+  await picker.getByRole('button', { name: 'Portugal', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 4, name: 'Portugal' })).toBeVisible();
+  await expect(page.getByText(/^Nenhum documento neste país ainda\./)).toBeVisible();
+
+  // A document added while a country is open starts under it.
+  expect((await add(certificate)).country).toBe('PT');
+  const documents = page.getByRole('list', { name: 'Documentos' });
+  const row = (name: string) => documents.getByRole('listitem').filter({ hasText: name });
+  await expect(row(certificate)).toBeVisible();
+  await expect(row(passport)).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Trazer do cofre' }).click();
+  await page.getByLabel(passport).check();
+  await page.getByRole('button', { name: 'Trazer 1 documento' }).click();
+  await expect(page.getByText('Documentos trazidos do cofre para este país.')).toBeVisible();
+  await expect(row(passport)).toBeVisible();
+  await expectAccessible(page);
+
+  const countries = page.getByRole('navigation', { name: 'Países' });
+  // A country's button reads its name, then how many documents it holds.
+  const shelf = (name: string, count: number) =>
+    countries.getByRole('button', {
+      name: new RegExp(`^${name}\\s*:\\s*${String(count)}\\s+documentos?$`),
+    });
+  await shelf('Todos', 2).click();
+  await expect(shelf('Portugal', 2)).toBeVisible();
+  await row(passport).getByRole('button', { name: 'Usar em outro país' }).click();
+  const another = page.getByRole('dialog', { name: `Usar “${passport}” em qual país?` });
+  await another.getByRole('searchbox').fill('Estados Unidos');
+  await another.getByRole('button', { name: 'Estados Unidos', exact: true }).click();
+  await expect(page.getByText('País adicionado ao documento.')).toBeVisible();
+  await expect(shelf('Estados Unidos', 1)).toBeVisible();
+
+  await row(passport).getByRole('button', { name: 'Tirar Portugal deste documento' }).click();
+  await expect(
+    page.getByText('País tirado do documento. O arquivo continua no cofre.'),
+  ).toBeVisible();
+  await expect(shelf('Portugal', 1)).toBeVisible();
+  await shelf('Estados Unidos', 1).click();
+  await expect(row(passport)).toBeVisible();
+  await expect(row(certificate)).toHaveCount(0);
+  await expectAccessible(page);
+  expect(problems).toEqual([]);
+});
+
 test('shares a document with a linked account and takes the access back', async ({
   page,
   browser,

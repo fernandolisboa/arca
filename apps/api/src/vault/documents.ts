@@ -5,6 +5,7 @@ import {
   type ConfirmReplacementsResponse,
   type CreateDocumentRequest,
   type CreateDocumentResponse,
+  type DocumentCountryChange,
   type DocumentsResponse,
   type ObjectUploadUrlResponse,
   type ReplaceDocumentsRequest,
@@ -15,7 +16,9 @@ import { sql, type SQL } from 'drizzle-orm';
 import type { AuditLog } from '../audit/log.js';
 import { ciphertextType, type ObjectStorage } from '../storage/object-storage.js';
 
-export type DocumentCreated = CreateDocumentResponse | 'no_vault' | 'over_quota';
+export type DocumentCreated =
+  CreateDocumentResponse | 'no_vault' | 'over_quota' | 'unknown_country';
+export type CountryChanged = 'changed' | 'not_found' | 'unknown_country';
 export type UploadConfirmed = 'confirmed' | 'not_found' | 'not_uploaded' | 'mismatch';
 export type ReplacementStarted =
   ReplaceDocumentsResponse | 'not_found' | 'not_linked' | 'over_quota';
@@ -60,6 +63,14 @@ export interface DocumentRequests {
     accountId: string,
     documentIds: readonly string[],
   ) => Promise<ConfirmReplacementsResponse>;
+  /**
+   * Files the account's confirmed documents under a country of the dataset, or takes them out of
+   * it; all of them or none. A document already as asked stays as it is.
+   */
+  readonly changeCountry: (
+    accountId: string,
+    change: DocumentCountryChange,
+  ) => Promise<CountryChanged>;
   /** Deletes the account's documents, all of them or none, with their shares and objects. */
   readonly delete: (
     accountId: string,
@@ -88,6 +99,8 @@ export interface DocumentSettings {
   readonly db: Database;
   readonly storage: ObjectStorage;
   readonly audit: AuditLog;
+  /** The country dataset's current codes, the countries a document may be filed under. */
+  readonly countries: readonly string[];
 }
 
 /** Pending documents older than this are deleted by the daily cleanup (RETENTION.md). */
@@ -131,9 +144,12 @@ interface DocumentRow extends Record<string, unknown> {
   readonly label: Buffer;
   readonly created_at: Date;
   readonly shared_with: string[];
+  readonly countries: string[];
 }
 
-export function createDocuments({ db, storage, audit }: DocumentSettings): Documents {
+export function createDocuments({ db, storage, audit, countries }: DocumentSettings): Documents {
+  const knownCountries = new Set(countries);
+
   const asAccount = <T>(accountId: string, work: (tx: Transaction) => Promise<T>) =>
     withIdentity(db, { accountId }, work);
 
@@ -300,8 +316,11 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
   }
 
   return {
-    create: (accountId, { typeKey, size, sha256, label }) =>
+    create: (accountId, { typeKey, size, sha256, label, country }) =>
       asAccount(accountId, async (tx) => {
+        if (country !== undefined && !knownCountries.has(country)) {
+          return 'unknown_country' as const;
+        }
         if (!(await lockVault(tx, accountId))) return 'no_vault' as const;
         const held = await usage(tx, accountId);
         if (
@@ -320,6 +339,11 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
             RETURNING id`)
         ).rows;
         if (row === undefined) throw new Error('the document was not inserted');
+        if (country !== undefined) {
+          await tx.execute(sql`
+            INSERT INTO vault.document_country (document_id, owner_id, country)
+            VALUES (${row.id}, ${accountId}, ${country})`);
+        }
         return { documentId: row.id, upload: storage.uploadTarget(objectKey, size) };
       }),
 
@@ -372,10 +396,14 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
 
     list: (accountId, after) =>
       asAccount(accountId, async (tx) => {
-        // Row-level security limits this to owned documents and those shared with the account.
+        // Row-level security limits this to owned documents and those shared with the account,
+        // and a document's countries to its owner.
         const rows = (
           await tx.execute<DocumentRow>(sql`
             SELECT d.id, d.owner_id, d.type_key, d.size, d.sha256, d.label, d.created_at,
+                   coalesce((SELECT array_agg(c.country ORDER BY c.country)
+                               FROM vault.document_country c WHERE c.document_id = d.id),
+                            '{}') AS countries,
                    CASE WHEN d.owner_id = ${accountId} THEN coalesce(
                      (SELECT array_agg(r.recipient_id ORDER BY r.recipient_id)
                         FROM vault.document_recipient r WHERE r.document_id = d.id),
@@ -397,8 +425,10 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
             createdAt: new Date(row.created_at).toISOString(),
             ownerId: row.owner_id,
             sharedWith: row.shared_with,
+            countries: row.countries,
           })),
           next: rows.length > documentPageSize ? (page.at(-1)?.id ?? null) : null,
+          countries: [...countries],
         };
       }),
 
@@ -466,6 +496,29 @@ export function createDocuments({ db, storage, audit }: DocumentSettings): Docum
       }
       return { results };
     },
+
+    changeCountry: (accountId, { documentIds, country, filed }) =>
+      asAccount(accountId, async (tx) => {
+        // A code that left the dataset can still be taken off the documents filed under it.
+        if (filed && !knownCountries.has(country)) return 'unknown_country';
+        const owned = await tx.execute<{ id: string }>(sql`
+          SELECT id FROM vault.document
+           WHERE owner_id = ${accountId} AND confirmed_at IS NOT NULL
+             AND id IN ${listOf(documentIds)}
+           FOR UPDATE`);
+        if (owned.rows.length !== documentIds.length) return 'not_found';
+        await tx.execute(
+          filed
+            ? sql`INSERT INTO vault.document_country (document_id, owner_id, country)
+                  SELECT id, ${accountId}::uuid, ${country}::text
+                    FROM unnest(${uuidArray(documentIds)}) AS id
+                  ON CONFLICT DO NOTHING`
+            : sql`DELETE FROM vault.document_country
+                   WHERE owner_id = ${accountId} AND country = ${country}
+                     AND document_id IN ${listOf(documentIds)}`,
+        );
+        return 'changed';
+      }),
 
     async delete(accountId, documentIds) {
       const keys = await asAccount(accountId, async (tx) => {

@@ -26,6 +26,9 @@ let presigned: { pathname: string; maxBytes: number }[];
 let documents: Documents;
 let jobs: Documents;
 
+/** The country dataset as these tests know it. */
+const countries = ['BR', 'PT', 'US'];
+
 const fakePresigned: ObjectUploadUrlResponse = {
   type: 'blob.generate-presigned-url',
   presignedUrlPayload: { delegationToken: 'token', signature: 'signature', params: {} },
@@ -47,8 +50,8 @@ beforeEach(() => {
     },
   };
   const audit = auditLog(testDatabase.auditDb);
-  documents = createDocuments({ db: testDatabase.apiDb, storage, audit });
-  jobs = createDocuments({ db: testDatabase.jobsDb, storage, audit });
+  documents = createDocuments({ db: testDatabase.apiDb, storage, audit, countries });
+  jobs = createDocuments({ db: testDatabase.jobsDb, storage, audit, countries: [] });
 });
 
 afterAll(async () => {
@@ -363,6 +366,183 @@ describe('listing and downloading documents (spec 0005, R4)', () => {
     expect(await events(accountId)).toContainEqual(issued);
     expect(await events(relative)).toEqual([issued]);
     expect(await events(stranger)).toEqual([]);
+  });
+});
+
+describe('document countries', () => {
+  const countriesOf = async (accountId: string) =>
+    Object.fromEntries(
+      (await documents.list(accountId, undefined)).documents.map((document) => [
+        document.id,
+        document.countries,
+      ]),
+    );
+
+  it('starts a document under the country it is created with, or under none', async () => {
+    const accountId = await owner();
+    const body = randomBytes(16);
+    const request = { typeKey: 'passport', size: body.length, sha256: sha256Of(body), label };
+    const filed = await documents.create(accountId, { ...request, country: 'PT' });
+    if (typeof filed === 'string') throw new Error(filed);
+    putObject(objects, await objectKeyOf(filed.documentId), body);
+    await documents.confirm(accountId, filed.documentId);
+    const plain = await confirmed(accountId);
+    expect(await countriesOf(accountId)).toEqual({ [filed.documentId]: ['PT'], [plain]: [] });
+  });
+
+  it('refuses a document created under a country outside the dataset, storing nothing', async () => {
+    const accountId = await owner();
+    const body = randomBytes(16);
+    expect(
+      await documents.create(accountId, {
+        typeKey: 'passport',
+        size: body.length,
+        sha256: sha256Of(body),
+        label,
+        country: 'ZZ',
+      }),
+    ).toBe('unknown_country');
+    expect(await admin(`SELECT id FROM vault.document WHERE owner_id = $1`, [accountId])).toEqual(
+      [],
+    );
+  });
+
+  it('files documents under a country and takes them out, keeping the codes in order', async () => {
+    const accountId = await owner();
+    const first = await confirmed(accountId);
+    const second = await confirmed(accountId);
+    const file = (documentIds: string[], country: string, filed: boolean) =>
+      documents.changeCountry(accountId, { documentIds, country, filed });
+    expect(await file([first, second], 'US', true)).toBe('changed');
+    expect(await file([first], 'BR', true)).toBe('changed');
+    // Asking again changes nothing, and neither does taking out a country it is not under.
+    expect(await file([first, second], 'US', true)).toBe('changed');
+    expect(await file([second], 'PT', false)).toBe('changed');
+    expect(await countriesOf(accountId)).toEqual({ [first]: ['BR', 'US'], [second]: ['US'] });
+    expect(await file([first, second], 'US', false)).toBe('changed');
+    expect(await countriesOf(accountId)).toEqual({ [first]: ['BR'], [second]: [] });
+  });
+
+  it('refuses a country outside the dataset', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    expect(
+      await documents.changeCountry(accountId, {
+        documentIds: [documentId],
+        country: 'ZZ',
+        filed: true,
+      }),
+    ).toBe('unknown_country');
+    expect(await countriesOf(accountId)).toEqual({ [documentId]: [] });
+  });
+
+  it('takes a document out of a country that has since left the dataset', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    await admin(
+      `INSERT INTO vault.document_country (document_id, owner_id, country)
+       VALUES ($1, $2, 'PT'), ($1, $2, 'YU')`,
+      [documentId, accountId],
+    );
+    expect(
+      await documents.changeCountry(accountId, {
+        documentIds: [documentId],
+        country: 'YU',
+        filed: false,
+      }),
+    ).toBe('changed');
+    expect(await countriesOf(accountId)).toEqual({ [documentId]: ['PT'] });
+  });
+
+  it("changes all of the owner's confirmed documents or none: never a pending one, another account's or one shared with it", async () => {
+    const accountId = await owner();
+    const relative = await owner();
+    await link(accountId, relative);
+    const mine = await confirmed(accountId);
+    const { documentId: pendingId } = await created(accountId, randomBytes(8));
+    const theirs = await confirmed(relative);
+    await share(theirs, relative, accountId);
+    for (const other of [pendingId, theirs, randomUUID()]) {
+      expect(
+        await documents.changeCountry(accountId, {
+          documentIds: [mine, other],
+          country: 'PT',
+          filed: true,
+        }),
+      ).toBe('not_found');
+    }
+    expect((await countriesOf(accountId))[mine]).toEqual([]);
+    expect((await countriesOf(relative))[theirs]).toEqual([]);
+  });
+
+  it("keeps a document's countries from the account it is shared with, and gives both the dataset", async () => {
+    const accountId = await owner();
+    const relative = await owner();
+    await link(accountId, relative);
+    const mine = await confirmed(accountId);
+    await share(mine, accountId, relative);
+    await documents.changeCountry(accountId, { documentIds: [mine], country: 'PT', filed: true });
+    // A share opens one document's contents, never where its owner plans to go.
+    expect(await countriesOf(accountId)).toEqual({ [mine]: ['PT'] });
+    expect(await countriesOf(relative)).toEqual({ [mine]: [] });
+    expect((await documents.list(relative, undefined)).countries).toEqual(countries);
+  });
+
+  it('keeps the countries when the ciphertext is replaced', async () => {
+    const accountId = await owner();
+    const documentId = await confirmed(accountId);
+    await documents.changeCountry(accountId, {
+      documentIds: [documentId],
+      country: 'US',
+      filed: true,
+    });
+    const body = randomBytes(32);
+    const started = await documents.replace(accountId, {
+      recipients: [],
+      documents: [{ documentId, size: body.length, sha256: sha256Of(body), label: newLabel }],
+    });
+    if (typeof started === 'string') throw new Error(started);
+    const [upload] = started.uploads;
+    if (upload?.upload.via !== 'direct') throw new Error('expected a direct upload');
+    const [replacement] = await admin<{ object_key: string }>(
+      `SELECT object_key FROM vault.document_replacement WHERE document_id = $1`,
+      [documentId],
+    );
+    putObject(objects, replacement?.object_key ?? 'missing', body);
+    expect(await documents.confirmReplacements(accountId, [documentId])).toEqual({
+      results: [{ documentId, outcome: 'replaced' }],
+    });
+    expect(await countriesOf(accountId)).toEqual({ [documentId]: ['US'] });
+  });
+
+  it('lets the countries go with a document deleted, or expired while pending', async () => {
+    const accountId = await owner();
+    const filedRows = () =>
+      admin<{ document_id: string }>(
+        `SELECT document_id FROM vault.document_country WHERE owner_id = $1`,
+        [accountId],
+      );
+    const deleted = await confirmed(accountId);
+    await documents.changeCountry(accountId, {
+      documentIds: [deleted],
+      country: 'PT',
+      filed: true,
+    });
+    const body = randomBytes(16);
+    const pending = await documents.create(accountId, {
+      typeKey: 'passport',
+      size: body.length,
+      sha256: sha256Of(body),
+      label,
+      country: 'BR',
+    });
+    if (typeof pending === 'string') throw new Error(pending);
+    expect(await filedRows()).toHaveLength(2);
+    expect(await documents.delete(accountId, [deleted])).toBe('deleted');
+    expect(await filedRows()).toEqual([{ document_id: pending.documentId }]);
+    const now = new Date(Date.now() + 25 * 3_600_000);
+    await jobs.expirePending(accountId, now);
+    expect(await filedRows()).toEqual([]);
   });
 });
 
