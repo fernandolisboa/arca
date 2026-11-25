@@ -243,6 +243,11 @@ export const sessionReviews: readonly SessionReview[] = [
       { routeId: 'ar-mercosur-temporary', number: 7 },
     ],
   },
+  {
+    id: '2026-11-py-documents',
+    migration: 'knowledge_session_review_2026_11_py_documents',
+    versions: [{ routeId: 'py-mercosur-temporary', number: 5 }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

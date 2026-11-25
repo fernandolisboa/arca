@@ -4,6 +4,15 @@ Research notes for Paraguay's Mercosur temporary residence, route `py-mercosur-t
 
 ## Audits
 
+### 2026-11-25, session review of the documents
+
+The [session rule review](../../runbooks/session-rule-review.md#documents) of the route's documents ([#527](https://github.com/fernandolisboa/arca/issues/527)).
+
+- **Versions audited:** 4
+- **Outcome:** a correction, version 5 from version 4's date, 2026-07-01, which keeps every item and adds the official document list: the migration directorate's Mercosur temporary residence page (general requirements, minors, observations) and Ley N.º 3578/2008, art. 4.1. Brazil's document guide needs no new version. The items, the rounds and the leftover list are in [the review's record](../../../packages/knowledge/reviews/2026-11-py-documents/README.md).
+- **Reading:** migraciones.gov.py resets curl's TLS; Node `fetch` reads it.
+- **Watch next:** a new requirements PDF on the directorate's page (the current one is dated 2026-07-01); the 2027 jornal, whose new version must keep version 5's documents.
+
 ### 2026-11-20, session review
 
 A session review the owner asked for ([ADR-0032](../../adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md), [runbook](../../runbooks/session-rule-review.md)). The record, with what changed, the rounds and the leftover list, is [packages/knowledge/reviews/2026-11-py/README.md](../../../packages/knowledge/reviews/2026-11-py/README.md).
