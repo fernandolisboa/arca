@@ -302,22 +302,42 @@
       "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
     },
     {
-      "key": "document:civil-status-record",
+      "key": "document:marriage-record",
       "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
       "quote": "akt stanu cywilnego stwierdzający Twój stan cywilny (akt zawarcia małżeństwa, dokument rozwodowy lub akt zgonu współmałżonka)."
     },
     {
-      "key": "document:civil-status-record",
+      "key": "document:marriage-record",
       "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
       "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
     },
     {
-      "key": "document:civil-status-record",
+      "key": "document:marriage-record",
       "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
       "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
     },
     {
-      "key": "document:civil-status-record",
+      "key": "document:marriage-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "akt stanu cywilnego stwierdzający Twój stan cywilny (akt zawarcia małżeństwa, dokument rozwodowy lub akt zgonu współmałżonka)."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://dziennikustaw.gov.pl/DU/2025/1611",
+      "quote": "Art. 12. Wnioski, oświadczenia i dokumenty wymagane w sprawach uregulowanych w ustawie, sporządzone w języku obcym, składa się wraz z ich tłumaczeniem na język polski sporządzonym lub poświadczonym przez tłumacza przysięgłego lub przez konsula, chyba że umowa międzynarodowa, którą Rzeczpospolita Polska jest związana, stanowi inaczej."
+    },
+    {
+      "key": "document:divorce-or-death-record",
+      "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
+      "quote": "dokumenty pochodzące spoza UE powinny zostać opatrzone klauzulą apostille"
+    },
+    {
+      "key": "document:divorce-or-death-record",
       "url": "https://www.gov.pl/web/brazylia/potwierdzenie-posiadania-lub-utraty-obywatelstwa-polskiego",
       "quote": "w przypadku krajów będących stronami Konwencji znoszącej wymóg legalizacji zagranicznych dokumentów urzędowych, sporządzonej w Hadze dnia 5 października 1961 r. albo zostać zalegalizowane przez polskiego konsula,"
     },

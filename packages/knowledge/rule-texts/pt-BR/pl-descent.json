@@ -76,7 +76,7 @@
     },
     {
       "en": "Copies of documents are certified as true by the consul; sent by post to the voivode, the Pomeranian office asks a notary or the lawyer acting to certify them",
-      "text": "As cópias dos documentos são autenticadas pelo cônsul; se forem pelo correio ao voivoda, o escritório da Pomerânia pede que um tabelião ou o advogado do caso as autentique"
+      "text": "As cópias dos documentos são certificadas pelo cônsul; se forem pelo correio ao voivoda, o escritório da Pomerânia pede que um tabelião ou o advogado do caso as certifique"
     },
     {
       "en": "Current identity document, in original with the pages bearing official annotations, shown to the consul; with the voivode, a photocopy, as the Pomeranian office asks",
@@ -91,10 +91,6 @@
       "text": "Em língua estrangeira: tradução para o polonês por tradutor juramentado ou pelo cônsul. De fora da UE: apostila, ou legalização por cônsul polonês onde a Convenção da Haia não vale"
     },
     {
-      "en": "Civil status record stating the applicant's civil status: marriage record, divorce document or the spouse's death record",
-      "text": "Certidão que comprove o estado civil: de casamento, documento do divórcio ou certidão de óbito do cônjuge"
-    },
-    {
       "en": "Documents proving the Polish origin of the parents or grandparents: their birth and marriage records, baptism certificates, copies of their Polish documents",
       "text": "Documentos que provem a origem polonesa dos pais ou avós: certidões de nascimento e de casamento, certidões de batismo, cópias dos documentos poloneses deles"
     },
@@ -104,7 +100,7 @@
     },
     {
       "en": "Information on the attorney for service in Poland, for someone living outside Poland, the EU, Switzerland and the EEA's EFTA states, with no representative in Poland, not acting through a consul",
-      "text": "Informação sobre o procurador para receber correspondência na Polônia, para quem mora fora da Polônia, da UE, da Suíça e dos países da EFTA no EEE, sem representante na Polônia e sem agir por meio de cônsul"
+      "text": "Informação sobre o representante para receber correspondência na Polônia, para quem mora fora da Polônia, da UE, da Suíça e dos países da EFTA no EEE, sem representante na Polônia e sem agir por meio de cônsul"
     },
     {
       "en": "Not needed when letters are served by the registered electronic delivery service",
@@ -125,6 +121,14 @@
     {
       "en": "Not needed by someone exempt from the duty, such as a person who files with a certificate of receiving social assistance because of poverty",
       "text": "Não é preciso para quem é isento do imposto, como quem entrega com o pedido um atestado de que recebe assistência social por pobreza"
+    },
+    {
+      "en": "Marriage record, as the record stating the applicant's civil status, for someone married",
+      "text": "Certidão de casamento, como prova do estado civil, para quem é casado"
+    },
+    {
+      "en": "Divorce document or the spouse's death record, as the record stating the civil status of someone divorced or widowed",
+      "text": "Documento do divórcio ou certidão de óbito do cônjuge, como prova do estado civil de quem é divorciado ou viúvo"
     }
   ]
 }

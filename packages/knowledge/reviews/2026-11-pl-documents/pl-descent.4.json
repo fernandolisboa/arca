@@ -840,22 +840,40 @@
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
       "sources": [
         "wniosek-formularz",
-        "uw-pomorski-page",
         "konsulat-brazylia-page",
         "ustawa-2009-art-12"
       ]
     },
     {
-      "id": "civil-status-record",
-      "title": "Civil status record stating the applicant's civil status: marriage record, divorce document or the spouse's death record",
-      "kind": "civil_status_record",
+      "id": "marriage-record",
+      "title": "Marriage record, as the record stating the applicant's civil status, for someone married",
+      "kind": "marriage_certificate",
       "appliesTo": "principal",
       "condition": {
-        "op": "any",
+        "op": "fact",
+        "key": "person.hasSpouse"
+      },
+      "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
+      "sources": [
+        "konsulat-brazylia-page",
+        "wniosek-formularz",
+        "ustawa-2009-art-12"
+      ]
+    },
+    {
+      "id": "divorce-or-death-record",
+      "title": "Divorce document or the spouse's death record, as the record stating the civil status of someone divorced or widowed",
+      "kind": "divorce_or_death_record",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
         "operands": [
           {
-            "op": "fact",
-            "key": "person.hasSpouse"
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
           },
           {
             "op": "unmodeled"
@@ -865,7 +883,6 @@
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
       "sources": [
         "konsulat-brazylia-page",
-        "wniosek-formularz",
         "ustawa-2009-art-12"
       ]
     },
@@ -941,8 +958,7 @@
       },
       "note": "A spouse, parent, child or sibling acting pays no stamp duty on it; documents in the case should prove the kinship",
       "sources": [
-        "mswia-confirmation-page",
-        "oplata-skarbowa-part-iv"
+        "mswia-confirmation-page"
       ]
     },
     {
