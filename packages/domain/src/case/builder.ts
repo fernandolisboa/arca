@@ -65,7 +65,9 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
         : {
             workPeriods: workPeriods.map((period) =>
               Object.fromEntries(
-                Object.entries(period).filter(([key]) => key in workPeriodFieldsSchema.shape),
+                Object.entries(period).filter(([key]) =>
+                  Object.hasOwn(workPeriodFieldsSchema.shape, key),
+                ),
               ),
             ),
           }),
