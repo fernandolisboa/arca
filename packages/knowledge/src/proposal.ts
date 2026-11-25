@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { runVersionCases } from './case-run.js';
 import { type CasesFile, casesFileSchema } from './cases.js';
 import { classificationPins } from './datasets.js';
-import type { Json } from './canonical.js';
+import { type Json, canonicalize } from './canonical.js';
 import {
   type PinnedFileRow,
   type RuleRowReading,
@@ -112,6 +112,30 @@ function targetProblems(
     problems.push(`/officialDomains: The proposed list ${pinKey(list)}`);
   }
   return problems;
+}
+
+/**
+ * Why an update request's proposal may not carry its document list: the admin's view of a version
+ * does not show documents yet, so a request keeps the list of the version it updates exactly, and
+ * a new route's first version has none. Only a session review sets one (spec #519).
+ */
+export function documentListProblems(target: ProposalTarget, content: unknown): string[] {
+  const proposed =
+    typeof content === 'object' && content !== null && 'documents' in content
+      ? (content.documents as Json | undefined)
+      : undefined;
+  const kept = target.kind === 'update' ? (target.base.documents as Json | undefined) : undefined;
+  const same =
+    proposed === undefined || kept === undefined
+      ? proposed === kept
+      : canonicalize(proposed) === canonicalize(kept);
+  return same
+    ? []
+    : [
+        target.kind === 'update'
+          ? '/documents: The document list of the version it updates, unchanged'
+          : '/documents: No document list in a new route',
+      ];
 }
 
 /**

@@ -5,8 +5,14 @@ import type { CaseSnapshot, Relationship } from '../case/snapshot.js';
 import type { CurrencyPair } from '../money/fx.js';
 import { type Truth, and, or } from '../logic/truth.js';
 import type { CatalogEntry } from './catalog.js';
-import { type Prepared, type VersionContext, environmentOf, prepare } from './context.js';
-import { type Trace, evaluate, truthOf } from './evaluate.js';
+import {
+  type Prepared,
+  type VersionContext,
+  environmentOf,
+  prepare,
+  principalFrame,
+} from './context.js';
+import { type Frame, type Trace, evaluate, truthOf } from './evaluate.js';
 import { type Expression, childrenOf } from './expression.js';
 import { resolveFactReference } from './fact-reference.js';
 import { type MissingFact, decisiveFacts, distinct, traceGaps } from './missing.js';
@@ -178,6 +184,37 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
     missingRates: gaps.missingRates,
   };
   return { unit, traces };
+}
+
+/**
+ * The unit with the traces of its dependent conditions, and the principal's frame, which reads the
+ * unit as the unit facts see it.
+ */
+export function unitFrame(prepared: Prepared): {
+  readonly unit: Unit;
+  readonly traces: readonly Trace[];
+  readonly frame: Frame;
+} {
+  const { unit, traces } = unitOf(prepared);
+  return {
+    unit,
+    traces,
+    frame: principalFrame(prepared, environmentOf(prepared, unitEnvironment(unit))),
+  };
+}
+
+/**
+ * The frames a per-dependent item reads a dependent at: one per last edge they were reached by,
+ * with whether some rule covers them through it.
+ */
+export function dependentFrames(
+  frame: Frame,
+  dependent: Dependent,
+): { readonly frame: Frame; readonly holds: Truth }[] {
+  return dependent.edges.map(({ edge, holds }) => ({
+    frame: { ...frame, current: dependent.personId, edge },
+    holds,
+  }));
 }
 
 /** The unit as facts read it: the principal is included. */

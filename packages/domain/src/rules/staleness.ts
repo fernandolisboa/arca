@@ -19,7 +19,7 @@ export interface StaleSource {
 
 /**
  * The sources an entry cites that are stale at `today`: the version's sources that any rule,
- * assessment, cost, duration, closure or leap-day choice cites, in the version's source order, then
+ * assessment, cost, duration, document, closure or leap-day choice cites, in the version's source order, then
  * every source of each country set it pins, in pin order.
  */
 export function staleSources(entry: CatalogEntry, today: CalendarDate): StaleSource[] {
@@ -30,6 +30,7 @@ export function staleSources(entry: CatalogEntry, today: CalendarDate): StaleSou
     ...version.dependents.flatMap((each) => each.sources),
     ...version.costs.flatMap((each) => each.sources),
     ...version.durations.flatMap((each) => each.sources),
+    ...(version.documents ?? []).flatMap((each) => each.sources),
     ...(version.closureSources ?? []),
     ...(version.leapDayBirthdaySources ?? []),
   ]);

@@ -24,8 +24,18 @@ Fix what is proven, then review again. **At most three rounds a route.** Whateve
 2. A fact the schema cannot hold (titles are capped at 200 characters; a requirement must be able to be false) is disclosed as far as the title allows and listed as a leftover. Do not bend an expression to pass the check.
 3. Set each source's `verifiedAt` to the São Paulo date its page was read.
 4. Add the review to `sessionReviews` in `packages/knowledge/scripts/session-review.ts`, and create its migration folder (a review ID holds only digits, lowercase letters and hyphens, or the `review-quotes` job fails): `pnpm --filter @arca/db exec drizzle-kit generate --custom --name knowledge_session_review_<yyyy>_<mm>_<country>`.
-5. Add the Portuguese of every new or reworded title to `packages/knowledge/rule-texts/pt-BR/<route>.json` ([ADR-0037](../adr/0037-rule-texts-in-the-screens-language.md)), keeping every number; `test/rule-texts.test.ts` fails until a version in effect or ahead has all of them.
+5. Add the Portuguese of every new or reworded title, and of every document note, to `packages/knowledge/rule-texts/pt-BR/<route>.json` ([ADR-0037](../adr/0037-rule-texts-in-the-screens-language.md)), keeping every number; `test/rule-texts.test.ts` fails until a version in effect or ahead has all of them.
 6. Write `packages/knowledge/reviews/<review>/README.md`: what changed, the rounds, and the leftover list. Add a dated entry to the route's note in `docs/research/routes/` that points to it.
+
+### Documents
+
+A route version may carry `documents`, the papers its official sources ask applicants to hand in ([#519](https://github.com/fernandolisboa/arca/issues/519)). Leave the field out until a review has researched them: no list means Arca does not know the route's documents yet, and an empty list means the sources ask for none. Never write an empty list to mean "not researched". Until an admin's view of a version shows documents, an update request in the app keeps a route's list exactly as it is, so only a session review changes one.
+
+1. List every document the route's official sources ask for, per applicant role: the principal (`principal`), each dependent (`each_dependent`), or the family once (`unit`, such as proof of means). A document only some people hand in, such as a marriage certificate or a minor's travel consent, gets a `condition` over their facts, in the same scope as a cost's.
+2. Give each item a stable `id`, a `title` as the source names the document, and a `kind`: a lowercase slug such as `birth_certificate`, reused across routes and countries for the same kind of document, so Brazil's document guide covers it once. Check the kinds other routes already use before adding one.
+3. Record `apostille`, `translation` (`none`, `certified` or `sworn`) and `validity` (how recent the document must be, such as `P90D`) only where a cited official source states them. Leave a field out when the sources do not say; never infer it from common practice. A short `note` holds what the item needs and the schema cannot hold, within 200 characters.
+4. Quote each item in the evidence file under `document:<id>`, like any other item: the passage that asks for the document, and the passages that state its condition's values and its validity.
+5. Add each document's title and note to the rule texts, like other titles.
 
 ## 4. Check in code
 

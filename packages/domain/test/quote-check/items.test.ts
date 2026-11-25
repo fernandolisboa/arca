@@ -73,6 +73,37 @@ describe('checkItems', () => {
     expect(checkItems({ ...closed, countrySets: [] }).map((item) => item.key)).toEqual(['closure']);
   });
 
+  it('lists each document after the durations, with the values its condition and validity state', () => {
+    const items = checkItems(
+      entry({
+        documents: [
+          {
+            id: 'consent',
+            title: 'Parental consent',
+            kind: 'parental_consent',
+            appliesTo: 'each_dependent',
+            condition: {
+              op: 'lt',
+              left: { op: 'fact', key: 'person.ageYears' },
+              right: { op: 'int', value: 18 },
+            },
+            apostille: true,
+            translation: 'sworn',
+            validity: 'P90D',
+            sources: ['law'],
+          },
+        ],
+      }),
+    );
+    expect(items.map((item) => item.key)).toContain('document:consent');
+    expect(items.findIndex((item) => item.key === 'document:consent')).toBe(
+      items.findIndex((item) => item.key === 'duration:decision') + 1,
+    );
+    expect(
+      items.find((item) => item.key === 'document:consent')?.values.map(({ value }) => value),
+    ).toEqual(['18', '90']);
+  });
+
   it('lists no leap-day item when the version leaves the birthday unsettled', () => {
     const unsettled = entry({ leapDayBirthday: 'unsettled', leapDayBirthdaySources: undefined });
     expect(
@@ -96,6 +127,7 @@ describe('checkItems', () => {
         'closureSources',
         'costs',
         'dependents',
+        'documents',
         'durations',
         'leapDayBirthdaySources',
         'requirements',

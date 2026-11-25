@@ -20,15 +20,13 @@ import {
   type Prepared,
   type VersionContext,
   contextDates,
-  environmentOf,
   prepare,
-  principalFrame,
 } from './context.js';
 import { type Frame, type Trace, evaluate, numberOf, truthOf } from './evaluate.js';
 import { type MissingFact, type UnitGaps, decisiveFacts, distinct, traceGaps } from './missing.js';
 import type { Cost, DurationStage, Source } from './route-version.js';
 import { type StaleSource, staleSources } from './staleness.js';
-import { type Unit, unitEnvironment, unitOf } from './unit.js';
+import { type Unit, dependentFrames, unitFrame } from './unit.js';
 
 export type EvaluationStatus =
   'unavailable' | 'not_eligible' | 'missing_information' | 'needs_assessment' | 'eligible';
@@ -139,9 +137,7 @@ export function evaluateVersionTraced(
 ): { readonly evaluation: Evaluation; readonly traces: readonly Trace[] } {
   const prepared = prepare(snapshot, entry, principalId, context);
   const { version } = prepared;
-  const { unit, traces: unitTraces } = unitOf(prepared);
-  const environment = environmentOf(prepared, unitEnvironment(unit));
-  const frame = principalFrame(prepared, environment);
+  const { unit, traces: unitTraces, frame } = unitFrame(prepared);
   const cite = citations(version.sources);
 
   const requirements = version.requirements.map((requirement): RequirementResult => {
@@ -314,7 +310,8 @@ function unitGaps(unit: Unit): UnitGaps {
   };
 }
 
-function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
+/** Resolves a checked version's source IDs to its sources. */
+export function citations(sources: readonly Source[]): (ids: readonly string[]) => Source[] {
   const byId = new Map(sources.map((source) => [source.id, source]));
   return (ids) =>
     ids.map((id) => {
@@ -373,8 +370,8 @@ function costItems(
     for (const dependent of [...unit.dependents, ...unit.possibleDependents]) {
       // A dependent reached by several edges pays once: the cost applies when it applies through
       // an edge that covers them, and its amount ranges over those edges.
-      const perEdge = dependent.edges.map(({ edge, holds }) => {
-        const priced = price(cost, { ...frame, current: dependent.personId, edge });
+      const perEdge = dependentFrames(frame, dependent).map(({ frame: at, holds }) => {
+        const priced = price(cost, at);
         return { applies: and([holds, priced.condition]), amount: priced.amount };
       });
       const counted = perEdge.filter((entry) => entry.applies !== false);

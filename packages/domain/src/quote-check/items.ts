@@ -12,6 +12,7 @@ export const checkItemKinds = [
   'dependent',
   'cost',
   'duration',
+  'document',
   'leapDayBirthday',
   'closure',
   'countrySet',
@@ -153,7 +154,7 @@ export function machineReadableUrls(entry: CatalogEntry): ReadonlyMap<string, st
 
 /**
  * Every item of a route version the check compares (ADR-0027), by stable key: each requirement,
- * assessment, dependent rule, cost and duration, the leap-day rule when the version settles one,
+ * assessment, dependent rule, cost, duration and document, the leap-day rule when the version settles one,
  * the closure when the version has one, and each pinned country set's members, which are read on
  * the set's own sources and official-domain lists. Settings that cite no source are not items.
  */
@@ -198,6 +199,18 @@ export function checkItems({ version, countrySets }: CatalogEntry): readonly Che
         title,
         sources,
         uniqueValues([...durationValues(min), ...durationValues(max)]),
+      ),
+    ),
+    ...(version.documents ?? []).map(({ id, title, condition, validity, sources }) =>
+      item(
+        'document',
+        id,
+        title,
+        sources,
+        uniqueValues([
+          ...(condition === undefined ? [] : expressionValues(condition)),
+          ...(validity === undefined ? [] : durationValues(validity)),
+        ]),
       ),
     ),
     ...(version.leapDayBirthday === undefined || version.leapDayBirthday === 'unsettled'

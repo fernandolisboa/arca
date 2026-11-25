@@ -18,7 +18,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Destination | Destino | A country a person accepts moving to |
 | Route | Rota | A legal pathway to live in a country (a visa, residence permit or citizenship path) |
 | Route version | Versão da rota | An immutable snapshot of a route's rules, with its sources, effective date and pinned country sets and official-domain lists |
-| Rule | Regra | The requirements, assessments, dependents, costs and durations of one route version |
+| Rule | Regra | The requirements, assessments, dependents, costs, durations and documents of one route version |
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
 | Rule summary | Resumo feito pelo Arca | A model's plain-text reading of one route version for an admin, with points to check; an aid to review that never decides and never reaches members; stored once per content, prompt and model, and shared by admins |
@@ -62,6 +62,11 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Rule text | (no UI label) | A route version title in the screen's language, paired with the English the version writes, kept in the repository beside the versions; never part of a version or its hash ([ADR-0037](docs/adr/0037-rule-texts-in-the-screens-language.md)) |
 | Suggested rating | Sugestão do Arca | Stars from 1 to 5 the comparison suggests for a country on a personal or own criterion, from a public source in the repository; they score the criterion until the adult rates it, and the adult's own stars always win ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
 | Suggestion key | (no UI label) | The ID a suggested rating is filed under: a personal criterion's ID or a ready suggestion's ID; an own criterion takes the key whose catalog name it matches ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
+| Document checklist | Lista de documentos | The per-person list of the documents one route asks for, computed in code from the route version and the case: one list per person in the unit, plus the items the unit hands in once ([#519](https://github.com/fernandolisboa/arca/issues/519)) |
+| Document item | Documento exigido | One entry of a route version's document list, with who hands it in, an optional condition, apostille, translation, validity and its sources. A version with no list means Arca does not know the route's documents yet; an empty list means the route asks for none |
+| Document kind | Tipo de documento | An open slug naming what a document is, such as `birth_certificate`; route items and guide entries share it |
+| Document guide | Onde tirar | The versioned, sourced data on how to get each document kind in one issuing country: office, cost, lead time, online link and how its apostille is obtained |
+| Checklist mark | Marcação | A keeper's had or missing on one document item for one person, with an optional linked vault document |
 | Departure checklist | Saída do país | What to do when leaving a country, and the documents that trace where the family's money came from, each item with official sources and the date they were read; reviewed data, the same for every account ([ADR-0038](docs/adr/0038-departure-checklists.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
 | Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |

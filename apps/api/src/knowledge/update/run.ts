@@ -32,6 +32,7 @@ import {
   type RuleRows,
   canonicalize,
   checkProposal,
+  documentListProblems,
   maxProposalProblems,
   officialDomainListHash,
   verifiedOfficialDomainLists,
@@ -478,6 +479,8 @@ export function createRuleUpdate({
       };
     }
     const base = context.kind === 'update' ? context.base : undefined;
+    const kept = documentListProblems(target, content);
+    if (kept.length > 0) return invalid(kept);
     const first = await checkProposal(rows, target, content, cases, reading);
     if (!first.ok) return invalid(first.problems);
     const items = checkItems(first.entry);

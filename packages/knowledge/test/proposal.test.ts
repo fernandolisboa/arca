@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { importBuild } from '../scripts/rule-import.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import type { Json } from '../src/canonical.ts';
-import { checkProposal } from '../src/proposal.ts';
+import { checkProposal, documentListProblems } from '../src/proposal.ts';
 import { officialDomainListHash, routeVersionContentHash } from '../src/rule-rows.ts';
 
 const dataDir = join(fileURLToPath(new URL('..', import.meta.url)), 'data');
@@ -75,7 +75,76 @@ describe('checkProposal (ADR-0031)', { timeout: 120_000 }, () => {
     expect(result.hash).not.toBe(routeVersionContentHash(rows, next(), reading));
   });
 
+  it('takes a version with a document list, read back from its row as written', async () => {
+    const { base, rows, next, reading, check } = await setUp();
+    const official = base.sources.find((source) => source.kind === 'official');
+    if (official === undefined) throw new Error('An official source expected');
+    const documents = [
+      {
+        id: 'passport',
+        title: 'Valid passport',
+        kind: 'passport',
+        appliesTo: 'principal' as const,
+        apostille: false,
+        translation: 'none',
+        validity: 'P6M',
+        note: 'Synthetic note',
+        sources: [official.id],
+      },
+    ];
+    const listed = next({ documents });
+    const result = await check(listed);
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.entry.version.documents).toEqual(documents);
+    // No list and an empty list are different contents, so different versions.
+    const hashes = [next(), next({ documents: [] }), listed].map((content) =>
+      routeVersionContentHash(rows, content, reading),
+    );
+    expect(new Set(hashes).size).toBe(3);
+    const empty = await check(next({ documents: [] }));
+    expect(empty.ok && empty.entry.version.documents).toEqual([]);
+    const absent = await check(next());
+    expect(absent.ok && absent.entry.version.documents).toBeUndefined();
+  });
+
   it.each<[string, (setup: Awaited<ReturnType<typeof setUp>>) => Json, RegExp]>([
+    [
+      'a document citing no source',
+      ({ next }) =>
+        next({
+          documents: [
+            {
+              id: 'passport',
+              title: 'Valid passport',
+              kind: 'passport',
+              appliesTo: 'principal',
+              apostille: false,
+              translation: 'none',
+              sources: [],
+            },
+          ],
+        }),
+      /^\/documents\/0\/sources/,
+    ],
+    [
+      'a document citing a source the version does not hold',
+      ({ next }) =>
+        next({
+          documents: [
+            {
+              id: 'passport',
+              title: 'Valid passport',
+              kind: 'passport',
+              appliesTo: 'principal',
+              apostille: false,
+              translation: 'none',
+              sources: ['no-such-source'],
+            },
+          ],
+        }),
+      /^\/documents\/0\/sources/,
+    ],
     [
       'a pin to a classification file that does not exist',
       ({ next }) => next({ occupations: { id: 'occupations', number: 2 } }),
@@ -211,5 +280,39 @@ describe('checkProposal for a new route (ADR-0031, #461)', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.problems.some((line) => problem.test(line))).toBe(true);
+  });
+});
+
+describe('documentListProblems (spec #519)', () => {
+  const passport = {
+    id: 'passport',
+    title: 'Valid passport',
+    kind: 'passport',
+    appliesTo: 'principal',
+    apostille: false,
+    translation: 'none',
+    sources: ['law'],
+  };
+  const reordered = Object.fromEntries(Object.entries(passport).reverse());
+  const base = (documents?: readonly object[]) =>
+    ({ ...(documents === undefined ? {} : { documents }) }) as RouteVersion;
+  const update = (documents?: readonly object[]) => ({
+    kind: 'update' as const,
+    base: base(documents),
+  });
+  const newRoute = { kind: 'new' as const, country: 'QM', pins: [] };
+
+  it.each<[string, Parameters<typeof documentListProblems>[0], object, number]>([
+    ['keeps no list', update(), {}, 0],
+    ['keeps an empty list', update([]), { documents: [] }, 0],
+    ['keeps the same list in another key order', update([passport]), { documents: [reordered] }, 0],
+    ['adds a list', update(), { documents: [passport] }, 1],
+    ['drops a list', update([passport]), {}, 1],
+    ['empties a list', update([passport]), { documents: [] }, 1],
+    ['changes an item', update([passport]), { documents: [{ ...passport, apostille: true }] }, 1],
+    ['gives a new route no list', newRoute, {}, 0],
+    ['gives a new route a list', newRoute, { documents: [] }, 1],
+  ])('in an update request that %s', (_, target, content, count) => {
+    expect(documentListProblems(target, content)).toHaveLength(count);
   });
 });
