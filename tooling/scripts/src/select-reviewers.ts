@@ -101,10 +101,12 @@ const rules: readonly Rule[] = [
     ),
     reviewers: withCore('data-access', 'auth-crypto'),
   },
-  // A session review's versions, evidence and checks: a merge puts them into use (ADR-0032).
+  // Reviewed data a merge puts into use: session reviews (ADR-0032), suggested ratings (ADR-0035),
+  // route texts (ADR-0037) and departure checklists (ADR-0038).
   {
     match: anyOf(
-      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|rule-texts)\.?)/,
+      /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|rule-texts\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists|rule-texts)\.?)/,
+      /^packages\/i18n\/src\/catalogs\/pt-BR-departure\.ts$/,
       /^apps\/api\/test\/(postgres\/)?session-review/,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),

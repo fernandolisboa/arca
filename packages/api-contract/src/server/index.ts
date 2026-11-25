@@ -111,6 +111,7 @@ export const openApiRoutes = {
   draftCaseIntake: toOpenApiRoute(routes.draftCaseIntake),
   leaveCase: toOpenApiRoute(routes.leaveCase),
   getComparison: toOpenApiRoute(routes.getComparison),
+  getDepartureChecklists: toOpenApiRoute(routes.getDepartureChecklists),
   writeComparisonPreferences: toOpenApiRoute(routes.writeComparisonPreferences),
   suggestCriteria: toOpenApiRoute(routes.suggestCriteria),
   activateVersion: toOpenApiRoute(routes.activateVersion),

@@ -1,6 +1,7 @@
 import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
+  departureChecklists,
   occupationCodes,
   pinnedCountries,
   createRuleTexts,
@@ -609,6 +610,7 @@ const app = createApp({
   knowledgeVersions,
   ...(ruleSummaries === undefined ? {} : { ruleSummaries }),
   ...(criterionSuggestions === undefined ? {} : { criterionSuggestions }),
+  departureChecklists,
   accountConfirmed: (accountId) => accounts.isConfirmed(authConnection(), accountId),
   notifications: {
     channels: {

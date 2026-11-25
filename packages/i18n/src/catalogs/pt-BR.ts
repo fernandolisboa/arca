@@ -1,3 +1,4 @@
+import { departure } from './pt-BR-departure.js';
 import { occupationGroups, occupations } from './pt-BR-occupations.js';
 import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
 
@@ -24,6 +25,7 @@ export const ptBR = {
       family: 'Família',
       vault: 'Cofre',
       compare: 'Comparar',
+      departure: 'Saída',
       knowledge: 'Regras',
       settings: 'Configurações',
     },
@@ -325,6 +327,12 @@ export const ptBR = {
       screen: {
         title: 'Comece por aqui',
         body: 'Coloque quem vai com você. Depois responda às perguntas, e o Arca mostra as rotas que servem para a família.',
+      },
+    },
+    departure: {
+      screen: {
+        title: 'O que resolver antes de ir',
+        body: 'Cada item traz a página oficial de onde saiu. Abra a fonte antes de agir: prazos e regras mudam.',
       },
     },
     compare: {
@@ -1125,6 +1133,8 @@ export const ptBR = {
       reason: 'Motivo: {reason}',
     },
   },
+  /** Leaving a country (ADR-0037): what to do, and the documents that trace the money. */
+  departure,
   /** Comparar destinos (ADR-0026): one adult's own ranking of the countries that have a route. */
   compare: {
     title: 'Comparar destinos',

@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type CalendarDate,
+  compareDates,
   maxKnowledgeJsonDepth,
   parseCalendarDate,
   sourceUrls,
+  departureChecklistsSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
@@ -49,6 +51,8 @@ export interface CatalogParts {
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
   readonly suggestedRatings?: Json | null;
+  /** The highest-numbered departure checklists file (ADR-0038), or null when there is none. */
+  readonly departureChecklists?: Json | null;
   /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
   readonly ruleTexts?: Json;
 }
@@ -207,6 +211,7 @@ export function runtimeModule({
   datasetFiles = {},
   comparisons = [],
   suggestedRatings = null,
+  departureChecklists = null,
   ruleTexts = [],
 }: Partial<CatalogParts>): string {
   const urls = [...parseComparisons(comparisons).values()].flatMap(({ indicators }) =>
@@ -219,16 +224,20 @@ export function runtimeModule({
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
+    exportedJson('departureChecklistData', departureChecklists),
     exportedJson('ruleTextData', ruleTexts),
     '',
   ].join('\n');
 }
 
 /**
- * The highest-numbered suggested ratings file in `dir` (ADR-0035), named `<number>.json`, checked
- * against its schema and its own number; null when the directory holds none.
+ * The highest-numbered file in `dir`, named `<number>.json`, checked against its schema and its own
+ * number; null when the directory holds none.
  */
-export async function readSuggestedRatings(dir: string): Promise<Json | null> {
+async function readLatestNumbered(
+  dir: string,
+  schema: { parse: (json: Json) => { number: number } },
+): Promise<Json | null> {
   const names = await readdir(dir).catch((error: unknown) => {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw error;
@@ -239,14 +248,35 @@ export async function readSuggestedRatings(dir: string): Promise<Json | null> {
     .sort((a, b) => b - a);
   const [latest] = numbers;
   if (latest === undefined) return null;
-  const json = parseJsonSubset(
-    await readKnowledgeFile(join(dir, `${String(latest)}.json`)),
-    maxKnowledgeJsonDepth,
-  );
-  const parsed = suggestedRatingsSchema.parse(json);
-  if (parsed.number !== latest) {
+  const file = join(dir, `${String(latest)}.json`);
+  const json = parseJsonSubset(await readKnowledgeFile(file), maxKnowledgeJsonDepth);
+  const { number } = schema.parse(json);
+  if (number !== latest) {
+    throw new Error(`${file} carries number ${String(number)}`);
+  }
+  return json;
+}
+
+/** The highest-numbered suggested ratings file in `dir` (ADR-0035), or null. */
+export const readSuggestedRatings = (dir: string) =>
+  readLatestNumbered(dir, suggestedRatingsSchema);
+
+/**
+ * The highest-numbered departure checklists file in `dir` (ADR-0038), or null; a source verified
+ * after `today` fails the build, as route sources do.
+ */
+export async function readDepartureChecklists(
+  dir: string,
+  today: CalendarDate = todayUtc(),
+): Promise<Json | null> {
+  const json = await readLatestNumbered(dir, departureChecklistsSchema);
+  if (json === null) return null;
+  const late = departureChecklistsSchema
+    .parse(json)
+    .sources.filter(({ verifiedAt }) => compareDates(verifiedAt, today) > 0);
+  if (late.length > 0) {
     throw new Error(
-      `suggested-ratings/${String(latest)}.json carries number ${String(parsed.number)}`,
+      `departure checklist sources verified after ${today}: ${late.map(({ id }) => id).join(', ')}`,
     );
   }
   return json;
@@ -307,12 +337,18 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const suggestedRatings = await readSuggestedRatings(join(packageDir, 'suggested-ratings'));
-  const ruleTexts = shipRuleTexts(
-    await readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
-    (text) => createHash('sha256').update(text, 'utf8').digest('hex'),
+  const [suggestedRatings, departureChecklists, ruleTextFiles] = await Promise.all([
+    readSuggestedRatings(join(packageDir, 'suggested-ratings')),
+    readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
+    readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
+  ]);
+  const ruleTexts = shipRuleTexts(ruleTextFiles, (text) =>
+    createHash('sha256').update(text, 'utf8').digest('hex'),
   );
-  await writeFile(targets.runtime, runtimeModule({ ...parts, suggestedRatings, ruleTexts }));
+  await writeFile(
+    targets.runtime,
+    runtimeModule({ ...parts, suggestedRatings, departureChecklists, ruleTexts }),
+  );
   process.stdout.write(
     `Knowledge catalog: ${String(parts.entries.length)} route versions, ${String(parts.comparisons.length)} comparison versions\n`,
   );

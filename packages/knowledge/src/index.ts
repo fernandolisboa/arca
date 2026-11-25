@@ -1,6 +1,11 @@
 import { createComparisonCatalog } from './comparisons.js';
 import { parseComparisons } from './entries.js';
-import { countryCodeSchema, suggestedRatingsSchema } from '@arca/domain';
+import {
+  countryCodeSchema,
+  departureChecklistViews,
+  departureChecklistsSchema,
+  suggestedRatingsSchema,
+} from '@arca/domain';
 import { z } from 'zod';
 import type { Json } from './canonical.js';
 import { classificationKinds } from './datasets.js';
@@ -8,6 +13,7 @@ import {
   comparisonData,
   countryData,
   datasetFileData,
+  departureChecklistData,
   ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
@@ -53,6 +59,15 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 export const suggestedRatings =
   suggestedRatingData === null ? null : suggestedRatingsSchema.parse(suggestedRatingData);
 
+const departureFile =
+  departureChecklistData === null ? null : departureChecklistsSchema.parse(departureChecklistData);
+
+/** What to do when leaving a country, per country, with each item's sources (ADR-0038). */
+export const departureChecklists =
+  departureFile === null ? [] : departureChecklistViews(departureFile);
+
+/** The SHA-256 of the catalog wording the departure file's sources were checked against. */
+export const departureWordingSha256 = departureFile?.wordingSha256 ?? null;
 export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
 
 /** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */

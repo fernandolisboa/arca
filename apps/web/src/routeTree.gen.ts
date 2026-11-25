@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DepartureRouteImport } from './routes/departure'
 import { Route as DevicesRouteImport } from './routes/devices'
 import { Route as EnrollRouteImport } from './routes/enroll'
 import { Route as FamilyRouteImport } from './routes/family'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepartureRoute = DepartureRouteImport.update({
+  id: '/departure',
+  path: '/departure',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevicesRoute = DevicesRouteImport.update({
@@ -113,6 +119,7 @@ const FamilyResultsRoute = FamilyResultsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
+  '/departure': typeof DepartureRoute
   '/devices': typeof DevicesRoute
   '/enroll': typeof EnrollRoute
   '/family': typeof FamilyRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/compare'
+    | '/departure'
     | '/devices'
     | '/enroll'
     | '/family'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
+  DepartureRoute: typeof DepartureRoute
   DevicesRoute: typeof DevicesRoute
   EnrollRoute: typeof EnrollRoute
   FamilyRoute: typeof FamilyRoute
@@ -255,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/departure': {
+      id: '/departure'
+      path: '/departure'
+      fullPath: '/departure'
+      preLoaderRoute: typeof DepartureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/devices': {
@@ -361,6 +381,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
+  DepartureRoute: DepartureRoute,
   DevicesRoute: DevicesRoute,
   EnrollRoute: EnrollRoute,
   FamilyRoute: FamilyRoute,
