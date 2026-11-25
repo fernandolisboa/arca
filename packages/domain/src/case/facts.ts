@@ -98,7 +98,13 @@ export type FactType =
       /** Admits ISO 3166-3 former states, as citizenship and ancestry facts do (spec 0002, R7). */
       readonly formerStates?: boolean;
     }
-  | { readonly kind: 'enum' | 'enum-list'; readonly values: readonly string[] };
+  | { readonly kind: 'enum' | 'enum-list'; readonly values: readonly string[] }
+  /** A code of a classification the route version pins, such as an ISCO-08 occupation. */
+  | { readonly kind: 'code' | 'codes'; readonly classification: Classification };
+
+/** The classifications a route version may pin, by the name of its pin. */
+export const classifications = ['occupations', 'studyFields'] as const;
+export type Classification = (typeof classifications)[number];
 
 export interface FactDefinition {
   readonly type: FactType;

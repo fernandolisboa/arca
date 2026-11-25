@@ -7,6 +7,8 @@ The knowledge base as data: route versions, country sets, official-domain lists 
 ```text
 data/countries/<n>.json                     current country codes (generated, R7)
 data/former-countries/<n>.json              former states, ISO 3166-3 (R7)
+data/occupations/<n>.json                   ISCO-08 unit groups, the occupation codes (ADR-0036)
+data/study-fields/<n>.json                  ISCED-F 2013 four-digit fields, the field-of-study codes (ADR-0036)
 data/official-domains/<id>/<n>.json         official source hosts per country or body
 data/country-sets/<id>/<n>.json             versioned country sets
 data/routes/<route-id>/<n>.json             one file per route version
@@ -54,6 +56,17 @@ An official-domain list pins nothing, so its hash is the same `{ version, pinned
 `data/countries/<n>.json` is generated, never written by hand. `pnpm --filter @arca/knowledge countries:generate` runs `scripts/generate-countries.ts`, which only a maintainer runs and never `pnpm check` or the build. It checks the vendored CLDR file and license against the pins in `scripts/countries.ts`, keeps every alpha-2 region CLDR lists except the exclusions there (`XK` stays), and writes the next numbered file. It fails on any code that is neither excluded, admitted nor in the previous countries file, and on any code of the previous file the release drops unless it is withdrawn, so a new CLDR release's changes are classified in `reclassification` (in `scripts/countries.ts`) by a reviewed change first. A new release is vendored after its entry is approved in `.github/policy/vendored.json`; then update the pins and regenerate.
 
 `data/former-countries/<n>.json` lists ISO 3166-3 codes, with sources; their names live in the i18n catalogs (`formerCountries`), because `Intl.DisplayNames` names only current countries. A test in `@arca/i18n` fails when a code has no name. User-assigned codes `QM` to `QZ` (except `QO` and `QU`) are for test fixtures only, and the real build rejects them.
+
+## Classifications
+
+Occupations and fields of study are codes from two official classifications ([ADR-0036](../../docs/adr/0036-case-records-and-classifications.md)), each a numbered file like the countries file: `{ "schemaVersion": 1, "id", "number", "classification", "sources", "codes" }`, with the codes sorted.
+
+- `data/occupations/<n>.json`: the 436 ISCO-08 unit groups, from the ILO's [ISCO-08 structure and definitions](https://www.ilo.org/ilostat-files/ISCO/newdocs-08-2021/ISCO-08/ISCO-08%20EN%20Structure%20and%20definitions.xlsx) workbook (the rows of level 4).
+- `data/study-fields/<n>.json`: the 148 four-digit ISCED-F 2013 fields, from Eurostat's [code list `ISCEDF13`](https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/codelist/ESTAT/ISCEDF13/latest?format=TSV&lang=en) (the codes `F` plus four digits, without the `F`; the aggregates such as `F0113_0114` are Eurostat's, not the classification's).
+
+A route version pins one in `occupations` or `studyFields` only when a rule reads such a code; its hash then covers the file, and validation refuses a code the pinned file lacks and a code read with no pin. Each code's pt-BR label lives in `@arca/i18n` (`occupations`, `studyFields`, and the groups the picker shows them under), and its test fails on a code without one.
+
+To refresh one when the source publishes a new list: download the source, take the codes as above, write them sorted as the next numbered file with the source's `verifiedAt`, run the build, and give `test/classifications.test.ts` the new file's counts and the SHA-256 of its codes joined by newlines; then add a label for every new code. Files already on `main` never change, so versions that pin them keep their codes.
 
 ## Comparison data
 

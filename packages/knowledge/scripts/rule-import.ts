@@ -2,7 +2,7 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { PinnedFileRow, RuleRows } from '../src/rule-rows.ts';
-import { buildKnowledge, formatIssue } from './build.ts';
+import { type KnowledgeBuild, buildKnowledge, formatIssue } from './build.ts';
 import type { CalendarDate } from '@arca/domain';
 import { parseCalendarDate } from '@arca/domain';
 import { json, literal } from './sql.ts';
@@ -106,9 +106,24 @@ export async function importMigrationFile(migrationsDir: string): Promise<string
   return join(migrationsDir, folder, 'migration.sql');
 }
 
+/**
+ * The classification files (ADR-0036) came after the import and are verified after its date, so a
+ * build on that date reports them; no imported row pins them, and the real build checks them.
+ */
+const laterDatasets = ['occupations/', 'study-fields/'];
+
+/** The data directory built on the import's date, as the import read it. */
+export async function importBuild(dataDir: string): Promise<KnowledgeBuild> {
+  const build = await buildKnowledge(dataDir, importDate);
+  return {
+    ...build,
+    issues: build.issues.filter(({ file }) => !laterDatasets.some((dir) => file.startsWith(dir))),
+  };
+}
+
 /** The import's SQL from the repository's data directory, which must build without issues. */
 export async function generatedImport(dataDir: string): Promise<string> {
-  const { issues, rows } = await buildKnowledge(dataDir, importDate);
+  const { issues, rows } = await importBuild(dataDir);
   if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
   return importSql(rows);
 }

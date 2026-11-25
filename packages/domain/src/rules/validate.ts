@@ -1,9 +1,11 @@
 import { type Duration, durationParts, durationUnits } from '../calendar/duration.js';
+import { classifications as classificationNames } from '../case/facts.js';
 import type { CurrencyCode } from '../money/currency.js';
 import {
   type CheckContext,
   type CheckIssue,
   type CheckScope,
+  type PinnedClassifications,
   ageNeedsLeapDay,
   checkExpression,
 } from './check.js';
@@ -111,12 +113,14 @@ export function checkOfficialSources(
 /**
  * Checks what the schema cannot (spec 0002, R4): references between parts of the version, source
  * kinds, the shape of a closed version, and every expression against the fact catalog. Returns
- * the issues; none means valid.
+ * the issues; none means valid. `classifications` holds the codes of the classification files the
+ * version pins, read only for the ones it pins.
  */
 export function checkRouteVersion(
   version: RouteVersion,
   official: OfficialHosts,
   countries: PinnedCountries,
+  classifications: PinnedClassifications = {},
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   const issue = (path: string, message: string): void => {
@@ -184,6 +188,14 @@ export function checkRouteVersion(
     countries: countries.current,
     formerCountries: countries.former,
     formerCountrySets: countries.setsWithFormer,
+    // Only what the version pins: a code read under a classification it does not pin is refused.
+    classifications: Object.fromEntries(
+      classificationNames.flatMap((name) =>
+        version[name] === undefined || classifications[name] === undefined
+          ? []
+          : [[name, classifications[name]]],
+      ),
+    ),
   };
   const expressions: Expression[] = [];
   const expect = (

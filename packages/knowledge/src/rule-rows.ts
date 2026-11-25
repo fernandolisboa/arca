@@ -6,6 +6,7 @@ import {
   type RouteVersion,
   type RuleCaseSummary,
   type VersionIdentity,
+  classifications,
   countrySetSchema,
   identityKey,
   officialDomainListSchema,
@@ -17,6 +18,7 @@ import {
 import { type Json, canonicalize } from './canonical.js';
 import { caseSummaries } from './cases.js';
 import { createRouteCatalog } from './catalog.js';
+import { classificationKinds } from './datasets.js';
 
 /** A route version as the `knowledge.route_version` table holds it (ADR-0031). */
 export interface RouteVersionRow {
@@ -99,8 +101,8 @@ export const sealRuleData = (content: RuleContent): RuleData => content as unkno
 export const ruleContent = (data: RuleData): RuleContent => data as unknown as RuleContent;
 
 export interface RuleRowReading {
-  /** The repository's countries and former-countries files, keyed `<kind>/<id>/<number>`. */
-  readonly countryFiles: Readonly<Record<string, Json>>;
+  /** The repository's dataset files (countries, former countries, classifications), keyed `<kind>/<id>/<number>`. */
+  readonly datasetFiles: Readonly<Record<string, Json>>;
   /** SHA-256 in lowercase hex of a string's UTF-8 bytes. */
   readonly sha256: (text: string) => string;
   /** The host official-source matching reads, as the knowledge build reads it. */
@@ -127,6 +129,7 @@ interface PinnedFiles {
   >;
   readonly hashOf: (version: Json, pinned: Record<string, Json>) => string;
   readonly commonPins: (data: CountrySet | RouteVersion) => Record<string, Json> | undefined;
+  readonly datasetFiles: Readonly<Record<string, Json>>;
 }
 
 function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
@@ -167,12 +170,12 @@ function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
       pinned[key] = content;
       return true;
     };
-    const countries = new Map(Object.entries(reading.countryFiles));
+    const datasets = new Map(Object.entries(reading.datasetFiles));
     const found =
-      add(keyOf('countries', data.countries.id, data.countries.number), countries) &&
+      add(keyOf('countries', data.countries.id, data.countries.number), datasets) &&
       add(
         keyOf('former-countries', data.formerCountries.id, data.formerCountries.number),
-        countries,
+        datasets,
       ) &&
       data.officialDomains.every((pin: Pin) =>
         add(keyOf('official-domains', pin.id, pin.number), lists),
@@ -198,7 +201,7 @@ function readPinnedFiles(rows: RuleRows, reading: RuleRowReading): PinnedFiles {
     sets.set(key, { content: row.content, set: parsed.data, pinned });
   }
 
-  return { refused, officialDomains, sets, hashOf, commonPins };
+  return { refused, officialDomains, sets, hashOf, commonPins, datasetFiles: reading.datasetFiles };
 }
 
 /** The content hash of an official-domain list, which pins nothing (ADR-0031). */
@@ -236,6 +239,14 @@ export const approvedOfficialDomainLists = (
 function routePins(files: PinnedFiles, version: RouteVersion): Record<string, Json> | undefined {
   const pinned = files.commonPins(version);
   if (pinned === undefined) return undefined;
+  for (const name of classifications) {
+    const pin = version[name];
+    if (pin === undefined) continue;
+    const key = keyOf(classificationKinds[name], pin.id, pin.number);
+    const content = files.datasetFiles[key];
+    if (content === undefined) return undefined;
+    pinned[key] = content;
+  }
   for (const pin of version.countrySets) {
     const key = keyOf('country-sets', pin.id, pin.number);
     const set = files.sets.get(key);

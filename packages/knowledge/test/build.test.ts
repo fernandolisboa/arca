@@ -211,6 +211,56 @@ describe('buildKnowledge', () => {
     });
   });
 
+  it('hashes the classification files a version pins with it, and refuses a missing one', async () => {
+    const classification = (id: string): Record<string, unknown> => ({
+      schemaVersion: 1,
+      id,
+      number: 1,
+      classification: 'Synthetic classification',
+      sources: [
+        {
+          id: 'list',
+          url: 'https://www.gov.example/codes',
+          title: 'Code list',
+          kind: 'official',
+          verifiedAt: '2026-10-01',
+        },
+      ],
+      codes: ['1111', '2222'],
+    });
+    const tree = baseTree();
+    tree['occupations/1.json'] = classification('occupations');
+    tree['study-fields/1.json'] = classification('study-fields');
+    tree['routes/qm-work/1.json'] = routeVersion({
+      occupations: { id: 'occupations', number: 1 },
+      studyFields: { id: 'study-fields', number: 1 },
+    });
+    const { entries, datasetFiles } = await buildKnowledge(
+      await writeTree(tree),
+      buildDate,
+      fixtures,
+    );
+    const pinned = {
+      'countries/countries/1': tree['countries/1.json'],
+      'former-countries/former-countries/1': tree['former-countries/1.json'],
+      'occupations/occupations/1': tree['occupations/1.json'],
+      'study-fields/study-fields/1': tree['study-fields/1.json'],
+      'official-domains/qm-gov/1': tree['official-domains/qm-gov/1.json'],
+      'country-sets/treaty/1': tree['country-sets/treaty/1.json'],
+    } as Record<string, Json>;
+    expect(entries[0]?.hash).toBe(
+      contentHash({ version: tree['routes/qm-work/1.json'] as Json, pinned }),
+    );
+    expect(Object.keys(datasetFiles)).toEqual(
+      expect.arrayContaining(['occupations/occupations/1', 'study-fields/study-fields/1']),
+    );
+
+    tree['routes/qm-work/1.json'] = routeVersion({ occupations: { id: 'occupations', number: 2 } });
+    expect(await issuesOf(tree)).toContain(
+      'routes/qm-work/1.json /occupations: The pinned occupations file occupations 2 exists and is valid',
+    );
+  });
+
   describe('validation', () => {
     const variants: [string, (tree: Record<string, unknown>) => void, string][] = [
       [
@@ -582,12 +632,12 @@ const parsedJson = (module: string): unknown[] =>
 
 describe('runtimeModule', () => {
   it('carries the countries and their files, with no route data', async () => {
-    const { entries, countries, countryFiles } = await buildKnowledge(
+    const { entries, countries, datasetFiles } = await buildKnowledge(
       await writeTree(baseTree()),
       buildDate,
       fixtures,
     );
-    const module = runtimeModule({ entries, countries, countryFiles });
+    const module = runtimeModule({ entries, countries, datasetFiles });
     const [pinned, files] = parsedJson(module);
     expect(pinned).toEqual(countries);
     expect(Object.keys(files as object).sort()).toEqual([

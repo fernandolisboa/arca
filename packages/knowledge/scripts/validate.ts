@@ -1,5 +1,6 @@
 import {
   type CalendarDate,
+  type Classification,
   type CheckIssue,
   type ComparisonVersion,
   type CountryIndicator,
@@ -14,6 +15,7 @@ import {
   checkCountrySet,
   checkRouteVersion,
   checkVersionOrder,
+  classifications,
   compareDates,
   comparisonSeriesId,
   comparisonVersionSchema,
@@ -24,12 +26,16 @@ import {
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import type { z } from 'zod';
+import { classificationKinds } from '../src/datasets.ts';
 import { contentHash } from './content-hash.ts';
 import {
+  type ClassificationFile,
   type CountriesFile,
   type FormerCountriesFile,
   countriesFileSchema,
   formerCountriesFileSchema,
+  occupationsFileSchema,
+  studyFieldsFileSchema,
 } from './files.ts';
 import type { Json } from '@arca/scripts/json';
 import type { FileKind, Issue, RawData, RawFile } from './load.ts';
@@ -76,6 +82,8 @@ export interface PinnedCountries {
 type Parsed =
   | { readonly kind: 'countries'; readonly raw: RawFile; readonly data: CountriesFile }
   | { readonly kind: 'former-countries'; readonly raw: RawFile; readonly data: FormerCountriesFile }
+  | { readonly kind: 'occupations'; readonly raw: RawFile; readonly data: ClassificationFile }
+  | { readonly kind: 'study-fields'; readonly raw: RawFile; readonly data: ClassificationFile }
   | { readonly kind: 'official-domains'; readonly raw: RawFile; readonly data: OfficialDomainList }
   | { readonly kind: 'country-sets'; readonly raw: RawFile; readonly data: CountrySet }
   | { readonly kind: 'routes'; readonly raw: RawFile; readonly data: RouteVersion }
@@ -87,6 +95,8 @@ type ParsedOf<K extends FileKind> = Extract<Parsed, { kind: K }>;
 const schemas: { readonly [K in FileKind]: z.ZodType<ParsedOf<K>['data']> } = {
   countries: countriesFileSchema,
   'former-countries': formerCountriesFileSchema,
+  occupations: occupationsFileSchema,
+  'study-fields': studyFieldsFileSchema,
   'official-domains': officialDomainListSchema,
   'country-sets': countrySetSchema,
   routes: routeVersionSchema,
@@ -143,6 +153,10 @@ class Validation {
     const hashes = new Map<string, string>();
     for (const file of this.parsed.values()) {
       if (file.kind === 'official-domains') this.checkHostSources(file);
+      if (file.kind === 'occupations' || file.kind === 'study-fields') {
+        this.checkVerified(file.raw, file.data.sources, '/sources');
+        this.checkUnique(file.raw, file.data.codes, '/codes');
+      }
       if (file.kind === 'former-countries')
         this.checkVerified(file.raw, file.data.sources, '/sources');
       if (file.kind === 'countries' || file.kind === 'former-countries') {
@@ -319,8 +333,17 @@ class Validation {
       }
     });
     const known = { current, former: formerCodes, setsWithFormer };
+    const codes: Partial<Record<Classification, ReadonlySet<string>>> = {};
+    for (const name of classifications) {
+      const pin = data[name];
+      if (pin === undefined) continue;
+      const file = this.resolve(raw, classificationKinds[name], pin, `/${name}`);
+      if (file !== undefined) codes[name] = new Set(file.data.codes);
+    }
     const official = this.officialHosts(raw, data.officialDomains);
-    if (official !== undefined) this.reportChecks(raw, checkRouteVersion(data, official, known));
+    if (official !== undefined) {
+      this.reportChecks(raw, checkRouteVersion(data, official, known, codes));
+    }
     if (countries !== undefined && !countries.data.codes.includes(data.country)) {
       this.report(raw, 'The country is in the pinned countries file', '/country');
     }
@@ -445,6 +468,10 @@ class Validation {
     };
     if (file.kind === 'country-sets' || file.kind === 'routes') addCommon(file.data);
     if (file.kind === 'routes') {
+      for (const name of classifications) {
+        const pin = file.data[name];
+        if (pin !== undefined) add(classificationKinds[name], pin);
+      }
       for (const pin of file.data.countrySets) {
         const set = add('country-sets', pin) as ParsedOf<'country-sets'>;
         addCommon(set.data);

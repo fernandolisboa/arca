@@ -15,6 +15,8 @@ export interface Issue {
 export type FileKind =
   | 'countries'
   | 'former-countries'
+  | 'occupations'
+  | 'study-fields'
   | 'official-domains'
   | 'country-sets'
   | 'routes'
@@ -52,6 +54,16 @@ const layouts: readonly { kind: FileKind; pattern: RegExp; fixedId?: string }[] 
     kind: 'former-countries',
     pattern: new RegExp(`^former-countries/${numberPart}\\.json$`),
     fixedId: 'former-countries',
+  },
+  {
+    kind: 'occupations',
+    pattern: new RegExp(`^occupations/${numberPart}\\.json$`),
+    fixedId: 'occupations',
+  },
+  {
+    kind: 'study-fields',
+    pattern: new RegExp(`^study-fields/${numberPart}\\.json$`),
+    fixedId: 'study-fields',
   },
   {
     kind: 'official-domains',

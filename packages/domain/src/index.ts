@@ -172,7 +172,7 @@ export {
   slugSchema,
 } from './rules/expression.js';
 export { factTargets } from './rules/fact-reference.js';
-export { type FactKey, factKeys } from './case/facts.js';
+export { type Classification, type FactKey, classifications, factKeys } from './case/facts.js';
 export {
   type DecisiveQuestion,
   type RouteResult,
@@ -185,7 +185,7 @@ export {
   routeStatusOrder,
 } from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
-export { type CheckIssue } from './rules/check.js';
+export { type CheckIssue, type PinnedClassifications } from './rules/check.js';
 export {
   type OfficialHosts,
   type PinnedCountries,

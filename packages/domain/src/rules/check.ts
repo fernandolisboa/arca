@@ -1,4 +1,4 @@
-import type { FactType } from '../case/facts.js';
+import { type Classification, type FactType, classifications } from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
 import { type CollectionName, type Expression, maxExpressionDepth, depth } from './expression.js';
@@ -17,10 +17,12 @@ export type ExpressionType =
   | { readonly kind: 'set'; readonly domain: TokenDomain; readonly values?: readonly string[] };
 
 /**
- * Countries, the values of a catalog enumeration, or a literal whose domain its use decides.
- * `former-country` also admits ISO 3166-3 former states; a `country` fact admits current ones only.
+ * Countries, the codes of a pinned classification, the values of a catalog enumeration, or a
+ * literal whose domain its use decides. `former-country` also admits ISO 3166-3 former states; a
+ * `country` fact admits current ones only.
  */
-export type TokenDomain = 'country' | 'former-country' | 'literal' | readonly string[];
+export type TokenDomain =
+  'country' | 'former-country' | Classification | 'literal' | readonly string[];
 
 /** Where an expression sits, which decides the facts and collections it may read. */
 export interface CheckScope {
@@ -49,7 +51,17 @@ export interface CheckContext {
   readonly formerCountries: ReadonlySet<string>;
   /** IDs of the pinned country sets with a member outside the pinned countries file. */
   readonly formerCountrySets: ReadonlySet<string>;
+  /** Codes of each classification file the version pins; a classification it does not pin is absent. */
+  readonly classifications?: PinnedClassifications;
 }
+
+/** The codes of the classification files a route version pins, by the name of each pin. */
+export type PinnedClassifications = Readonly<Partial<Record<Classification, ReadonlySet<string>>>>;
+
+const classificationNames: Readonly<Record<Classification, string>> = {
+  occupations: 'Occupation',
+  studyFields: 'Field-of-study',
+};
 
 export interface CheckIssue {
   readonly path: string;
@@ -235,7 +247,17 @@ class Checker {
     if (resolved.definition.readsAge === true && !this.context.leapDayBirthday) {
       return this.fail(path, ageNeedsLeapDay);
     }
-    return typeOf(resolved.definition.type, this.context.currency);
+    const { type } = resolved.definition;
+    if (
+      (type.kind === 'code' || type.kind === 'codes') &&
+      this.context.classifications?.[type.classification] === undefined
+    ) {
+      return this.fail(
+        path,
+        `${classificationNames[type.classification]} codes need the version to pin ${type.classification}`,
+      );
+    }
+    return typeOf(type, this.context.currency);
   }
 
   private collection(
@@ -312,7 +334,9 @@ class Checker {
         ? (tokens.values ?? []).every((value) =>
             isCountryDomain(domain)
               ? this.knownCountry(domain, value)
-              : domain === 'literal' || domain.includes(value),
+              : isClassification(domain)
+                ? this.context.classifications?.[domain]?.has(value) === true
+                : domain === 'literal' || domain.includes(value),
           )
         : fitsDomain(domain, tokens.domain);
     if (!fits) this.fail(path, 'The values are outside the domain of the fact');
@@ -400,6 +424,10 @@ function typeOf(type: FactType, currency: CurrencyCode): ExpressionType {
       return { kind: 'token', domain: type.values };
     case 'enum-list':
       return { kind: 'list', domain: type.values };
+    case 'code':
+      return { kind: 'token', domain: type.classification };
+    case 'codes':
+      return { kind: 'list', domain: type.classification };
   }
 }
 
@@ -409,6 +437,10 @@ function countryDomain(formerStates: boolean | undefined): TokenDomain {
 
 function isCountryDomain(domain: TokenDomain): domain is 'country' | 'former-country' {
   return domain === 'country' || domain === 'former-country';
+}
+
+function isClassification(domain: TokenDomain): domain is Classification {
+  return (classifications as readonly TokenDomain[]).includes(domain);
 }
 
 /** Whether values of the `values` domain can be values of the `target` domain. */

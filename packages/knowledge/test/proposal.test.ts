@@ -4,8 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { type RouteVersion, routeVersionSchema } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge } from '../scripts/build.ts';
-import { importDate } from '../scripts/rule-import.ts';
+import { importBuild } from '../scripts/rule-import.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import type { Json } from '../src/canonical.ts';
 import { checkProposal } from '../src/proposal.ts';
@@ -16,7 +15,7 @@ const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').diges
 
 /** The newest version of a route whose cases all carry inline snapshots, as a proposal's must. */
 async function setUp() {
-  const { rows, countryFiles, issues } = await buildKnowledge(dataDir, importDate);
+  const { rows, datasetFiles, issues } = await importBuild(dataDir);
   expect(issues).toEqual([]);
   const newest = new Map<string, (typeof rows.routeVersions)[number]>();
   for (const row of rows.routeVersions) {
@@ -46,7 +45,7 @@ async function setUp() {
       effectiveFrom: later.toISOString().slice(0, 10),
       ...change,
     }) as unknown as Json;
-  const reading = { countryFiles, sha256, hostOf };
+  const reading = { datasetFiles, sha256, hostOf };
   const check = (content: Json, cases: unknown = row.cases) =>
     checkProposal(rows, { kind: 'update', base }, content, cases, reading);
   return { rows, row, base, next, reading, check };
