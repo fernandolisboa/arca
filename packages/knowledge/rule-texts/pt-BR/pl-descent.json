@@ -69,6 +69,62 @@
     {
       "en": "Decision on the application, from the day it reaches the deciding voivode; steps with legal time limits of their own, suspensions and delays not the office's fault do not count; extended if justified",
       "text": "Decisão sobre o pedido, contada do dia em que chega ao voivoda que decide; etapas com prazos legais próprios, suspensões e atrasos que não são culpa do órgão não contam; prorrogável se justificado"
+    },
+    {
+      "en": "Application for confirmation of Polish citizenship, on the form a regulation sets, filled in only in Polish",
+      "text": "Pedido de confirmação da cidadania polonesa, no formulário que um regulamento fixa, preenchido só em polonês"
+    },
+    {
+      "en": "Copies of documents are certified as true by the consul; sent by post to the voivode, the Pomeranian office asks a notary or the lawyer acting to certify them",
+      "text": "As cópias dos documentos são autenticadas pelo cônsul; se forem pelo correio ao voivoda, o escritório da Pomerânia pede que um tabelião ou o advogado do caso as autentique"
+    },
+    {
+      "en": "Current identity document, in original with the pages bearing official annotations, shown to the consul; with the voivode, a photocopy, as the Pomeranian office asks",
+      "text": "Documento de identidade válido, no original com as páginas que têm anotações oficiais, mostrado ao cônsul; ao voivoda, uma cópia, como pede o escritório da Pomerânia"
+    },
+    {
+      "en": "Birth record; someone born outside Poland hands in the full record naming the parents",
+      "text": "Certidão de nascimento; quem nasceu fora da Polônia entrega a certidão em inteiro teor com o nome dos pais"
+    },
+    {
+      "en": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
+      "text": "Em língua estrangeira: tradução para o polonês por tradutor juramentado ou pelo cônsul. De fora da UE: apostila, ou legalização por cônsul polonês onde a Convenção da Haia não vale"
+    },
+    {
+      "en": "Civil status record stating the applicant's civil status: marriage record, divorce document or the spouse's death record",
+      "text": "Certidão que comprove o estado civil: de casamento, documento do divórcio ou certidão de óbito do cônjuge"
+    },
+    {
+      "en": "Documents proving the Polish origin of the parents or grandparents: their birth and marriage records, baptism certificates, copies of their Polish documents",
+      "text": "Documentos que provem a origem polonesa dos pais ou avós: certidões de nascimento e de casamento, certidões de batismo, cópias dos documentos poloneses deles"
+    },
+    {
+      "en": "Where the surname changed, copies of the documents proving it, such as a marriage record or a record of a change of first name or surname",
+      "text": "Se o sobrenome mudou, cópias dos documentos que provem a mudança, como a certidão de casamento ou o registro da troca de nome ou sobrenome"
+    },
+    {
+      "en": "Information on the attorney for service in Poland, for someone living outside Poland, the EU, Switzerland and the EEA's EFTA states, with no representative in Poland, not acting through a consul",
+      "text": "Informação sobre o procurador para receber correspondência na Polônia, para quem mora fora da Polônia, da UE, da Suíça e dos países da EFTA no EEE, sem representante na Polônia e sem agir por meio de cônsul"
+    },
+    {
+      "en": "Not needed when letters are served by the registered electronic delivery service",
+      "text": "Não é preciso quando as cartas chegam pelo serviço de entrega eletrônica registrada"
+    },
+    {
+      "en": "Power of attorney, when a representative acts in the case",
+      "text": "Procuração, quando um representante atua no caso"
+    },
+    {
+      "en": "A spouse, parent, child or sibling acting pays no stamp duty on it; documents in the case should prove the kinship",
+      "text": "Se quem atua é cônjuge, pai ou mãe, filho ou irmão, não há imposto de selo sobre ela; documentos no processo devem provar o parentesco"
+    },
+    {
+      "en": "Proof of the stamp duty paid, when the application is filed with the voivode, as the Pomeranian office asks",
+      "text": "Comprovante de pagamento do imposto de selo, quando o pedido é entregue ao voivoda, como pede o escritório da Pomerânia"
+    },
+    {
+      "en": "None for someone exempt from the duty, such as a person who files with a certificate of receiving social assistance because of poverty",
+      "text": "Não há para quem é isento do imposto, como quem entrega com o pedido um atestado de que recebe assistência social por pobreza"
     }
   ]
 }
