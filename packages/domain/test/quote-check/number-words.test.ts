@@ -29,6 +29,13 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['二十一歳', '21', ['ja']],
     ['六箇月', '6', ['ja']],
     ['UNDER EIGHTEEN', '18', ['en']],
+    ['derīgi sešus mēnešus', '6', ['lv', 'en']],
+    ['trīs mēnešus', '3', ['lv']],
+    ['četrpadsmit gadu vecumu', '14', ['lv']],
+    ['divdesmit vienu gadu', '21', ['lv']],
+    ['divdesmit trim gadiem', '23', ['lv', 'en']],
+    ['divdesmit divas dienas', '22', ['lv', 'en']],
+    ['trijiem mēnešiem', '3', ['lv']],
   ])('reads "%s" as %s', (text, value, languages) => {
     expect(writesNumberInWords(text, value, languages)).toBe(true);
   });
@@ -59,6 +66,19 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['十分な資産', '10', ['ja'], 'a numeral with no counter'],
     ['quatro meses', '4', ['da'], 'a language with no table'],
     ['four months', '5', ['en'], 'another number'],
+    ['trim the list', '3', ['lv', 'en'], 'a Latvian number that is an English word'],
+    ['opera divas', '2', ['lv', 'en'], 'another Latvian number that is an English word'],
+    ['divdesmit vienu gadu', '1', ['lv'], 'the unit of a larger Latvian number'],
+    ['divsimt eiro', '2', ['lv'], 'a number of Latvian hundreds'],
+    [
+      'divdesmit trim gadiem',
+      '20',
+      ['lv', 'en'],
+      'the ten of a Latvian number whose unit is an English word',
+    ],
+    ['divdesmit divas nedēļas', '20', ['lv', 'en'], 'the ten before Latvian "divas"'],
+    ['pieci miljardi eiro', '5', ['lv'], 'a number of Latvian billions'],
+    ['divi ar pusi gadi', '2', ['lv'], 'a Latvian number with a fraction'],
     ['four months', '4.5', ['en'], 'a value with decimals'],
   ])('does not read "%s" as %s: %s', (text, value, languages) => {
     expect(writesNumberInWords(text, value, languages)).toBe(false);
@@ -76,6 +96,7 @@ describe('numbers a law writes in words (ADR-0027)', () => {
     ['US', 'en'],
     ['AR', 'es'],
     ['JP', 'ja'],
+    ['LV', 'lv'],
   ])('takes %s laws to be written in %s', (country, language) => {
     expect(likelyLanguage(country)).toBe(language);
   });

@@ -1,8 +1,8 @@
 /**
  * Whole numbers from 2 to 99 a law writes in words ("quatro meses", "twenty-one", "dieciocho",
- * 五年), for the value check of a quote (ADR-0027). A word reads as a number only in the languages
- * a page is likely written in, the country's main language and English, so a word that is a
- * number in one language and something else in another ("dos", "sei") never states a value by
+ * "sešus", 五年), for the value check of a quote (ADR-0027). A word reads as a number only in the
+ * languages a page is likely written in, the country's main language and English, so a word that
+ * is a number in one language and something else in another ("dos", "sei") never states a value by
  * accident, and a number word that is also an English word ("due", "once") is not read at all. 1
  * is never read alone, since its words are also articles and pronouns, nor are ordinals, which also
  * name paragraphs, weekdays and rooms, except an English one before "anniversary"
@@ -196,10 +196,58 @@ const italian: Spelling = {
   compoundUnits: { 1: ['uno'], 2: ['due'] },
 };
 
+const latvianThree = ['trīs', 'triju', 'trim', 'trijiem', 'trijām', 'trijos', 'trijās'];
+const latvianUnit = (stem: string) =>
+  ['i', 'as', 'us', 'u', 'iem', 'ām', 'os', 'ās'].map((ending) => `${stem}${ending}`);
+
+// Latvian units 2 to 9 decline by gender and case ("sešus mēnešus", "četrpadsmit gadu").
+const latvian: Spelling = {
+  units: [
+    ['nulle'],
+    [],
+    // "divas" and "trim" are also English words, and English is read too; they are read after a ten.
+    latvianUnit('div').filter((word) => word !== 'divas'),
+    latvianThree.filter((word) => word !== 'trim'),
+    latvianUnit('četr'),
+    latvianUnit('piec'),
+    latvianUnit('seš'),
+    latvianUnit('septiņ'),
+    latvianUnit('astoņ'),
+    latvianUnit('deviņ'),
+    ['desmit'],
+    ['vienpadsmit'],
+    ['divpadsmit'],
+    ['trīspadsmit'],
+    ['četrpadsmit'],
+    ['piecpadsmit'],
+    ['sešpadsmit'],
+    ['septiņpadsmit'],
+    ['astoņpadsmit'],
+    ['deviņpadsmit'],
+  ],
+  tens: [
+    ['divdesmit'],
+    ['trīsdesmit'],
+    ['četrdesmit'],
+    ['piecdesmit'],
+    ['sešdesmit'],
+    ['septiņdesmit'],
+    ['astoņdesmit'],
+    ['deviņdesmit'],
+  ],
+  join: (ten, unit) => [`${ten} ${unit}`],
+  compoundUnits: {
+    1: ['viens', 'viena', 'vienu', 'vienam', 'vienai', 'vienā'],
+    2: latvianUnit('div'),
+    3: latvianThree,
+  },
+};
+
 const spellings: Readonly<Record<string, Spelling>> = {
   en: english,
   es: spanish,
   it: italian,
+  lv: latvian,
   pt: portuguese,
 };
 
@@ -223,15 +271,18 @@ function wordsFor(spelling: Spelling, value: number): string[] {
 
 const spaced = (words: string) => words.split(/[\s\-\u2010\u2011\u2013]+/u).join(' ');
 
-/** Words that join the parts of a number: "vinte e um", "treinta y seis", "one hundred and two". */
-const joiners = new Set(['and', 'e', 'y']);
+/**
+ * Words that join the parts of a number: "vinte e um", "treinta y seis", "one hundred and two", and
+ * the Latvian "ar" of a fraction ("divi ar pusi"), so a run before a fraction states nothing.
+ */
+const joiners = new Set(['and', 'e', 'y', 'ar']);
 
 /**
  * Words that make a number larger than any read here: hundreds, thousands, millions, in the
  * languages with tables, so "cinco mil" or "three hundred" never reads as its first word.
  */
 const multiplier =
-  /^(?:\p{L}*(?:cent|cient|zent|nhent)\p{L}*|hundreds?|thousands?|millions?|billions?|mil|mila|mille|milhão|milhões|millón|millones|milione|milioni|miliardo|miliardi)$/u;
+  /^(?:\p{L}*(?:cent|cient|zent|nhent)\p{L}*|\p{L}*simt\p{L}*|tūksto\p{L}*|miljon\p{L}*|miljard\p{L}*|hundreds?|thousands?|millions?|billions?|mil|mila|mille|milhão|milhões|millón|millones|milione|milioni|miliardo|miliardi)$/u;
 
 /** Every word any number of the language is written with. */
 const vocabularies = new Map<Spelling, ReadonlySet<string>>();

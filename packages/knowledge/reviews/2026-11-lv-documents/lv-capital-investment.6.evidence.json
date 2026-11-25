@@ -1,0 +1,1155 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:capital",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "10) uz laiku līdz diviem gadiem, ja viņš ir veicis ieguldījumu kapitālsabiedrības pamatkapitālā, to palielinot, vai ieguldījumu kapitālsabiedrības pamatkapitālā, dibinot jaunu kapitālsabiedrību, un, pieprasot pirmreizēju termiņuzturēšanās atļauju saskaņā ar šo punktu, ir samaksājis valsts budžetā 10 000 euro, kā arī veiktais ieguldījums ir vismaz:"
+    },
+    {
+      "key": "requirement:capital",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "a) 50 000 euro, un tas veikts kapitālsabiedrībā, kura nodarbina ne vairāk kā 50 darbinieku un kuras gada apgrozījums vai gada bilance nepārsniedz 10 miljonus euro."
+    },
+    {
+      "key": "requirement:not-russian-or-belarusian",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(7) Baltkrievijas Republikas pilsonim nav tiesību pieprasīt termiņuzturēšanās atļauju saskaņā ar šā panta pirmās daļas 10."
+    },
+    {
+      "key": "requirement:not-russian-or-belarusian",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(8) Krievijas Federācijas pilsonim nav tiesību pieprasīt termiņuzturēšanās atļauju saskaņā ar šā panta pirmās daļas 1., 9., 10."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "29) trešās valsts pilsonis — persona, kurai nav Eiropas Savienības dalībvalsts, Eiropas Ekonomikas zonas valsts vai Šveices Konfederācijas pilsonības (turpmāk arī — ārzemnieks);"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "27. pants. (1) Termiņuzturēšanās atļauju šajā likumā noteiktajā kārtībā ārzemniekam ir tiesības pieprasīt:"
+    },
+    {
+      "key": "assessment:company-size",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "a) 50 000 euro, un tas veikts kapitālsabiedrībā, kura nodarbina ne vairāk kā 50 darbinieku un kuras gada apgrozījums vai gada bilance nepārsniedz 10 miljonus euro."
+    },
+    {
+      "key": "assessment:company-size",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "b) 100 000 euro, un tas veikts kapitālsabiedrībā, kura atsevišķi vai kopā ar vienu vai vairākiem meitas komersantiem, kas reģistrēti Latvijas Republikā, nodarbina vairāk nekā 50 darbinieku, gada apgrozījumam vai gada bilancei pārsniedzot 10 miljonus euro."
+    },
+    {
+      "key": "assessment:ten-investors",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "a) 50 000 euro, un tas veikts kapitālsabiedrībā, kura nodarbina ne vairāk kā 50 darbinieku un kuras gada apgrozījums vai gada bilance nepārsniedz 10 miljonus euro."
+    },
+    {
+      "key": "assessment:ten-investors",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Saistībā ar ieguldījumu vienas kapitālsabiedrības pamatkapitālā termiņuzturēšanās atļauju izsniedz ne vairāk kā 10 ārzemniekiem, ja katrs no viņiem ir veicis šajā punktā noteikto ieguldījumu un samaksājis valsts budžetā 10 000 euro."
+    },
+    {
+      "key": "assessment:company-taxes",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Saskaņā ar šo punktu izsniegtā termiņuzturēšanās atļauja ir spēkā, ja tās derīguma termiņa laikā kapitālsabiedrība, kurā ārzemnieks veicis ieguldījumu, katrā pārskata gadā atbilstoši nodokļu deklarācijām iemaksā valsts budžetā un pašvaldību budžetos nodokļu maksājumus, kuru kopsumma nav mazāka par 40 000 euro."
+    },
+    {
+      "key": "assessment:company-taxes",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Nodokļu maksājumu kopsummā neieskaita nodokļu maksājumu summas, kas ir atmaksātas vai atmaksājamas no valsts budžeta,"
+    },
+    {
+      "key": "assessment:company-taxes",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Saskaņā ar šo punktu izsniegtā termiņuzturēšanās atļauja ir spēkā, ja tās derīguma termiņa laikā kapitālsabiedrība, kurā šis ārzemnieks veicis ieguldījumu, katrā pārskata gadā atbilstoši nodokļu deklarācijām iemaksā valsts budžetā un pašvaldību budžetos nodokļu maksājumus, kuru kopsumma nav mazāka par 100 000 euro."
+    },
+    {
+      "key": "assessment:company-taxes",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Nodokļu maksājumu kopsummā ieskaita arī Latvijas Republikā reģistrēto meitas komersantu veiktos nodokļu maksājumus. Nodokļu maksājumu kopsummā neieskaita to nodokļu maksājumu summas, kas ir atmaksātas vai atmaksājamas no valsts budžeta;"
+    },
+    {
+      "key": "assessment:no-suspension",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "28. pants. Termiņuzturēšanās atļauju izsniegšanu saskaņā ar šā likuma 27. panta pirmās daļas 10. vai 36. punktu ārzemniekiem var apturēt uz laiku līdz pieciem gadiem. Izvērtējis ietekmi uz nacionālo drošību vai valsts ekonomisko attīstību saistībā ar ārzemnieku skaitu valstī un koncentrāciju noteiktā valsts teritorijā, Ministru kabinets nosaka, kuras trešās valsts valstspiederīgajiem un uz kādu termiņu tiek apturēta attiecīgo termiņuzturēšanās atļauju izsniegšana."
+    },
+    {
+      "key": "assessment:new-capital",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "10) uz laiku līdz diviem gadiem, ja viņš ir veicis ieguldījumu kapitālsabiedrības pamatkapitālā, to palielinot, vai ieguldījumu kapitālsabiedrības pamatkapitālā, dibinot jaunu kapitālsabiedrību, un, pieprasot pirmreizēju termiņuzturēšanās atļauju saskaņā ar šo punktu, ir samaksājis valsts budžetā 10 000 euro, kā arī veiktais ieguldījums ir vismaz:"
+    },
+    {
+      "key": "assessment:company-tax-debt",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "26) ārzemnieks pieprasījis vai saņēmis termiņuzturēšanās atļauju saskaņā ar šā likuma 27. panta pirmās daļas 9., 10. vai 13. punktu un attiecīgajai kapitālsabiedrībai ir reģistrēts nodokļu jomu reglamentējošos normatīvajos aktos noteikto nodokļu parāds, kas lielāks par 150 euro."
+    },
+    {
+      "key": "assessment:company-tax-debt",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Šo nosacījumu nepiemēro, ja minētais apstāklis nav konstatēts, veicot nodokļu samaksas pārbaudi vai apstiprinot izsaukumu, vai saņemts nodokļu administrācijas apstiprinājums tam, ka attiecīgo maksājumu termiņi ir pagarināti (atlikti, sadalīti) nodokļu jomu reglamentējošos normatīvajos aktos noteiktajā kārtībā un maksājumi tiek veikti saskaņā ar nodokļu administrācijas lēmumu (samaksas grafiku), vai tam, ka pārbaudes veikšanas dienā lēmums, ar kuru ir noteikts nodokļu parāds, nav stājies spēkā vai ir apturēts;"
+    },
+    {
+      "key": "assessment:company-taxes-first-year",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "65. Ārzemnieks, kurš saņēmis termiņuzturēšanās atļauju kā kapitālsabiedrības dalībnieks, kas veicis ieguldījumu kapitālsabiedrības pamatkapitālā saskaņā ar Imigrācijas likuma 23.panta pirmās daļas 28.punkta \"a\" apakšpunktu, pieprasot atkārtotu uzturēšanās atļauju"
+    },
+    {
+      "key": "assessment:company-taxes-first-year",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "kuru kopsumma nav mazāka par 40 000 euro (neieskaitot šajā nodokļu maksājumu kopsummā to nodokļu maksājumu summas, kas ir atmaksātas vai atmaksājamas no valsts budžeta), bet par nepilnu pirmo pārskata gadu kopš termiņuzturēšanās atļaujas izsniegšanas valsts budžetā un pašvaldību budžetos iemaksātā nodokļu maksājumu kopsumma vidēji mēnesī nav mazāka par 3300 euro."
+    },
+    {
+      "key": "assessment:company-taxes-first-year",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "kuru kopsumma nav mazāka par 100 000 euro (neieskaitot šajā nodokļu maksājumu kopsummā to nodokļu maksājumu summas, kas ir atmaksātas vai atmaksājamas no valsts budžeta), bet par nepilnu pirmo pārskata gadu kopš termiņuzturēšanās atļaujas izsniegšanas valsts budžetā un pašvaldību budžetos iemaksātā nodokļu maksājumu kopsumma vidēji mēnesī nav mazāka par 8300 euro."
+    },
+    {
+      "key": "assessment:company-taxes-first-year",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:call",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "25. pants. (1) Termiņuzturēšanās atļaujas pieprasīšanai ārzemniekam nepieciešams izsaukums, izņemot gadījumu, kad viņš:"
+    },
+    {
+      "key": "assessment:call",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "1) ir komercreģistrā reģistrēta komersanta vienīgā amatpersona ar pārstāvības tiesībām;"
+    },
+    {
+      "key": "assessment:call",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "7. Uzturēšanās atļaujas pieprasīšanai vai reģistrēšanai nav nepieciešams Pilsonības un migrācijas lietu pārvaldē (turpmāk – pārvalde) apstiprināts izsaukums, ja ārzemnieks:"
+    },
+    {
+      "key": "assessment:call",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "7.2. ir komercreģistrā reģistrēta komersanta vienīgā amatpersona ar pārstāvības tiesībām;"
+    },
+    {
+      "key": "assessment:call",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "4) ārzemniekam nav vai pēdējā gada laikā, ja viņš pirms termiņuzturēšanās atļaujas pieprasīšanas uzturējies Latvijas Republikā ar vīzu vai uzturēšanās atļauju, nav bijuši pietiekami finanšu līdzekļi atbilstoši Ministru kabineta noteikumos ārzemniekam iztikai noteiktajam finanšu līdzekļu apmēram;"
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "11.7. finanšu līdzekļi atbilstoši minimālajai mēneša darba algai – gadījumos, kuri nav paredzēti šo noteikumu 11.1., 11.2., 11.3., 11.4., 11.5. un 11.6. apakšpunktā."
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "12. Bērnam nepieciešamais iztikas nodrošinājums ir 30 procenti no šo noteikumu 11.7. apakšpunktā minētā nepieciešamā finanšu līdzekļu apmēra."
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/278067",
+      "quote": "2. Minimālā mēneša darba alga normālā darba laika ietvaros ir 780 | euro."
+    },
+    {
+      "key": "assessment:subsistence-means",
+      "url": "https://likumi.lv/ta/id/290808",
+      "quote": "Finanšu līdzekļu pietiekamību nosaka, individuāli izvērtējot katru pieteikumu."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.2. uzrāda dokumentu, kas apliecina, ka viņam ir derīga veselības apdrošināšanas polise"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6. Polisei jāgarantē izdevumu segšana vismaz par šādiem pakalpojumiem, kas saistīti ar veselības aprūpi:"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.1. neatliekamā medicīniskā palīdzība;"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.2. dzīvībai vai veselībai bīstama kritiska stāvokļa ārstēšana stacionārā;"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.3. transportēšana uz tuvāko ārstniecības iestādi"
+    },
+    {
+      "key": "assessment:health-insurance-cover",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "6.4. transportēšana nogādāšanai atpakaļ mītnes zemē smagas slimības vai nāves gadījumā."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7.2. EUR 42 600 – pieprasot ilgtermiņa vīzu, ilgtermiņa vīzu, kas"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "derīga kā īstermiņa vīza, vai uzturēšanās atļauju."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "9. Polises derīguma termiņš nedrīkst būt mazāks par paredzamo"
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "nieka uzturēšanās termiņu Latvijas Republikā"
+    },
+    {
+      "key": "assessment:request-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "assessment:request-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.1. aizpildītu noteikta parauga anketu uzturēšanās atļaujas pieprasīšanai atbilstoši šo noteikumu 1., 2., 3. un 4. pielikumam;"
+    },
+    {
+      "key": "assessment:request-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.2. fotogrāfiju;"
+    },
+    {
+      "key": "assessment:request-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.4. dokumentu, kas apliecina nepieciešamo iztikas nodrošinājumu, kamēr ārzemnieks uzturēsies Latvijas Republikā. Minēto dokumentu neiesniedz, ja tas ir jau iesniegts, apstiprinot izsaukumu ārzemniekam;"
+    },
+    {
+      "key": "assessment:request-documents",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.3. izziņu par sodāmību (ārzemniekam, kurš vecāks par 14 gadiem), ko izsniegusi kompetentā iestāde pilsonības vai mītnes zemē, ja ārzemnieks tajā uzturējies ilgāk par 12 mēnešiem;"
+    },
+    {
+      "key": "assessment:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "29. Ja ārzemniekam ieceļošanai Latvijas Republikā nav nepieciešama vīza, viņš uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šo noteikumu 28.1., 28.2., 28.4. un 28.6. apakšpunktā minētos dokumentus."
+    },
+    {
+      "key": "assessment:police-certificate",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "39. Ja ārzemnieks atbilstoši Imigrācijas likuma 23.panta ceturtajai daļai, 25. vai 26.pantam vēlas uzturēties pie laulātā, viņš iesniedz laulību apliecinoša dokumenta kopiju."
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40. Ja nepilngadīgs bērns vēlas uzturēties Latvijas Republikā atbilstoši Imigrācijas likuma 23.panta pirmās daļas 1.punktam, 23.panta ceturtajai daļai vai 24.panta pirmās daļas 1. vai 2.punktam, viņš iesniedz:"
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40.1. radniecību apliecinošu dokumentu kopijas;"
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "41. Ja ārzemnieks vēlas uzturēties Latvijas Republikā atbilstoši Imigrācijas likuma 23.panta pirmās daļas 17.punktam vai 23.panta ceturtajai daļai, jo pār ārzemnieku nodibināta aizbildnība vai aizgādnība vai viņš iecelts par aizbildni vai aizgādni Latvijas pilsonim vai Latvijas nepilsonim, viņš iesniedz tiesas nolēmumu par aizbildnības vai aizgādnības nodibināšanu. Ja lēmumu par aizbildnības vai aizgādnības nodibināšanu pieņēmusi ārvalsts kompetentā iestāde, aizbildnības vai aizgādnības lietai jābūt pārņemtai bāriņtiesā Latvijas Republikā."
+    },
+    {
+      "key": "assessment:family-documents",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:child-travel-consent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40. Ja nepilngadīgs bērns vēlas uzturēties Latvijas Republikā atbilstoši Imigrācijas likuma 23.panta pirmās daļas 1.punktam, 23.panta ceturtajai daļai vai 24.panta pirmās daļas 1. vai 2.punktam, viņš iesniedz:"
+    },
+    {
+      "key": "assessment:child-travel-consent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40.2. tā vecāka notariāli apliecinātu vai pārvaldes vai pārstāvniecības amatpersonas klātbūtnē parakstītu dokumentu par piekrišanu bērna izceļošanai uz Latvijas Republiku, kurš neieceļo kopā ar bērnu. Ja ikdienā aizgādību īsteno vecāks, ar kuru bērns ieceļo Latvijas Republikā, un nav noteikti ierobežojumi bērna dzīvesvietas maiņai bez otra vecāka piekrišanas, iesniedz attiecīgās valsts kompetentās iestādes izsniegtu dokumentu."
+    },
+    {
+      "key": "assessment:child-travel-consent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:no-criminal-conviction",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) ārzemnieks likumā noteiktajā kārtībā ir atzīts par vainīgu tāda noziedzīga nodarījuma izdarīšanā Latvijas Republikā vai ārpus tās, par ko Latvijas Republikas likumā paredzēts kriminālsods."
+    },
+    {
+      "key": "assessment:no-criminal-conviction",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "vai arī sodāmība ir dzēsta vai noņemta Krimināllikumā noteiktajā kārtībā, bet attiecībā uz ārvalstīs izdarītiem noziedzīgajiem nodarījumiem pagājis ne mazāk kā gads pēc soda izciešanas, savukārt brīvības atņemšanas soda piemērošanas gadījumā — pagājuši ne mazāk kā pieci gadi pēc brīvības atņemšanas soda izciešanas;"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "7) ārzemnieks ir iekļauts sarakstā vai konstatēts, ka viņam ir noteikts ieceļošanas aizliegums Šengenas teritorijā;"
+    },
+    {
+      "key": "assessment:no-entry-ban",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "ārzemnieks, kurš iekļauts to ārzemnieku sarakstā, kuriem ieceļošana Latvijas Republikā ir aizliegta, (turpmāk — saraksts)"
+    },
+    {
+      "key": "assessment:no-active-tuberculosis",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "5) ārzemniekam ir veselības traucējums vai slimība, kas apdraud sabiedrības drošību un tās locekļu veselību, vai ir pamats uzskatīt, ka ārzemnieks varētu radīt draudus sabiedrības veselībai. Veselības traucējumus un slimības, kuru dēļ ārzemniekam atsaka termiņuzturēšanās atļaujas izsniegšanu, nosaka Ministru kabinets."
+    },
+    {
+      "key": "assessment:no-active-tuberculosis",
+      "url": "https://likumi.lv/ta/id/146484",
+      "quote": "2. Slimība, kas apdraud sabiedrības locekļu veselību un kuras dēļ ārzemniekam atsaka uzturēšanās atļaujas izsniegšanu vai reģistrēšanu, ir tuberkuloze aktīvā fāzē."
+    },
+    {
+      "key": "assessment:no-active-tuberculosis",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.3. iesniedz Latvijas ārstniecības iestādes izsniegtu izziņu par veselības stāvokli, kurā apliecināts, ka ārzemniekam nav normatīvajos aktos par veselības traucējumiem un slimībām minēto veselības traucējumu vai slimību."
+    },
+    {
+      "key": "assessment:no-active-tuberculosis",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "32. pants. (1) Dokumentus uzturēšanās atļaujas pieprasīšanai ārzemnieks var iesniegt:"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "1) pārstāvniecībā, kas neatrodas Šengenas līguma dalībvalstī;"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "2) pārstāvniecībā, kas atrodas Šengenas līguma dalībvalstī, ja ārzemniekam šajā valstī ir derīga uzturēšanās atļauja;"
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "3) Pārvaldē, ja ārzemnieks likumīgi uzturas Latvijas Republikā vai ir bērns, kurš dzimis Latvijas Republikas teritorijā."
+    },
+    {
+      "key": "assessment:where-to-file",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "4) Pārvaldē, ja ārzemnieks uzturas ārpus Latvijas Republikas un dokumentus iesniedz elektroniski, parakstītus ar drošu elektronisko parakstu;"
+    },
+    {
+      "key": "assessment:collect-within-three-months",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "Lēmums par termiņuzturēšanās atļaujas piešķiršanu, kas pieņemts saskaņā ar Imigrācijas likuma 23. panta pirmās daļas 28., 29. vai 30. punktu, ir derīgs trīs mēnešus no tā pieņemšanas dienas, un tā derīguma termiņš nav pagarināms."
+    },
+    {
+      "key": "assessment:collect-within-three-months",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "Ja šajā laikā uzturēšanās atļauju nesaņem, ārzemnieks dokumentus uzturēšanās atļaujas pieprasīšanai iesniedz atkārtoti."
+    },
+    {
+      "key": "assessment:collect-within-three-months",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "72. Pēc ieceļošanas Latvijas Republikā ārzemnieks likumīgās uzturēšanās termiņa laikā personīgi ierodas pārvaldē, lai saņemtu uzturēšanās atļauju:"
+    },
+    {
+      "key": "assessment:collect-within-three-months",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(3) Šā panta pirmajā daļā minētajos gadījumos termiņuzturēšanās atļauju uz ārzemniekam izsniegtās uzturēšanās atļaujas termiņu ir tiesības pieprasīt arī ārzemnieka ģimenes loceklim,"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) ģimenes loceklis — laulātais, trešās valsts pilsoņa vai viņa laulātā nepilngadīgie (arī aizbildnībā esošie) bērni un aizgādnībā esošās personas;"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "29) trešās valsts pilsonis — persona, kurai nav Eiropas Savienības dalībvalsts, Eiropas Ekonomikas zonas valsts vai Šveices Konfederācijas pilsonības (turpmāk arī — ārzemnieks);"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(3) Šā panta pirmajā daļā minētajos gadījumos termiņuzturēšanās atļauju uz ārzemniekam izsniegtās uzturēšanās atļaujas termiņu ir tiesības pieprasīt arī ārzemnieka ģimenes loceklim,"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) ģimenes loceklis — laulātais, trešās valsts pilsoņa vai viņa laulātā nepilngadīgie (arī aizbildnībā esošie) bērni un aizgādnībā esošās personas;"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "29) trešās valsts pilsonis — persona, kurai nav Eiropas Savienības dalībvalsts, Eiropas Ekonomikas zonas valsts vai Šveices Konfederācijas pilsonības (turpmāk arī — ārzemnieks);"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://likumi.lv/ta/id/49096",
+      "quote": "(1) Bērns ir persona, kas nav sasniegusi 18 gadu vecumu, izņemot tās personas, kuras saskaņā ar likumu izsludinātas par pilngadīgām vai stājušās laulībā pirms 18 gadu vecuma sasniegšanas."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(2) Šā likuma 27. panta pirmajā daļā minētajos gadījumos atkārtotu termiņuzturēšanās atļauju uz ārzemniekam izsniegtās uzturēšanās atļaujas derīguma termiņu ir tiesības pieprasīt ārzemnieka vai viņa laulātā pilngadīgajam bērnam, ja bērns viņam izsniegtās pirmreizējās uzturēšanās atļaujas pieprasīšanas laikā ir bijis nepilngadīgs."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(3) Šā panta pirmajā daļā minētajos gadījumos termiņuzturēšanās atļauju uz ārzemniekam izsniegtās uzturēšanās atļaujas termiņu ir tiesības pieprasīt arī ārzemnieka ģimenes loceklim,"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "8) ģimenes loceklis — laulātais, trešās valsts pilsoņa vai viņa laulātā nepilngadīgie (arī aizbildnībā esošie) bērni un aizgādnībā esošās personas;"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "29) trešās valsts pilsonis — persona, kurai nav Eiropas Savienības dalībvalsts, Eiropas Ekonomikas zonas valsts vai Šveices Konfederācijas pilsonības (turpmāk arī — ārzemnieks);"
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://likumi.lv/ta/id/49096",
+      "quote": "(1) Bērns ir persona, kas nav sasniegusi 18 gadu vecumu, izņemot tās personas, kuras saskaņā ar likumu izsludinātas par pilngadīgām vai stājušās laulībā pirms 18 gadu vecuma sasniegšanas."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(2) Šā likuma 27. panta pirmajā daļā minētajos gadījumos atkārtotu termiņuzturēšanās atļauju uz ārzemniekam izsniegtās uzturēšanās atļaujas derīguma termiņu ir tiesības pieprasīt ārzemnieka vai viņa laulātā pilngadīgajam bērnam, ja bērns viņam izsniegtās pirmreizējās uzturēšanās atļaujas pieprasīšanas laikā ir bijis nepilngadīgs."
+    },
+    {
+      "key": "cost:investment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "10) uz laiku līdz diviem gadiem, ja viņš ir veicis ieguldījumu kapitālsabiedrības pamatkapitālā, to palielinot, vai ieguldījumu kapitālsabiedrības pamatkapitālā, dibinot jaunu kapitālsabiedrību, un, pieprasot pirmreizēju termiņuzturēšanās atļauju saskaņā ar šo punktu, ir samaksājis valsts budžetā 10 000 euro, kā arī veiktais ieguldījums ir vismaz:"
+    },
+    {
+      "key": "cost:investment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "a) 50 000 euro, un tas veikts kapitālsabiedrībā, kura nodarbina ne vairāk kā 50 darbinieku un kuras gada apgrozījums vai gada bilance nepārsniedz 10 miljonus euro."
+    },
+    {
+      "key": "cost:state-budget-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "10) uz laiku līdz diviem gadiem, ja viņš ir veicis ieguldījumu kapitālsabiedrības pamatkapitālā, to palielinot, vai ieguldījumu kapitālsabiedrības pamatkapitālā, dibinot jaunu kapitālsabiedrību, un, pieprasot pirmreizēju termiņuzturēšanās atļauju saskaņā ar šo punktu, ir samaksājis valsts budžetā 10 000 euro, kā arī veiktais ieguldījums ir vismaz:"
+    },
+    {
+      "key": "cost:state-budget-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Maksājums ir vienreizējs, kā arī netiek atmaksāts, izņemot Ministru kabineta noteikumos minētos gadījumus. Ministru kabinets nosaka gadījumus, kad maksājumu atmaksā. Šo līdzekļu izmantošanas mērķus nosaka gadskārtējā valsts budžeta likumā, bet līdzekļu izmantošanas kārtību nosaka Ministru kabinets. Attiecīgo valsts budžeta programmu administrē Ekonomikas ministrija."
+    },
+    {
+      "key": "cost:state-budget-payment",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "Ārzemnieks, kuram piešķirta termiņuzturēšanās atļauja saskaņā ar Imigrācijas likuma 23. panta pirmās daļas 28., 29. vai 30. punktu, saņem termiņuzturēšanās atļauju pēc Imigrācijas likumā minētās summas samaksas valsts budžetā"
+    },
+    {
+      "key": "cost:state-budget-payment",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "ārzemnieks četru mēnešu laikā pēc lēmuma pieņemšanas par termiņuzturēšanās atļaujas piešķiršanu iesniedzis rakstisku pieprasījumu par maksājuma atmaksu un šajā laikposmā termiņuzturēšanās atļauju nav saņēmis;"
+    },
+    {
+      "key": "cost:state-budget-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "cost:state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1. termiņuzturēšanās atļaujas pieprasīšanai iesniegto dokumentu izskatīšana:"
+    },
+    {
+      "key": "cost:state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.1. 30 dienu laikā vai Eiropas Savienības zilās kartes pieprasītājam un viņa ģimenes loceklim 10 darbdienu laikā, vai atbilstoši Imigrācijas likuma 33. panta pirmās daļas 2. punktam 90 dienu laikā – 160 euro;"
+    },
+    {
+      "key": "cost:state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.2. 10 darbdienu laikā vai Eiropas Savienības zilās kartes pieprasītājam un viņa ģimenes loceklim piecu darbdienu laikā – 280 euro;"
+    },
+    {
+      "key": "cost:state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.3. piecu darbdienu laikā – 560 euro;"
+    },
+    {
+      "key": "cost:family-state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1. termiņuzturēšanās atļaujas pieprasīšanai iesniegto dokumentu izskatīšana:"
+    },
+    {
+      "key": "cost:family-state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.1. 30 dienu laikā vai Eiropas Savienības zilās kartes pieprasītājam un viņa ģimenes loceklim 10 darbdienu laikā, vai atbilstoši Imigrācijas likuma 33. panta pirmās daļas 2. punktam 90 dienu laikā – 160 euro;"
+    },
+    {
+      "key": "cost:family-state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.2. 10 darbdienu laikā vai Eiropas Savienības zilās kartes pieprasītājam un viņa ģimenes loceklim piecu darbdienu laikā – 280 euro;"
+    },
+    {
+      "key": "cost:family-state-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "5.1.3. piecu darbdienu laikā – 560 euro;"
+    },
+    {
+      "key": "cost:renewal-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Ja ārzemnieks saskaņā ar šā likuma 27. panta pirmās daļas 10. punktā minēto iemeslu Latvijas Republikā uzturējies vismaz piecus gadus un atkārtoti pieprasa termiņuzturēšanās atļauju, viņš, saņemot termiņuzturēšanās atļauju, samaksā vienā maksājumā valsts budžetā 2000 euro, izņemot gadījumu, kad atkārtotu termiņuzturēšanās atļauju saskaņā ar šā likuma 27. panta pirmās daļas 10. punktā minēto iemeslu pieprasa vēlāk nekā 90 dienu laikā pēc iepriekšējās termiņuzturēšanās atļaujas derīguma termiņa beigām vai mainās investīciju objekts."
+    },
+    {
+      "key": "cost:renewal-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Šādos gadījumos piemēro šā likuma 27. panta nosacījumus, kas attiecas uz pirmreizējas termiņuzturēšanās atļaujas pieprasīšanu."
+    },
+    {
+      "key": "cost:call-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3. Valsts nodevas likmes par ielūguma apstiprināšanu vīzas pieprasīšanai vai izsaukuma apstiprināšanu uzturēšanās atļaujas pieprasīšanai ir šādas:"
+    },
+    {
+      "key": "cost:call-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.2. par pieprasījumu ielūguma vai izsaukuma apstiprināšanai, kas iesniegts elektroniski, izmantojot valsts pārvaldes pakalpojumu portālā www.latvija.gov.lv pieejamo speciālo tiešsaistes formu, – 10 euro;"
+    },
+    {
+      "key": "cost:call-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.1. par iesniegto pieprasījumu ielūguma vai izsaukuma apstiprināšanai – 17 euro;"
+    },
+    {
+      "key": "cost:call-fee",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "13. Dokumentus izsaukuma apstiprināšanai iesniedz, izmantojot portālā www.latvija.lv pieejamo pakalpojumu \"Ielūguma vai izsaukuma apstiprināšana vīzas vai uzturēšanās atļaujas pieprasīšanai Latvijas Republikā\"."
+    },
+    {
+      "key": "cost:call-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "7.3. izmantojot tiešsaistes maksājuma iespējas, ja uzaicinātājs šo noteikumu 3. punktā minēto pieprasījumu iesniedz elektroniski, izmantojot valsts pārvaldes pakalpojumu portālā www.latvija.gov.lv pieejamo speciālo tiešsaistes formu;"
+    },
+    {
+      "key": "cost:call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3. Valsts nodevas likmes par ielūguma apstiprināšanu vīzas pieprasīšanai vai izsaukuma apstiprināšanu uzturēšanās atļaujas pieprasīšanai ir šādas:"
+    },
+    {
+      "key": "cost:call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.3. papildus šo noteikumu 3.1. vai 3.2. apakšpunktā minētajai valsts nodevas likmei – par katru ielūguma vai izsaukuma pieprasījumā iekļauto personu – 10 euro;"
+    },
+    {
+      "key": "cost:call-person-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "25. pants. (1) Termiņuzturēšanās atļaujas pieprasīšanai ārzemniekam nepieciešams izsaukums, izņemot gadījumu, kad viņš:"
+    },
+    {
+      "key": "cost:family-call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3. Valsts nodevas likmes par ielūguma apstiprināšanu vīzas pieprasīšanai vai izsaukuma apstiprināšanu uzturēšanās atļaujas pieprasīšanai ir šādas:"
+    },
+    {
+      "key": "cost:family-call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.3. papildus šo noteikumu 3.1. vai 3.2. apakšpunktā minētajai valsts nodevas likmei – par katru ielūguma vai izsaukuma pieprasījumā iekļauto personu – 10 euro;"
+    },
+    {
+      "key": "cost:family-call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.2. par pieprasījumu ielūguma vai izsaukuma apstiprināšanai, kas iesniegts elektroniski, izmantojot valsts pārvaldes pakalpojumu portālā www.latvija.gov.lv pieejamo speciālo tiešsaistes formu, – 10 euro;"
+    },
+    {
+      "key": "cost:family-call-person-fee",
+      "url": "https://likumi.lv/ta/id/356656-noteikumi-par-valsts-nodevu-par-migracijas-pakalpojumiem",
+      "quote": "3.1. par iesniegto pieprasījumu ielūguma vai izsaukuma apstiprināšanai – 17 euro;"
+    },
+    {
+      "key": "cost:family-call-person-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "25. pants. (1) Termiņuzturēšanās atļaujas pieprasīšanai ārzemniekam nepieciešams izsaukums, izņemot gadījumu, kad viņš:"
+    },
+    {
+      "key": "cost:permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "Valsts nodevas apmērs par uzturēšanās atļaujas izsniegšanu ir:"
+    },
+    {
+      "key": "cost:permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "45 euro, ja uzturēšanās atļauju izsniedz 10 darbdienu laikā;"
+    },
+    {
+      "key": "cost:permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "80 euro, ja uzturēšanās atļauju izsniedz divu darbdienu laikā."
+    },
+    {
+      "key": "cost:permit-card-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(6) Uzturēšanās atļauju Pārvalde sagatavo 10 darbdienu laikā pēc tam, kad pieņemts lēmums par uzturēšanās tiesību piešķiršanu un ārzemnieks veicis Personu apliecinošu dokumentu likumā noteiktās darbības."
+    },
+    {
+      "key": "cost:family-permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "Valsts nodevas apmērs par uzturēšanās atļaujas izsniegšanu ir:"
+    },
+    {
+      "key": "cost:family-permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "45 euro, ja uzturēšanās atļauju izsniedz 10 darbdienu laikā;"
+    },
+    {
+      "key": "cost:family-permit-card-fee",
+      "url": "https://likumi.lv/ta/id/244579",
+      "quote": "80 euro, ja uzturēšanās atļauju izsniedz divu darbdienu laikā."
+    },
+    {
+      "key": "cost:family-permit-card-fee",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(6) Uzturēšanās atļauju Pārvalde sagatavo 10 darbdienu laikā pēc tam, kad pieņemts lēmums par uzturēšanās tiesību piešķiršanu un ārzemnieks veicis Personu apliecinošu dokumentu likumā noteiktās darbības."
+    },
+    {
+      "key": "duration:decision",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "33. pants. (1) Pārvalde pēc visu uzturēšanās atļaujas pieprasīšanai vai reģistrēšanai nepieciešamo dokumentu pieņemšanas tos izskata un atbildi sniedz:"
+    },
+    {
+      "key": "duration:decision",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "1) par termiņuzturēšanās atļauju — 30 dienu laikā;"
+    },
+    {
+      "key": "duration:decision",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "(4) Ja objektīvu iemeslu dēļ šā panta pirmajā daļā noteikto termiņu nav iespējams ievērot, Pārvalde to var pagarināt uz laiku, kas nav ilgāks par četriem mēnešiem no visu uzturēšanās atļaujas pieprasīšanai vai reģistrēšanai iesniegto dokumentu saņemšanas dienas."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    },
+    {
+      "key": "document:travel-document",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:travel-document",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:travel-document-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:travel-document-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:request-form",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:request-form",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.1. aizpildītu noteikta parauga anketu uzturēšanās atļaujas pieprasīšanai atbilstoši šo noteikumu 1., 2., 3. un 4. pielikumam;"
+    },
+    {
+      "key": "document:request-form",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:request-form-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:request-form-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.1. aizpildītu noteikta parauga anketu uzturēšanās atļaujas pieprasīšanai atbilstoši šo noteikumu 1., 2., 3. un 4. pielikumam;"
+    },
+    {
+      "key": "document:request-form-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.2. fotogrāfiju;"
+    },
+    {
+      "key": "document:photograph",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:photograph-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:photograph-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.2. fotogrāfiju;"
+    },
+    {
+      "key": "document:photograph-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.3. izziņu par sodāmību (ārzemniekam, kurš vecāks par 14 gadiem), ko izsniegusi kompetentā iestāde pilsonības vai mītnes zemē, ja ārzemnieks tajā uzturējies ilgāk par 12 mēnešiem;"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "29. Ja ārzemniekam ieceļošanai Latvijas Republikā nav nepieciešama vīza, viņš uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šo noteikumu 28.1., 28.2., 28.4. un 28.6. apakšpunktā minētos dokumentus."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.3. izziņu par sodāmību (ārzemniekam, kurš vecāks par 14 gadiem), ko izsniegusi kompetentā iestāde pilsonības vai mītnes zemē, ja ārzemnieks tajā uzturējies ilgāk par 12 mēnešiem;"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "29. Ja ārzemniekam ieceļošanai Latvijas Republikā nav nepieciešama vīza, viņš uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šo noteikumu 28.1., 28.2., 28.4. un 28.6. apakšpunktā minētos dokumentus."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.6. valsts nodevas samaksu apliecinošu maksājuma dokumentu vai tā kopiju, ja dokumenti uzturēšanās atļaujas pieprasīšanai iesniegti pārstāvniecībā."
+    },
+    {
+      "key": "document:fee-payment",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.6. valsts nodevas samaksu apliecinošu maksājuma dokumentu vai tā kopiju, ja dokumenti uzturēšanās atļaujas pieprasīšanai iesniegti pārstāvniecībā."
+    },
+    {
+      "key": "document:fee-payment-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:means-of-subsistence",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.4. dokumentu, kas apliecina nepieciešamo iztikas nodrošinājumu, kamēr ārzemnieks uzturēsies Latvijas Republikā. Minēto dokumentu neiesniedz, ja tas ir jau iesniegts, apstiprinot izsaukumu ārzemniekam;"
+    },
+    {
+      "key": "document:means-of-subsistence",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:means-of-subsistence",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.2. dokumenti, kas apliecina nepieciešamo iztikas nodrošinājumu un paredzamo dzīvesvietu Latvijas Republikā, – trīs mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:means-of-subsistence",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:means-of-subsistence",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:means-of-subsistence-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28.4. dokumentu, kas apliecina nepieciešamo iztikas nodrošinājumu, kamēr ārzemnieks uzturēsies Latvijas Republikā. Minēto dokumentu neiesniedz, ja tas ir jau iesniegts, apstiprinot izsaukumu ārzemniekam;"
+    },
+    {
+      "key": "document:means-of-subsistence-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "28. Ārzemnieks, kas vēlas pieprasīt uzturēšanās atļauju, uzrāda derīgu ceļošanas dokumentu (ja dokumentus iesniedz pa pastu vai elektroniski, pieteikumam pievieno ceļošanas dokumenta kopiju), samaksā valsts nodevu un iesniedz šādus dokumentus:"
+    },
+    {
+      "key": "document:means-of-subsistence-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.2. dokumenti, kas apliecina nepieciešamo iztikas nodrošinājumu un paredzamo dzīvesvietu Latvijas Republikā, – trīs mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:means-of-subsistence-dependent",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:means-of-subsistence-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:military-service",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "37. Ja ārzemnieks pēdējo piecu gadu laikā pirms uzturēšanās atļaujas pieprasīšanas dienējis ārvalsts militārajā dienestā (izņemot obligāto militāro dienestu), viņš iesniedz dokumentu par atvaļināšanos no dienesta vai dienesta izbeigšanu."
+    },
+    {
+      "key": "document:military-service",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:military-service",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:military-service",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:military-service",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:military-service-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "37. Ja ārzemnieks pēdējo piecu gadu laikā pirms uzturēšanās atļaujas pieprasīšanas dienējis ārvalsts militārajā dienestā (izņemot obligāto militāro dienestu), viņš iesniedz dokumentu par atvaļināšanos no dienesta vai dienesta izbeigšanu."
+    },
+    {
+      "key": "document:military-service-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:military-service-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:military-service-dependent",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:military-service-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.2. uzrāda dokumentu, kas apliecina, ka viņam ir derīga veselības apdrošināšanas polise"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7. Polisē norādītais minimālais apdrošinātāja atbildības limits"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7.2. EUR 42 600 – pieprasot ilgtermiņa vīzu, ilgtermiņa vīzu, kas"
+    },
+    {
+      "key": "document:health-insurance",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "laikus derīga kā īstermiņa vīza, vai uzturēšanās atļauju."
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.2. uzrāda dokumentu, kas apliecina, ka viņam ir derīga veselības apdrošināšanas polise"
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7. Polisē norādītais minimālais apdrošinātāja atbildības limits"
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "7.2. EUR 42 600 – pieprasot ilgtermiņa vīzu, ilgtermiņa vīzu, kas"
+    },
+    {
+      "key": "document:health-insurance-dependent",
+      "url": "https://likumi.lv/ta/id/179063",
+      "quote": "laikus derīga kā īstermiņa vīza, vai uzturēšanās atļauju."
+    },
+    {
+      "key": "document:health-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:health-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.3. iesniedz Latvijas ārstniecības iestādes izsniegtu izziņu par veselības stāvokli, kurā apliecināts, ka ārzemniekam nav normatīvajos aktos par veselības traucējumiem un slimībām minēto veselības traucējumu vai slimību. Izziņu par veselības stāvokli neiesniedz, saņemot uzturēšanās atļauju, kas atkārtoti pieprasīta iepriekšējās uzturēšanās atļaujas derīguma termiņa laikā vai 90 dienu laikā pēc iepriekšējās uzturēšanās atļaujas derīguma termiņa beigām"
+    },
+    {
+      "key": "document:health-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:health-certificate",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:health-certificate",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:health-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:health-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.3. iesniedz Latvijas ārstniecības iestādes izsniegtu izziņu par veselības stāvokli, kurā apliecināts, ka ārzemniekam nav normatīvajos aktos par veselības traucējumiem un slimībām minēto veselības traucējumu vai slimību. Izziņu par veselības stāvokli neiesniedz, saņemot uzturēšanās atļauju, kas atkārtoti pieprasīta iepriekšējās uzturēšanās atļaujas derīguma termiņa laikā vai 90 dienu laikā pēc iepriekšējās uzturēšanās atļaujas derīguma termiņa beigām"
+    },
+    {
+      "key": "document:health-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:health-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:health-certificate-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:residence-proof",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:residence-proof",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.5. iesniedz dokumentus, kas apliecina paredzamo dzīvesvietu. Minētos dokumentus neiesniedz, ja tie ir iesniegti vienlaikus ar izsaukuma vai uzturēšanās atļaujas pieprasījumu un ja ārzemniekam ir deklarēta dzīvesvieta Latvijas Republikā."
+    },
+    {
+      "key": "document:residence-proof",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:residence-proof",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.2. dokumenti, kas apliecina nepieciešamo iztikas nodrošinājumu un paredzamo dzīvesvietu Latvijas Republikā, – trīs mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:residence-proof",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:residence-proof-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73. Saņemot termiņuzturēšanās atļauju, ārzemnieks:"
+    },
+    {
+      "key": "document:residence-proof-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "73.5. iesniedz dokumentus, kas apliecina paredzamo dzīvesvietu. Minētos dokumentus neiesniedz, ja tie ir iesniegti vienlaikus ar izsaukuma vai uzturēšanās atļaujas pieprasījumu un ja ārzemniekam ir deklarēta dzīvesvieta Latvijas Republikā."
+    },
+    {
+      "key": "document:residence-proof-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:residence-proof-dependent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.2. dokumenti, kas apliecina nepieciešamo iztikas nodrošinājumu un paredzamo dzīvesvietu Latvijas Republikā, – trīs mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:residence-proof-dependent",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:marriage-document",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "39. Ja ārzemnieks atbilstoši Imigrācijas likuma 23.panta ceturtajai daļai, 25. vai 26.pantam vēlas uzturēties pie laulātā, viņš iesniedz laulību apliecinoša dokumenta kopiju."
+    },
+    {
+      "key": "document:marriage-document",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:marriage-document",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:kinship-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40. Ja nepilngadīgs bērns vēlas uzturēties Latvijas Republikā atbilstoši Imigrācijas likuma 23.panta pirmās daļas 1.punktam, 23.panta ceturtajai daļai vai 24.panta pirmās daļas 1. vai 2.punktam, viņš iesniedz:"
+    },
+    {
+      "key": "document:kinship-documents",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40.1. radniecību apliecinošu dokumentu kopijas;"
+    },
+    {
+      "key": "document:kinship-documents",
+      "url": "https://likumi.lv/ta/id/49096",
+      "quote": "(1) Bērns ir persona, kas nav sasniegusi 18 gadu vecumu, izņemot tās personas, kuras saskaņā ar likumu izsludinātas par pilngadīgām vai stājušās laulībā pirms 18 gadu vecuma sasniegšanas."
+    },
+    {
+      "key": "document:kinship-documents",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:kinship-documents",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    },
+    {
+      "key": "document:other-parent-consent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "40.2. tā vecāka notariāli apliecinātu vai pārvaldes vai pārstāvniecības amatpersonas klātbūtnē parakstītu dokumentu par piekrišanu bērna izceļošanai uz Latvijas Republiku, kurš neieceļo kopā ar bērnu. Ja ikdienā aizgādību īsteno vecāks, ar kuru bērns ieceļo Latvijas Republikā, un nav noteikti ierobežojumi bērna dzīvesvietas maiņai bez otra vecāka piekrišanas, iesniedz attiecīgās valsts kompetentās iestādes izsniegtu dokumentu."
+    },
+    {
+      "key": "document:other-parent-consent",
+      "url": "https://likumi.lv/ta/id/49096",
+      "quote": "(1) Bērns ir persona, kas nav sasniegusi 18 gadu vecumu, izņemot tās personas, kuras saskaņā ar likumu izsludinātas par pilngadīgām vai stājušās laulībā pirms 18 gadu vecuma sasniegšanas."
+    },
+    {
+      "key": "document:other-parent-consent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11. Šajos noteikumos minētie dokumenti ir derīgi:"
+    },
+    {
+      "key": "document:other-parent-consent",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "11.3. izziņas, vēstules un citi dokumenti, izņemot dzimtsarakstu dokumentus, tiesas nolēmumus, arhīva izziņas un izglītības dokumentus, – sešus mēnešus pēc to izsniegšanas;"
+    },
+    {
+      "key": "document:other-parent-consent",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:curatorship-ruling",
+      "url": "https://likumi.lv/ta/id/212441",
+      "quote": "41. Ja ārzemnieks vēlas uzturēties Latvijas Republikā atbilstoši Imigrācijas likuma 23.panta pirmās daļas 17.punktam vai 23.panta ceturtajai daļai, jo pār ārzemnieku nodibināta aizbildnība vai aizgādnība vai viņš iecelts par aizbildni vai aizgādni Latvijas pilsonim vai Latvijas nepilsonim, viņš iesniedz tiesas nolēmumu par aizbildnības vai aizgādnības nodibināšanu. Ja lēmumu par aizbildnības vai aizgādnības nodibināšanu pieņēmusi ārvalsts kompetentā iestāde, aizbildnības vai aizgādnības lietai jābūt pārņemtai bāriņtiesā Latvijas Republikā."
+    },
+    {
+      "key": "document:curatorship-ruling",
+      "url": "https://likumi.lv/ta/id/14740",
+      "quote": "(3) Dokumentus svešvalodā no personām pieņem, ja tiem pievienots Ministru kabineta noteiktajā kārtībā vai notariāli apliecināts tulkojums valsts valodā."
+    },
+    {
+      "key": "document:curatorship-ruling",
+      "url": "https://likumi.lv/ta/id/370622-imigracijas-likums",
+      "quote": "Līdz attiecīgo Ministru kabineta noteikumu spēkā stāšanās dienai, bet ne ilgāk kā līdz 2027. gada 1. decembrim ir piemērojami šādi Ministru kabineta noteikumi, ciktāl tie nav pretrunā ar šo likumu:"
+    }
+  ]
+}
