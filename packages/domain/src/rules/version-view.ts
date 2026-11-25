@@ -114,8 +114,8 @@ export interface VersionView {
      * The classification files the version pins (ADR-0036). Absent rather than null when unpinned,
      * so the rule summary of a version that pins none reads, and is keyed, as before.
      */
-    readonly occupations?: Pin;
-    readonly studyFields?: Pin;
+    readonly occupations?: Pin | undefined;
+    readonly studyFields?: Pin | undefined;
     readonly officialDomains: readonly Pin[];
   };
   readonly requirements: readonly {
