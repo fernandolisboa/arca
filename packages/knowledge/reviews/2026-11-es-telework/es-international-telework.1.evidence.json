@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. Lo dispuesto en esta sección no será de aplicación a los ciudadanos de la Unión Europea y a aquellos extranjeros que disfruten de derechos de libre circulación equivalentes a los de los ciudadanos de la Unión con base en acuerdos entre la Unión Europea y los Estados miembros, por una parte, y terceros países, por otra."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Se halla en situación de residencia por teletrabajo de carácter internacional el nacional de un tercer Estado, autorizado a permanecer en España para ejercer una actividad laboral o profesional a distancia para empresas radicadas fuera del territorio nacional, mediante el uso exclusivo de medios y sistemas informáticos, telemáticos y de telecomunicación."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Se consideran extranjeros, a los efectos de la aplicación de la presente Ley, a los que carezcan de la nacionalidad española. 2. Lo dispuesto en esta Ley se entenderá, en todo caso, sin perjuicio de lo establecido en leyes especiales y en los Tratados internacionales en los que España sea parte. 3. Los nacionales de los Estados miembros de la Unión Europea y aquellos a quienes sea de aplicación el régimen comunitario se regirán por las normas que lo regulan, siéndoles de aplicación la presente Ley en aquellos aspectos que pudieran ser más favorables."
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "quote": "1. El presente real decreto regula las condiciones para el ejercicio de los derechos de entrada y salida, libre circulación, estancia, residencia, residencia de carácter permanente y trabajo en España por parte de los ciudadanos de otros Estados miembros de la Unión Europea y de los restantes Estados parte en el Acuerdo sobre el Espacio Económico Europeo"
+    },
+    {
+      "key": "requirement:not-eu-eea-or-swiss-citizen",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4184",
+      "quote": "1. En virtud del Acuerdo entre la Comunidad Europea y la Confederación Suiza sobre libre circulación de personas, firmado en Luxemburgo el 21 de junio de 1999, a los ciudadanos suizos y a los miembros de su familia les es de aplicación lo previsto en el presente real decreto."
+    },
+    {
+      "key": "requirement:adult",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "b) Ser mayor de 18 años."
+    },
+    {
+      "key": "requirement:remote-relationship",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) En el supuesto de una relación laboral, se deberá acreditar la existencia de la misma entre el trabajador y la empresa no localizada en España durante al menos, los últimos tres meses anteriores a la presentación de la solicitud, así como documentación que acredite que dicha empresa permite al trabajador realizar la actividad laboral a distancia."
+    },
+    {
+      "key": "requirement:remote-relationship",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "d) En el supuesto de la existencia de una relación profesional, se deberá acreditar que el trabajador tiene relación mercantil con una o varias empresas no localizadas en España durante, al menos, los tres últimos meses, así como documentación que acredite los términos y condiciones en los que va a ejercer la actividad profesional a distancia."
+    },
+    {
+      "key": "requirement:remote-relationship",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Se halla en situación de residencia por teletrabajo de carácter internacional el nacional de un tercer Estado, autorizado a permanecer en España para ejercer una actividad laboral o profesional a distancia para empresas radicadas fuera del territorio nacional, mediante el uso exclusivo de medios y sistemas informáticos, telemáticos y de telecomunicación."
+    },
+    {
+      "key": "assessment:company-activity",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "a) La existencia de una actividad real y continuada durante al menos un año de la empresa o grupo de empresas con la que el trabajador mantiene relación laboral o profesional."
+    },
+    {
+      "key": "assessment:remote-work-allowed",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "b) Documentación acreditativa de que la relación laboral o profesional se puede realizar en remoto."
+    },
+    {
+      "key": "assessment:remote-work-allowed",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) En el supuesto de una relación laboral, se deberá acreditar la existencia de la misma entre el trabajador y la empresa no localizada en España durante al menos, los últimos tres meses anteriores a la presentación de la solicitud, así como documentación que acredite que dicha empresa permite al trabajador realizar la actividad laboral a distancia."
+    },
+    {
+      "key": "assessment:remote-work-allowed",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "d) En el supuesto de la existencia de una relación profesional, se deberá acreditar que el trabajador tiene relación mercantil con una o varias empresas no localizadas en España durante, al menos, los tres últimos meses, así como documentación que acredite los términos y condiciones en los que va a ejercer la actividad profesional a distancia."
+    },
+    {
+      "key": "assessment:qualified-professional",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. Podrán solicitar el visado o la autorización de teletrabajo los profesionales cualificados que acrediten ser graduados o postgraduados de universidades de reconocido prestigio, formación profesional y escuelas de negocios de reconocido prestigio o bien con una experiencia profesional mínima de tres años."
+    },
+    {
+      "key": "assessment:work-only-for-companies-abroad",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "En el caso de ejercicio de una actividad laboral, el titular de la autorización por teletrabajo de carácter internacional solo podrá trabajar para empresas radicadas fuera del territorio nacional. En el supuesto de ejercicio de una actividad profesional, se permitirá al titular de la autorización por teletrabajo de carácter internacional trabajar para una empresa ubicada en España, siempre y cuando el porcentaje de dicho trabajo no sea superior al 20 % del total de su actividad profesional."
+    },
+    {
+      "key": "assessment:sufficient-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "f) Contar con recursos económicos suficientes para sí y para los miembros de su familia durante su periodo de residencia en España."
+    },
+    {
+      "key": "assessment:sufficient-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Se habilita a los órganos competentes para dictar unas instrucciones con los requisitos específicos que deberán cumplir los solicitantes de los visados y de las autorizaciones de residencia regulados en la sección 2.ª del título V."
+    },
+    {
+      "key": "assessment:sufficient-means",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "3. Los umbrales de los importes económicos utilizados para evaluar los recursos económicos de los solicitantes se referenciarán al salario mínimo interprofesional."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "e) Contar con un seguro público o un seguro privado de enfermedad concertado con una Entidad aseguradora autorizada para operar en España."
+    },
+    {
+      "key": "assessment:health-insurance",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) Carecer de antecedentes penales en España y en los países donde haya residido durante los dos últimos años, por delitos previstos en el ordenamiento jurídico español. Adicionalmente, se presentará una declaración responsable de la inexistencia de antecedentes penales de los últimos cinco años."
+    },
+    {
+      "key": "assessment:criminal-record",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "assessment:not-irregularly-in-spain",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "a) No encontrarse irregularmente en territorio español."
+    },
+    {
+      "key": "assessment:not-irregularly-in-spain",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "assessment:not-listed-as-refusable",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "d) No figurar como rechazable en el espacio territorial de países con los que España tenga firmado un convenio en tal sentido."
+    },
+    {
+      "key": "assessment:not-listed-as-refusable",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "assessment:public-order",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "7. Se revocarán, denegarán o no renovarán las autorizaciones de residencia y los visados previstos en esta sección cuando la persona extranjera interesada pueda representar una amenaza para el orden público, la seguridad pública, la salud pública o la seguridad nacional, de así valorarlo el órgano competente para resolver, con base en un informe policial, del Centro Nacional de Inteligencia o del Departamento de Seguridad Nacional que así lo acrediten."
+    },
+    {
+      "key": "assessment:visa-or-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Los extranjeros no residentes en España, que se propongan residir en territorio español con el fin de teletrabajar a distancia para una empresa no ubicada en España, solicitarán el visado para teletrabajo de carácter internacional que tendrá una vigencia máxima de un año, salvo que el período de trabajo sea inferior, en cuyo caso el visado tendrá la misma vigencia que este."
+    },
+    {
+      "key": "assessment:visa-or-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Aquellos extranjeros que se hallen en España de forma regular o que hayan accedido mediante el visado previsto en el artículo anterior, podrán solicitar una autorización de residencia con el fin de teletrabajar a distancia para una empresa localizada en el extranjero, que tendrá validez en todo el territorio nacional."
+    },
+    {
+      "key": "assessment:visa-or-permit",
+      "url": "https://www.boe.es/buscar/doc.php?id=BOE-A-2014-9064",
+      "quote": "Tasas por tramitación de autorizaciones administrativas en relación con la movilidad internacional (Ley 14/2013, de 27 de septiembre, de apoyo a los emprendedores y su internacionalización) Tipo de autorización de movilidad internacional Importe en euros de la tasa (€) movilidad internacional Autorización de residencia inicial 70,40 Autorización de residencia renovada 75,60"
+    },
+    {
+      "key": "assessment:visa-or-permit",
+      "url": "https://www.boe.es/buscar/doc.php?id=BOE-A-2014-9064",
+      "quote": "Serán sujetos pasivos de las tasas previstas en la presente orden los solicitantes de autorización."
+    },
+    {
+      "key": "assessment:visa-or-permit",
+      "url": "https://www.boe.es/buscar/doc.php?id=BOE-A-2014-9064",
+      "quote": "2. Dichas cuantías experimentarán al comienzo de cada ejercicio los incrementos que al respecto se establezcan en las correspondientes Leyes anuales de Presupuestos Generales del Estado."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:grandparents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:spouse-parents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:partner-parents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos. Para el cómputo de los años de la mayoría de edad se incluirá completo el día del nacimiento."
+    },
+    {
+      "key": "dependent:spouse-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos. Para el cómputo de los años de la mayoría de edad se incluirá completo el día del nacimiento."
+    },
+    {
+      "key": "dependent:partner-children",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos. Para el cómputo de los años de la mayoría de edad se incluirá completo el día del nacimiento."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-17292",
+      "quote": "Los derechos a percibir, correspondientes a los gastos administrativos de tramitación de la solicitud de visado, son: Tipo de visado Tasas ordinarias (expresadas en euros) Visado de tránsito aeroportuario (tipo A). 90 euros Visado de corta duración (tipo C). 90 euros Visado expedido en frontera (tipo C). 90 euros Visado nacional de larga duración (tipo D). 90 euros"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "4. Los importes de las tasas por tramitación de la solicitud de visado se adecuarán a la revisión que proceda por aplicación del derecho comunitario. Se acomodarán, asimismo, al importe que pueda establecerse por aplicación del principio de reciprocidad."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. Constituye el hecho imponible de la tasa la tramitación y expedición de las autorizaciones de residencia, sus prórrogas, renovaciones y visados, así como la tramitación de las comunicaciones que se prevén en esta ley."
+    },
+    {
+      "key": "cost:visa-fee",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "5. El importe de la tasa se establecerá por orden ministerial, atendiendo al coste de los servicios prestados."
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-17292",
+      "quote": "Los derechos a percibir, correspondientes a los gastos administrativos de tramitación de la solicitud de visado, son: Tipo de visado Tasas ordinarias (expresadas en euros) Visado de tránsito aeroportuario (tipo A). 90 euros Visado de corta duración (tipo C). 90 euros Visado expedido en frontera (tipo C). 90 euros Visado nacional de larga duración (tipo D). 90 euros"
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "1. Serán sujetos pasivos de las tasas los solicitantes de visado y las personas en cuyo favor se concedan las autorizaciones o se expidan los documentos previstos en el artículo 44"
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2000-544",
+      "quote": "4. Los importes de las tasas por tramitación de la solicitud de visado se adecuarán a la revisión que proceda por aplicación del derecho comunitario. Se acomodarán, asimismo, al importe que pueda establecerse por aplicación del principio de reciprocidad."
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. Constituye el hecho imponible de la tasa la tramitación y expedición de las autorizaciones de residencia, sus prórrogas, renovaciones y visados, así como la tramitación de las comunicaciones que se prevén en esta ley."
+    },
+    {
+      "key": "cost:visa-fee-dependents",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "5. El importe de la tasa se establecerá por orden ministerial, atendiendo al coste de los servicios prestados."
+    },
+    {
+      "key": "duration:visa",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "1. Los extranjeros no residentes en España, que se propongan residir en territorio español con el fin de teletrabajar a distancia para una empresa no ubicada en España, solicitarán el visado para teletrabajo de carácter internacional que tendrá una vigencia máxima de un año, salvo que el período de trabajo sea inferior, en cuyo caso el visado tendrá la misma vigencia que este."
+    },
+    {
+      "key": "duration:visa",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. El visado para teletrabajo de carácter internacional constituirá título suficiente para residir y trabajar a distancia en España durante su vigencia."
+    },
+    {
+      "key": "duration:permit-application-window",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "3. En el plazo de sesenta días naturales antes de la expiración del visado, los teletrabajadores de carácter internacional que estén interesados en continuar residiendo en España podrán solicitar la autorización de residencia para trabajador a distancia internacional, siempre y cuando se mantengan las condiciones que generaron el derecho."
+    },
+    {
+      "key": "duration:residence-permit",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. La validez de esta autorización tendrá una vigencia máxima de tres años salvo que se solicite por un período de trabajo inferior."
+    },
+    {
+      "key": "duration:renewal",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "3. Los titulares de esta autorización podrán solicitar su renovación por períodos de dos años siempre y cuando se mantengan las condiciones que generaron el derecho."
+    },
+    {
+      "key": "document:company-activity-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "a) La existencia de una actividad real y continuada durante al menos un año de la empresa o grupo de empresas con la que el trabajador mantiene relación laboral o profesional."
+    },
+    {
+      "key": "document:remote-work-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "b) Documentación acreditativa de que la relación laboral o profesional se puede realizar en remoto."
+    },
+    {
+      "key": "document:employment-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) En el supuesto de una relación laboral, se deberá acreditar la existencia de la misma entre el trabajador y la empresa no localizada en España durante al menos, los últimos tres meses anteriores a la presentación de la solicitud, así como documentación que acredite que dicha empresa permite al trabajador realizar la actividad laboral a distancia."
+    },
+    {
+      "key": "document:professional-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "d) En el supuesto de la existencia de una relación profesional, se deberá acreditar que el trabajador tiene relación mercantil con una o varias empresas no localizadas en España durante, al menos, los tres últimos meses, así como documentación que acredite los términos y condiciones en los que va a ejercer la actividad profesional a distancia."
+    },
+    {
+      "key": "document:qualification-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "2. Podrán solicitar el visado o la autorización de teletrabajo los profesionales cualificados que acrediten ser graduados o postgraduados de universidades de reconocido prestigio, formación profesional y escuelas de negocios de reconocido prestigio o bien con una experiencia profesional mínima de tres años."
+    },
+    {
+      "key": "document:criminal-record-statement",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) Carecer de antecedentes penales en España y en los países donde haya residido durante los dos últimos años, por delitos previstos en el ordenamiento jurídico español. Adicionalmente, se presentará una declaración responsable de la inexistencia de antecedentes penales de los últimos cinco años."
+    },
+    {
+      "key": "document:criminal-record-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) Carecer de antecedentes penales en España y en los países donde haya residido durante los dos últimos años, por delitos previstos en el ordenamiento jurídico español. Adicionalmente, se presentará una declaración responsable de la inexistencia de antecedentes penales de los últimos cinco años."
+    },
+    {
+      "key": "document:health-insurance-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "e) Contar con un seguro público o un seguro privado de enfermedad concertado con una Entidad aseguradora autorizada para operar en España."
+    },
+    {
+      "key": "document:means-proof",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "f) Contar con recursos económicos suficientes para sí y para los miembros de su familia durante su periodo de residencia en España."
+    },
+    {
+      "key": "document:criminal-record-proof-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) Carecer de antecedentes penales en España y en los países donde haya residido durante los dos últimos años, por delitos previstos en el ordenamiento jurídico español. Adicionalmente, se presentará una declaración responsable de la inexistencia de antecedentes penales de los últimos cinco años."
+    },
+    {
+      "key": "document:criminal-record-proof-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "document:criminal-record-statement-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "c) Carecer de antecedentes penales en España y en los países donde haya residido durante los dos últimos años, por delitos previstos en el ordenamiento jurídico español. Adicionalmente, se presentará una declaración responsable de la inexistencia de antecedentes penales de los últimos cinco años."
+    },
+    {
+      "key": "document:criminal-record-statement-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "document:health-insurance-proof-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "e) Contar con un seguro público o un seguro privado de enfermedad concertado con una Entidad aseguradora autorizada para operar en España."
+    },
+    {
+      "key": "document:health-insurance-proof-dependent",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2013-10074",
+      "quote": "4. El cónyuge o persona con análoga relación de afectividad, los hijos menores de edad o mayores que, dependiendo económicamente del titular, no hayan constituido por sí mismos una unidad familiar y los ascendientes a cargo, que se reúnan o acompañen a los extranjeros enumerados en el artículo 61.1, podrán solicitar, conjunta y simultánea o sucesivamente, la autorización y, en su caso, el visado. Para ello deberá quedar acreditado el cumplimiento de los requisitos previstos en el apartado anterior."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "1. Siempre que no se establezca otra cosa, en los plazos señalados por días, a contar de uno determinado, quedará éste excluido del cómputo, el cual deberá empezar en el día siguiente; y si los plazos estuviesen fijados por meses o años, se computarán de fecha a fecha. Cuando en el mes del vencimiento no hubiera día equivalente al inicial del cómputo, se entenderá que el plazo expira el último del mes."
+    },
+    {
+      "key": "leapDayBirthday",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1889-4763",
+      "quote": "La mayor edad empieza a los dieciocho años cumplidos. Para el cómputo de los años de la mayoría de edad se incluirá completo el día del nacimiento."
+    }
+  ]
+}

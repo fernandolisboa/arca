@@ -185,6 +185,11 @@ export const sessionReviews: readonly SessionReview[] = [
     versions: [{ routeId: 'es-non-lucrative', number: 5 }],
   },
   {
+    id: '2026-11-es-telework',
+    migration: 'knowledge_session_review_2026_11_es_telework',
+    versions: [{ routeId: 'es-international-telework', number: 1, newRoute: true }],
+  },
+  {
     id: '2026-11-pl-documents',
     migration: 'knowledge_session_review_2026_11_pl_documents',
     versions: [{ routeId: 'pl-descent', number: 4 }],
