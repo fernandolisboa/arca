@@ -1,4 +1,5 @@
 import { departure } from './pt-BR-departure.js';
+import { recognition } from './pt-BR-recognition.js';
 import { documentGuide } from './pt-BR-document-guides.js';
 import { occupationGroups, occupations } from './pt-BR-occupations.js';
 import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
@@ -27,6 +28,7 @@ export const ptBR = {
       vault: 'Cofre',
       compare: 'Comparar',
       departure: 'Saída',
+      recognition: 'Revalidação',
       knowledge: 'Regras',
       settings: 'Configurações',
     },
@@ -328,6 +330,12 @@ export const ptBR = {
       screen: {
         title: 'Comece por aqui',
         body: 'Coloque quem vai com você. Depois responda às perguntas, e o Arca mostra as rotas que servem para a família.',
+      },
+    },
+    recognition: {
+      screen: {
+        title: 'Para exercer lá fora',
+        body: 'Cada etapa traz a página oficial de onde saiu. Quem da família tem a profissão anotada aparece no topo.',
       },
     },
     departure: {
@@ -1247,6 +1255,8 @@ export const ptBR = {
   },
   /** Leaving a country (ADR-0038): what to do, and the documents that trace the money. */
   departure,
+  /** Recognising a regulated profession abroad, step by step (ADR-0040). */
+  recognition,
   /** Where to get each document kind, per issuing country (ADR-0039). */
   documentGuide,
   /** Comparar destinos (ADR-0026): one adult's own ranking of the countries that have a route. */

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
 import { departureRoutes } from './departure.js';
+import { recognitionRoutes } from './recognition.js';
 import { adminRoutes } from './admins.js';
 import { AiProvider, AiStage, aiSettingsRoutes } from './ai-settings.js';
 import { knowledgeRoutes } from './knowledge.js';
@@ -1737,6 +1738,7 @@ export const changeDocumentCountry = {
 export * from './case.js';
 export * from './comparison.js';
 export * from './departure.js';
+export * from './recognition.js';
 export * from './knowledge.js';
 export * from './admins.js';
 export * from './uploads.js';
@@ -1802,6 +1804,7 @@ export const routes = {
   ...caseRoutes,
   ...comparisonRoutes,
   ...departureRoutes,
+  ...recognitionRoutes,
   ...knowledgeRoutes,
   ...adminRoutes,
   ...aiSettingsRoutes,
@@ -1840,6 +1843,7 @@ export const webPathSegments = [
   'invites',
   'knowledge',
   'questions',
+  'recognition',
   'recover',
   'recovery-kit',
   'results',

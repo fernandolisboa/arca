@@ -473,6 +473,15 @@ export {
   departureChecklistsSchema,
 } from './departure/checklist.js';
 export {
+  type RecognitionHolders,
+  type RecognitionSource,
+  type RecognitionTrackView,
+  type RecognitionTracks,
+  recognitionHolders,
+  recognitionTrackViews,
+  recognitionTracksSchema,
+} from './recognition/tracks.js';
+export {
   type DocumentGuideEntry,
   type DocumentGuides,
   documentGuideEntries,

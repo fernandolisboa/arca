@@ -73,6 +73,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Document kind | Tipo de documento | An open lowercase tag naming what a document is, such as `birth_certificate`; route items and guide entries share it |
 | Document guide | Onde tirar | Reviewed data, with official sources, on how to get each document kind in one issuing country: office, cost, lead time, online link and how its apostille is obtained; no activation ([ADR-0039](docs/adr/0039-document-guides.md)) |
 | Checklist mark | Marcação | A keeper's had or missing on one document item for one person, with an optional linked vault document |
+| Recognition track | Revalidação profissional | How a regulated profession's foreign qualification is recognised in a destination, step by step, each step with official sources and the date they were read, and whom in the case it concerns by occupation or field of study; reviewed data, the same for every account ([ADR-0040](docs/adr/0040-professional-recognition-tracks.md)) |
 | Departure checklist | Saída do país | What to do when leaving a country, and the documents that trace where the family's money came from, each item with official sources and the date they were read; reviewed data, the same for every account ([ADR-0038](docs/adr/0038-departure-checklists.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
 | Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |

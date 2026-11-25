@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "number": 1,
+  "officialDomains": [
+    "ciencia.gob.es",
+    "boe.es",
+    "iesuperior.pt",
+    "unl.pt",
+    "ordemdosmedicos.pt",
+    "min-saude.pt",
+    "usmle.org",
+    "state.gov"
+  ],
+  "wordingSha256": "f209cbe63ba78df6bde74b56e8c6d66d6afabc0b23e3dff596a44863b3d5b34f",
+  "sources": [
+    {
+      "id": "es-physician-homologation",
+      "url": "https://www.ciencia.gob.es/Universidades/validate/homologacion/medico.html",
+      "title": "Médico/a: homologación del título extranjero (Ministerio de Ciencia, Innovación y Universidades)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "es-homologation-decree",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2022-17045",
+      "title": "Real Decreto 889/2022, artículos 18 y 19 (BOE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "es-specialty-call-2027",
+      "url": "https://www.boe.es/boe/dias/2026/08/10/pdfs/BOE-A-2026-17429.pdf",
+      "title": "Orden SND/854/2026, convocatoria de formación sanitaria especializada para 2027 (BOE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "es-professional-colleges-law",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1974-289",
+      "title": "Ley 2/1974, de Colegios Profesionales, artículo 3.2 (BOE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "es-college-membership-in-force",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2009-20725",
+      "title": "Ley 25/2009, disposición transitoria cuarta (BOE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-degree-recognition",
+      "url": "https://iesuperior.pt/reconhecimento/",
+      "title": "Reconhecimento de graus e diplomas estrangeiros (Instituto para o Ensino Superior)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-medicine-recognition-rules",
+      "url": "https://www.nms.unl.pt/Portals/0/adam/NMS%20Generic%20Content/latjHtx7a0S0uY-e0bPoVQ/Content/MIM%20Despacho%206015.2026%20%20Reconhecimento%20Especifico%20Medicina.pdf",
+      "title": "Despacho n.º 6015/2026, regulamento do reconhecimento específico em Medicina (NOVA Medical School)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-medical-board-registration",
+      "url": "https://ordemdosmedicos.pt/area-medica/inscricoes/inscricao-na-ordem",
+      "title": "Inscrição na Ordem (Ordem dos Médicos)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-medical-autonomy",
+      "url": "https://ordemdosmedicos.pt/area-medica/inscricoes/autonomia-e-medicina-tutelada",
+      "title": "Autonomia e medicina tutelada (Ordem dos Médicos)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-medical-internship",
+      "url": "https://www.acss.min-saude.pt/2016/09/12/internato-medico/",
+      "title": "Internato Médico (ACSS, Ministério da Saúde)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "us-usmle-eligibility",
+      "url": "https://www.usmle.org/bulletin-information/eligibility",
+      "title": "Eligibility for the USMLE Steps (USMLE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "us-usmle-step-3",
+      "url": "https://www.usmle.org/step-exams/step-3",
+      "title": "Step 3 (USMLE)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "us-j1-physician",
+      "url": "https://j1visa.state.gov/programs/physician/",
+      "title": "J-1 Physician program (U.S. Department of State)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    }
+  ],
+  "tracks": [
+    {
+      "id": "physician",
+      "occupations": ["2211", "2212"],
+      "studyFields": ["0912"],
+      "destinations": [
+        {
+          "country": "ES",
+          "steps": [
+            { "id": "es-language", "sources": ["es-physician-homologation"] },
+            { "id": "es-documents", "sources": ["es-physician-homologation"] },
+            {
+              "id": "es-homologation",
+              "sources": ["es-physician-homologation", "es-homologation-decree"]
+            },
+            { "id": "es-complementary-training", "sources": ["es-homologation-decree"] },
+            {
+              "id": "es-college",
+              "sources": ["es-professional-colleges-law", "es-college-membership-in-force"]
+            },
+            { "id": "es-public-system", "sources": ["es-physician-homologation"] },
+            { "id": "es-specialty-exam", "sources": ["es-specialty-call-2027"] }
+          ]
+        },
+        {
+          "country": "PT",
+          "steps": [
+            {
+              "id": "pt-recognition-request",
+              "sources": ["pt-degree-recognition", "pt-medicine-recognition-rules"]
+            },
+            { "id": "pt-recognition-deadline", "sources": ["pt-medicine-recognition-rules"] },
+            { "id": "pt-recognition-exam", "sources": ["pt-medicine-recognition-rules"] },
+            { "id": "pt-board-registration", "sources": ["pt-medical-board-registration"] },
+            { "id": "pt-supervised-practice", "sources": ["pt-medical-autonomy"] },
+            { "id": "pt-specialty", "sources": ["pt-medical-internship"] }
+          ]
+        },
+        {
+          "country": "US",
+          "steps": [
+            { "id": "us-school-listed", "sources": ["us-usmle-eligibility"] },
+            { "id": "us-step-1-2", "sources": ["us-usmle-eligibility"] },
+            {
+              "id": "us-ecfmg-certificate",
+              "sources": ["us-usmle-eligibility", "us-j1-physician"]
+            },
+            { "id": "us-residency-visa", "sources": ["us-j1-physician"] },
+            {
+              "id": "us-step-3-license",
+              "sources": ["us-usmle-step-3", "us-usmle-eligibility"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

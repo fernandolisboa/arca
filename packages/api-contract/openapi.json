@@ -41711,6 +41711,162 @@
         }
       }
     },
+    "/recognition-tracks": {
+      "get": {
+        "operationId": "getRecognitionTracks",
+        "summary": "How each regulated profession the repository covers is recognised in each destination, with the official sources of every step and the date each was read, and which people of the viewer’s case each track concerns; signed in (401 otherwise)",
+        "responses": {
+          "200": {
+            "description": "The recognition tracks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tracks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          },
+                          "destinations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country": {
+                                  "type": "string",
+                                  "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                },
+                                "steps": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                      },
+                                      "sources": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "url": {
+                                              "type": "string",
+                                              "maxLength": 2000
+                                            },
+                                            "title": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 200
+                                            },
+                                            "verifiedAt": {
+                                              "type": "string",
+                                              "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                            }
+                                          },
+                                          "required": [
+                                            "url",
+                                            "title",
+                                            "verifiedAt"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "minItems": 1,
+                                        "maxItems": 5
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "sources"
+                                    ]
+                                  },
+                                  "maxItems": 20
+                                }
+                              },
+                              "required": [
+                                "country",
+                                "steps"
+                              ]
+                            },
+                            "maxItems": 50
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "destinations"
+                        ]
+                      },
+                      "maxItems": 50
+                    },
+                    "holders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "trackId": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          },
+                          "personIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "maxItems": 100
+                          }
+                        },
+                        "required": [
+                          "trackId",
+                          "personIds"
+                        ]
+                      },
+                      "maxItems": 50
+                    }
+                  },
+                  "required": [
+                    "tracks",
+                    "holders"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/comparison/preferences": {
       "put": {
         "operationId": "writeComparisonPreferences",

@@ -104,6 +104,17 @@ export const departureChecklistsQuery = queryOptions({
   staleTime: Infinity,
 });
 
+/**
+ * How a profession is recognised abroad, with official sources (ADR-0040), and whom in the case
+ * each track concerns, which changes as the family's answers do.
+ */
+export const recognitionTracksQuery = queryOptions({
+  queryKey: ['case', 'recognition-tracks'],
+  queryFn: () => api.call(routes.getRecognitionTracks),
+  networkMode: 'always',
+  retry: false,
+});
+
 /** The account's passkeys, each with its sessions (spec 0003, R4). */
 export const devicesQuery = queryOptions({
   queryKey: ['devices'],

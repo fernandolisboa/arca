@@ -6,6 +6,8 @@ import {
   departureChecklistsSchema,
   documentGuideEntries,
   documentGuidesSchema,
+  recognitionTrackViews,
+  recognitionTracksSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { z } from 'zod';
@@ -17,6 +19,7 @@ import {
   datasetFileData,
   departureChecklistData,
   documentGuideData,
+  recognitionTrackData,
   ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
@@ -82,6 +85,16 @@ export const documentGuides =
 
 /** The SHA-256 of the catalog wording the document guide file's sources were checked against. */
 export const documentGuideWordingSha256 = documentGuideFile?.wordingSha256 ?? null;
+
+const recognitionFile =
+  recognitionTrackData === null ? null : recognitionTracksSchema.parse(recognitionTrackData);
+
+/** How a regulated profession is recognised in each destination, step by step (ADR-0040). */
+export const recognitionTracks =
+  recognitionFile === null ? [] : recognitionTrackViews(recognitionFile);
+
+/** The SHA-256 of the catalog wording the recognition file's sources were checked against. */
+export const recognitionWordingSha256 = recognitionFile?.wordingSha256 ?? null;
 export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
 
 /** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */

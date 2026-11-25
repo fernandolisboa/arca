@@ -51,6 +51,8 @@ import {
   shareScopes,
   questionFlow,
   validCaseStructure,
+  type RecognitionHolders,
+  type RecognitionTrackView,
 } from '@arca/domain';
 import type { PinnedCountries, RuleTexts } from '@arca/knowledge';
 import { randomBytes } from 'node:crypto';
@@ -65,6 +67,7 @@ import {
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { type RouteDocumentsView, caseRouteDocuments } from './route-documents.js';
+import { caseRecognitionHolders } from './recognition.js';
 import { casePlayback } from './playback.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
@@ -162,6 +165,14 @@ export interface CaseFiles {
     routeId: string,
     principalId: string,
   ) => Promise<RouteDocumentsView | null>;
+  /**
+   * The people of the case each recognition track concerns (ADR-0040), from what the viewer sees;
+   * null outside a case.
+   */
+  readonly recognitionHolders: (
+    accountId: string,
+    tracks: readonly RecognitionTrackView[],
+  ) => Promise<RecognitionHolders[] | null>;
   /**
    * Reports a requirement of the viewer's own evaluation as possibly wrong (R8); `not_found` when
    * the viewer is in no case or the evaluation holds no such requirement.
@@ -781,6 +792,12 @@ export function createCaseFiles({
 
     evaluations: (accountId) =>
       withEvaluations(accountId, (_tx, _rows, evaluated) => Promise.resolve(evaluated)),
+
+    recognitionHolders: (accountId, tracks) =>
+      withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined ? null : caseRecognitionHolders(rows, tracks, evaluation.today());
+      }),
 
     routeDocuments: async (accountId, routeId, principalId) => {
       const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
