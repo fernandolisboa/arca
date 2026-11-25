@@ -33,9 +33,9 @@ const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
 const spaceRun = /[\s\u00a0\u2009\u202f]+/u;
 
-const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
+const digit = (char: string | undefined) => char !== undefined && /[0-9\uff10-\uff19]/u.test(char);
 const separator = (char: string | undefined) =>
-  char !== undefined && /[.,\s\u00a0\u2009\u202f']/u.test(char);
+  char !== undefined && /[.,\s\u00a0\u2009\u202f'\uff0c\uff0e]/u.test(char);
 
 /**
  * The bounds of `text.slice(start, end)` widened to the whole figures its ends cut into, group
@@ -100,6 +100,16 @@ const readings = (token: string) =>
     .filter((read) => read !== undefined);
 
 /**
+ * Full-width digits, comma and full stop (as Japanese text writes figures, `１，５００`) as plain
+ * ones, one character for one, so every reading and every guard sees the same figure.
+ */
+function halfWidthDigits(text: string): string {
+  return text.replace(/[\uff0c\uff0e\uff10-\uff19]/gu, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0),
+  );
+}
+
+/**
  * Every number a text may state, each read with a dot, a comma or no decimal mark, so
  * `1.800.000`, `1,800,000`, `1 800 000` and `920,00` all read as the numbers they write. A run
  * with spaces that reads as no one number, such as `18 21`, is read piece by piece; one that does,
@@ -108,7 +118,7 @@ const readings = (token: string) =>
  */
 export function numbersIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
-  for (const [token] of text.matchAll(numberToken)) {
+  for (const [token] of halfWidthDigits(text).matchAll(numberToken)) {
     const whole = readings(token);
     const pieces = whole.length > 0 ? [] : token.split(spaceRun).flatMap(readings);
     for (const read of [...whole, ...pieces]) found.add(read);
@@ -134,7 +144,7 @@ function dividedByHundred(decimal: string): string {
 export function percentagesIn(text: string): ReadonlySet<string> {
   const found = new Set<string>();
   // Each figure is found once and the sign looked for after it, so a long text stays linear.
-  for (const match of text.matchAll(numberToken)) {
+  for (const match of halfWidthDigits(text).matchAll(numberToken)) {
     const [token] = match;
     const end = match.index + token.length;
     if (!percentSign.test(text.slice(end, end + 2))) continue;
@@ -161,11 +171,14 @@ export function digitsApart(text: string): string {
   return text
     .split(lineBreak)
     .map((line) => {
-      const columns = line.replace(/(?<=\d)(?:\s{2,}|\t)(?=\d)/gu, ' | ');
+      const columns = line.replace(
+        /(?<=[0-9\uff10-\uff19])(?:\s{2,}|\t|\u3000)(?=[0-9\uff10-\uff19])/gu,
+        ' | ',
+      );
       const words = columns.trim();
       if (words === '') return columns;
-      const barred = afterDigit && /^\d/u.test(words);
-      afterDigit = /\d$/u.test(words);
+      const barred = afterDigit && /^[0-9\uff10-\uff19]/u.test(words);
+      afterDigit = /[0-9\uff10-\uff19]$/u.test(words);
       return barred ? `| ${columns}` : columns;
     })
     .join('\n');
