@@ -217,6 +217,11 @@ export const sessionReviews: readonly SessionReview[] = [
       { routeId: 'us-eb2-job-offer', number: 1, newRoute: true },
     ],
   },
+  {
+    id: '2026-11-lv-remote-work',
+    migration: 'knowledge_session_review_2026_11_lv_remote_work',
+    versions: [{ routeId: 'lv-remote-work', number: 1, newRoute: true }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */
