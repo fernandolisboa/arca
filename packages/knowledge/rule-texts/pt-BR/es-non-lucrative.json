@@ -105,6 +105,62 @@
     {
       "en": "Each renewed permit, unless a long-term residence permit is due",
       "text": "Cada autorização renovada, salvo se couber a autorização de residência de longa duração"
+    },
+    {
+      "en": "Visa application form, duly filled in and signed",
+      "text": "Formulário de pedido de visto, preenchido corretamente e assinado"
+    },
+    {
+      "en": "Passport or travel document in force, recognized as valid in Spain",
+      "text": "Passaporte ou documento de viagem válido, reconhecido como válido na Espanha"
+    },
+    {
+      "en": "It must be valid for at least one year",
+      "text": "Precisa ter validade mínima de um ano"
+    },
+    {
+      "en": "Proof of no criminal record, for offences under Spanish law, in the countries where the applicant lived in the last five years; asked from age 18",
+      "text": "Prova de não ter antecedentes criminais, por crimes previstos na lei espanhola, nos países onde o requerente morou nos últimos cinco anos; pedida a partir dos 18 anos"
+    },
+    {
+      "en": "Medical certificate that the applicant has none of the diseases that can have serious public health effects under the International Health Regulations of 2005",
+      "text": "Atestado médico de que o requerente não tem nenhuma das doenças que podem ter efeitos graves na saúde pública, segundo o Regulamento Sanitário Internacional de 2005"
+    },
+    {
+      "en": "Health insurance",
+      "text": "Plano de saúde"
+    },
+    {
+      "en": "Proof of sufficient means for the period of the permit, or of a periodic income, for the applicant and the family, by any proof admitted in law",
+      "text": "Prova de recursos suficientes para o período da autorização, ou de uma renda periódica, para o requerente e a família, por qualquer meio de prova admitido em direito"
+    },
+    {
+      "en": "Means shown with a credit card: a bank certificate of the amount available as credit on the card",
+      "text": "Recursos comprovados com cartão de crédito: certificado bancário com o valor disponível como crédito no cartão"
+    },
+    {
+      "en": "A stable partner proves a lasting bond; at least a year of unbroken cohabitation always counts, or, with children in common, proven stable cohabitation",
+      "text": "O companheiro estável comprova uma relação duradoura; pelo menos um ano de convivência sem interrupção sempre vale ou, com filhos em comum, convivência estável comprovada"
+    },
+    {
+      "en": "Accounts or financial instruments abroad: the bank's name and address, the accounts' full identification, their opening or closing dates, balances on 31 December of last year and last year's average",
+      "text": "Contas ou instrumentos financeiros no exterior: nome e endereço do banco, identificação completa das contas, datas de abertura ou encerramento, saldos em 31 de dezembro do ano passado e saldo médio do último ano"
+    },
+    {
+      "en": "An adult child: proof of a disability that needs support, or of being objectively unable to provide for their own needs because of their health",
+      "text": "Filho maior de idade: prova de uma deficiência que exige apoio, ou de não ser, objetivamente, capaz de prover às próprias necessidades por causa do estado de saúde"
+    },
+    {
+      "en": "Means from shares in companies based in Spain: their certificate that the applicant does no work in them, and a responsible declaration (declaración responsable) saying so",
+      "text": "Recursos vindos de ações ou cotas de empresas sediadas na Espanha: certidão delas de que o requerente não trabalha nelas, e uma declaração responsável (declaración responsable) dizendo isso"
+    },
+    {
+      "en": "Proof of the family bond: spouse, registered partner or duly proven stable partner, or child of the applicant or of their spouse or partner",
+      "text": "Prova do vínculo familiar: cônjuge, companheiro registrado ou companheiro estável devidamente comprovado, ou filho do requerente ou do seu cônjuge ou companheiro"
+    },
+    {
+      "en": "Proof that the visa processing fee and the permit processing fee were paid",
+      "text": "Comprovante de pagamento da taxa do pedido de visto e da taxa do pedido de autorização"
     }
   ]
 }
