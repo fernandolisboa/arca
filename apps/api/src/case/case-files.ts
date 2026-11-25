@@ -56,6 +56,8 @@ import {
   shareScopes,
   questionFlow,
   validCaseStructure,
+  type RecognitionHolders,
+  type RecognitionTrackView,
 } from '@arca/domain';
 import type { PinnedCountries, RuleTexts } from '@arca/knowledge';
 import { randomBytes } from 'node:crypto';
@@ -71,6 +73,7 @@ import {
 import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { type RouteDocumentsView, type SeenMark, caseRouteDocuments } from './route-documents.js';
+import { caseRecognitionHolders } from './recognition.js';
 import { casePlayback } from './playback.js';
 import {
   type FamilyPlanView,
@@ -181,6 +184,14 @@ export interface CaseFiles {
     routeId: string,
     principalId: string,
   ) => Promise<RouteDocumentsView | null>;
+  /**
+   * The people of the case each recognition track concerns (ADR-0041), from what the viewer sees;
+   * null outside a case.
+   */
+  readonly recognitionHolders: (
+    accountId: string,
+    tracks: readonly RecognitionTrackView[],
+  ) => Promise<RecognitionHolders[] | null>;
   /**
    * Sets or clears the viewer's mark on a route's document item for a person they keep (spec
    * #519); linking one of their own confirmed vault documents also files it under the route's
@@ -836,6 +847,12 @@ export function createCaseFiles({
 
     evaluations: (accountId) =>
       withEvaluations(accountId, (_tx, _rows, evaluated) => Promise.resolve(evaluated)),
+
+    recognitionHolders: (accountId, tracks) =>
+      withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined ? null : caseRecognitionHolders(rows, tracks, evaluation.today());
+      }),
 
     routeDocuments: async (accountId, routeId, principalId) => {
       const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
