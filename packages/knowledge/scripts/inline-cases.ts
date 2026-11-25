@@ -7,9 +7,9 @@ import { parseJsonSubset } from '@arca/scripts/json';
 import type { Json } from '../src/canonical.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import type { RuleRows } from '../src/rule-rows.ts';
-import { buildKnowledge, formatIssue } from './build.ts';
+import { formatIssue } from './build.ts';
 import { readKnowledgeFile } from './load.ts';
-import { importDate } from './rule-import.ts';
+import { importBuild } from './rule-import.ts';
 import { json, literal } from './sql.ts';
 
 /** The migration that rewrites imported cases that pin a synthetic family as inline snapshots. */
@@ -131,7 +131,7 @@ export async function inlineCasesMigrationFile(migrationsDir: string): Promise<s
 
 /** The rows to rewrite, from the data directory the import read and the families it pins. */
 export async function rowsToInline(dataDir: string, familiesDir: string): Promise<InlinedRow[]> {
-  const { issues, rows } = await buildKnowledge(dataDir, importDate);
+  const { issues, rows } = await importBuild(dataDir);
   if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
   return inlinedRows(rows, familiesDir);
 }

@@ -11,6 +11,7 @@ import {
 import { z } from 'zod';
 import { runVersionCases } from './case-run.js';
 import { type CasesFile, casesFileSchema } from './cases.js';
+import { classificationPins } from './datasets.js';
 import type { Json } from './canonical.js';
 import {
   type PinnedFileRow,
@@ -61,7 +62,7 @@ export const maxProposalProblems = 50;
 const codesFileSchema = z.object({ codes: z.array(z.string()) });
 
 const codesOf = (reading: RuleRowReading, key: string): ReadonlySet<string> => {
-  const parsed = codesFileSchema.safeParse(reading.countryFiles[key]);
+  const parsed = codesFileSchema.safeParse(reading.datasetFiles[key]);
   return new Set(parsed.success ? parsed.data.codes : []);
 };
 
@@ -209,11 +210,15 @@ export async function checkProposal(
       .filter(({ members }) => members.some((member) => !current.has(member)))
       .map(({ id }) => id),
   );
+  const pinnedCodes = Object.fromEntries(
+    classificationPins(version).map(({ name, key }) => [name, codesOf(reading, key)]),
+  );
   problems.push(
     ...checkRouteVersion(
       version,
       { hosts, hostOf: reading.hostOf },
       { current, former, setsWithFormer },
+      pinnedCodes,
     ).map(({ path, message }) => `${path}: ${message}`),
   );
   if (!current.has(version.country))

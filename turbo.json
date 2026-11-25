@@ -54,7 +54,12 @@
     },
     "@arca/i18n#test": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/knowledge/data/former-countries/**"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/knowledge/data/former-countries/**",
+        "$TURBO_ROOT$/packages/knowledge/data/occupations/**",
+        "$TURBO_ROOT$/packages/knowledge/data/study-fields/**"
+      ]
     },
     "@arca/api-contract#typecheck": {
       "dependsOn": ["^build", "build"]

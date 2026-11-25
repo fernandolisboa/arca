@@ -35,8 +35,11 @@ export interface CatalogParts {
   readonly officialDomains: readonly BuiltOfficialDomains[];
   readonly countries: PinnedCountries;
   readonly cases: readonly VersionCases[];
-  /** The countries and former-countries files, keyed `<kind>/<id>/<number>` as a hash pins them. */
-  readonly countryFiles: Readonly<Record<string, Json>>;
+  /**
+   * The countries, former-countries, occupations and study-fields files, keyed
+   * `<kind>/<id>/<number>` as a hash pins them.
+   */
+  readonly datasetFiles: Readonly<Record<string, Json>>;
   /** The rows the import writes to the database (ADR-0031). */
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
@@ -48,6 +51,14 @@ export interface CatalogParts {
 export interface KnowledgeBuild extends CatalogParts {
   readonly issues: readonly Issue[];
 }
+
+/** The repository's datasets, which route versions pin and which stay in the repository (ADR-0031). */
+const datasetKinds: ReadonlySet<FileKind> = new Set([
+  'countries',
+  'former-countries',
+  'occupations',
+  'study-fields',
+]);
 
 const casesPath = /^routes\/([a-z0-9-]+\/[1-9][0-9]*)\.cases\.json$/;
 
@@ -109,9 +120,9 @@ export async function buildKnowledge(
     officialDomains: validated.officialDomains,
     countries: validated.countries,
     cases: versionCases(casesByVersion, validated.hashes),
-    countryFiles: Object.fromEntries(
+    datasetFiles: Object.fromEntries(
       raw.files
-        .filter(({ kind }) => kind === 'countries' || kind === 'former-countries')
+        .filter(({ kind }) => datasetKinds.has(kind))
         .map(({ kind, id, number, json }) => [`${kind}/${id}/${String(number)}`, json]),
     ),
     rows: {
@@ -183,12 +194,12 @@ export function catalogModule({
 }
 
 /**
- * The runtime module, which the API ships: the pinned countries, the countries files a route
+ * The runtime module, which the API ships: the pinned countries, the dataset files a route
  * version's hash covers, and the comparison versions with the hosts of their sources.
  */
 export function runtimeModule({
   countries = { countries: [], formerCountries: [] },
-  countryFiles = {},
+  datasetFiles = {},
   comparisons = [],
   suggestedRatings = null,
   departureChecklists = null,
@@ -199,7 +210,7 @@ export function runtimeModule({
   return [
     generatedNote,
     exportedJson('countryData', countries),
-    exportedJson('countryFileData', countryFiles),
+    exportedJson('datasetFileData', datasetFiles),
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
