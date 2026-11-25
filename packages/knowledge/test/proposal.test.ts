@@ -294,8 +294,15 @@ describe('documentListProblems (spec #519)', () => {
     sources: ['law'],
   };
   const reordered = Object.fromEntries(Object.entries(passport).reverse());
+  const law = {
+    id: 'law',
+    url: 'https://www.gov.example/law',
+    title: 'Residence act',
+    kind: 'official',
+    verifiedAt: '2026-10-01',
+  };
   const base = (documents?: readonly object[]) =>
-    ({ ...(documents === undefined ? {} : { documents }) }) as RouteVersion;
+    ({ sources: [law], ...(documents === undefined ? {} : { documents }) }) as RouteVersion;
   const update = (documents?: readonly object[]) => ({
     kind: 'update' as const,
     base: base(documents),
@@ -313,6 +320,17 @@ describe('documentListProblems (spec #519)', () => {
     ['gives a new route no list', newRoute, {}, 0],
     ['gives a new route a list', newRoute, { documents: [] }, 1],
   ])('in an update request that %s', (_, target, content, count) => {
-    expect(documentListProblems(target, content as RouteVersion)).toHaveLength(count);
+    expect(
+      documentListProblems(target, { sources: [law], ...content } as RouteVersion),
+    ).toHaveLength(count);
+  });
+
+  it.each<[string, object, number]>([
+    ['re-dates', { verifiedAt: '2026-11-25' }, 0],
+    ['moves', { url: 'https://www.gov.example/other' }, 1],
+    ['retitles', { title: 'Another act' }, 1],
+  ])("in an update request that %s a kept document's source", (_, change, count) => {
+    const changed = { documents: [passport], sources: [{ ...law, ...change }] } as RouteVersion;
+    expect(documentListProblems(update([passport]), changed)).toHaveLength(count);
   });
 });

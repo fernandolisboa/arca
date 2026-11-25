@@ -120,19 +120,23 @@ function targetProblems(
  * exactly, and a new route's first version has none. Only a session review sets one (spec #519).
  */
 export function documentListProblems(target: ProposalTarget, version: RouteVersion): string[] {
-  const proposed = version.documents as Json | undefined;
-  const kept = target.kind === 'update' ? (target.base.documents as Json | undefined) : undefined;
-  const same =
-    proposed === undefined || kept === undefined
-      ? proposed === kept
-      : canonicalize(proposed) === canonicalize(kept);
-  return same
-    ? []
-    : [
-        target.kind === 'update'
-          ? '/documents: The document list of the version it updates, unchanged'
-          : '/documents: No document list in a new route',
-      ];
+  if (target.kind === 'new') {
+    return version.documents === undefined ? [] : ['/documents: No document list in a new route'];
+  }
+  const { base } = target;
+  const json = (value: unknown) => (value === undefined ? undefined : canonicalize(value as Json));
+  if (json(version.documents) !== json(base.documents)) {
+    return ['/documents: The document list of the version it updates, unchanged'];
+  }
+  // The kept items must keep what their sources say too: only the verification date may move.
+  const cited = new Set((base.documents ?? []).flatMap((item) => item.sources));
+  const source = (from: RouteVersion, id: string) => {
+    const found = from.sources.find((each) => each.id === id);
+    return found === undefined ? undefined : json({ ...found, verifiedAt: null });
+  };
+  return [...cited]
+    .filter((id) => source(version, id) !== source(base, id))
+    .map((id) => `/sources: Source ${id}, which a kept document cites, unchanged`);
 }
 
 /**
