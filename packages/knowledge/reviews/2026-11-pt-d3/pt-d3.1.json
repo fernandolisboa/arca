@@ -4,10 +4,7 @@
   "number": 1,
   "title": "D3 residence visa for teaching, highly qualified or cultural activity",
   "country": "PT",
-  "tags": [
-    "work",
-    "temporary-residence"
-  ],
+  "tags": ["work", "temporary-residence"],
   "effectiveFrom": "2026-01-01",
   "status": "open",
   "currency": "EUR",
@@ -348,78 +345,45 @@
           }
         }
       },
-      "sources": [
-        "lei-23-2007-scope"
-      ]
+      "sources": ["lei-23-2007-scope"]
     }
   ],
   "assessments": [
     {
       "id": "d3-activity-and-proof",
       "title": "One of: a work contract or its promise, or a services contract; an invitation from a teaching or training body, a research centre or a body with a recognized cultural activity; a Tech Visa statement",
-      "evidence": [
-        "principal.educationLevel",
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "lei-23-2007-d3",
-        "lei-23-2007-d3-tech-visa",
-        "dr-84-2007-d3-documents"
-      ]
+      "evidence": ["principal.educationLevel", "principal.monthlyActiveIncome"],
+      "sources": ["lei-23-2007-d3", "lei-23-2007-d3-tech-visa", "dr-84-2007-d3-documents"]
     },
     {
       "id": "highly-qualified-activity",
       "title": "The activity is teaching at a teaching or vocational training institution, cultural, or highly qualified, which needs specialized technical skills of an exceptional nature or a suitable qualification",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "lei-23-2007-d3",
-        "lei-23-2007-highly-qualified"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["lei-23-2007-d3", "lei-23-2007-highly-qualified"]
     },
     {
       "id": "employee-path-pay",
       "title": "Employee path: a contract or promise of 6 months or more paying yearly at least 1.5 times the average gross annual wage or 3 times the IAS; 1.2 or 2 times for CITP 1-2 jobs a resolution lists",
-      "evidence": [
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "lei-23-2007-employee-pay",
-        "lei-23-2007-employee"
-      ]
+      "evidence": ["principal.monthlyActiveIncome"],
+      "sources": ["lei-23-2007-employee-pay", "lei-23-2007-employee"]
     },
     {
       "id": "employee-path-qualifications",
       "title": "Highly qualified employee path: high professional qualifications, recognized as the law requires for a regulated profession, or suited to the activity or sector of the contract for another",
-      "evidence": [
-        "principal.educationLevel"
-      ],
-      "sources": [
-        "lei-23-2007-employee"
-      ]
+      "evidence": ["principal.educationLevel"],
+      "sources": ["lei-23-2007-employee"]
     },
     {
       "id": "tech-visa-worker",
       "title": "Tech Visa path: 18 or older, no permanent residence in the EU, taxes and social security in order where applicable, no criminal record, Portuguese, English, French or Spanish suited to the job",
-      "evidence": [
-        "principal.ageYears",
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "tech-visa-rules"
-      ]
+      "evidence": ["principal.ageYears", "principal.residenceCountry"],
+      "sources": ["tech-visa-rules"]
     },
     {
       "id": "tech-visa-qualification-and-contract",
       "title": "Tech Visa path: ISCED 2011 level 6 or higher, or a level 5 higher technical course with 5 years of exceptional skills; a work or services contract of 12 months or more paying 2.5 times the IAS a year",
-      "evidence": [
-        "principal.educationLevel",
-        "principal.monthlyActiveIncome"
-      ],
-      "sources": [
-        "tech-visa-rules"
-      ]
+      "evidence": ["principal.educationLevel", "principal.monthlyActiveIncome"],
+      "sources": ["tech-visa-rules"]
     },
     {
       "id": "household-means",
@@ -429,19 +393,12 @@
         "principal.monthlyPassiveIncome",
         "unit.liquidAssets"
       ],
-      "sources": [
-        "portaria-1563-2007",
-        "dl-139-2025",
-        "codigo-contributivo",
-        "dr-84-2007-means"
-      ]
+      "sources": ["portaria-1563-2007", "dl-139-2025", "codigo-contributivo", "dr-84-2007-means"]
     },
     {
       "id": "means-period",
       "title": "Means assured for at least 12 months for highly qualified work or higher-education teaching, less or none if the host guarantees them; for other work, the visa stay with its extension",
-      "evidence": [
-        "unit.liquidAssets"
-      ],
+      "evidence": ["unit.liquidAssets"],
       "sources": [
         "portaria-1563-2007-highly-qualified",
         "lei-23-2007-visa-validity",
@@ -451,43 +408,27 @@
     {
       "id": "no-entry-ban",
       "title": "Each applicant: no entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "lei-23-2007-entry-ban",
-        "lei-23-2007-entry-ban-alert"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-entry-ban", "lei-23-2007-entry-ban-alert"]
     },
     {
       "id": "criminal-record",
       "title": "Each applicant: no conviction for a crime that Portugal punishes with more than one year of prison, even if the sentence was not served or was suspended",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "lei-23-2007-conviction"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-conviction"]
     },
     {
       "id": "public-order-and-illegal-stay",
       "title": "Each applicant: no danger to public order, security, national defence or public health, and no illegal entry or stay in Portugal that bars a residence visa under article 144.º, n.º 1",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "lei-23-2007-public-order",
-        "lei-23-2007-illegal-stay"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["lei-23-2007-public-order", "lei-23-2007-illegal-stay"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse; possible if either spouse is under 18: reunification depends on both being 18 or over and on a marriage valid and recognized under Portuguese law, which is not checked and may reach this visa",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "any",
         "operands": [
@@ -523,17 +464,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007", "lei-23-2007-age"]
     },
     {
       "id": "minor-children",
       "title": "Children under 18, taken to be in the couple's charge; an adoption must be recognized by Portugal and a child of only one spouse needs the other parent's consent or a custody decision: not checked",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "lt",
         "left": {
@@ -545,18 +481,12 @@
           "value": 18
         }
       },
-      "sources": [
-        "lei-23-2007",
-        "portaria-1563-2007"
-      ]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "spouse-minor-children",
       "title": "The spouse's children under 18, taken to be in the couple's charge; an adoption must be recognized by Portugal and the other parent must consent or a custody decision must exist: not checked",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "lt",
         "left": {
@@ -568,17 +498,12 @@
           "value": 18
         }
       },
-      "sources": [
-        "lei-23-2007",
-        "portaria-1563-2007"
-      ]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "adult-children",
       "title": "Adult children who depend on the principal, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -602,18 +527,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007",
-        "portaria-1563-2007"
-      ]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "spouse-adult-children",
       "title": "The spouse's adult children who depend on the principal or the spouse, only if incapable, or single and studying at a school in Portugal, which is not recorded: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -646,32 +565,22 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007",
-        "portaria-1563-2007"
-      ]
+      "sources": ["lei-23-2007", "portaria-1563-2007"]
     },
     {
       "id": "parents",
       "title": "Parents who depend on the principal",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "fact",
         "key": "person.dependsOnPrincipal"
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "spouse-parents",
       "title": "The spouse's parents who depend on the principal or the spouse",
-      "path": [
-        "spouse",
-        "parent"
-      ],
+      "path": ["spouse", "parent"],
       "condition": {
         "op": "any",
         "operands": [
@@ -685,16 +594,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007"
-      ]
+      "sources": ["lei-23-2007"]
     },
     {
       "id": "partner",
       "title": "Partner in a de facto union of more than two years, both aged 18 or over; counts only if the union is duly proven and recognized under Portuguese law, which is not recorded: possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -733,20 +638,12 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007-partner",
-        "dr-84-2007-family",
-        "lei-7-2001",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     },
     {
       "id": "partner-children",
       "title": "The partner's unmarried children, under 18 or incapable, legally entrusted to the partner, when the union of more than two years counts; none of this is recorded: possible",
-      "path": [
-        "partner",
-        "child"
-      ],
+      "path": ["partner", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -781,12 +678,7 @@
           }
         ]
       },
-      "sources": [
-        "lei-23-2007-partner",
-        "dr-84-2007-family",
-        "lei-7-2001",
-        "lei-23-2007-age"
-      ]
+      "sources": ["lei-23-2007-partner", "dr-84-2007-family", "lei-7-2001", "lei-23-2007-age"]
     }
   ],
   "costs": [
@@ -811,11 +703,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-minor-principal",
@@ -857,11 +745,7 @@
           }
         ]
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-adult-dependents",
@@ -884,11 +768,7 @@
           "value": 18
         }
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     },
     {
       "id": "visa-fee-children",
@@ -930,11 +810,7 @@
           }
         ]
       },
-      "sources": [
-        "portaria-91-2025",
-        "portaria-229-2021",
-        "lei-23-2007-fees"
-      ]
+      "sources": ["portaria-91-2025", "portaria-229-2021", "lei-23-2007-fees"]
     }
   ],
   "durations": [
@@ -943,28 +819,21 @@
       "title": "Decision on the residence visa application within 30 days under the teaching, highly qualified or cultural article; within the general 60 days for the employee path",
       "min": "P0D",
       "max": "P60D",
-      "sources": [
-        "lei-23-2007-d3-decision",
-        "lei-23-2007-visa-decision"
-      ]
+      "sources": ["lei-23-2007-d3-decision", "lei-23-2007-visa-decision"]
     },
     {
       "id": "visa-validity",
       "title": "Residence visa: two entries and a stay of four months in Portugal, to apply there for the residence permit",
       "min": "P4M",
       "max": "P4M",
-      "sources": [
-        "lei-23-2007-visa-validity"
-      ]
+      "sources": ["lei-23-2007-visa-validity"]
     },
     {
       "id": "first-residence-permit",
       "title": "First temporary residence permit, counted from the issue of the card; then renewable for successive periods of three years",
       "min": "P2Y",
       "max": "P2Y",
-      "sources": [
-        "lei-23-2007-permit"
-      ]
+      "sources": ["lei-23-2007-permit"]
     }
   ],
   "documents": [
@@ -973,19 +842,14 @@
       "title": "Visa application on its own form, on paper or electronic; for a minor or an incapable person, signed by the legal representative",
       "kind": "visa_application_form",
       "appliesTo": "principal",
-      "sources": [
-        "dr-84-2007-visa-form",
-        "dr-84-2007-visa-form-minor"
-      ]
+      "sources": ["dr-84-2007-visa-form", "dr-84-2007-visa-form-minor"]
     },
     {
       "id": "photographs",
       "title": "Two identical passport-type colour photographs with a plain background, current and showing the applicant clearly, or a facial image captured digitally, as the case may be",
       "kind": "photograph",
       "appliesTo": "principal",
-      "sources": [
-        "dr-84-2007-documents-2024"
-      ]
+      "sources": ["dr-84-2007-documents-2024"]
     },
     {
       "id": "passport",
@@ -993,10 +857,7 @@
       "kind": "passport",
       "appliesTo": "principal",
       "note": "To enter Portugal it must be valid at least three months beyond the planned stay",
-      "sources": [
-        "dr-84-2007-documents",
-        "dr-84-2007-travel-document"
-      ]
+      "sources": ["dr-84-2007-documents", "dr-84-2007-travel-document"]
     },
     {
       "id": "police-certificate",
@@ -1014,10 +875,7 @@
           "value": 16
         }
       },
-      "sources": [
-        "dr-84-2007-documents-2024",
-        "dr-84-2007-documents"
-      ]
+      "sources": ["dr-84-2007-documents-2024", "dr-84-2007-documents"]
     },
     {
       "id": "travel-insurance",
@@ -1025,9 +883,7 @@
       "kind": "travel_insurance",
       "appliesTo": "principal",
       "note": "An applicant who proves it cannot be obtained may be exempted",
-      "sources": [
-        "dr-84-2007-documents"
-      ]
+      "sources": ["dr-84-2007-documents"]
     },
     {
       "id": "minor-authorization",
@@ -1053,19 +909,14 @@
           }
         ]
       },
-      "sources": [
-        "dr-84-2007-documents",
-        "portaria-1563-2007"
-      ]
+      "sources": ["dr-84-2007-documents", "portaria-1563-2007"]
     },
     {
       "id": "means-proof",
       "title": "Proof of means of subsistence, as the means portaria defines them for the type of visa applied for",
       "kind": "means_of_subsistence_proof",
       "appliesTo": "principal",
-      "sources": [
-        "dr-84-2007-documents"
-      ]
+      "sources": ["dr-84-2007-documents"]
     },
     {
       "id": "employment-or-services-contract",
@@ -1075,11 +926,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "lei-23-2007-d3",
-        "lei-23-2007-employee-pay",
-        "dr-84-2007-d3-documents"
-      ]
+      "sources": ["lei-23-2007-d3", "lei-23-2007-employee-pay", "dr-84-2007-d3-documents"]
     },
     {
       "id": "invitation-letter",
@@ -1089,10 +936,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "lei-23-2007-d3",
-        "dr-84-2007-d3-documents"
-      ]
+      "sources": ["lei-23-2007-d3", "dr-84-2007-d3-documents"]
     },
     {
       "id": "tech-visa-statement",
@@ -1103,10 +947,7 @@
         "op": "unmodeled"
       },
       "validity": "P6M",
-      "sources": [
-        "tech-visa-rules",
-        "dr-84-2007-d3-documents"
-      ]
+      "sources": ["tech-visa-rules", "dr-84-2007-d3-documents"]
     },
     {
       "id": "qualifications-proof",
@@ -1116,29 +957,21 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "lei-23-2007-employee",
-        "dr-84-2007-d3-documents"
-      ]
+      "sources": ["lei-23-2007-employee", "dr-84-2007-d3-documents"]
     },
     {
       "id": "visa-application-dependent",
       "title": "Visa application on its own form, on paper or electronic; for a minor or an incapable person, signed by the legal representative",
       "kind": "visa_application_form",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dr-84-2007-visa-form",
-        "dr-84-2007-visa-form-minor"
-      ]
+      "sources": ["dr-84-2007-visa-form", "dr-84-2007-visa-form-minor"]
     },
     {
       "id": "photographs-dependent",
       "title": "Two identical passport-type colour photographs with a plain background, current and showing the applicant clearly, or a facial image captured digitally, as the case may be",
       "kind": "photograph",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dr-84-2007-documents-2024"
-      ]
+      "sources": ["dr-84-2007-documents-2024"]
     },
     {
       "id": "passport-dependent",
@@ -1146,10 +979,7 @@
       "kind": "passport",
       "appliesTo": "each_dependent",
       "note": "To enter Portugal it must be valid at least three months beyond the planned stay",
-      "sources": [
-        "dr-84-2007-documents",
-        "dr-84-2007-travel-document"
-      ]
+      "sources": ["dr-84-2007-documents", "dr-84-2007-travel-document"]
     },
     {
       "id": "police-certificate-dependent",
@@ -1167,10 +997,7 @@
           "value": 16
         }
       },
-      "sources": [
-        "dr-84-2007-documents-2024",
-        "dr-84-2007-documents"
-      ]
+      "sources": ["dr-84-2007-documents-2024", "dr-84-2007-documents"]
     },
     {
       "id": "travel-insurance-dependent",
@@ -1178,9 +1005,7 @@
       "kind": "travel_insurance",
       "appliesTo": "each_dependent",
       "note": "An applicant who proves it cannot be obtained may be exempted",
-      "sources": [
-        "dr-84-2007-documents"
-      ]
+      "sources": ["dr-84-2007-documents"]
     },
     {
       "id": "minor-authorization-dependent",
@@ -1206,28 +1031,21 @@
           }
         ]
       },
-      "sources": [
-        "dr-84-2007-documents",
-        "portaria-1563-2007"
-      ]
+      "sources": ["dr-84-2007-documents", "portaria-1563-2007"]
     },
     {
       "id": "family-ties",
       "title": "Proof of the family ties",
       "kind": "family_relationship_proof",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dr-84-2007-family-ties"
-      ]
+      "sources": ["dr-84-2007-family-ties"]
     },
     {
       "id": "family-means",
       "title": "Proof of stable and regular resources sufficient for the visa applicant and the family members who go with them, for the stay applied for or 12 months, whichever is shorter",
       "kind": "means_of_subsistence_proof",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dr-84-2007-means"
-      ]
+      "sources": ["dr-84-2007-means"]
     }
   ]
 }

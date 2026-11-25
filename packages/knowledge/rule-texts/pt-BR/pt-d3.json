@@ -12,7 +12,7 @@
     },
     {
       "en": "One of: a work contract or its promise, or a services contract; an invitation from a teaching or training body, a research centre or a body with a recognized cultural activity; a Tech Visa statement",
-      "text": "Uma das opções: contrato de trabalho ou promessa, ou contrato de prestação de serviços; convite de instituição de ensino ou formação, de centro de investigação ou de entidade com atividade cultural reconhecida; termo do Tech Visa"
+      "text": "Uma das opções: contrato de trabalho ou promessa, ou contrato de prestação de serviços; convite de instituição de ensino ou formação, de centro de pesquisa ou de entidade com atividade cultural reconhecida; termo de responsabilidade do Tech Visa"
     },
     {
       "en": "The activity is teaching at a teaching or vocational training institution, cultural, or highly qualified, which needs specialized technical skills of an exceptional nature or a suitable qualification",
@@ -20,11 +20,11 @@
     },
     {
       "en": "Employee path: a contract or promise of 6 months or more paying yearly at least 1.5 times the average gross annual wage or 3 times the IAS; 1.2 or 2 times for CITP 1-2 jobs a resolution lists",
-      "text": "Caminho do empregado: contrato ou promessa de 6 meses ou mais, com salário anual de pelo menos 1,5 vez o salário médio bruto anual ou 3 vezes o IAS; 1,2 ou 2 vezes nas profissões dos grandes grupos 1 e 2 da CITP listadas por resolução"
+      "text": "Caminho do empregado: contrato ou promessa de 6 meses ou mais, com salário anual de pelo menos 1,5 vez o salário médio bruto anual ou 3 vezes o IAS (Indexante dos Apoios Sociais); 1,2 ou 2 vezes nas profissões dos grandes grupos 1 e 2 da CITP (classificação internacional de profissões) listadas por resolução"
     },
     {
       "en": "Highly qualified employee path: high professional qualifications, recognized as the law requires for a regulated profession, or suited to the activity or sector of the contract for another",
-      "text": "Caminho do empregado altamente qualificado: qualificações profissionais elevadas, reconhecidas como a lei exige se a profissão for regulamentada, ou adequadas à atividade ou setor do contrato nas demais"
+      "text": "Caminho do empregado altamente qualificado: qualificações profissionais elevadas, reconhecidas como a lei exige se a profissão for regulamentada, ou adequadas à atividade ou setor do contrato nos demais casos"
     },
     {
       "en": "Tech Visa path: 18 or older, no permanent residence in the EU, taxes and social security in order where applicable, no criminal record, Portuguese, English, French or Spanish suited to the job",
@@ -32,7 +32,7 @@
     },
     {
       "en": "Tech Visa path: ISCED 2011 level 6 or higher, or a level 5 higher technical course with 5 years of exceptional skills; a work or services contract of 12 months or more paying 2.5 times the IAS a year",
-      "text": "Caminho do Tech Visa: nível 6 ou mais da ISCED 2011, ou curso técnico superior profissional (nível 5) com 5 anos de competências excepcionais; contrato de trabalho ou de serviços de 12 meses ou mais com salário anual de 2,5 vezes o IAS"
+      "text": "Caminho do Tech Visa: nível 6 ou mais da ISCED 2011, ou curso superior de tecnologia (nível 5) com 5 anos de competências excepcionais; contrato de trabalho ou de serviços de 12 meses ou mais com salário anual de 2,5 vezes o IAS (Indexante dos Apoios Sociais)"
     },
     {
       "en": "Means a month of the 2026 minimum wage net of 11% social security (EUR 818.80, from EUR 920) for the principal, plus 50% of it per other adult, 30% per minor and per dependent adult child",
@@ -40,7 +40,7 @@
     },
     {
       "en": "Means assured for at least 12 months for highly qualified work or higher-education teaching, less or none if the host guarantees them; for other work, the visa stay with its extension",
-      "text": "Meios garantidos por pelo menos 12 meses para trabalho altamente qualificado ou docência no ensino superior, menos ou nenhum se quem acolhe os garantir; para outro trabalho, a estada do visto com a prorrogação"
+      "text": "Recursos garantidos por pelo menos 12 meses para trabalho altamente qualificado ou docência no ensino superior, menos ou nenhum se quem acolhe os garantir; para outro trabalho, a estadia do visto com a prorrogação"
     },
     {
       "en": "Each applicant: no entry ban in force after a removal from Portugal, and no alert for return or for refusal of entry and stay in the Schengen Information System or in Portugal's border system",
@@ -124,7 +124,7 @@
     },
     {
       "en": "Invitation letter from a teaching or vocational training institution, a research centre, or an entity with a cultural activity of recognized interest",
-      "text": "Carta-convite de instituição de ensino ou de formação profissional, de centro de investigação ou de entidade com atividade cultural de interesse reconhecido"
+      "text": "Carta-convite de instituição de ensino ou de formação profissional, de centro de pesquisa ou de entidade com atividade cultural de interesse reconhecido"
     },
     {
       "en": "Statement of responsibility from a company certified under the Tech Visa programme",

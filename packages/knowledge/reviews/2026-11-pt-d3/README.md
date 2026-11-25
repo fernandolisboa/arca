@@ -19,14 +19,14 @@ The residence visa for teaching, highly qualified or cultural activity (Lei n.º
 Two adversarial reviewers, one reading every new item against the downloaded provisions, one searching the gazette for anything that makes the route out of date or incomplete.
 
 - **Round 1.** No high finding; every number matched. Fixed: article 61.º, n.º 1, c), now cites Decreto-Lei n.º 41/2023's wording; the cultural path names a body whose cultural activity is recognized, not a recognized entity; the shortage threshold names the CITP major groups 1 and 2 and the resolution; the Tech Visa level 5 is the higher technical course, and its contract may be for work or services; the means portaria's source title says "less or none". The gazette search confirmed no change to the cited articles from 2024 to 2026-11-25, and no Council of Ministers resolution under article 61.º-A, n.º 2.
-- **Round 2** read the changed items.
+- **Round 2** read the changed items against the gazette texts and found no high or medium finding; its two low wording notes (the shortage threshold's wage is the average gross wage without "annual" in n.º 2; n.º 3 of the means article also names research) change no rule and are left as they are.
 
 The app's quote check (`ARCA_REVIEW_QUOTES=2026-11-pt-d3`, in `apps/api`) passed in the session after each round. The `review-quotes` job runs it again on the pull request.
 
 ## Leftover
 
 1. **The consulates' own list is not read.** `vistos.mne.gov.pt` and `aima.gov.pt` refuse this session and are not on Portugal's official-domain list, so what a consulate asks beyond the law and the regulation is not listed.
-2. **No requirement decides the paths.** The case records no job offer pay, contract length or invitation as assessment evidence (a session review cannot cite job-offer facts there), so the assessments cite education and current income as context, and the route reads `needs_assessment` for every non-EU applicant.
+2. **No requirement decides the paths.** The case records a job offer's salary and sponsorship (#510), but an assessment cannot cite job-offer facts as evidence and the case records no contract length or invitation, so the assessments cite education and current income as context, and the route reads `needs_assessment` for every non-EU applicant.
 3. **The pay floors have no figure.** Neither the 2026 average gross annual wage nor the 2026 IAS was read on an official page, so the employee and Tech Visa thresholds are stated as factors.
 4. **No shortage list exists yet.** No Council of Ministers resolution under article 61.º-A, n.º 2, was found on 2026-11-25, so the 1.2 times and twice thresholds reach no profession today.
 5. **The prior opinion** of the employment and education ministries when the activity's classification is in doubt (article 61.º-A, n.º 3) and the AIMA and UCFE opinion (article 53.º) run inside the decision time and are not separate durations.
