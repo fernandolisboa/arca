@@ -222,6 +222,11 @@ export const sessionReviews: readonly SessionReview[] = [
     migration: 'knowledge_session_review_2026_11_lv_remote_work',
     versions: [{ routeId: 'lv-remote-work', number: 1, newRoute: true }],
   },
+  {
+    id: '2026-11-pt-d3',
+    migration: 'knowledge_session_review_2026_11_pt_d3',
+    versions: [{ routeId: 'pt-d3', number: 1, newRoute: true }],
+  },
 ];
 
 /** A reviewed version as its migration stores it, with the hash of its cases the decision binds. */

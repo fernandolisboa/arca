@@ -1,6 +1,6 @@
 # Portugal
 
-Checked 2026-10-31 and 2026-11-01; D2 on 2026-11-25.
+Checked 2026-10-31 and 2026-11-01; D2 and D3 on 2026-11-25.
 
 ## Naturalization
 
@@ -17,6 +17,8 @@ D7 and D8 are now route versions `pt-d7` and `pt-d8` in `packages/knowledge/data
 
 D2 is route `pt-d2` since a session review of 2026-11-25 ([its record](../../packages/knowledge/reviews/2026-11-pt-d2/README.md), [route notes](routes/pt-d2.md)): version 1, from 2026-01-01, decides only the EU, EEA and Swiss exclusion and leaves the paths (a services contract in a liberal profession, an investment made, means in Portugal with an intent to invest, or a certified incubator under the Startup Visa rules) and the means to assessments, and shares `pt-d8` version 8's family rules, fees, durations and general documents.
 
+D3 is route `pt-d3` since a session review of 2026-11-25 ([its record](../../packages/knowledge/reviews/2026-11-pt-d3/README.md), [route notes](routes/pt-d3.md)): version 1, from 2026-01-01, decides only the EU, EEA and Swiss exclusion and leaves the paths (article 61.º: a contract, an invitation letter or a Tech Visa statement of responsibility; article 61.º-A: a highly qualified employee's contract with a pay floor) and the means to assessments, and shares `pt-d2` version 1's family rules, fees, durations and general documents, with article 61.º's 30-day decision.
+
 Every version uses the 2026 guaranteed minimum monthly wage (RMMG), EUR 920 (Decreto-Lei n.º 139/2025), net of social security from version 3. On 2026-11-06 the Diário da República had no decree setting the RMMG for 2027, so the next versions of `pt-d7` and `pt-d8` (v9, after the v2 to v7 corrections and v8's document list) wait for it ([#220](https://github.com/fernandolisboa/arca/issues/220)); on 2026-11-11 and on 2026-11-20 there was still none. The last decrees came out on 2023-11-17 ([DL 107/2023](https://diariodarepublica.pt/dr/detalhe/decreto-lei/107-2023-224427489)), 2024-12-19 ([DL 112/2024](https://diariodarepublica.pt/dr/detalhe/decreto-lei/112-2024-900706889)) and 2025-12-29 ([DL 139/2025](https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809)), checked the same day.
 
 | Visa | Fact | Source |
@@ -24,6 +26,7 @@ Every version uses the 2026 guaranteed minimum monthly wage (RMMG), EUR 920 (Dec
 | D7 (passive income) | EUR 920/month for the applicant (2026 minimum wage), +50% for a spouse, +30% per child; practice recommends 12 months of reserve. The portaria itself uses the net minimum wage, which the route versions follow from v3 | [Ternrise](https://ternrise.com/pt/blog/visto-d7-portugal-2026-guia-completo), [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/comprovacao-meios-visto-portugal-2026) |
 | D8 (digital nomad) | EUR 3,680/month of active income from outside Portugal | [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/diferenca-entre-visto-d7-e-d8) |
 | D2 (independent activity or entrepreneur) | No minimum amount in law; the means period is the visa stay with its extension for independent work and 12 months for an investor (Portaria n.º 1563/2007, article 5.º, n.os 1 and 2), as route `pt-d2` v1 states | [Cidadania e Visto](https://www.cidadaniaevisto.com.br/blog/melhor-visto-para-portugal), corrected by the [2026-11-25 review](../../packages/knowledge/reviews/2026-11-pt-d2/README.md) |
+| D3 (teaching, highly qualified or cultural activity) | Employee path: a contract of at least six months paying 1.5 times the average gross annual wage or three times the IAS (Lei n.º 23/2007, article 61.º-A, as Lei n.º 53/2023 worded it); Tech Visa: 2.5 times the IAS and 12 months (Portaria n.º 328/2018); means for 12 months unless the host guarantees them (Portaria n.º 1563/2007, article 5.º, n.º 3) | [2026-11-25 review](../../packages/knowledge/reviews/2026-11-pt-d3/README.md) |
 
 ## Family reunification
 

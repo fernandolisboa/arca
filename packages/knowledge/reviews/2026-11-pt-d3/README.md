@@ -1,0 +1,36 @@
+# Session review 2026-11-pt-d3
+
+A session review that adds a route ([ADR-0032, amendment 2026-11-25](../../../../docs/adr/0032-session-reviews-activate-through-a-reviewed-pull-request.md#amendment-2026-11-25-new-routes), [runbook](../../../../docs/runbooks/session-rule-review.md)). Portugal held `pt-d2`, `pt-d7` and `pt-d8`. This review writes `pt-d3` version 1, from 2026-01-01 (the date the EUR 920 minimum wage its means assessment states took effect, Decreto-Lei n.º 139/2025), on the `pt` official-domain list the stored routes pin, with the `eu-free-movement` country set at number 2. The sources written for this route were read on `diariodarepublica.pt` and its gazette PDFs on 2026-11-25, São Paulo date; those shared with `pt-d2` version 1 keep the dates that review gave them, and their quotes were read again on their pages the same day by the app's quote check.
+
+## The route
+
+The residence visa for teaching, highly qualified or cultural activity (Lei n.º 23/2007, articles 61.º and 61.º-A; Decreto Regulamentar n.º 84/2007, articles 32.º and 32.º-A). Two articles, one visa:
+
+- **Article 61.º** (teaching at a teaching or vocational training institution, a highly qualified or a cultural activity): one of an employment contract or its promise or a services contract; an invitation letter from a teaching or training institution, from a research centre, or from a body whose cultural activity the culture minister recognizes; or the statement of responsibility of a company certified under the Tech Visa programme (Portaria n.º 328/2018, as Portaria n.º 59-A/2022 republished it). Decided within 30 days (n.º 3).
+- **Article 61.º-A** (highly qualified employee): a contract or promise of at least six months (Lei n.º 53/2023) paying a year at least 1.5 times the average gross annual wage or three times the IAS, 1.2 times or twice for the CITP major group 1 and 2 professions a Council of Ministers resolution lists; high professional qualifications, recognized where the profession is regulated. Decided within the general 60 days (article 58.º, n.º 4).
+- **Which text is in force.** Article 61.º reads as the Lei n.º 18/2022 republication, with n.º 1, c), as Decreto-Lei n.º 41/2023 reworded it (the ministers' areas only). Article 61.º-A, n.º 1, a), reads as Lei n.º 53/2023 wrote it; the rest as the republication. Lei n.º 9/2025, 55-C/2025, 61/2025 and 62/2026 leave both articles alone. Decreto Regulamentar n.º 1/2024 does not touch articles 32.º or 32.º-A. Portaria n.º 328/2018 was amended only by Portarias n.os 99/2019 and 59-A/2022.
+- **Requirement the case decides.** Not a citizen of an EU or EEA state or of Switzerland, as in `pt-d2`.
+- **Assessments.** Which instrument the applicant holds and that the activity qualifies (article 3.º, n.º 1, a), defines a highly qualified activity); the employee path's pay and qualifications; the Tech Visa worker's conditions (article 5.º of the portaria); the means scale and period (Portaria n.º 1563/2007, article 5.º, n.º 3: 12 months for research, higher-education teaching or highly qualified work, less or none if the host guarantees them; n.º 1 for other work); entry ban, conviction, public order and illegal stay.
+- **Family, fees, durations other than the decision, and general documents** are `pt-d2` version 1's, which rest on the same articles (58.º, n.º 5, and 99.º of the law; 12.º and 24.º-B of the regulation; the consular fee table).
+- **Documents of this visa** (articles 32.º and 32.º-A: the documents that prove the article's conditions): the contract or promise; the invitation letter; the Tech Visa statement, valid six months from its issue (Portaria n.º 328/2018, article 7.º, n.º 11); and, for the employee path, proof of high qualifications. Each "may apply": no case fact tells the path. Kinds reuse `employment_contract` and `qualification_proof`; new kinds `invitation_letter` and `employer_responsibility_statement` are issued in Portugal, so Brazil's document guide gets no entry.
+
+## Rounds
+
+Two adversarial reviewers, one reading every new item against the downloaded provisions, one searching the gazette for anything that makes the route out of date or incomplete.
+
+- **Round 1.** No high finding; every number matched. Fixed: article 61.º, n.º 1, c), now cites Decreto-Lei n.º 41/2023's wording; the cultural path names a body whose cultural activity is recognized, not a recognized entity; the shortage threshold names the CITP major groups 1 and 2 and the resolution; the Tech Visa level 5 is the higher technical course, and its contract may be for work or services; the means portaria's source title says "less or none". The gazette search confirmed no change to the cited articles from 2024 to 2026-11-25, and no Council of Ministers resolution under article 61.º-A, n.º 2.
+- **Round 2** read the changed items.
+
+The app's quote check (`ARCA_REVIEW_QUOTES=2026-11-pt-d3`, in `apps/api`) passed in the session after each round. The `review-quotes` job runs it again on the pull request.
+
+## Leftover
+
+1. **The consulates' own list is not read.** `vistos.mne.gov.pt` and `aima.gov.pt` refuse this session and are not on Portugal's official-domain list, so what a consulate asks beyond the law and the regulation is not listed.
+2. **No requirement decides the paths.** The case records no job offer pay, contract length or invitation as assessment evidence (a session review cannot cite job-offer facts there), so the assessments cite education and current income as context, and the route reads `needs_assessment` for every non-EU applicant.
+3. **The pay floors have no figure.** Neither the 2026 average gross annual wage nor the 2026 IAS was read on an official page, so the employee and Tech Visa thresholds are stated as factors.
+4. **No shortage list exists yet.** No Council of Ministers resolution under article 61.º-A, n.º 2, was found on 2026-11-25, so the 1.2 times and twice thresholds reach no profession today.
+5. **The prior opinion** of the employment and education ministries when the activity's classification is in doubt (article 61.º-A, n.º 3) and the AIMA and UCFE opinion (article 53.º) run inside the decision time and are not separate durations.
+6. **The EU Blue Card** (articles 121.º-A ff.) is a residence permit of its own, applied for through this visa from abroad (article 121.º-D, n.º 1); its permit conditions and family adaptations are not modeled.
+7. **The residence permit's conditions** and the refusal ground of article 52.º, n.º 11 (a longer ban up to 7 years) belong to the stage after arrival or to the stored entry-ban assessment's wording, as in `pt-d2`.
+8. **The CPLP residence visa and statement of responsibility, the adult child who depends only on the principal's spouse, and the 2027 minimum wage** ([#220](https://github.com/fernandolisboa/arca/issues/220)) are as `pt-d2`'s leftovers 8 to 10; when the 2027 wage is decreed, `pt-d3` version 2 from 2027-01-01 must follow, keeping version 1's documents.
+9. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration and fails if the database already holds this route.
