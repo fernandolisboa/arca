@@ -4,10 +4,7 @@
   "number": 7,
   "title": "Uruguayan permanent residence for nationals of Mercosur member and associated states",
   "country": "UY",
-  "tags": [
-    "regional-agreement",
-    "permanent-residence"
-  ],
+  "tags": ["regional-agreement", "permanent-residence"],
   "effectiveFrom": "2024-12-06",
   "status": "open",
   "currency": "UYU",
@@ -123,7 +120,7 @@
       "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
       "title": "Civil Code, article 280: majority is reached at 18 completed years, and parental authority also ends with a child's marriage",
       "kind": "official",
-      "verifiedAt": "2026-11-20"
+      "verifiedAt": "2026-11-25"
     },
     {
       "id": "decreto-45-2023-certificates",
@@ -184,19 +181,7 @@
             },
             "set": {
               "op": "tokens",
-              "values": [
-                "AR",
-                "BO",
-                "BR",
-                "CL",
-                "CO",
-                "EC",
-                "GY",
-                "PE",
-                "PY",
-                "SR",
-                "VE"
-              ]
+              "values": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PE", "PY", "SR", "VE"]
             }
           },
           {
@@ -210,9 +195,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "PA"
-                  ]
+                  "values": ["PA"]
                 }
               },
               {
@@ -235,102 +218,57 @@
     {
       "id": "no-denial-ground",
       "title": "No charge or conviction for an intentional common crime punished with over two years of prison, and no repeated offending, unless five years passed since the sentence was served, with no new crime",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "ley-18250-denial",
-        "decreto-45-2023-requirements",
-        "ley-20212-vigencia"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-18250-denial", "decreto-45-2023-requirements", "ley-20212-vigencia"]
     },
     {
       "id": "no-entry-refusal-ground",
       "title": "No crime against humanity, no conviction for trafficking, laundering, drugs or arms, and no expulsion or re-entry ban not revoked; an administrative expulsion on other grounds lapses after three years",
-      "evidence": [
-        "principal.visaRefusals"
-      ],
-      "sources": [
-        "ley-18250-entry-refusal",
-        "decreto-45-2023-requirements",
-        "ley-20212-vigencia"
-      ]
+      "evidence": ["principal.visaRefusals"],
+      "sources": ["ley-18250-entry-refusal", "decreto-45-2023-requirements", "ley-20212-vigencia"]
     },
     {
       "id": "criminal-record-certificates",
       "title": "Criminal record certificates, at national level, of each country lived in for more than six months in the last five years; applicants under 18 do not present them",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "decreto-45-2023-certificates",
-        "dnm-permanente-mercosur"
-      ]
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["decreto-45-2023-certificates", "dnm-permanente-mercosur"]
     },
     {
       "id": "vaccination-certificate",
       "title": "A valid certificate, issued by a vaccination centre in Uruguay, that the applicant meets the Uruguayan vaccination scheme",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "decreto-45-2023-certificates",
-        "dnm-permanente-mercosur"
-      ]
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["decreto-45-2023-certificates", "dnm-permanente-mercosur"]
     },
     {
       "id": "documents",
       "title": "Original, valid papers: photo, ID or passport, any marriage certificate under a year old; foreign papers apostilled or legalized, unless verifiable online, and translated, save Brazil's",
-      "evidence": [
-        "principal.citizenships"
-      ],
-      "sources": [
-        "decreto-45-2023-requirements",
-        "dnm-permanente-mercosur"
-      ]
+      "evidence": ["principal.citizenships"],
+      "sources": ["decreto-45-2023-requirements", "dnm-permanente-mercosur"]
     },
     {
       "id": "minor-applicants",
       "title": "Under 18: birth certificate legalized or apostilled, and express consent of the parents with parental authority, in person or by a power notarized in Uruguay, valid 180 days",
-      "evidence": [
-        "principal.ageYears"
-      ],
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "evidence": ["principal.ageYears"],
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "where-to-apply",
       "title": "Apply to the Ministry of the Interior (online, then in person) or at a Uruguayan consulate, then complete within 30 business days of entry; the decision is due within 90 business days",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "ley-18250-decision",
-        "decreto-45-2023-consular",
-        "dnm-permanente-mercosur"
-      ]
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ley-18250-decision", "decreto-45-2023-consular", "dnm-permanente-mercosur"]
     },
     {
       "id": "fees-in-indexed-units",
       "title": "Fees in indexed units (UI), readjusted every six months: residence 557.30 UI, none for Brazilians and Paraguayans; certificate 55.70 UI; a 225.60 UI re-entry permit per exit while pending",
-      "evidence": [
-        "principal.citizenships"
-      ],
-      "sources": [
-        "dnm-permanente-mercosur",
-        "decreto-45-2023-reciprocity"
-      ]
+      "evidence": ["principal.citizenships"],
+      "sources": ["dnm-permanente-mercosur", "decreto-45-2023-reciprocity"]
     }
   ],
   "dependents": [
     {
       "id": "spouse",
       "title": "Spouse who depends on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
-      "path": [
-        "spouse"
-      ],
+      "path": ["spouse"],
       "condition": {
         "op": "any",
         "operands": [
@@ -345,13 +283,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "AR",
-                    "BO",
-                    "BR",
-                    "CL",
-                    "PY"
-                  ]
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
                 }
               },
               {
@@ -365,18 +297,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-17927-family",
-        "ley-17927-parties",
-        "ley-18250-family"
-      ]
+      "sources": ["ley-17927-family", "ley-17927-parties", "ley-18250-family"]
     },
     {
       "id": "partner",
       "title": "Partner of five years or more, who counts only once a court has recognised the union and the ruling is registered, which is not recorded: possible",
-      "path": [
-        "partner"
-      ],
+      "path": ["partner"],
       "condition": {
         "op": "all",
         "operands": [
@@ -393,18 +319,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-18250-family",
-        "ley-18246",
-        "decreto-394-2009"
-      ]
+      "sources": ["ley-18250-family", "ley-18246", "decreto-394-2009"]
     },
     {
       "id": "children",
       "title": "Unmarried children under 18 who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; adults only with a disability, which is not recorded: possible",
-      "path": [
-        "child"
-      ],
+      "path": ["child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -443,13 +363,7 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": [
-                            "AR",
-                            "BO",
-                            "BR",
-                            "CL",
-                            "PY"
-                          ]
+                          "values": ["AR", "BO", "BR", "CL", "PY"]
                         }
                       },
                       {
@@ -477,10 +391,7 @@
     {
       "id": "spouse-children",
       "title": "The spouse's unmarried children, whom article 10 of the migration law does not name, so they count only as family members under the agreements, which is not settled: possible",
-      "path": [
-        "spouse",
-        "child"
-      ],
+      "path": ["spouse", "child"],
       "condition": {
         "op": "all",
         "operands": [
@@ -496,17 +407,12 @@
           }
         ]
       },
-      "sources": [
-        "ley-17927-family",
-        "ley-18250-family"
-      ]
+      "sources": ["ley-17927-family", "ley-18250-family"]
     },
     {
       "id": "parents",
       "title": "Parents who depend on a principal from Argentina, Bolivia, Brazil, Chile or Paraguay; others: possible",
-      "path": [
-        "parent"
-      ],
+      "path": ["parent"],
       "condition": {
         "op": "any",
         "operands": [
@@ -521,13 +427,7 @@
                 },
                 "set": {
                   "op": "tokens",
-                  "values": [
-                    "AR",
-                    "BO",
-                    "BR",
-                    "CL",
-                    "PY"
-                  ]
+                  "values": ["AR", "BO", "BR", "CL", "PY"]
                 }
               },
               {
@@ -541,11 +441,7 @@
           }
         ]
       },
-      "sources": [
-        "ley-17927-family",
-        "ley-17927-parties",
-        "ley-18250-family"
-      ]
+      "sources": ["ley-17927-family", "ley-17927-parties", "ley-18250-family"]
     }
   ],
   "costs": [],
@@ -557,9 +453,7 @@
       "title": "Passport-style photo (foto carné)",
       "kind": "photograph",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["dnm-permanente-mercosur"]
     },
     {
       "id": "identity-document",
@@ -567,10 +461,7 @@
       "kind": "identity_document",
       "note": "The original; the document used to book the appointment must be the one shown at it, and if it has expired, it is shown with the valid one",
       "appliesTo": "principal",
-      "sources": [
-        "decreto-45-2023-requirements",
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["decreto-45-2023-requirements", "dnm-permanente-mercosur"]
     },
     {
       "id": "criminal-record-certificate",
@@ -611,19 +502,14 @@
         }
       },
       "appliesTo": "principal",
-      "sources": [
-        "decreto-45-2023-requirements"
-      ]
+      "sources": ["decreto-45-2023-requirements", "codigo-civil-majority"]
     },
     {
       "id": "vaccination-certificate",
       "title": "Valid certificate, issued by a vaccination centre in Uruguay, that the applicant meets the Uruguayan vaccination scheme",
       "kind": "uruguayan_vaccination_certificate",
       "appliesTo": "principal",
-      "sources": [
-        "decreto-45-2023-certificates",
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["decreto-45-2023-certificates", "dnm-permanente-mercosur"]
     },
     {
       "id": "marriage-certificate",
@@ -644,9 +530,7 @@
       "validity": "P1Y",
       "note": "Apostilled or legalized unless issued electronically and verifiable; translated by a Uruguayan public translator where needed, save papers issued by Brazil",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["dnm-permanente-mercosur"]
     },
     {
       "id": "minor-birth-certificate",
@@ -665,10 +549,7 @@
       },
       "note": "Legalized or apostilled unless issued electronically and verifiable, and translated where needed, or a Uruguayan certified copy (testimonio); papers issued by Brazil need no translation",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "minor-authorization",
@@ -693,12 +574,9 @@
           }
         ]
       },
-      "note": "One from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
+      "note": "An authorization from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "minor-parent-death",
@@ -725,10 +603,7 @@
       },
       "note": "Apostilled or legalized unless issued electronically and verifiable; translated by a Uruguayan public translator where needed, save papers issued by Brazil",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "minor-guardian",
@@ -755,30 +630,22 @@
       },
       "note": "A foreign ruling on the legal representation of minors is translated where needed and homologated by a court in Uruguay",
       "appliesTo": "principal",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "dependent-photo",
       "title": "Passport-style photo (foto carné)",
       "kind": "photograph",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["dnm-permanente-mercosur"]
     },
     {
       "id": "dependent-identity-document",
-      "title": "Valid passport or identity document, in good condition, proving the nationality of a Mercosur state party or associated state",
+      "title": "Valid passport or identity document, in good condition",
       "kind": "identity_document",
       "note": "The original; the document used to book the appointment must be the one shown at it, and if it has expired, it is shown with the valid one",
       "appliesTo": "each_dependent",
-      "sources": [
-        "decreto-45-2023-requirements",
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["decreto-45-2023-requirements", "dnm-permanente-mercosur"]
     },
     {
       "id": "dependent-criminal-record-certificate",
@@ -819,19 +686,14 @@
         }
       },
       "appliesTo": "each_dependent",
-      "sources": [
-        "decreto-45-2023-requirements"
-      ]
+      "sources": ["decreto-45-2023-requirements", "codigo-civil-majority"]
     },
     {
       "id": "dependent-vaccination-certificate",
       "title": "Valid certificate, issued by a vaccination centre in Uruguay, that the applicant meets the Uruguayan vaccination scheme",
       "kind": "uruguayan_vaccination_certificate",
       "appliesTo": "each_dependent",
-      "sources": [
-        "decreto-45-2023-certificates",
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["decreto-45-2023-certificates", "dnm-permanente-mercosur"]
     },
     {
       "id": "dependent-marriage-certificate",
@@ -852,9 +714,7 @@
       "validity": "P1Y",
       "note": "Apostilled or legalized unless issued electronically and verifiable; translated by a Uruguayan public translator where needed, save papers issued by Brazil",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur"
-      ]
+      "sources": ["dnm-permanente-mercosur"]
     },
     {
       "id": "dependent-minor-birth-certificate",
@@ -873,10 +733,7 @@
       },
       "note": "Legalized or apostilled unless issued electronically and verifiable, and translated where needed, or a Uruguayan certified copy (testimonio); papers issued by Brazil need no translation",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "dependent-minor-authorization",
@@ -901,12 +758,9 @@
           }
         ]
       },
-      "note": "One from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
+      "note": "An authorization from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "dependent-minor-parent-death",
@@ -933,10 +787,7 @@
       },
       "note": "Apostilled or legalized unless issued electronically and verifiable; translated by a Uruguayan public translator where needed, save papers issued by Brazil",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     },
     {
       "id": "dependent-minor-guardian",
@@ -963,10 +814,7 @@
       },
       "note": "A foreign ruling on the legal representation of minors is translated where needed and homologated by a court in Uruguay",
       "appliesTo": "each_dependent",
-      "sources": [
-        "dnm-permanente-mercosur",
-        "codigo-civil-majority"
-      ]
+      "sources": ["dnm-permanente-mercosur", "codigo-civil-majority"]
     }
   ]
 }

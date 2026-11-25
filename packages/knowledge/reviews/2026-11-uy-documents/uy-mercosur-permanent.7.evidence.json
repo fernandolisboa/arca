@@ -313,6 +313,11 @@
     },
     {
       "key": "document:criminal-record-statement",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
+      "quote": "Se fija la mayor edad en los dieciocho años cumplidos."
+    },
+    {
+      "key": "document:criminal-record-statement",
       "url": "https://www.impo.com.uy/bases/decretos/45-2023/2",
       "quote": "los nacionales de los Estados Partes o Asociados del MERCOSUR mayores de 18 años, deberán realizar declaración jurada de ausencia de antecedentes internacionales penales o policiales, donde se manifieste que el interesado no se encuentra comprendido en lo dispuesto por los literales B, C, y D de los artículos 45 y 46 de la Ley N° 18.250"
     },
@@ -455,6 +460,11 @@
       "key": "document:dependent-criminal-record-certificate",
       "url": "https://www.gub.uy/tramites/residencia-legal-permanente-mercosur",
       "quote": "Los documentos que sean emitidos electrónicamente y que permitan su verificación no requerirán de apostilla ni legalización. El resto de documentos extranjeros deberán estar apostillados (en los casos de países que suscribieron el acuerdo de Apostilla) o legalizados  (de acuerdo a lo dispuesto en la Ley N° 15.441) y traducidos en caso de corresponder por Traductor Público Uruguayo, con la excepción de los emitidos por Brasil (Ley Nº 18.134)."
+    },
+    {
+      "key": "document:dependent-criminal-record-statement",
+      "url": "https://www.impo.com.uy/bases/codigo-civil/16603-1994/280",
+      "quote": "Se fija la mayor edad en los dieciocho años cumplidos."
     },
     {
       "key": "document:dependent-criminal-record-statement",

@@ -47,12 +47,16 @@
       "text": "Uma sentença estrangeira sobre a representação legal de menores é traduzida quando preciso e homologada por um juiz no Uruguai"
     },
     {
+      "en": "An authorization from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
+      "text": "A autorização vinda do exterior ou feita num consulado uruguaio vale 180 dias desde a emissão; se a criança não for morar com nenhum dos pais, eles indicam os adultos responsáveis, que assinam o pedido"
+    },
+    {
       "en": "Apostilled or legalized unless issued electronically and verifiable; translated by a Uruguayan public translator where needed, save papers issued by Brazil",
       "text": "Apostilado ou legalizado, salvo se emitido eletronicamente e verificável; traduzido por tradutor público uruguaio quando preciso, salvo documentos emitidos pelo Brasil"
     },
     {
       "en": "For a married couple, where the link is to be proven: the marriage certificate, issued no more than one year before",
-      "text": "Para um casal, quando for preciso comprovar o vínculo: a certidão de casamento, emitida há no máximo um ano"
+      "text": "Para um casal casado, quando for preciso comprovar o vínculo: a certidão de casamento, emitida há no máximo um ano"
     },
     {
       "en": "For an applicant under 18 with a dead parent: the death certificate",
@@ -79,10 +83,6 @@
       "text": "Legalizada ou apostilada, salvo se emitida eletronicamente e verificável, e traduzida quando preciso, ou uma cópia certificada uruguaia (testimonio); documentos emitidos pelo Brasil não precisam de tradução"
     },
     {
-      "en": "One from abroad or made at a Uruguayan consulate is valid 180 days from issue; if the child will live with neither parent, they name the responsible adults, who sign the application",
-      "text": "A vinda do exterior ou feita num consulado uruguaio vale 180 dias desde a emissão; se a criança não for morar com nenhum dos pais, eles indicam os adultos responsáveis, que assinam o pedido"
-    },
-    {
       "en": "Passport-style photo (foto carné)",
       "text": "Foto tipo documento (foto carné)"
     },
@@ -92,11 +92,15 @@
     },
     {
       "en": "Under 18, where the parents with parental authority do not consent in person at the appointment: their express authorization; a power from abroad is protocolized first by a Uruguayan notary",
-      "text": "Menor de 18 anos cujos pais com poder familiar não autorizam pessoalmente no atendimento: a autorização expressa deles; uma procuração vinda do exterior é antes protocolizada por um tabelião uruguaio"
+      "text": "Menor de 18 anos cujos pais com poder familiar não dão a autorização pessoalmente no atendimento: a autorização expressa deles; uma procuração vinda do exterior é antes protocolizada por um tabelião uruguaio"
     },
     {
       "en": "Valid certificate, issued by a vaccination centre in Uruguay, that the applicant meets the Uruguayan vaccination scheme",
       "text": "Certificado válido, emitido por um posto de vacinação no Uruguai, de que a pessoa cumpre o esquema de vacinação uruguaio"
+    },
+    {
+      "en": "Valid passport or identity document, in good condition",
+      "text": "Passaporte ou documento de identidade válido e em bom estado"
     },
     {
       "en": "Valid passport or identity document, in good condition, proving the nationality of a Mercosur state party or associated state",
