@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type RouteVersion, routeVersionSchema } from '@arca/domain';
+import { type RouteVersion, documentItemSchema, routeVersionSchema } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { describe, expect, it } from 'vitest';
 import { importBuild } from '../scripts/rule-import.ts';
@@ -79,19 +79,19 @@ describe('checkProposal (ADR-0031)', { timeout: 120_000 }, () => {
     const { base, rows, next, reading, check } = await setUp();
     const official = base.sources.find((source) => source.kind === 'official');
     if (official === undefined) throw new Error('An official source expected');
-    const documents = [
+    const documents = documentItemSchema.array().parse([
       {
         id: 'passport',
         title: 'Valid passport',
         kind: 'passport',
-        appliesTo: 'principal' as const,
+        appliesTo: 'principal',
         apostille: false,
         translation: 'none',
         validity: 'P6M',
         note: 'Synthetic note',
         sources: [official.id],
       },
-    ];
+    ]);
     const listed = next({ documents });
     const result = await check(listed);
     expect(result).toMatchObject({ ok: true });
