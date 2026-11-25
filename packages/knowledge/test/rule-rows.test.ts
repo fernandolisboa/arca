@@ -4,8 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hostOf } from '@arca/scripts/host';
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge } from '../scripts/build.ts';
-import { generatedImport, importDate, importMigrationFile } from '../scripts/rule-import.ts';
+import { generatedImport, importBuild, importMigrationFile } from '../scripts/rule-import.ts';
 import { bundledRuleData } from '../src/bundled.ts';
 import type { Json } from '../src/canonical.ts';
 import { type RuleRows, ruleContent, ruleDataFromRows } from '../src/rule-rows.ts';
@@ -15,11 +14,11 @@ const dataDir = join(packageDir, 'data');
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
 
 async function built() {
-  const { rows, countryFiles, issues } = await buildKnowledge(dataDir, importDate);
+  const { rows, datasetFiles, issues } = await importBuild(dataDir);
   expect(issues).toEqual([]);
   return {
     rows,
-    read: (from: RuleRows) => ruleContent(ruleDataFromRows(from, { countryFiles, sha256, hostOf })),
+    read: (from: RuleRows) => ruleContent(ruleDataFromRows(from, { datasetFiles, sha256, hostOf })),
   };
 }
 

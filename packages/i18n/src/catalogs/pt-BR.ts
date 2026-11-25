@@ -1,3 +1,6 @@
+import { occupationGroups, occupations } from './pt-BR-occupations.js';
+import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
+
 /**
  * The pt-BR catalog, in ICU message format. Domain terms use the labels in CONTEXT.md.
  */
@@ -2297,4 +2300,8 @@ export const ptBR = {
     YUCS: 'Iugoslávia',
     ZRCD: 'Zaire',
   },
+  occupationGroups,
+  occupations,
+  studyFieldGroups,
+  studyFields,
 } as const;

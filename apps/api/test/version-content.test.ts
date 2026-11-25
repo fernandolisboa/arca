@@ -29,4 +29,9 @@ describe('the version content the models read', () => {
     expect(content(naming)).not.toContain('machineReadableUrl');
     expect(content(view)).toContain(view.sources[0]?.url);
   });
+
+  it('reads the pins of a version that pins no classification as before, so its summary stays found', () => {
+    const { pins } = JSON.parse(summaryContent(view)) as { pins: object };
+    expect(Object.keys(pins)).toEqual(['countries', 'formerCountries', 'officialDomains']);
+  });
 });

@@ -162,6 +162,10 @@ export const routeVersionSchema = z
     closureSources: sourceIds.optional(),
     countries: pinSchema,
     formerCountries: pinSchema,
+    /** The occupations file (ISCO-08 unit groups), pinned when a rule reads an occupation code. */
+    occupations: pinSchema.optional(),
+    /** The study-fields file (ISCED-F 2013), pinned when a rule reads a field-of-study code. */
+    studyFields: pinSchema.optional(),
     countrySets: z.array(pinSchema).max(20),
     officialDomains: z.array(pinSchema).min(1).max(10),
     requirements: z.array(requirementSchema).max(50),
