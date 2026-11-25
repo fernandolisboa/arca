@@ -857,7 +857,101 @@
       "kind": "employment_contract",
       "appliesTo": "principal",
       "condition": {
-        "op": "unmodeled"
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "employee"
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.employerCountry"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "ES"
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "ne",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.employerCountry"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "ES"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
       },
       "sources": ["ley-14-2013-requirements"]
     },
@@ -867,7 +961,101 @@
       "kind": "service_contract",
       "appliesTo": "principal",
       "condition": {
-        "op": "unmodeled"
+        "op": "any",
+        "operands": [
+          {
+            "op": "some",
+            "over": "principal.workPeriods",
+            "where": {
+              "op": "all",
+              "operands": [
+                {
+                  "op": "in",
+                  "item": {
+                    "op": "fact",
+                    "key": "workPeriod.relation"
+                  },
+                  "set": {
+                    "op": "tokens",
+                    "values": ["contractor", "self_employed"]
+                  }
+                },
+                {
+                  "op": "ne",
+                  "left": {
+                    "op": "fact",
+                    "key": "workPeriod.employerCountry"
+                  },
+                  "right": {
+                    "op": "token",
+                    "value": "ES"
+                  }
+                },
+                {
+                  "op": "not",
+                  "operand": {
+                    "op": "since",
+                    "date": {
+                      "op": "fact",
+                      "key": "workPeriod.end"
+                    },
+                    "duration": "P1D"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "op": "all",
+            "operands": [
+              {
+                "op": "some",
+                "over": "principal.workPeriods",
+                "where": {
+                  "op": "all",
+                  "operands": [
+                    {
+                      "op": "eq",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.relation"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "owner"
+                      }
+                    },
+                    {
+                      "op": "ne",
+                      "left": {
+                        "op": "fact",
+                        "key": "workPeriod.employerCountry"
+                      },
+                      "right": {
+                        "op": "token",
+                        "value": "ES"
+                      }
+                    },
+                    {
+                      "op": "not",
+                      "operand": {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "workPeriod.end"
+                        },
+                        "duration": "P1D"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "op": "unmodeled"
+              }
+            ]
+          }
+        ]
       },
       "sources": ["ley-14-2013-requirements"]
     },

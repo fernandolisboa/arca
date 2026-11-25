@@ -1,6 +1,6 @@
 # Other destinations
 
-Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic, United Kingdom and Ireland sections, and Spain's EU-regime rule, on 2026-11-07; Spain's fees, durations and visa requirements on 2026-11-11; Latvia's, Australia's, Japan's, Argentina's, Paraguay's and Iceland's routes on 2026-11-20.
+Checked 2026-11-01; the Uruguay, Argentina, Paraguay, Chile, Latvia, Australia, Japan, Iceland, Denmark, Georgia, Czech Republic, United Kingdom and Ireland sections, and Spain's EU-regime rule, on 2026-11-07; Spain's fees, durations and visa requirements on 2026-11-11; Latvia's, Australia's, Japan's, Argentina's, Paraguay's and Iceland's routes on 2026-11-20; Spain's international telework route on 2026-11-25.
 
 ## Spain
 
