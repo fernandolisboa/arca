@@ -456,6 +456,22 @@ export const registry: Registry = {
       label: 'dataExport.tables.ruleReports',
     },
     {
+      table: 'cases.plan_move',
+      strategy: 'delete',
+      owner: keptPerson(['principal_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['stage', 'route_id', 'created_at'],
+      label: 'dataExport.tables.planMoves',
+    },
+    {
+      table: 'cases.plan_move_dependent',
+      strategy: 'delete',
+      owner: keptPerson(['person_id', 'case_id'], ['id', 'case_id']),
+      pool: 'app_jobs',
+      export: ['created_at'],
+      label: 'dataExport.tables.planMoveDependents',
+    },
+    {
       table: 'cases.comparison_preferences',
       strategy: 'delete',
       owner: ownedByAccount('account_id'),

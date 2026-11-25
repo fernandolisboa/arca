@@ -8,6 +8,7 @@ import type {
   HandOverCasePersonRequest,
   ReportRuleRequest,
   WriteComparisonPreferencesRequest,
+  WriteFamilyPlanRequest,
 } from '@arca/api-contract/routes';
 import type {
   AddCaseAssetRequest,
@@ -66,6 +67,7 @@ import { caseQuestions, questionState } from './questions.js';
 import { type CaseEvaluationsView, caseEvaluations } from './evaluations.js';
 import { type RouteDocumentsView, caseRouteDocuments } from './route-documents.js';
 import { casePlayback } from './playback.js';
+import { type FamilyPlanView, familyPlan, planFitsCase, readPlan, savePlan } from './plan.js';
 import { type CaseRows, caseView, lockCase, memberCase, readCase } from './view.js';
 
 /** Why a write was refused; each answers one status, and says nothing of a hidden row. */
@@ -77,6 +79,11 @@ export type CaseWritten =
       readonly ok: false;
       readonly reason: CaseRefusal;
     };
+
+/** A plan write's answer: the plan evaluated, or why it was refused. */
+export type PlanWritten =
+  | { readonly ok: true; readonly view: FamilyPlanView }
+  | { readonly ok: false; readonly reason: 'not_found' | 'case_invalid' };
 
 /** A comparison write's answer: the recomputed comparison, or why it was refused. */
 export type ComparisonWritten =
@@ -184,6 +191,10 @@ export interface CaseFiles {
     accountId: string,
     request: WriteComparisonPreferencesRequest,
   ) => Promise<ComparisonWritten>;
+  /** The case's family plan, evaluated from what the viewer sees (ADR-0040); null outside a case. */
+  readonly plan: (accountId: string) => Promise<FamilyPlanView | null>;
+  /** Replaces the case's family plan; `case_invalid` when it names what the case does not hold. */
+  readonly writePlan: (accountId: string, request: WriteFamilyPlanRequest) => Promise<PlanWritten>;
   /** Deletes the account's member row, and with it every person it keeps. */
   readonly leave: (accountId: string) => Promise<'left' | 'not_found'>;
 }
@@ -529,6 +540,14 @@ export function createCaseFiles({
       ...(evaluation.suggestions === undefined ? {} : { suggestions: evaluation.suggestions }),
       ...asOf,
     });
+
+  const planSettings = (catalog: RouteCatalog, states: DecisionStates) => ({
+    catalog,
+    states,
+    today: evaluation.today(),
+    engineCommit: evaluation.engineCommit,
+    ...(evaluation.texts === undefined ? {} : { texts: evaluation.texts }),
+  });
 
   const keptPerson = (rows: CaseRows, personId: string) => {
     const person = rows.people.find((row) => row.id === personId && row.keptByMe);
@@ -896,6 +915,33 @@ export function createCaseFiles({
         },
       );
       return written ?? { ok: false, reason: 'not_found' };
+    },
+
+    plan: async (accountId) => {
+      const [states, { catalog }] = await Promise.all([evaluation.states(), evaluation.rules()]);
+      return withIdentity(db(), { accountId }, async (tx) => {
+        const rows = await readCase(tx, accountId);
+        return rows === undefined
+          ? null
+          : familyPlan(rows, await readPlan(tx, rows.caseId), planSettings(catalog, states));
+      });
+    },
+
+    async writePlan(accountId, { moves }) {
+      const [states, { catalog, routeIds }] = await Promise.all([
+        evaluation.states(),
+        evaluation.rules(),
+      ]);
+      return withIdentity(db(), { accountId }, async (tx): Promise<PlanWritten> => {
+        const caseId = await memberCase(tx, accountId);
+        if (caseId === undefined) return { ok: false, reason: 'not_found' };
+        await lockCase(tx, caseId);
+        const rows = await readCase(tx, accountId, caseId);
+        if (rows === undefined) return { ok: false, reason: 'not_found' };
+        if (!planFitsCase(rows, moves, routeIds)) return { ok: false, reason: 'case_invalid' };
+        await savePlan(tx, caseId, moves);
+        return { ok: true, view: familyPlan(rows, moves, planSettings(catalog, states)) };
+      });
     },
 
     async leave(accountId) {

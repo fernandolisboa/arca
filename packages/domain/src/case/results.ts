@@ -293,7 +293,8 @@ const unitsMoney = (money: Money | undefined): UnitsMoney | null =>
         currency: money.currency,
       };
 
-const unitsRange = ({ min, max }: AmountRange): UnitsRange => ({
+/** An engine range in currency units, as the screens show it. */
+export const unitsRange = ({ min, max }: AmountRange): UnitsRange => ({
   min: unitsMoney(min),
   max: unitsMoney(max),
 });

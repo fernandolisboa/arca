@@ -255,6 +255,16 @@ export async function seeded(testDatabase: AuthTestDatabase): Promise<Seeded> {
       `INSERT INTO knowledge.correction_event (request_id, kind) VALUES ($1, 'closed')`,
       [correctionId],
     );
+    const moveId = randomUUID();
+    await insert(
+      `INSERT INTO cases.plan_move (id, case_id, position, stage, route_id, principal_id)
+       VALUES ($1, $2, 0, 1, 'qm-sample', $3)`,
+      [moveId, caseId, selfId],
+    );
+    await insert(
+      `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+      [moveId, caseId, childId],
+    );
     await insert(
       `INSERT INTO cases.comparison_preferences (account_id, case_id, preferences)
        VALUES ($1, $2, '{"weights": {"climate": 4}, "ratings": {}, "ownCriteria": [], "hidden": []}')`,

@@ -363,6 +363,8 @@ const shownText = z.string().max(400);
 /** The version's own English title, given only when the shown one is a translation. */
 const originalText = z.string().max(200).nullable();
 const unitsRange = z.object({ min: unitsMoney.nullable(), max: unitsMoney.nullable() });
+/** A cost per currency, summed in code: what certainly applies, and what may on top. */
+export const CostTotal = z.object({ currency, certain: unitsRange, possibleExtra: unitsRange });
 
 /** One route for one principal, as `routeResult` in the domain lays it out (spec 0007, R6). */
 export const RouteResult = z.object({
@@ -434,7 +436,7 @@ export const RouteResult = z.object({
     )
     .max(20),
   /** The cost per currency, summed in code: what certainly applies, and what may on top. */
-  totals: z.array(z.object({ currency, certain: unitsRange, possibleExtra: unitsRange })).max(50),
+  totals: z.array(CostTotal).max(50),
   /** The sources of a closed version's closure, which the screen cites with "Rota encerrada". */
   closureSources: sources,
   /** Rates the exchange table lacks; no one in the family can answer them. */

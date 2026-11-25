@@ -214,6 +214,18 @@ export {
   routeStatusOrder,
 } from './case/results.js';
 export { relationshipSteps } from './case/paths.js';
+export {
+  type Coverage,
+  type EvaluatedPlan,
+  type PlanBounds,
+  type PlanMove,
+  type PlanTotal,
+  type PlannedMove,
+  evaluatePlan,
+  maxPlanMoves,
+  maxPlanStages,
+  validPlan,
+} from './plan/family-plan.js';
 export { type CheckIssue, type PinnedClassifications } from './rules/check.js';
 export {
   type OfficialHosts,

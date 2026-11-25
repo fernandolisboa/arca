@@ -231,6 +231,63 @@ describe('computeUnit', () => {
   });
 });
 
+describe('a unit limited to the chosen dependents', () => {
+  const chosen = (ids: readonly string[], value = family()) =>
+    computeUnit(value, entry(), 'p1', context({ chosenDependents: ids }));
+
+  it('keeps only the chosen people the rules cover, and leaves the rest behind', () => {
+    const unit = chosen(['p2', 'p8', 'p3']);
+    expect(unit.dependents.map((member) => member.personId)).toEqual(['p2']);
+    expect(unit.possibleDependents.map((member) => member.personId)).toEqual(['p8']);
+    expect(unit.excluded).toEqual([
+      { personId: 'p3', reason: 'not_related' },
+      { personId: 'p4', reason: 'not_chosen' },
+      { personId: 'p5', reason: 'condition_not_met' },
+      { personId: 'p6', reason: 'not_chosen' },
+      { personId: 'p7', reason: 'not_chosen' },
+    ]);
+  });
+
+  it('is closed, since nobody unrecorded can join a unit the plan names', () => {
+    const value = snapshot({ people: [{ id: 'p1', birthDate: '1980-01-01' }] });
+    const unit = chosen([], value);
+    expect(unit.open).toBe(false);
+    expect(unit.missingMarkers).toEqual([]);
+  });
+
+  it('counts only the chosen people in requirements and costs', () => {
+    const evaluation = evaluateVersion(
+      family(),
+      entry(),
+      'p1',
+      context({ chosenDependents: ['p2'] }),
+    );
+    expect(evaluation.requirements.find(({ id }) => id === 'means')?.result).toBe(true);
+    expect(evaluation.costs.map(({ costId, personId }) => [costId, personId])).toEqual([
+      ['fee', 'p1'],
+      ['dependent-fee', 'p2'],
+    ]);
+    expect(evaluation.totals).toEqual([
+      {
+        currency: 'EUR',
+        certain: {
+          min: { amount: 150_00, currency: 'EUR' },
+          max: { amount: 150_00, currency: 'EUR' },
+        },
+        possibleExtra: { min: { amount: 0, currency: 'EUR' }, max: { amount: 0, currency: 'EUR' } },
+      },
+    ]);
+  });
+
+  it.each([
+    ['the principal', ['p1']],
+    ['someone twice', ['p2', 'p2']],
+    ['someone not in the case', ['p9']],
+  ])('refuses %s among them', (_label, ids) => {
+    expect(() => chosen(ids)).toThrow(RangeError);
+  });
+});
+
 describe('evaluateVersion', () => {
   it.each<[string, CaseSnapshot, object, string]>([
     ['eligible', alone(5000_00), {}, 'eligible'],

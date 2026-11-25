@@ -2,6 +2,7 @@ import {
   type CalendarDate,
   type DecisionStates,
   type RouteCatalog,
+  type RouteResult,
   decisiveQuestions,
   evaluateRoute,
   routeResult,
@@ -32,87 +33,110 @@ export function caseEvaluations(
   { catalog, routeIds, states, today, engineCommit, texts }: EvaluationSettings,
 ) {
   const { snapshot, uuid, kept, bornOn } = viewedSnapshot(rows, today);
-  const context = {
-    rulesAsOf: today,
-    factsAsOf: today,
-    today,
-    fx: { rates: [] },
-    states,
-    engineCommit,
-  };
+  const context = evaluationContext({ states, today, engineCommit });
   const results = routeIds.flatMap((routeId) =>
     snapshot.members.map((principal) =>
       routeResult(evaluateRoute(snapshot, catalog, routeId, principal, context), principal),
     ),
   );
+  const view = resultView({ catalog, states, texts, uuid });
   return {
     rulesAsOf: today,
     engineCommit,
-    results: results.map((result) => {
-      // A translated title keeps the version's own English beside it; the content is unchanged.
-      const translated = translatedText(texts, result.routeId);
-      const withTranslation = <Item extends { readonly title: string }>(item: Item) => {
-        const { text, original } = translated(item.title);
-        return { ...item, title: text, original };
-      };
-      // Only an active version's title and country reach the screen (CLAUDE.md rule 5).
-      const identity =
-        result.version === null || result.status === 'pending_activation'
-          ? undefined
-          : catalog
-              .identities(result.routeId)
-              .find(
-                ({ number, hash }) =>
-                  number === result.version?.number && hash === result.version.hash,
-              );
-      const entry = identity === undefined ? undefined : catalog.activeEntry(identity, states);
-      // Named field by field, so the missing facts, with their case-internal IDs, stay here.
-      return {
-        routeId: result.routeId,
-        principalId: uuid(result.principalId),
-        status: result.status,
-        route:
-          entry === undefined
-            ? null
-            : {
-                ...withTranslation({ title: entry.version.title }),
-                country: entry.version.country,
-              },
-        version: result.version,
-        stale: result.stale,
-        newerProposedVersion: result.newerProposedVersion,
-        dependents: result.dependents.map(uuid),
-        possibleDependents: result.possibleDependents.map(uuid),
-        unitOpen: result.unitOpen,
-        requirements: result.requirements.map(withTranslation),
-        assessments: result.assessments.map(withTranslation),
-        costs: result.costs.map((cost) => ({
-          costId: cost.costId,
-          ...withTranslation({ title: cost.title }),
-          appliesTo: cost.appliesTo,
-          personId: cost.personId === null ? null : uuid(cost.personId),
-          applies: cost.applies,
-          min: cost.min,
-          max: cost.max,
-          sources: cost.sources,
-        })),
-        durations: result.durations.map(withTranslation),
-        totals: result.totals,
-        closureSources:
-          entry?.version.status === 'closed'
-            ? (entry.version.closureSources ?? []).flatMap((id) =>
-                entry.version.sources.filter((source) => source.id === id),
-              )
-            : [],
-        missingRates: result.missingRates,
-        missingDates: result.missingDates,
-      };
-    }),
+    results: results.map(view),
     questions: decisiveQuestions(results, kept, bornOn).map((question) => ({
       ...question,
       personId: uuid(question.personId),
     })),
   };
 }
+
+/** Today's rules and facts, with no FX table in this slice. */
+export const evaluationContext = ({
+  states,
+  today,
+  engineCommit,
+}: Pick<EvaluationSettings, 'states' | 'today' | 'engineCommit'>) => ({
+  rulesAsOf: today,
+  factsAsOf: today,
+  today,
+  fx: { rates: [] },
+  states,
+  engineCommit,
+});
+
+/** What the screens may see of one route result: case UUIDs, translated titles, sources. */
+export const resultView =
+  ({
+    catalog,
+    states,
+    texts,
+    uuid,
+  }: {
+    readonly catalog: RouteCatalog;
+    readonly states: DecisionStates;
+    readonly texts?: RuleTexts | undefined;
+    readonly uuid: (opaque: string) => string;
+  }) =>
+  (result: RouteResult) => {
+    // A translated title keeps the version's own English beside it; the content is unchanged.
+    const translated = translatedText(texts, result.routeId);
+    const withTranslation = <Item extends { readonly title: string }>(item: Item) => {
+      const { text, original } = translated(item.title);
+      return { ...item, title: text, original };
+    };
+    // Only an active version's title and country reach the screen (CLAUDE.md rule 5).
+    const identity =
+      result.version === null || result.status === 'pending_activation'
+        ? undefined
+        : catalog
+            .identities(result.routeId)
+            .find(
+              ({ number, hash }) =>
+                number === result.version?.number && hash === result.version.hash,
+            );
+    const entry = identity === undefined ? undefined : catalog.activeEntry(identity, states);
+    // Named field by field, so the missing facts, with their case-internal IDs, stay here.
+    return {
+      routeId: result.routeId,
+      principalId: uuid(result.principalId),
+      status: result.status,
+      route:
+        entry === undefined
+          ? null
+          : {
+              ...withTranslation({ title: entry.version.title }),
+              country: entry.version.country,
+            },
+      version: result.version,
+      stale: result.stale,
+      newerProposedVersion: result.newerProposedVersion,
+      dependents: result.dependents.map(uuid),
+      possibleDependents: result.possibleDependents.map(uuid),
+      unitOpen: result.unitOpen,
+      requirements: result.requirements.map(withTranslation),
+      assessments: result.assessments.map(withTranslation),
+      costs: result.costs.map((cost) => ({
+        costId: cost.costId,
+        ...withTranslation({ title: cost.title }),
+        appliesTo: cost.appliesTo,
+        personId: cost.personId === null ? null : uuid(cost.personId),
+        applies: cost.applies,
+        min: cost.min,
+        max: cost.max,
+        sources: cost.sources,
+      })),
+      durations: result.durations.map(withTranslation),
+      totals: result.totals,
+      closureSources:
+        entry?.version.status === 'closed'
+          ? (entry.version.closureSources ?? []).flatMap((id) =>
+              entry.version.sources.filter((source) => source.id === id),
+            )
+          : [],
+      missingRates: result.missingRates,
+      missingDates: result.missingDates,
+    };
+  };
 
 export type CaseEvaluationsView = ReturnType<typeof caseEvaluations>;

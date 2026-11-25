@@ -637,3 +637,72 @@ export const comparisonPreferences = cases.table(
     ...erasedByJobs('comparison_preferences', table.accountId),
   ],
 );
+
+/**
+ * One move of the family plan (ADR-0040): in a stage, a member of the case applies for a route as
+ * principal. Every member of the case reads and writes the plan, which holds no facts about
+ * anyone; a write replaces the whole plan. Deleting the principal deletes the move.
+ */
+export const planMove = cases.table(
+  'plan_move',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    caseId: uuid('case_id').notNull(),
+    /** The move's place in the plan as the family last wrote it. */
+    position: integer('position').notNull(),
+    stage: integer('stage').notNull(),
+    routeId: text('route_id').notNull(),
+    principalId: uuid('principal_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    personRow([table.principalId, table.caseId], 'plan_move_principal_fkey'),
+    unique('plan_move_id_case_id_key').on(table.id, table.caseId),
+    unique('plan_move_case_id_position_key').on(table.caseId, table.position),
+    unique('plan_move_case_id_route_id_principal_id_key').on(
+      table.caseId,
+      table.routeId,
+      table.principalId,
+    ),
+    index('plan_move_principal_id_idx').on(table.principalId),
+    check('plan_move_position_range', sql`${table.position} BETWEEN 0 AND 19`),
+    check('plan_move_stage_range', sql`${table.stage} BETWEEN 1 AND 6`),
+    check('plan_move_route_id_shape', sql`${table.routeId} ~ '^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$'`),
+    ...memberAccess('plan_move', table.caseId),
+  ],
+);
+
+/** Someone a move of the family plan takes along; deleting the move or the person deletes it. */
+export const planMoveDependent = cases.table(
+  'plan_move_dependent',
+  {
+    moveId: uuid('move_id').notNull(),
+    caseId: uuid('case_id').notNull(),
+    personId: uuid('person_id').notNull(),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    primaryKey({ name: 'plan_move_dependent_pkey', columns: [table.moveId, table.personId] }),
+    foreignKey({
+      name: 'plan_move_dependent_move_fkey',
+      columns: [table.moveId, table.caseId],
+      foreignColumns: [planMove.id, planMove.caseId],
+    }).onDelete('cascade'),
+    personRow([table.personId, table.caseId], 'plan_move_dependent_person_fkey'),
+    index('plan_move_dependent_person_id_idx').on(table.personId),
+    ...memberAccess('plan_move_dependent', table.caseId),
+  ],
+);
+
+/** The plan's access: every member of the case reads, adds and deletes its rows; nobody updates. */
+function memberAccess(table: string, caseId: AnyPgColumn) {
+  return [
+    pgPolicy(`${table}_select_member`, { for: 'select', to: 'app_api', using: isMember(caseId) }),
+    pgPolicy(`${table}_insert_member`, {
+      for: 'insert',
+      to: 'app_api',
+      withCheck: isMember(caseId),
+    }),
+    pgPolicy(`${table}_delete_member`, { for: 'delete', to: 'app_api', using: isMember(caseId) }),
+  ];
+}

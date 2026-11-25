@@ -59,6 +59,7 @@ export function RouteDetail({
   principalId,
   onPrincipal,
   inline = false,
+  plannable = true,
   name,
   words,
 }: {
@@ -67,6 +68,8 @@ export function RouteDetail({
   readonly onPrincipal: (principalId: string) => void;
   /** Under its own card, which already names the route and country. */
   readonly inline?: boolean;
+  /** Offers to put the route in the family plan; the plan's own panel leaves it out. */
+  readonly plannable?: boolean;
   readonly name: (id: string) => string;
   readonly words: KnowledgeWords;
 }) {
@@ -129,7 +132,13 @@ export function RouteDetail({
         {...(row.results.length > 1 ? tabPanelProps(tabsId, result.principalId) : {})}
         className="flex flex-col gap-4 outline-none"
       >
-        <PrincipalResult result={result} name={name} words={words} showOriginal={showOriginal} />
+        <PrincipalResult
+          result={result}
+          plannable={plannable}
+          name={name}
+          words={words}
+          showOriginal={showOriginal}
+        />
       </div>
       {versionNumber !== undefined && (
         <RouteUpdateRequest routeId={row.routeId} versionNumber={versionNumber} words={words} />
@@ -140,11 +149,13 @@ export function RouteDetail({
 
 function PrincipalResult({
   result,
+  plannable,
   name,
   words,
   showOriginal,
 }: {
   readonly result: RouteResult;
+  readonly plannable: boolean;
   readonly name: (id: string) => string;
   readonly words: KnowledgeWords;
   readonly showOriginal: boolean;
@@ -177,13 +188,24 @@ function PrincipalResult({
         </p>
       )}
       {result.status !== 'unavailable' && (
-        <Link
-          to="/family/documents"
-          search={{ route: result.routeId, person: result.principalId }}
-          className={`${textLinkClass} self-start`}
-        >
-          {t('checklist.open')}
-        </Link>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link
+            to="/family/documents"
+            search={{ route: result.routeId, person: result.principalId }}
+            className={textLinkClass}
+          >
+            {t('checklist.open')}
+          </Link>
+          {plannable && (
+            <Link
+              to="/family/plan"
+              search={{ route: result.routeId, person: result.principalId }}
+              className={textLinkClass}
+            >
+              {t('results.addToPlan')}
+            </Link>
+          )}
+        </div>
       )}
       {evaluated && (
         <>

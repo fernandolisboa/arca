@@ -1081,6 +1081,7 @@ export const ptBR = {
     title: 'Rotas para a família',
     lead: 'O Arca compara as regras de cada rota com o que está anotado no caso, usando as regras em vigor em {date}.',
     open: 'Ver as rotas para a família',
+    addToPlan: 'Pôr no plano da família',
     signIn: 'Entre para ver as rotas para a família.',
     noCase: 'Comece o caso na área da família para ver as rotas.',
     loadFailure: 'Não conseguimos avaliar as rotas agora.',
@@ -1195,6 +1196,77 @@ export const ptBR = {
       stoppedHint:
         'A pesquisa parou antes de chegar a uma proposta. Quem administra vai decidir o que fazer, e você pode mandar outro pedido.',
       reason: 'Motivo: {reason}',
+    },
+  },
+  /** The family plan (ADR-0040): each person's route, who goes along, and who goes first. */
+  plan: {
+    title: 'Plano da família',
+    lead: 'Escolha a rota de cada pessoa, quem vai junto e quem vai primeiro. O Arca confere cada mudança com as regras em vigor em {date}, contando só quem vai nela.',
+    open: 'Montar o plano da família',
+    signIn: 'Entre para ver o plano da família.',
+    noCase: 'Comece o caso na área da família para montar o plano.',
+    loadFailure: 'Não conseguimos carregar o plano agora.',
+    tooMany: 'Você abriu esta tela muitas vezes na última hora. Espere um pouco e tente de novo.',
+    retry: 'Tentar de novo',
+    back: 'Voltar para a área da família',
+    add: 'Adicionar mudança',
+    shared: 'Todo mundo que participa do caso vê e edita este plano.',
+    empty: 'O plano ainda está vazio. Comece por quem vai primeiro.',
+    stage: 'Etapa {n}',
+    stageFirst: 'Quem vai primeiro',
+    stageLater: 'Depois da etapa {previous}',
+    principal: '{name} pede o visto',
+    takes: 'leva {names}',
+    takesNobody: 'sem acompanhantes',
+    alreadyThere: '{name} já terá se mudado na etapa {stage}.',
+    noVersion: 'Rota sem versão ativa',
+    notCovered:
+      'Esta rota não leva {names}. Escolha outra rota para essa pessoa ou tire ela desta mudança.',
+    maybeCovered:
+      'Ainda não dá para saber se esta rota leva {names}. As perguntas na tela de rotas resolvem isso.',
+    coverage:
+      '{coverage, select, covered {A rota leva junto.} possible {Ainda não dá para saber se a rota leva junto.} other {A rota não leva junto.}}',
+    details: 'Ver detalhes',
+    documents: 'Lista de documentos',
+    edit: 'Editar',
+    remove: 'Tirar do plano',
+    closeDetail: 'Fechar detalhes',
+    sideTitle: 'Detalhes da mudança',
+    summaryTitle: 'Resumo do plano',
+    totalTitle: 'Total em dinheiro do plano',
+    noTotal: 'Nenhum custo anotado ainda',
+    totalHow:
+      'Soma dos totais de cada mudança, contando só quem vai em cada uma. Não inclui câmbio, advogado nem viagem.',
+    peopleTitle: 'Quem já está no plano',
+    allPlanned: 'Todo mundo do caso já tem uma etapa.',
+    unplanned: 'Ainda sem etapa: {names}.',
+    saveFailure:
+      '{reason, select, invalid {O plano mudou ou cita alguém que não está mais no caso. Recarregue a tela e tente de novo.} limited {Você salvou muitas vezes na última hora. Espere um pouco e tente de novo.} unreachable {Não conseguimos falar com o Arca agora. Confira a internet e tente de novo.} other {Não deu para salvar o plano agora. Tente de novo.}}',
+    guideTitle: 'Como montar o plano',
+    guideMoves:
+      'Cada mudança é um pedido de visto: uma pessoa pede e leva junto quem a rota aceita. O Arca avalia a rota só com quem vai naquela mudança, então a renda exigida e as taxas mudam conforme o grupo.',
+    guideStages:
+      'As etapas dizem a ordem. Quem vai primeiro fica na etapa 1, e quem vai depois entra numa etapa seguinte.',
+    reunionTitle: 'Reagrupamento familiar',
+    reunion:
+      'Para levar alguém depois, crie numa etapa seguinte uma mudança de quem já se mudou, pela rota de reagrupamento do país, levando quem vai. O tempo de residência de quem já mora lá sai dos períodos de residência anotados no caso.',
+    editor: {
+      title: '{editing, select, yes {Editar mudança} other {Nova mudança}}',
+      principal: 'Quem pede o visto',
+      principalHint: 'A pessoa que a rota avalia como requerente principal.',
+      route: 'Rota',
+      routeOption: '{country} · {route}',
+      pick: 'Escolha',
+      statusNow: 'Situação hoje, com a família toda:',
+      taken: 'Essa pessoa já tem esta rota no plano.',
+      stage: 'Etapa',
+      stageHint: 'A etapa 1 é de quem vai primeiro.',
+      together: 'Quem vai junto',
+      togetherHint:
+        'Marque só quem vai nesta mudança. Quem for depois pode entrar numa etapa seguinte.',
+      save: 'Salvar no plano',
+      saving: 'Salvando…',
+      cancel: 'Cancelar',
     },
   },
   /** A route's document checklist (spec #519): what each person hands in, with its sources. */
@@ -2525,6 +2597,8 @@ export const ptBR = {
       aiKeys: 'Quando você salvou ou removeu uma chave de API de IA',
       comparisonPreferences:
         'Suas escolhas em Comparar destinos: pesos, suas notas, critérios próprios e países ocultos',
+      planMoves: 'As mudanças do plano da família em que a pessoa vai como requerente principal',
+      planMoveDependents: 'As mudanças do plano da família em que a pessoa vai junto',
     },
   },
   /** The country picker: a search over the countries, each with its flag. */

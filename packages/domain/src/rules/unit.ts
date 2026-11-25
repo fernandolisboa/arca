@@ -33,12 +33,12 @@ export interface PossibleDependent extends Dependent {
 }
 
 /**
- * Someone the version does not cover: no rule's path reaches them, no condition holds, or, while
- * any dependent rule lacks its reference date, nobody can be ruled out.
+ * Someone outside the unit: no rule's path reaches them, no condition holds, while any dependent
+ * rule lacks its reference date nobody can be ruled out, or a family plan leaves them behind.
  */
 export interface ExcludedPerson {
   readonly personId: string;
-  readonly reason: 'not_related' | 'condition_not_met' | 'reference_date_missing';
+  readonly reason: 'not_related' | 'condition_not_met' | 'reference_date_missing' | 'not_chosen';
 }
 
 /**
@@ -148,6 +148,7 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
   const dependents: Dependent[] = [];
   const possibleDependents: PossibleDependent[] = [];
   const excluded: ExcludedPerson[] = [];
+  const chosen = prepared.context.chosenDependents;
   for (const { id } of indexed.snapshot.people) {
     if (id === principalId) continue;
     const candidate = candidates.get(id);
@@ -156,7 +157,10 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
       rules: [...(candidate?.rules ?? [])],
       edges: [...(candidate?.edges ?? [])].map(([edge, holds]) => ({ edge, holds })),
     };
-    if (candidate?.truth === true) dependents.push(member);
+    const covered = candidate !== undefined && candidate.truth !== false;
+    if (covered && chosen !== undefined && !chosen.includes(id)) {
+      excluded.push({ personId: id, reason: 'not_chosen' });
+    } else if (candidate?.truth === true) dependents.push(member);
     else if (candidate?.truth === 'unknown') {
       possibleDependents.push({ ...member, missingFacts: distinct(candidate.gaps) });
     } else {
@@ -172,7 +176,8 @@ export function unitOf(prepared: Prepared): { unit: Unit; traces: readonly Trace
     }
   }
   const gaps = traceGaps(traces);
-  const missingMarkers = [...markers.values()];
+  // A plan names everyone who goes, so a relative missing from the case cannot join the unit.
+  const missingMarkers = chosen === undefined ? [...markers.values()] : [];
   const unit: Unit = {
     principalId,
     dependents,
