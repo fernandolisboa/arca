@@ -23,6 +23,7 @@ interface Version {
   readonly assessments: readonly Titled[];
   readonly costs: readonly Titled[];
   readonly durations: readonly Titled[];
+  readonly documents?: readonly (Titled & { readonly note?: string })[];
 }
 
 const versionFile = /^(?:[a-z0-9-]+\.)?[1-9][0-9]*\.json$/;
@@ -45,11 +46,17 @@ async function repositoryVersions(): Promise<Version[]> {
   return (await Promise.all(dirs.map(versionsIn))).flat();
 }
 
-/** The titles the results screen shows for a version: its own and each item's. */
+/**
+ * The titles the screens show for a version: its own, each item's, and each document's title and
+ * note.
+ */
 const titlesOf = (version: Version) => [
   version.title,
   ...[...version.requirements, ...version.assessments, ...version.costs, ...version.durations].map(
     ({ title }) => title,
+  ),
+  ...(version.documents ?? []).flatMap(({ title, note }) =>
+    note === undefined ? [title] : [title, note],
   ),
 ];
 

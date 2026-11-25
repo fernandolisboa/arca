@@ -79,7 +79,10 @@ describe.skipIf(wanted.size === 0)('the evidence of a session review (ADR-0032)'
         const addresses = machineReadableUrls(version.entry);
         const pages = new Map<string, ReadPage>();
         const unread: string[] = [];
-        for (const [url, hosts] of hostsByUrl(checkItems(version.entry), version.officialHosts)) {
+        for (const [url, hosts] of hostsByUrl(
+          checkItems(version.entry, { documents: true }),
+          version.officialHosts,
+        )) {
           const { outcome, page } = await readOfficialPage(fetcher, url, addresses.get(url), hosts);
           if (page === undefined)
             unread.push(`${url}: ${outcome.ok ? 'no page' : outcome.failure}`);

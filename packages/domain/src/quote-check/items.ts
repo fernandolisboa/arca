@@ -12,6 +12,7 @@ export const checkItemKinds = [
   'dependent',
   'cost',
   'duration',
+  'document',
   'leapDayBirthday',
   'closure',
   'countrySet',
@@ -160,8 +161,13 @@ export function machineReadableUrls(entry: CatalogEntry): ReadonlyMap<string, st
  * assessment, dependent rule, cost and duration, the leap-day rule when the version settles one,
  * the closure when the version has one, and each pinned country set's members, which are read on
  * the set's own sources and official-domain lists. Settings that cite no source are not items.
+ * Document items are compared only when `documents` asks for them, as a session review does: an
+ * update request keeps a route's document list as it is (spec #519).
  */
-export function checkItems({ version, countrySets }: CatalogEntry): readonly CheckItem[] {
+export function checkItems(
+  { version, countrySets }: CatalogEntry,
+  { documents = false }: { readonly documents?: boolean } = {},
+): readonly CheckItem[] {
   const urls = (ids: readonly string[]) => officialUrls(ids, version.sources);
   const own = { officialDomains: version.officialDomains };
   const item = (
@@ -203,6 +209,19 @@ export function checkItems({ version, countrySets }: CatalogEntry): readonly Che
         sources,
         uniqueValues([...durationValues(min), ...durationValues(max)]),
       ),
+    ),
+    ...(documents ? (version.documents ?? []) : []).map(
+      ({ id, title, condition, validity, sources }) =>
+        item(
+          'document',
+          id,
+          title,
+          sources,
+          uniqueValues([
+            ...(condition === undefined ? [] : expressionValues(condition)),
+            ...(validity === undefined ? [] : durationValues(validity)),
+          ]),
+        ),
     ),
     ...(version.leapDayBirthday === undefined || version.leapDayBirthday === 'unsettled'
       ? []
