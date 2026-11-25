@@ -1064,7 +1064,14 @@ describe('a business and a work period at it (ADR-0036)', () => {
 });
 
 describe('qualifications and registrations (ADR-0036)', () => {
-  const degree = { level: 7, field: '0912', country: 'BR', completed: '2010-12' };
+  const degree = {
+    level: 7,
+    field: '0912',
+    country: 'BR',
+    status: 'completed',
+    completed: '2010-12',
+  };
+  const dropped = { country: 'PT', status: 'incomplete' };
   const licence = { country: 'BR', occupation: '2211', since: '2011-02' };
 
   it('saves them, reads them back and plays them back', async () => {
@@ -1074,14 +1081,14 @@ describe('qualifications and registrations (ADR-0036)', () => {
         personId: people.alice,
         answers: [
           { questionId: 'educationLevel', answer: 7 },
-          { questionId: 'qualifications', answer: [degree, { country: 'PT' }] },
+          { questionId: 'qualifications', answer: [degree, dropped] },
           { questionId: 'registrations', answer: [licence] },
         ],
       }),
     );
     expect(view.people.find(({ id }) => id === people.alice)?.profile?.facts).toEqual({
       educationLevel: 7,
-      qualifications: [degree, { country: 'PT' }],
+      qualifications: [degree, dropped],
       registrations: [licence],
     });
     expect((await files.questions(alice))?.studyFields).toEqual(['0613', '0912']);
@@ -1091,7 +1098,7 @@ describe('qualifications and registrations (ADR-0036)', () => {
     const about = { about: [people.alice], person: people.alice };
     expect(said).toEqual([
       { kind: 'qualification', question: 'qualifications', ...about, ...degree },
-      { kind: 'qualification', question: 'qualifications', ...about, country: 'PT' },
+      { kind: 'qualification', question: 'qualifications', ...about, ...dropped },
       { kind: 'registration', question: 'registrations', ...about, ...licence },
     ]);
   });
@@ -1107,8 +1114,12 @@ describe('qualifications and registrations (ADR-0036)', () => {
     expect(await answer([asked('qualifications', [{ field: '9999' }])])).toBe('case_invalid');
     expect(await answer([asked('registrations', [{ occupation: '9999' }])])).toBe('case_invalid');
     expect(
-      await answer([asked('educationLevel', 6), asked('qualifications', [{ level: 7 }])]),
+      await answer([
+        asked('educationLevel', 6),
+        asked('qualifications', [{ level: 7, status: 'completed' }]),
+      ]),
     ).toBe('case_invalid');
+    expect(await answer([asked('qualifications', [{ level: 6 }])])).toBe('case_invalid');
     const write = async (facts: unknown) =>
       refusal(
         await files.writeProfile(alice, {

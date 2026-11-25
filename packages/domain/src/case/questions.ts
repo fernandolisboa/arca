@@ -16,6 +16,7 @@ import {
   isicSections,
   languageLevels,
   parentKinds,
+  qualificationStatuses,
   residenceBases,
   workCapacities,
   workRelations,
@@ -55,6 +56,9 @@ export const choiceSets = {
   citizenshipBasis: citizenshipBases,
   /** ISCED 2011 levels. */
   educationLevel: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+  /** The ISCED 2011 levels a course can lead to: technical secondary and above. */
+  qualificationLevel: [3, 4, 5, 6, 7, 8],
+  qualificationStatus: qualificationStatuses,
   languageLevel: languageLevels,
   isicSection: isicSections as readonly string[],
   incomeKind: incomeKinds,
@@ -185,10 +189,11 @@ export const questionFlow = [
     input: {
       kind: 'list',
       fields: [
-        maybe('level', { kind: 'choice', set: 'educationLevel' }),
+        maybe('level', { kind: 'choice', set: 'qualificationLevel' }),
         maybe('field', { kind: 'studyField' }),
+        needed('status', { kind: 'choice', set: 'qualificationStatus' }),
         maybe('country', { kind: 'country', formerStates: true }),
-        maybe('completed', partialDate),
+        onlyWhen('status', 'completed')(maybe('completed', partialDate)),
       ],
     },
   },
@@ -444,7 +449,7 @@ export function classifiedCodesKnown(
   );
 }
 
-/** Whether every code an answer names is a known one, and every field it fills is one it asks. */
+/** Whether every code an answer names is a known one, and every list item fills the fields it needs and only those it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
@@ -468,13 +473,16 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
       value.every(
         (item) =>
           isRecord(item) &&
-          input.fields.every(
-            ({ key, input: field, onlyWhen }: QuestionField) =>
-              fieldKnown(field, item[key]) &&
-              (onlyWhen === undefined ||
-                item[key] === undefined ||
-                item[onlyWhen.key] === onlyWhen.value),
-          ),
+          (item['dropped'] === true ||
+            input.fields.every(
+              ({ key, input: field, onlyWhen, optional }: QuestionField) =>
+                fieldKnown(field, item[key]) &&
+                (onlyWhen === undefined
+                  ? optional || item[key] !== undefined
+                  : item[onlyWhen.key] === onlyWhen.value
+                    ? optional || item[key] !== undefined
+                    : item[key] === undefined),
+            )),
       )
     );
   }
@@ -500,6 +508,12 @@ export function answerOf(question: Question, state: QuestionState): unknown {
   const { target } = question;
   switch (target.kind) {
     case 'fact':
+      // A qualification recorded before the status existed was a finished one.
+      if (target.key === 'qualifications') {
+        return state.facts.qualifications?.map((held) =>
+          held.status === undefined ? { ...held, status: 'completed' } : held,
+        );
+      }
       return mapList(question.input, state.facts[target.key], moneyAnswer);
     case 'marker':
       return state.facts.recordedInFull?.includes(target.marker) === true ? true : undefined;

@@ -15,6 +15,8 @@ export interface SelectFieldProps {
   /** Shown first, with an empty value, while nothing is chosen. */
   readonly placeholder?: string;
   readonly required?: boolean;
+  /** Keeps the label and hint for screen readers only, where the screen shows them elsewhere. */
+  readonly labelHidden?: boolean;
 }
 
 /** A labelled native select at the touch target's height, which phones open as their own picker. */
@@ -26,12 +28,13 @@ export function SelectField({
   options,
   placeholder,
   required,
+  labelHidden = false,
 }: SelectFieldProps) {
   const id = useId();
   const hintId = useId();
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="font-medium">
+      <label htmlFor={id} className={labelHidden ? 'sr-only' : 'font-medium'}>
         {label}
       </label>
       <select
@@ -52,7 +55,7 @@ export function SelectField({
         ))}
       </select>
       {hint !== undefined && (
-        <p id={hintId} className="text-small text-muted">
+        <p id={hintId} className={labelHidden ? 'sr-only' : 'text-small text-muted'}>
           {hint}
         </p>
       )}

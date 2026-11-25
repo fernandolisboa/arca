@@ -13,7 +13,7 @@ export const recognition = {
   empty: 'Ainda não há caminho de revalidação para nenhuma profissão.',
   holders: 'Na família: {names}',
   noHolders:
-    'Ninguém da família tem esta profissão nas respostas. Responda nas perguntas guiadas sobre trabalho, oferta de emprego, registro profissional ou formação, e o Arca mostra aqui para quem é.',
+    'Ninguém da família tem esta profissão nas respostas. Responda no questionário sobre trabalho, oferta de emprego, registro profissional ou formação, e o Arca mostra aqui para quem é.',
   step: 'Etapa {number}',
   source: 'Fonte: {host} · conferida em {date}',
   track: {

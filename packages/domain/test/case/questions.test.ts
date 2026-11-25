@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
-import { coupleEdgeSchema, incomeSchema, parentEdgeSchema } from '../../src/case/snapshot.js';
+import {
+  coupleEdgeSchema,
+  incomeSchema,
+  parentEdgeSchema,
+  qualificationSchema,
+} from '../../src/case/snapshot.js';
 import {
   type Question,
   type QuestionState,
@@ -197,8 +202,8 @@ describe('answering the guided questions (spec 0007, R4)', () => {
 
   it('saves qualifications and registrations, leaving out what is not known', () => {
     const qualifications = [
-      { level: 7, field: '0912', country: 'BR', completed: '2012-12' },
-      { level: 6, country: 'YUCS' },
+      { level: 7, field: '0912', country: 'BR', status: 'completed', completed: '2012-12' },
+      { level: 6, country: 'YUCS', status: 'incomplete' },
     ];
     const registrations = [{ country: 'BR', occupation: '2211', since: '2013-02' }, {}];
     const applied = apply(empty, { educationLevel: 7, qualifications, registrations });
@@ -216,11 +221,36 @@ describe('answering the guided questions (spec 0007, R4)', () => {
   });
 
   it('refuses a qualification above the education level, either way round', () => {
-    expect(apply(empty, { educationLevel: 6, qualifications: [{ level: 7 }] }).ok).toBe(false);
-    const held = apply(empty, { educationLevel: 7, qualifications: [{ level: 7 }] });
+    const master = [{ level: 7, status: 'completed' }];
+    expect(apply(empty, { educationLevel: 6, qualifications: master }).ok).toBe(false);
+    const held = apply(empty, { educationLevel: 7, qualifications: master });
     if (!held.ok) throw new Error('refused');
     expect(apply(held.state, { educationLevel: 6 }).ok).toBe(false);
     expect(apply(held.state, { educationLevel: null }).ok).toBe(true);
+  });
+
+  it('takes an unfinished course above the education level, which it never raises', () => {
+    const dropped = [{ level: 6, field: '0613', status: 'incomplete' }];
+    const studying = [{ level: 7, status: 'studying' }];
+    expect(apply(empty, { educationLevel: 3, qualifications: dropped }).ok).toBe(true);
+    expect(apply(empty, { educationLevel: 6, qualifications: studying }).ok).toBe(true);
+    expect(apply(empty, { qualifications: [{ status: 'incomplete', completed: '2010' }] }).ok).toBe(
+      false,
+    );
+  });
+
+  it('refuses a completion date on a course that was not finished, whatever writes it', () => {
+    expect(qualificationSchema.safeParse({ status: 'studying', completed: '2010' }).success).toBe(
+      false,
+    );
+    expect(qualificationSchema.safeParse({ completed: '2010' }).success).toBe(true);
+  });
+
+  it('reads a qualification recorded without a status as a finished one', () => {
+    const state = { ...empty, facts: { qualifications: [{ level: 6 }] } };
+    expect(answerOf(question('qualifications'), state)).toEqual([
+      { level: 6, status: 'completed' },
+    ]);
   });
 
   it('saves a job offer’s occupation, salary and sponsorship, each of which may be unknown', () => {

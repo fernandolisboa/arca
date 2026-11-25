@@ -52,6 +52,8 @@ export interface SearchPickerProps {
   readonly lead?: (value: string) => ReactNode;
   /** Short labels in a grid of tiles, or long ones in a list of one or two columns. */
   readonly layout?: 'grid' | 'list';
+  /** Keeps the label and hint for screen readers only, where the screen shows them elsewhere. */
+  readonly labelHidden?: boolean;
 }
 
 const optionClass =
@@ -277,6 +279,7 @@ export function SearchPicker({
   placeholder,
   groups,
   lead,
+  labelHidden = false,
   ...options
 }: SearchPickerProps) {
   const id = useId();
@@ -288,7 +291,7 @@ export function SearchPicker({
 
   return (
     <div className="flex flex-col gap-1">
-      <label id={labelId} htmlFor={id} className="font-medium">
+      <label id={labelId} htmlFor={id} className={labelHidden ? 'sr-only' : 'font-medium'}>
         {label}
       </label>
       <button
@@ -309,7 +312,7 @@ export function SearchPicker({
         </span>
       </button>
       {hint !== undefined && (
-        <p id={hintId} className="text-small text-muted">
+        <p id={hintId} className={labelHidden ? 'sr-only' : 'text-small text-muted'}>
           {hint}
         </p>
       )}
