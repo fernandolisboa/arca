@@ -1,0 +1,3799 @@
+{
+  "schemaVersion": 1,
+  "number": 1,
+  "sources": [
+    {
+      "id": "noaa-statewide",
+      "url": "https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/statewide/time-series",
+      "title": "NOAA NCEI, Climate at a Glance: statewide annual average temperature, mean of 1991-2020 (converted from °F)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "aemet-normals",
+      "url": "https://www.aemet.es/es/serviciosclimaticos/datosclimatologicos/valoresclimatologicos",
+      "title": "AEMET, valores climatológicos normales 1981-2010: annual mean temperature at a station of the regional capital",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ipma-normals",
+      "url": "https://www.ipma.pt/pt/oclima/normais.clima/1991-2020/normalclimate9120.jsp",
+      "title": "IPMA, Normais climatológicas 1991-2020: annual mean temperature at the station of the district capital",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "tax-foundation-states",
+      "url": "https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/",
+      "title": "Tax Foundation, state income tax rates 2026: top state rate plus the 37% federal top rate (Washington taxes only capital gains, so none on wages)",
+      "kind": "secondary",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "aeat-irpf-2025",
+      "url": "https://sede.agenciatributaria.gob.es/Sede/ayuda/manuales-videos-folletos/manuales-practicos/irpf-2025/c15-calculo-impuesto-determinacion-cuotas-integras/gravamen-base-liquidable-general/gravamen-autonomico.html",
+      "title": "Agencia Tributaria, Manual práctico de Renta 2025: top rate of the regional scale plus the 24.5% state top rate (common-regime communities only)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-azores-irs",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/informacoes_vinculativas/rendimento/cirs/Documents/PIV_25858.pdf",
+      "title": "Autoridade Tributária, informação vinculativa 25858: national IRS rates cut by 30% in the Azores (DLR 2/99/A, art. 4), so 48% becomes 33.6%",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "pt-madeira-irs",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/legislacao/outros_diplomas/Documents/decreto-legislativo-regional-17-2026-m.pdf",
+      "title": "Decreto Legislativo Regional 17/2026/M: IRS rate table for residents of Madeira in 2026, top rate 33.60%",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "bea-rpp",
+      "url": "https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area",
+      "title": "U.S. Bureau of Economic Analysis, Regional Price Parities by state 2024: housing, as a percentage of the national level",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "mivau-valor-tasado",
+      "url": "https://cdn.mivau.gob.es/portal-web-mivau/Datos_MIVAU/CSV/VDP006_01.csv",
+      "title": "Ministerio de Vivienda y Agenda Urbana, valor tasado de la vivienda libre, 2nd quarter of 2026: euros per m² in the community, as a percentage of Spain",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ine-pt-housing",
+      "url": "https://www.ine.pt/xportal/xmain?xpid=INE&xpgid=ine_indicadores&indOcorrCod=0012236",
+      "title": "INE Portugal, valor mediano das vendas de alojamentos familiares nos últimos 12 meses, 2nd quarter of 2026: euros per m² in the district capital, as a percentage of Portugal",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "bls-laus",
+      "url": "https://www.bls.gov/lau/",
+      "title": "U.S. Bureau of Labor Statistics, LAUS: state unemployment rate, mean of the 2025 months published (read through FRED)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ine-es-epa",
+      "url": "https://www.ine.es/jaxiT3/Tabla.htm?t=65334",
+      "title": "INE España, Encuesta de Población Activa: unemployment rate by community, mean of the four quarters of 2025",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ine-pt-unemployment",
+      "url": "https://www.ine.pt/xportal/xmain?xpid=INE&xpgid=ine_indicadores&indOcorrCod=0012173",
+      "title": "INE Portugal, taxa de desemprego por NUTS II, 2025 (Algarve for Faro, and the two autonomous regions)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "acs-b05006",
+      "url": "https://data.census.gov/table/ACSDT5Y2024.B05006",
+      "title": "U.S. Census Bureau, American Community Survey 2020-2024 5-year estimates, table B05006: people born in Brazil, by state",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "ine-es-census",
+      "url": "https://www.ine.es/jaxiT3/Tabla.htm?t=68528",
+      "title": "INE España, Censo anual de población, 1 January 2026: people born in Brazil, by community",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "anac-vra",
+      "url": "https://www.gov.br/anac/pt-br/assuntos/dados-e-estatisticas",
+      "title": "ANAC, Voo Regular Ativo, October 2025 to September 2026: international scheduled flights flown from Brazil, by destination airport",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "iana-tz",
+      "url": "https://www.iana.org/time-zones",
+      "title": "IANA Time Zone Database: standard time of the region's main zone, hours from Brasília",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "boe-estatut-catalunya",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2006-13087",
+      "title": "Estatuto de Autonomía de Cataluña, article 6: Catalan is co-official with Spanish",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "boe-estatut-balears",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-2007-4233",
+      "title": "Estatuto de Autonomía de las Illes Balears, article 4: Catalan is co-official with Spanish",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "boe-estatut-valenciana",
+      "url": "https://www.boe.es/eli/es/lo/1982/07/01/5/con",
+      "title": "Estatuto de Autonomía de la Comunitat Valenciana, article 6: Valencian is co-official with Spanish",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "boe-estatuto-galicia",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1981-9564",
+      "title": "Estatuto de Autonomía de Galicia, article 5: Galician is co-official with Spanish",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "boe-estatuto-pais-vasco",
+      "url": "https://www.boe.es/buscar/act.php?id=BOE-A-1979-30177",
+      "title": "Estatuto de Autonomía del País Vasco, article 6: Basque is co-official with Spanish",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    }
+  ],
+  "regions": [
+    "US-AL",
+    "US-AK",
+    "US-AZ",
+    "US-AR",
+    "US-CA",
+    "US-CO",
+    "US-CT",
+    "US-DE",
+    "US-DC",
+    "US-FL",
+    "US-GA",
+    "US-HI",
+    "US-ID",
+    "US-IL",
+    "US-IN",
+    "US-IA",
+    "US-KS",
+    "US-KY",
+    "US-LA",
+    "US-ME",
+    "US-MD",
+    "US-MA",
+    "US-MI",
+    "US-MN",
+    "US-MS",
+    "US-MO",
+    "US-MT",
+    "US-NE",
+    "US-NV",
+    "US-NH",
+    "US-NJ",
+    "US-NM",
+    "US-NY",
+    "US-NC",
+    "US-ND",
+    "US-OH",
+    "US-OK",
+    "US-OR",
+    "US-PA",
+    "US-RI",
+    "US-SC",
+    "US-SD",
+    "US-TN",
+    "US-TX",
+    "US-UT",
+    "US-VT",
+    "US-VA",
+    "US-WA",
+    "US-WV",
+    "US-WI",
+    "US-WY",
+    "ES-AN",
+    "ES-AR",
+    "ES-AS",
+    "ES-IB",
+    "ES-CN",
+    "ES-CB",
+    "ES-CL",
+    "ES-CM",
+    "ES-CT",
+    "ES-VC",
+    "ES-EX",
+    "ES-GA",
+    "ES-MD",
+    "ES-MC",
+    "ES-NC",
+    "ES-PV",
+    "ES-RI",
+    "ES-CE",
+    "ES-ML",
+    "PT-01",
+    "PT-02",
+    "PT-03",
+    "PT-04",
+    "PT-05",
+    "PT-06",
+    "PT-07",
+    "PT-08",
+    "PT-09",
+    "PT-10",
+    "PT-11",
+    "PT-12",
+    "PT-13",
+    "PT-14",
+    "PT-15",
+    "PT-16",
+    "PT-17",
+    "PT-18",
+    "PT-20",
+    "PT-30"
+  ],
+  "criteria": [
+    {
+      "id": "climate",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 4,
+          "value": "17.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-AK",
+          "stars": 1,
+          "value": "-2.2",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-AZ",
+          "stars": 4,
+          "value": "16.2",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-AR",
+          "stars": 4,
+          "value": "16.1",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-CA",
+          "stars": 4,
+          "value": "15.0",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-CO",
+          "stars": 2,
+          "value": "7.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-CT",
+          "stars": 2,
+          "value": "10.0",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-DE",
+          "stars": 3,
+          "value": "13.4",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-FL",
+          "stars": 5,
+          "value": "21.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-GA",
+          "stars": 4,
+          "value": "17.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-ID",
+          "stars": 1,
+          "value": "6.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-IL",
+          "stars": 3,
+          "value": "11.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-IN",
+          "stars": 3,
+          "value": "11.3",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-IA",
+          "stars": 2,
+          "value": "9.1",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-KS",
+          "stars": 3,
+          "value": "12.8",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-KY",
+          "stars": 3,
+          "value": "13.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-LA",
+          "stars": 4,
+          "value": "19.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-ME",
+          "stars": 1,
+          "value": "5.4",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MD",
+          "stars": 3,
+          "value": "13.0",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MA",
+          "stars": 2,
+          "value": "9.3",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MI",
+          "stars": 2,
+          "value": "7.3",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MN",
+          "stars": 1,
+          "value": "5.4",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MS",
+          "stars": 4,
+          "value": "17.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MO",
+          "stars": 3,
+          "value": "12.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-MT",
+          "stars": 1,
+          "value": "5.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NE",
+          "stars": 2,
+          "value": "9.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NV",
+          "stars": 2,
+          "value": "10.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NH",
+          "stars": 1,
+          "value": "6.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NJ",
+          "stars": 3,
+          "value": "12.0",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NM",
+          "stars": 3,
+          "value": "12.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NY",
+          "stars": 2,
+          "value": "7.8",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-NC",
+          "stars": 4,
+          "value": "15.3",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-ND",
+          "stars": 1,
+          "value": "5.0",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-OH",
+          "stars": 2,
+          "value": "10.9",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-OK",
+          "stars": 4,
+          "value": "15.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-OR",
+          "stars": 2,
+          "value": "8.8",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-PA",
+          "stars": 2,
+          "value": "9.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-RI",
+          "stars": 2,
+          "value": "10.4",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-SC",
+          "stars": 4,
+          "value": "17.4",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-SD",
+          "stars": 2,
+          "value": "7.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-TN",
+          "stars": 3,
+          "value": "14.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-TX",
+          "stars": 4,
+          "value": "18.8",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-UT",
+          "stars": 2,
+          "value": "9.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-VT",
+          "stars": 1,
+          "value": "6.1",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-VA",
+          "stars": 3,
+          "value": "13.3",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-WA",
+          "stars": 2,
+          "value": "8.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-WV",
+          "stars": 3,
+          "value": "11.5",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-WI",
+          "stars": 1,
+          "value": "6.6",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "US-WY",
+          "stars": 1,
+          "value": "5.7",
+          "source": "noaa-statewide"
+        },
+        {
+          "region": "ES-AN",
+          "stars": 4,
+          "value": "19.2",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-AR",
+          "stars": 4,
+          "value": "15.5",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-AS",
+          "stars": 3,
+          "value": "13.3",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-IB",
+          "stars": 4,
+          "value": "16.5",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-CN",
+          "stars": 5,
+          "value": "21.5",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-CB",
+          "stars": 3,
+          "value": "14.5",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-CL",
+          "stars": 3,
+          "value": "12.7",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-CM",
+          "stars": 4,
+          "value": "15.8",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-CT",
+          "stars": 4,
+          "value": "16.1",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-VC",
+          "stars": 4,
+          "value": "18.3",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-EX",
+          "stars": 4,
+          "value": "16.3",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-GA",
+          "stars": 3,
+          "value": "13.0",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-MD",
+          "stars": 4,
+          "value": "15.0",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-MC",
+          "stars": 4,
+          "value": "18.6",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-NC",
+          "stars": 3,
+          "value": "12.9",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-PV",
+          "stars": 3,
+          "value": "11.7",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-RI",
+          "stars": 3,
+          "value": "13.9",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "ES-ML",
+          "stars": 4,
+          "value": "18.9",
+          "source": "aemet-normals"
+        },
+        {
+          "region": "PT-01",
+          "stars": 4,
+          "value": "15.8",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-02",
+          "stars": 4,
+          "value": "17.1",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-03",
+          "stars": 3,
+          "value": "14.9",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-04",
+          "stars": 3,
+          "value": "12.9",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-05",
+          "stars": 4,
+          "value": "16.1",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-06",
+          "stars": 4,
+          "value": "16.2",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-07",
+          "stars": 4,
+          "value": "16.6",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-08",
+          "stars": 4,
+          "value": "18.2",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-09",
+          "stars": 3,
+          "value": "11.6",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-11",
+          "stars": 4,
+          "value": "17.6",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-12",
+          "stars": 4,
+          "value": "15.9",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-13",
+          "stars": 4,
+          "value": "15.3",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-14",
+          "stars": 4,
+          "value": "17.1",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-15",
+          "stars": 4,
+          "value": "16.7",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-17",
+          "stars": 3,
+          "value": "13.8",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-18",
+          "stars": 3,
+          "value": "13.9",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-20",
+          "stars": 4,
+          "value": "18.2",
+          "source": "ipma-normals"
+        },
+        {
+          "region": "PT-30",
+          "stars": 5,
+          "value": "20.0",
+          "source": "ipma-normals"
+        }
+      ]
+    },
+    {
+      "id": "language",
+      "ratings": [
+        {
+          "region": "ES-CT",
+          "stars": 3,
+          "value": "es-ca",
+          "source": "boe-estatut-catalunya"
+        },
+        {
+          "region": "ES-IB",
+          "stars": 3,
+          "value": "es-ca",
+          "source": "boe-estatut-balears"
+        },
+        {
+          "region": "ES-VC",
+          "stars": 3,
+          "value": "es-ca",
+          "source": "boe-estatut-valenciana"
+        },
+        {
+          "region": "ES-GA",
+          "stars": 4,
+          "value": "es-gl",
+          "source": "boe-estatuto-galicia"
+        },
+        {
+          "region": "ES-PV",
+          "stars": 2,
+          "value": "es-eu",
+          "source": "boe-estatuto-pais-vasco"
+        }
+      ]
+    },
+    {
+      "id": "jobs",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 5,
+          "value": "2.9",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-AK",
+          "stars": 4,
+          "value": "4.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-AZ",
+          "stars": 4,
+          "value": "4.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-AR",
+          "stars": 5,
+          "value": "4.0",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-CA",
+          "stars": 4,
+          "value": "5.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-CO",
+          "stars": 5,
+          "value": "4.0",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-CT",
+          "stars": 5,
+          "value": "3.9",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-DE",
+          "stars": 4,
+          "value": "4.7",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-DC",
+          "stars": 3,
+          "value": "6.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-FL",
+          "stars": 5,
+          "value": "3.9",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-GA",
+          "stars": 5,
+          "value": "3.4",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-HI",
+          "stars": 5,
+          "value": "2.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-ID",
+          "stars": 5,
+          "value": "3.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-IL",
+          "stars": 4,
+          "value": "4.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-IN",
+          "stars": 5,
+          "value": "3.7",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-IA",
+          "stars": 5,
+          "value": "3.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-KS",
+          "stars": 5,
+          "value": "3.8",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-KY",
+          "stars": 4,
+          "value": "4.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-LA",
+          "stars": 4,
+          "value": "4.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-ME",
+          "stars": 5,
+          "value": "3.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MD",
+          "stars": 5,
+          "value": "4.0",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MA",
+          "stars": 4,
+          "value": "4.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MI",
+          "stars": 4,
+          "value": "5.1",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MN",
+          "stars": 5,
+          "value": "3.8",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MS",
+          "stars": 5,
+          "value": "3.8",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MO",
+          "stars": 5,
+          "value": "4.0",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-MT",
+          "stars": 5,
+          "value": "3.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NE",
+          "stars": 5,
+          "value": "2.9",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NV",
+          "stars": 4,
+          "value": "5.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NH",
+          "stars": 5,
+          "value": "3.1",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NJ",
+          "stars": 4,
+          "value": "5.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NM",
+          "stars": 4,
+          "value": "4.1",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NY",
+          "stars": 4,
+          "value": "4.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-NC",
+          "stars": 5,
+          "value": "3.8",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-ND",
+          "stars": 5,
+          "value": "2.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-OH",
+          "stars": 4,
+          "value": "4.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-OK",
+          "stars": 5,
+          "value": "3.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-OR",
+          "stars": 4,
+          "value": "5.2",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-PA",
+          "stars": 4,
+          "value": "4.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-RI",
+          "stars": 4,
+          "value": "4.4",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-SC",
+          "stars": 4,
+          "value": "4.4",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-SD",
+          "stars": 5,
+          "value": "2.1",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-TN",
+          "stars": 5,
+          "value": "3.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-TX",
+          "stars": 4,
+          "value": "4.2",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-UT",
+          "stars": 5,
+          "value": "3.5",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-VT",
+          "stars": 5,
+          "value": "2.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-VA",
+          "stars": 5,
+          "value": "3.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-WA",
+          "stars": 4,
+          "value": "4.6",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-WV",
+          "stars": 4,
+          "value": "4.1",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-WI",
+          "stars": 5,
+          "value": "3.2",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "US-WY",
+          "stars": 5,
+          "value": "3.3",
+          "source": "bls-laus",
+          "year": 2025
+        },
+        {
+          "region": "ES-AN",
+          "stars": 1,
+          "value": "15.2",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-AR",
+          "stars": 3,
+          "value": "8.0",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-AS",
+          "stars": 2,
+          "value": "8.8",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-IB",
+          "stars": 2,
+          "value": "8.9",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CN",
+          "stars": 1,
+          "value": "13.5",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CB",
+          "stars": 3,
+          "value": "7.3",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CL",
+          "stars": 2,
+          "value": "8.6",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CM",
+          "stars": 1,
+          "value": "12.8",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CT",
+          "stars": 2,
+          "value": "8.4",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-VC",
+          "stars": 1,
+          "value": "11.6",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-EX",
+          "stars": 1,
+          "value": "14.8",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-GA",
+          "stars": 2,
+          "value": "8.3",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-MD",
+          "stars": 3,
+          "value": "8.0",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-MC",
+          "stars": 1,
+          "value": "12.1",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-NC",
+          "stars": 3,
+          "value": "7.7",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-PV",
+          "stars": 3,
+          "value": "7.3",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-RI",
+          "stars": 2,
+          "value": "8.1",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-CE",
+          "stars": 1,
+          "value": "24.4",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "ES-ML",
+          "stars": 1,
+          "value": "24.8",
+          "source": "ine-es-epa",
+          "year": 2025
+        },
+        {
+          "region": "PT-08",
+          "stars": 4,
+          "value": "5.6",
+          "source": "ine-pt-unemployment",
+          "year": 2025
+        },
+        {
+          "region": "PT-20",
+          "stars": 4,
+          "value": "4.9",
+          "source": "ine-pt-unemployment",
+          "year": 2025
+        },
+        {
+          "region": "PT-30",
+          "stars": 4,
+          "value": "5.4",
+          "source": "ine-pt-unemployment",
+          "year": 2025
+        }
+      ]
+    },
+    {
+      "id": "taxes",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 2,
+          "value": "42",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-AK",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-AZ",
+          "stars": 2,
+          "value": "39.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-AR",
+          "stars": 2,
+          "value": "40.9",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-CA",
+          "stars": 1,
+          "value": "50.3",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-CO",
+          "stars": 2,
+          "value": "41.4",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-CT",
+          "stars": 2,
+          "value": "43.99",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-DE",
+          "stars": 2,
+          "value": "43.6",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-DC",
+          "stars": 2,
+          "value": "47.75",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-FL",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-GA",
+          "stars": 2,
+          "value": "42.19",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-HI",
+          "stars": 2,
+          "value": "48",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-ID",
+          "stars": 2,
+          "value": "42.3",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-IL",
+          "stars": 2,
+          "value": "41.95",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-IN",
+          "stars": 2,
+          "value": "39.95",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-IA",
+          "stars": 2,
+          "value": "40.8",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-KS",
+          "stars": 2,
+          "value": "42.58",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-KY",
+          "stars": 2,
+          "value": "40.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-LA",
+          "stars": 2,
+          "value": "40",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-ME",
+          "stars": 2,
+          "value": "44.15",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MD",
+          "stars": 2,
+          "value": "43.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MA",
+          "stars": 2,
+          "value": "46",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MI",
+          "stars": 2,
+          "value": "41.25",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MN",
+          "stars": 2,
+          "value": "46.85",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MS",
+          "stars": 2,
+          "value": "41",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MO",
+          "stars": 2,
+          "value": "41.7",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-MT",
+          "stars": 2,
+          "value": "42.65",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NE",
+          "stars": 2,
+          "value": "41.55",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NV",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NH",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NJ",
+          "stars": 2,
+          "value": "47.75",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NM",
+          "stars": 2,
+          "value": "42.9",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NY",
+          "stars": 2,
+          "value": "47.9",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-NC",
+          "stars": 2,
+          "value": "40.99",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-ND",
+          "stars": 2,
+          "value": "39.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-OH",
+          "stars": 2,
+          "value": "39.75",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-OK",
+          "stars": 2,
+          "value": "41.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-OR",
+          "stars": 2,
+          "value": "46.9",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-PA",
+          "stars": 2,
+          "value": "40.07",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-RI",
+          "stars": 2,
+          "value": "42.99",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-SC",
+          "stars": 2,
+          "value": "43",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-SD",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-TN",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-TX",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-UT",
+          "stars": 2,
+          "value": "41.5",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-VT",
+          "stars": 2,
+          "value": "45.75",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-VA",
+          "stars": 2,
+          "value": "42.75",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-WA",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-WV",
+          "stars": 2,
+          "value": "41.82",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-WI",
+          "stars": 2,
+          "value": "44.65",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "US-WY",
+          "stars": 3,
+          "value": "37",
+          "source": "tax-foundation-states",
+          "year": 2026
+        },
+        {
+          "region": "ES-AN",
+          "stars": 2,
+          "value": "47",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-AR",
+          "stars": 1,
+          "value": "50",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-AS",
+          "stars": 1,
+          "value": "50.5",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-IB",
+          "stars": 1,
+          "value": "49.25",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-CN",
+          "stars": 1,
+          "value": "50.5",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-CB",
+          "stars": 1,
+          "value": "49",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-CM",
+          "stars": 2,
+          "value": "47",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-CL",
+          "stars": 2,
+          "value": "46",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-CT",
+          "stars": 1,
+          "value": "50",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-EX",
+          "stars": 1,
+          "value": "49.5",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-GA",
+          "stars": 2,
+          "value": "47",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-MD",
+          "stars": 2,
+          "value": "45",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-MC",
+          "stars": 2,
+          "value": "47",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-RI",
+          "stars": 1,
+          "value": "51.5",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "ES-VC",
+          "stars": 1,
+          "value": "54",
+          "source": "aeat-irpf-2025",
+          "year": 2025
+        },
+        {
+          "region": "PT-20",
+          "stars": 3,
+          "value": "33.6",
+          "source": "pt-azores-irs",
+          "year": 2026
+        },
+        {
+          "region": "PT-30",
+          "stars": 3,
+          "value": "33.6",
+          "source": "pt-madeira-irs",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "id": "brazilian-community",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 2,
+          "value": "2623",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-AK",
+          "stars": 1,
+          "value": "517",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-AZ",
+          "stars": 2,
+          "value": "4032",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-AR",
+          "stars": 2,
+          "value": "1954",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-CA",
+          "stars": 4,
+          "value": "56101",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-CO",
+          "stars": 2,
+          "value": "7260",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-CT",
+          "stars": 3,
+          "value": "25958",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-DE",
+          "stars": 1,
+          "value": "678",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-DC",
+          "stars": 2,
+          "value": "1499",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-FL",
+          "stars": 5,
+          "value": "150348",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-GA",
+          "stars": 3,
+          "value": "21261",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-HI",
+          "stars": 2,
+          "value": "1679",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-ID",
+          "stars": 1,
+          "value": "698",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-IL",
+          "stars": 2,
+          "value": "9551",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-IN",
+          "stars": 2,
+          "value": "3145",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-IA",
+          "stars": 2,
+          "value": "1486",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-KS",
+          "stars": 2,
+          "value": "1574",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-KY",
+          "stars": 1,
+          "value": "962",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-LA",
+          "stars": 2,
+          "value": "3543",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-ME",
+          "stars": 1,
+          "value": "826",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MD",
+          "stars": 3,
+          "value": "11817",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MA",
+          "stars": 4,
+          "value": "111397",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MI",
+          "stars": 2,
+          "value": "8509",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MN",
+          "stars": 2,
+          "value": "2947",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MS",
+          "stars": 1,
+          "value": "623",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MO",
+          "stars": 2,
+          "value": "2216",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-MT",
+          "stars": 1,
+          "value": "360",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NE",
+          "stars": 1,
+          "value": "592",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NV",
+          "stars": 2,
+          "value": "4691",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NH",
+          "stars": 2,
+          "value": "3128",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NJ",
+          "stars": 4,
+          "value": "53649",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NM",
+          "stars": 1,
+          "value": "780",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NY",
+          "stars": 3,
+          "value": "32329",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-NC",
+          "stars": 3,
+          "value": "11246",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-ND",
+          "stars": 1,
+          "value": "478",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-OH",
+          "stars": 2,
+          "value": "6537",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-OK",
+          "stars": 2,
+          "value": "1463",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-OR",
+          "stars": 2,
+          "value": "2312",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-PA",
+          "stars": 3,
+          "value": "17404",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-RI",
+          "stars": 2,
+          "value": "3802",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-SC",
+          "stars": 2,
+          "value": "6896",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-SD",
+          "stars": 1,
+          "value": "196",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-TN",
+          "stars": 2,
+          "value": "3833",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-TX",
+          "stars": 3,
+          "value": "32968",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-UT",
+          "stars": 2,
+          "value": "8143",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-VT",
+          "stars": 1,
+          "value": "471",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-VA",
+          "stars": 2,
+          "value": "9056",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-WA",
+          "stars": 3,
+          "value": "10901",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-WV",
+          "stars": 1,
+          "value": "382",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-WI",
+          "stars": 2,
+          "value": "2645",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "US-WY",
+          "stars": 1,
+          "value": "223",
+          "source": "acs-b05006",
+          "year": 2024
+        },
+        {
+          "region": "ES-AN",
+          "stars": 3,
+          "value": "20481",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-AR",
+          "stars": 2,
+          "value": "4268",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-AS",
+          "stars": 2,
+          "value": "4976",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-IB",
+          "stars": 2,
+          "value": "8134",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CN",
+          "stars": 2,
+          "value": "5110",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CB",
+          "stars": 2,
+          "value": "2627",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CL",
+          "stars": 2,
+          "value": "9052",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CM",
+          "stars": 2,
+          "value": "5566",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CT",
+          "stars": 3,
+          "value": "45966",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-VC",
+          "stars": 3,
+          "value": "22113",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-EX",
+          "stars": 2,
+          "value": "2927",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-GA",
+          "stars": 3,
+          "value": "23555",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-MD",
+          "stars": 3,
+          "value": "32184",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-MC",
+          "stars": 2,
+          "value": "3188",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-NC",
+          "stars": 2,
+          "value": "3468",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-PV",
+          "stars": 2,
+          "value": "8295",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-RI",
+          "stars": 2,
+          "value": "1042",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-CE",
+          "stars": 1,
+          "value": "35",
+          "source": "ine-es-census",
+          "year": 2026
+        },
+        {
+          "region": "ES-ML",
+          "stars": 1,
+          "value": "43",
+          "source": "ine-es-census",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "id": "housing-cost",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 3,
+          "value": "61",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-AK",
+          "stars": 2,
+          "value": "93",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-AZ",
+          "stars": 2,
+          "value": "106",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-AR",
+          "stars": 3,
+          "value": "58",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-CA",
+          "stars": 1,
+          "value": "153",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-CO",
+          "stars": 1,
+          "value": "127",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-CT",
+          "stars": 1,
+          "value": "116",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-DE",
+          "stars": 2,
+          "value": "101",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-DC",
+          "stars": 1,
+          "value": "154",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-FL",
+          "stars": 1,
+          "value": "121",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-GA",
+          "stars": 2,
+          "value": "88",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-HI",
+          "stars": 1,
+          "value": "125",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-ID",
+          "stars": 2,
+          "value": "89",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-IL",
+          "stars": 2,
+          "value": "93",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-IN",
+          "stars": 3,
+          "value": "73",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-IA",
+          "stars": 3,
+          "value": "65",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-KS",
+          "stars": 3,
+          "value": "71",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-KY",
+          "stars": 3,
+          "value": "64",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-LA",
+          "stars": 3,
+          "value": "63",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-ME",
+          "stars": 2,
+          "value": "78",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MD",
+          "stars": 1,
+          "value": "120",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MA",
+          "stars": 1,
+          "value": "127",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MI",
+          "stars": 2,
+          "value": "82",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MN",
+          "stars": 2,
+          "value": "91",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MS",
+          "stars": 3,
+          "value": "56",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MO",
+          "stars": 3,
+          "value": "69",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-MT",
+          "stars": 2,
+          "value": "84",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NE",
+          "stars": 2,
+          "value": "75",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NV",
+          "stars": 1,
+          "value": "113",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NH",
+          "stars": 1,
+          "value": "114",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NJ",
+          "stars": 1,
+          "value": "133",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NM",
+          "stars": 3,
+          "value": "73",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NY",
+          "stars": 1,
+          "value": "121",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-NC",
+          "stars": 2,
+          "value": "81",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-ND",
+          "stars": 3,
+          "value": "71",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-OH",
+          "stars": 3,
+          "value": "73",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-OK",
+          "stars": 3,
+          "value": "62",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-OR",
+          "stars": 1,
+          "value": "108",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-PA",
+          "stars": 2,
+          "value": "85",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-RI",
+          "stars": 2,
+          "value": "105",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-SC",
+          "stars": 2,
+          "value": "80",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-SD",
+          "stars": 3,
+          "value": "67",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-TN",
+          "stars": 2,
+          "value": "79",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-TX",
+          "stars": 2,
+          "value": "96",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-UT",
+          "stars": 1,
+          "value": "107",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-VT",
+          "stars": 2,
+          "value": "86",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-VA",
+          "stars": 2,
+          "value": "106",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-WA",
+          "stars": 1,
+          "value": "125",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-WV",
+          "stars": 3,
+          "value": "54",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-WI",
+          "stars": 2,
+          "value": "79",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "US-WY",
+          "stars": 3,
+          "value": "71",
+          "source": "bea-rpp",
+          "year": 2024
+        },
+        {
+          "region": "ES-AN",
+          "stars": 3,
+          "value": "84",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-AR",
+          "stars": 3,
+          "value": "75",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-AS",
+          "stars": 3,
+          "value": "76",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-IB",
+          "stars": 1,
+          "value": "169",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CN",
+          "stars": 3,
+          "value": "97",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CB",
+          "stars": 3,
+          "value": "90",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CL",
+          "stars": 4,
+          "value": "57",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CM",
+          "stars": 4,
+          "value": "52",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CT",
+          "stars": 2,
+          "value": "117",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-VC",
+          "stars": 3,
+          "value": "82",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-EX",
+          "stars": 4,
+          "value": "42",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-GA",
+          "stars": 4,
+          "value": "70",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-MD",
+          "stars": 1,
+          "value": "174",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-MC",
+          "stars": 4,
+          "value": "57",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-NC",
+          "stars": 3,
+          "value": "82",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-PV",
+          "stars": 2,
+          "value": "132",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-RI",
+          "stars": 4,
+          "value": "63",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-CE",
+          "stars": 3,
+          "value": "94",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "ES-ML",
+          "stars": 3,
+          "value": "92",
+          "source": "mivau-valor-tasado",
+          "year": 2026
+        },
+        {
+          "region": "PT-01",
+          "stars": 3,
+          "value": "106",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-02",
+          "stars": 4,
+          "value": "56",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-03",
+          "stars": 3,
+          "value": "97",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-04",
+          "stars": 4,
+          "value": "53",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-05",
+          "stars": 5,
+          "value": "47",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-06",
+          "stars": 3,
+          "value": "101",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-07",
+          "stars": 3,
+          "value": "103",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-08",
+          "stars": 2,
+          "value": "139",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-09",
+          "stars": 5,
+          "value": "41",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-10",
+          "stars": 4,
+          "value": "88",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-11",
+          "stars": 1,
+          "value": "229",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-12",
+          "stars": 5,
+          "value": "49",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-13",
+          "stars": 2,
+          "value": "160",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-14",
+          "stars": 4,
+          "value": "70",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-15",
+          "stars": 3,
+          "value": "122",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-16",
+          "stars": 4,
+          "value": "86",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-17",
+          "stars": 4,
+          "value": "78",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-18",
+          "stars": 4,
+          "value": "72",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-20",
+          "stars": 4,
+          "value": "92",
+          "source": "ine-pt-housing",
+          "year": 2026
+        },
+        {
+          "region": "PT-30",
+          "stars": 2,
+          "value": "156",
+          "source": "ine-pt-housing",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "id": "direct-flight",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-AK",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-AZ",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-AR",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-CA",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-CO",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-CT",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-DE",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-DC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-FL",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-GA",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-HI",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-ID",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-IL",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-IN",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-IA",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-KS",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-KY",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-LA",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-ME",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MD",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MA",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MI",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MN",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MS",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MO",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-MT",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NE",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NV",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NH",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NJ",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NM",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NY",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-NC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-ND",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-OH",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-OK",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-OR",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-PA",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-RI",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-SC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-SD",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-TN",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-TX",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-UT",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-VT",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-VA",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-WA",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-WV",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-WI",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "US-WY",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-AN",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-AR",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-AS",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-IB",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CN",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CB",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CL",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CM",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CT",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-VC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-EX",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-GA",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-MD",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-MC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-NC",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-PV",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-RI",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-CE",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "ES-ML",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-01",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-02",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-03",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-04",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-05",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-06",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-07",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-08",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-09",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-10",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-11",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-12",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-13",
+          "stars": 5,
+          "value": "direct",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-14",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-15",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-16",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-17",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-18",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-20",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        },
+        {
+          "region": "PT-30",
+          "stars": 2,
+          "value": "connection",
+          "source": "anac-vra"
+        }
+      ]
+    },
+    {
+      "id": "time-zone",
+      "ratings": [
+        {
+          "region": "US-AL",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-AK",
+          "stars": 2,
+          "value": "6",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-AZ",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-AR",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-CA",
+          "stars": 3,
+          "value": "5",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-CO",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-CT",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-DE",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-DC",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-FL",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-GA",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-HI",
+          "stars": 2,
+          "value": "7",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-ID",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-IL",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-IN",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-IA",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-KS",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-KY",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-LA",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-ME",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MD",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MA",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MI",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MN",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MS",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MO",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-MT",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NE",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NV",
+          "stars": 3,
+          "value": "5",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NH",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NJ",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NM",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NY",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-NC",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-ND",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-OH",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-OK",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-OR",
+          "stars": 3,
+          "value": "5",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-PA",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-RI",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-SC",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-SD",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-TN",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-TX",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-UT",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-VT",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-VA",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-WA",
+          "stars": 3,
+          "value": "5",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-WV",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-WI",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "US-WY",
+          "stars": 3,
+          "value": "4",
+          "source": "iana-tz"
+        },
+        {
+          "region": "ES-CN",
+          "stars": 4,
+          "value": "3",
+          "source": "iana-tz"
+        },
+        {
+          "region": "PT-20",
+          "stars": 4,
+          "value": "2",
+          "source": "iana-tz"
+        }
+      ]
+    }
+  ]
+}

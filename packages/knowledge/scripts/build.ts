@@ -12,6 +12,7 @@ import {
   recognitionTracksSchema,
   documentGuidesSchema,
   suggestedRatingsSchema,
+  regionRatingsSchema,
 } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { parseJsonSubset } from '@arca/scripts/json';
@@ -53,6 +54,8 @@ export interface CatalogParts {
   readonly rows: RuleRows;
   /** The highest-numbered suggested ratings file (ADR-0035), or null when there is none. */
   readonly suggestedRatings?: Json | null;
+  /** The highest-numbered regions file (ADR-0042), or null when there is none. */
+  readonly regionRatings?: Json | null;
   /** The highest-numbered departure checklists file (ADR-0038), or null when there is none. */
   readonly departureChecklists?: Json | null;
   /** The highest-numbered document guides file (ADR-0039), or null when there is none. */
@@ -217,6 +220,7 @@ export function runtimeModule({
   datasetFiles = {},
   comparisons = [],
   suggestedRatings = null,
+  regionRatings = null,
   departureChecklists = null,
   documentGuides = null,
   recognitionTracks = null,
@@ -232,6 +236,7 @@ export function runtimeModule({
     exportedJson('comparisonData', comparisons),
     exportedJson('comparisonHostData', hostsOf(urls)),
     exportedJson('suggestedRatingData', suggestedRatings),
+    exportedJson('regionRatingData', regionRatings),
     exportedJson('departureChecklistData', departureChecklists),
     exportedJson('documentGuideData', documentGuides),
     exportedJson('recognitionTrackData', recognitionTracks),
@@ -270,6 +275,9 @@ async function readLatestNumbered(
 /** The highest-numbered suggested ratings file in `dir` (ADR-0035), or null. */
 export const readSuggestedRatings = (dir: string) =>
   readLatestNumbered(dir, suggestedRatingsSchema);
+
+/** The highest-numbered regions file in `dir` (ADR-0042), or null. */
+export const readRegionRatings = (dir: string) => readLatestNumbered(dir, regionRatingsSchema);
 
 /**
  * The highest-numbered file in `dir` of official sources (ADR-0038), or null; a source verified
@@ -366,14 +374,21 @@ async function main(): Promise<void> {
   }
   await mkdir(generated, { recursive: true });
   await writeFile(targets.catalog, catalogModule(parts));
-  const [suggestedRatings, departureChecklists, documentGuides, recognitionTracks, ruleTextFiles] =
-    await Promise.all([
-      readSuggestedRatings(join(packageDir, 'suggested-ratings')),
-      readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
-      readDocumentGuides(join(packageDir, 'document-guides'), today),
-      readRecognitionTracks(join(packageDir, 'recognition-tracks'), today),
-      readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
-    ]);
+  const [
+    suggestedRatings,
+    regionRatings,
+    departureChecklists,
+    documentGuides,
+    recognitionTracks,
+    ruleTextFiles,
+  ] = await Promise.all([
+    readSuggestedRatings(join(packageDir, 'suggested-ratings')),
+    readRegionRatings(join(packageDir, 'regions')),
+    readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
+    readDocumentGuides(join(packageDir, 'document-guides'), today),
+    readRecognitionTracks(join(packageDir, 'recognition-tracks'), today),
+    readRuleTexts(join(packageDir, 'rule-texts', ruleTextLocale)),
+  ]);
   const ruleTexts = shipRuleTexts(ruleTextFiles, (text) =>
     createHash('sha256').update(text, 'utf8').digest('hex'),
   );
@@ -382,6 +397,7 @@ async function main(): Promise<void> {
     runtimeModule({
       ...parts,
       suggestedRatings,
+      regionRatings,
       departureChecklists,
       documentGuides,
       recognitionTracks,

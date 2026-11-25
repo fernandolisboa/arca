@@ -4,6 +4,7 @@ import {
   type ComparisonPreferences,
   type DecisionStates,
   type RatingSuggestions,
+  type RegionSuggestions,
   type RouteStatus,
   bestRouteStatuses,
   compareDestinations,
@@ -23,6 +24,7 @@ export interface EvaluatedAsOf {
 export interface ComparisonSettings extends EvaluatedAsOf {
   readonly catalog: ComparisonCatalog;
   readonly suggestions?: RatingSuggestions;
+  readonly regions?: RegionSuggestions;
 }
 
 /**
@@ -36,7 +38,7 @@ export function destinationComparison(
   accountId: string,
   evaluated: CaseEvaluationsView,
   preferences: ComparisonPreferences,
-  { catalog, routeIds, states, today, suggestions }: ComparisonSettings,
+  { catalog, routeIds, states, today, suggestions, regions }: ComparisonSettings,
 ) {
   const { active, pendingNewer } = selectComparisonVersion(catalog.identities(), states);
   const entry = active === undefined ? undefined : catalog.activeEntry(active, states);
@@ -46,6 +48,7 @@ export function destinationComparison(
     countries: comparedCountries(routeIds),
     today,
     ...(suggestions === undefined ? {} : { suggestions }),
+    ...(regions === undefined ? {} : { regions }),
   });
   const me = rows.people.find((person) => person.accountId === accountId)?.id;
   const statuses: ReadonlyMap<string, RouteStatus> =

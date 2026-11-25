@@ -33,6 +33,7 @@ import {
   type HeldAsset,
   type KnownCodes,
   type RatingSuggestions,
+  type RegionSuggestions,
   type RouteCatalog,
   type StoredFinances,
   type StoredProfile,
@@ -255,6 +256,8 @@ export interface CaseFilesSettings {
     readonly comparisons: ComparisonCatalog;
     /** The stars the comparison suggests per country (ADR-0035); none when absent. */
     readonly suggestions?: RatingSuggestions;
+    /** The regions of each country and their suggested stars (ADR-0042); none when absent. */
+    readonly regions?: RegionSuggestions;
     /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
     readonly texts?: RuleTexts;
     /** Where to get each document kind, per issuing country (ADR-0039); none when absent. */
@@ -583,6 +586,7 @@ export function createCaseFiles({
     destinationComparison(rows, accountId, evaluated, preferences, {
       catalog: evaluation.comparisons,
       ...(evaluation.suggestions === undefined ? {} : { suggestions: evaluation.suggestions }),
+      ...(evaluation.regions === undefined ? {} : { regions: evaluation.regions }),
       ...asOf,
     });
 

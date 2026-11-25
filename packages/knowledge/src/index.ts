@@ -8,6 +8,7 @@ import {
   documentGuidesSchema,
   recognitionTrackViews,
   recognitionTracksSchema,
+  regionRatingsSchema,
   suggestedRatingsSchema,
 } from '@arca/domain';
 import { z } from 'zod';
@@ -21,6 +22,7 @@ import {
   documentGuideData,
   recognitionTrackData,
   ruleTextData,
+  regionRatingData,
   suggestedRatingData,
 } from './generated/runtime.js';
 import { shippedRuleTextsSchema } from './rule-texts.js';
@@ -66,6 +68,10 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 /** The stars the comparison suggests per country (ADR-0035), or null when the repository has none. */
 export const suggestedRatings =
   suggestedRatingData === null ? null : suggestedRatingsSchema.parse(suggestedRatingData);
+
+/** The regions of the comparison and their suggested stars (ADR-0042), or null when there are none. */
+export const regionRatings =
+  regionRatingData === null ? null : regionRatingsSchema.parse(regionRatingData);
 
 const departureFile =
   departureChecklistData === null ? null : departureChecklistsSchema.parse(departureChecklistData);
