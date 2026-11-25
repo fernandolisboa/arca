@@ -89,7 +89,7 @@ export const documentGuideWordingSha256 = documentGuideFile?.wordingSha256 ?? nu
 const recognitionFile =
   recognitionTrackData === null ? null : recognitionTracksSchema.parse(recognitionTrackData);
 
-/** How a regulated profession is recognised in each destination, step by step (ADR-0040). */
+/** How a regulated profession is recognised in each destination, step by step (ADR-0041). */
 export const recognitionTracks =
   recognitionFile === null ? [] : recognitionTrackViews(recognitionFile);
 

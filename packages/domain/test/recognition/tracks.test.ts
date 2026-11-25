@@ -45,7 +45,7 @@ const messages = (input: unknown) => {
   return result.success ? [] : result.error.issues.map(({ message }) => message);
 };
 
-describe('recognitionTracksSchema (ADR-0040)', () => {
+describe('recognitionTracksSchema (ADR-0041)', () => {
   it('accepts a file whose sources sit on its official domains', () => {
     expect(messages(file())).toEqual([]);
   });

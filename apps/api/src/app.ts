@@ -49,6 +49,8 @@ import {
   RouteDocuments,
   RouteDocumentsQuery,
   DestinationComparison,
+  FamilyPlan,
+  planRoutes,
   adminRoutes,
   caseRoutes,
   comparisonRoutes,
@@ -264,7 +266,7 @@ export interface AppDependencies {
   readonly criterionSuggestions?: CriterionSuggestions;
   /** What to do when leaving a country, from the repository's reviewed file (ADR-0038). */
   readonly departureChecklists?: readonly DepartureChecklistView[];
-  /** How a profession is recognised abroad, from the repository's reviewed file (ADR-0040). */
+  /** How a profession is recognised abroad, from the repository's reviewed file (ADR-0041). */
   readonly recognitionTracks?: readonly RecognitionTrackView[];
   /** Admins' view of members' rule reports (spec 0007, R8); absent, its routes answer 401. */
   readonly ruleReports?: RuleReportReview;
@@ -357,6 +359,7 @@ export type ErrorCode =
   | 'case_exists'
   | 'case_limit'
   | 'case_invalid'
+  | 'plan_changed'
   | 'too_many_push_channels'
   | 'not_admin'
   | 'owner_list_admin'
@@ -1330,7 +1333,15 @@ export function createApp({
   // The family's case (spec 0007, R3): a confirmed account, and writes within their hourly limit.
   const caseAccount = async (
     c: Context<AppEnv>,
-    counted: 'write' | 'playback' | 'evaluations' | 'documents' | 'comparison' | 'reports' | false,
+    counted:
+      | 'write'
+      | 'playback'
+      | 'evaluations'
+      | 'documents'
+      | 'comparison'
+      | 'plan'
+      | 'reports'
+      | false,
   ) => {
     const current = await signedIn(c);
     if (current === null || cases === undefined || authLimits === undefined) {
@@ -1511,6 +1522,22 @@ export function createApp({
     return comparison === null
       ? fail(c, 'not_found', 404)
       : c.json(DestinationComparison.parse(comparison), 200);
+  });
+  v1.openapi(openApiRoutes.getFamilyPlan, async (c) => {
+    const account = await caseAccount(c, 'plan');
+    if ('refused' in account) return account.refused;
+    const plan = await account.cases.plan(account.current.accountId);
+    return plan === null ? fail(c, 'not_found', 404) : c.json(FamilyPlan.parse(plan), 200);
+  });
+  v1.openapi(openApiRoutes.writeFamilyPlan, async (c) => {
+    const account = await caseAccount(c, 'write');
+    if ('refused' in account) return account.refused;
+    const request = planRoutes.writeFamilyPlan.body.parse(await c.req.json());
+    const outcome = await account.cases.writePlan(account.current.accountId, request);
+    if (outcome.ok) return c.json(FamilyPlan.parse(outcome.view), 200);
+    return outcome.reason === 'not_found'
+      ? fail(c, 'not_found', 404)
+      : fail(c, outcome.reason, 409);
   });
   v1.openapi(openApiRoutes.getDepartureChecklists, async (c) => {
     if ((await signedIn(c)) === null) return unauthorized(c);

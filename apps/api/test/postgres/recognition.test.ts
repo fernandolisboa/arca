@@ -6,7 +6,7 @@ import { auditLog } from '../../src/audit/log.js';
 import { type CaseFiles, type CaseWritten, createCaseFiles } from '../../src/case/case-files.js';
 import { authTestDatabase, type AuthTestDatabase } from './auth-database.js';
 
-// Whom the recognition tracks concern, on the real migrations, as app_api (ADR-0040): synthetic
+// Whom the recognition tracks concern, on the real migrations, as app_api (ADR-0041): synthetic
 // people only.
 let testDatabase: AuthTestDatabase;
 let files: CaseFiles;
@@ -76,7 +76,7 @@ async function family() {
   return { ana, people: { ana: created.me, caio } };
 }
 
-describe('whom the recognition tracks concern (ADR-0040)', () => {
+describe('whom the recognition tracks concern (ADR-0041)', () => {
   it('names the people whose facts carry the profession', async () => {
     const { ana, people } = await family();
     expect(await files.recognitionHolders(ana, recognitionTracks)).toEqual([

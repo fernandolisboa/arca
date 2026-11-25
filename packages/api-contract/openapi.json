@@ -3180,6 +3180,7 @@
                               "case_created",
                               "member_joined",
                               "member_left",
+                              "plan_written",
                               "person_added",
                               "person_removed",
                               "person_handed_over",
@@ -42303,127 +42304,1951 @@
         }
       }
     },
-    "/recognition-tracks": {
+    "/case/plan": {
       "get": {
-        "operationId": "getRecognitionTracks",
-        "summary": "How each regulated profession the repository covers is recognised in each destination, with the official sources of every step and the date each was read, and which people of the viewer’s case each track concerns, those tracks first; signed in (401 otherwise); reading the case counts 120 per hour per session (429 rate_limited)",
+        "operationId": "getFamilyPlan",
+        "summary": "The case's family plan, each move evaluated from what the viewer sees with only the people it takes; 60 per hour per session (429 rate_limited); 404 not_found outside a case",
         "responses": {
           "200": {
-            "description": "The recognition tracks",
+            "description": "The family plan, evaluated",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "tracks": {
+                    "revision": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    },
+                    "rulesAsOf": {
+                      "type": "string",
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                    },
+                    "moves": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "string",
-                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                          "stage": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6
                           },
-                          "destinations": {
+                          "result": {
+                            "type": "object",
+                            "properties": {
+                              "routeId": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                              },
+                              "principalId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "not_eligible",
+                                  "missing_information",
+                                  "needs_assessment",
+                                  "eligible",
+                                  "pending_activation"
+                                ]
+                              },
+                              "route": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "maxLength": 400
+                                  },
+                                  "original": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "maxLength": 200
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "original",
+                                  "country"
+                                ]
+                              },
+                              "version": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "number": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "hash": {
+                                    "type": "string",
+                                    "pattern": "^[0-9a-f]{64}$"
+                                  }
+                                },
+                                "required": [
+                                  "number",
+                                  "hash"
+                                ]
+                              },
+                              "stale": {
+                                "type": "boolean"
+                              },
+                              "newerProposedVersion": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "number": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "from": {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  }
+                                },
+                                "required": [
+                                  "number",
+                                  "from"
+                                ]
+                              },
+                              "dependents": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "maxItems": 60
+                              },
+                              "possibleDependents": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "maxItems": 60
+                              },
+                              "unitOpen": {
+                                "type": "boolean"
+                              },
+                              "requirements": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "result": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "unknown"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "result",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "assessments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 20
+                              },
+                              "costs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "costId": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "appliesTo": {
+                                      "type": "string",
+                                      "enum": [
+                                        "principal",
+                                        "each_dependent",
+                                        "unit"
+                                      ]
+                                    },
+                                    "personId": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "format": "uuid"
+                                    },
+                                    "applies": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "unknown"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "min": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "max": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "costId",
+                                    "title",
+                                    "original",
+                                    "appliesTo",
+                                    "personId",
+                                    "applies",
+                                    "min",
+                                    "max",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 3000
+                              },
+                              "durations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "min": {
+                                      "type": "string",
+                                      "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                    },
+                                    "max": {
+                                      "type": "string",
+                                      "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "min",
+                                    "max",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 20
+                              },
+                              "totals": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    },
+                                    "certain": {
+                                      "type": "object",
+                                      "properties": {
+                                        "min": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        },
+                                        "max": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "min",
+                                        "max"
+                                      ]
+                                    },
+                                    "possibleExtra": {
+                                      "type": "object",
+                                      "properties": {
+                                        "min": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        },
+                                        "max": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "min",
+                                        "max"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "currency",
+                                    "certain",
+                                    "possibleExtra"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "closureSources": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2000
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 200
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "official",
+                                        "secondary"
+                                      ]
+                                    },
+                                    "verifiedAt": {
+                                      "type": "string",
+                                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                    },
+                                    "machineReadableUrl": {
+                                      "type": "string",
+                                      "maxLength": 2000,
+                                      "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "kind",
+                                    "verifiedAt"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "maxItems": 50
+                              },
+                              "missingRates": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "from": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    },
+                                    "to": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "from",
+                                    "to"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "missingDates": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "maxLength": 96
+                                },
+                                "maxItems": 20
+                              }
+                            },
+                            "required": [
+                              "routeId",
+                              "principalId",
+                              "status",
+                              "route",
+                              "version",
+                              "stale",
+                              "newerProposedVersion",
+                              "dependents",
+                              "possibleDependents",
+                              "unitOpen",
+                              "requirements",
+                              "assessments",
+                              "costs",
+                              "durations",
+                              "totals",
+                              "closureSources",
+                              "missingRates",
+                              "missingDates"
+                            ]
+                          },
+                          "dependents": {
                             "type": "array",
                             "items": {
                               "type": "object",
                               "properties": {
-                                "country": {
+                                "personId": {
                                   "type": "string",
-                                  "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  "format": "uuid"
                                 },
-                                "steps": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "properties": {
-                                      "id": {
-                                        "type": "string",
-                                        "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
-                                      },
-                                      "sources": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "url": {
-                                              "type": "string",
-                                              "maxLength": 2000
-                                            },
-                                            "title": {
-                                              "type": "string",
-                                              "minLength": 1,
-                                              "maxLength": 200
-                                            },
-                                            "verifiedAt": {
-                                              "type": "string",
-                                              "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
-                                            }
-                                          },
-                                          "required": [
-                                            "url",
-                                            "title",
-                                            "verifiedAt"
-                                          ],
-                                          "additionalProperties": false
-                                        },
-                                        "minItems": 1,
-                                        "maxItems": 5
-                                      }
-                                    },
-                                    "required": [
-                                      "id",
-                                      "sources"
-                                    ]
-                                  },
-                                  "maxItems": 20
+                                "fit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "covered",
+                                    "possible",
+                                    "not_covered",
+                                    "unknown"
+                                  ]
                                 }
                               },
                               "required": [
-                                "country",
-                                "steps"
+                                "personId",
+                                "fit"
                               ]
                             },
-                            "maxItems": 50
+                            "maxItems": 60
+                          },
+                          "principalGoesFrom": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 6
                           }
                         },
                         "required": [
-                          "id",
-                          "destinations"
+                          "stage",
+                          "result",
+                          "dependents",
+                          "principalGoesFrom"
                         ]
                       },
-                      "maxItems": 50
+                      "maxItems": 20
                     },
-                    "holders": {
+                    "unplanned": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "maxItems": 60
+                    },
+                    "totals": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "trackId": {
+                          "currency": {
                             "type": "string",
-                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                            "pattern": "^[A-Z]{3}$"
                           },
-                          "personIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "format": "uuid"
+                          "certain": {
+                            "type": "object",
+                            "properties": {
+                              "min": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              },
+                              "max": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              }
                             },
-                            "maxItems": 100
+                            "required": [
+                              "min",
+                              "max"
+                            ]
+                          },
+                          "possibleExtra": {
+                            "type": "object",
+                            "properties": {
+                              "min": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              },
+                              "max": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ]
                           }
                         },
                         "required": [
-                          "trackId",
-                          "personIds"
+                          "currency",
+                          "certain",
+                          "possibleExtra"
                         ]
                       },
                       "maxItems": 50
                     }
                   },
                   "required": [
-                    "tracks",
-                    "holders"
+                    "revision",
+                    "rulesAsOf",
+                    "moves",
+                    "unplanned",
+                    "totals"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[a-z_]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "writeFamilyPlan",
+        "summary": "Replaces the case's family plan and answers it evaluated; counts as a case write (429 rate_limited); 404 not_found outside a case; 409 plan_changed when the plan is no longer the revision named, case_invalid for a principal outside the planning, someone outside the case, an unknown route or one route twice for one principal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{43}$"
+                  },
+                  "moves": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "stage": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 6
+                        },
+                        "routeId": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                        },
+                        "principalId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "dependentIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "maxItems": 60
+                        }
+                      },
+                      "required": [
+                        "stage",
+                        "routeId",
+                        "principalId",
+                        "dependentIds"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 20
+                  }
+                },
+                "required": [
+                  "revision",
+                  "moves"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The family plan, evaluated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "revision": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{43}$"
+                    },
+                    "rulesAsOf": {
+                      "type": "string",
+                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                    },
+                    "moves": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stage": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6
+                          },
+                          "result": {
+                            "type": "object",
+                            "properties": {
+                              "routeId": {
+                                "type": "string",
+                                "pattern": "^[a-z]{2}-[a-z0-9][a-z0-9-]{0,62}$"
+                              },
+                              "principalId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "not_eligible",
+                                  "missing_information",
+                                  "needs_assessment",
+                                  "eligible",
+                                  "pending_activation"
+                                ]
+                              },
+                              "route": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "maxLength": 400
+                                  },
+                                  "original": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "maxLength": 200
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "original",
+                                  "country"
+                                ]
+                              },
+                              "version": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "number": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "hash": {
+                                    "type": "string",
+                                    "pattern": "^[0-9a-f]{64}$"
+                                  }
+                                },
+                                "required": [
+                                  "number",
+                                  "hash"
+                                ]
+                              },
+                              "stale": {
+                                "type": "boolean"
+                              },
+                              "newerProposedVersion": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "number": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "from": {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  }
+                                },
+                                "required": [
+                                  "number",
+                                  "from"
+                                ]
+                              },
+                              "dependents": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "maxItems": 60
+                              },
+                              "possibleDependents": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "maxItems": 60
+                              },
+                              "unitOpen": {
+                                "type": "boolean"
+                              },
+                              "requirements": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "result": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "unknown"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "result",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "assessments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 20
+                              },
+                              "costs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "costId": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "appliesTo": {
+                                      "type": "string",
+                                      "enum": [
+                                        "principal",
+                                        "each_dependent",
+                                        "unit"
+                                      ]
+                                    },
+                                    "personId": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "format": "uuid"
+                                    },
+                                    "applies": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "unknown"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "min": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "max": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string",
+                                          "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "pattern": "^[A-Z]{3}$"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ]
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "costId",
+                                    "title",
+                                    "original",
+                                    "appliesTo",
+                                    "personId",
+                                    "applies",
+                                    "min",
+                                    "max",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 3000
+                              },
+                              "durations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "maxLength": 400
+                                    },
+                                    "original": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "maxLength": 200
+                                    },
+                                    "min": {
+                                      "type": "string",
+                                      "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                    },
+                                    "max": {
+                                      "type": "string",
+                                      "pattern": "^P(?:(\\d{1,4})Y)?(?:(\\d{1,5})M)?(?:(\\d{1,6})D)?$"
+                                    },
+                                    "sources": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                          },
+                                          "url": {
+                                            "type": "string",
+                                            "maxLength": 2000
+                                          },
+                                          "title": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 200
+                                          },
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "official",
+                                              "secondary"
+                                            ]
+                                          },
+                                          "verifiedAt": {
+                                            "type": "string",
+                                            "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                          },
+                                          "machineReadableUrl": {
+                                            "type": "string",
+                                            "maxLength": 2000,
+                                            "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "url",
+                                          "title",
+                                          "kind",
+                                          "verifiedAt"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "maxItems": 50
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "title",
+                                    "original",
+                                    "min",
+                                    "max",
+                                    "sources"
+                                  ]
+                                },
+                                "maxItems": 20
+                              },
+                              "totals": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    },
+                                    "certain": {
+                                      "type": "object",
+                                      "properties": {
+                                        "min": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        },
+                                        "max": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "min",
+                                        "max"
+                                      ]
+                                    },
+                                    "possibleExtra": {
+                                      "type": "object",
+                                      "properties": {
+                                        "min": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        },
+                                        "max": {
+                                          "type": [
+                                            "object",
+                                            "null"
+                                          ],
+                                          "properties": {
+                                            "amount": {
+                                              "type": "string",
+                                              "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                            },
+                                            "currency": {
+                                              "type": "string",
+                                              "pattern": "^[A-Z]{3}$"
+                                            }
+                                          },
+                                          "required": [
+                                            "amount",
+                                            "currency"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "min",
+                                        "max"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "currency",
+                                    "certain",
+                                    "possibleExtra"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "closureSources": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                                    },
+                                    "url": {
+                                      "type": "string",
+                                      "maxLength": 2000
+                                    },
+                                    "title": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 200
+                                    },
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "official",
+                                        "secondary"
+                                      ]
+                                    },
+                                    "verifiedAt": {
+                                      "type": "string",
+                                      "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                    },
+                                    "machineReadableUrl": {
+                                      "type": "string",
+                                      "maxLength": 2000,
+                                      "pattern": "^https:\\/\\/[^/?#\\\\@:%\\s\\u3002\\uff0e\\uff61]+(?:[/?#]|$)"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "kind",
+                                    "verifiedAt"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "maxItems": 50
+                              },
+                              "missingRates": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "from": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    },
+                                    "to": {
+                                      "type": "string",
+                                      "pattern": "^[A-Z]{3}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "from",
+                                    "to"
+                                  ]
+                                },
+                                "maxItems": 50
+                              },
+                              "missingDates": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "maxLength": 96
+                                },
+                                "maxItems": 20
+                              }
+                            },
+                            "required": [
+                              "routeId",
+                              "principalId",
+                              "status",
+                              "route",
+                              "version",
+                              "stale",
+                              "newerProposedVersion",
+                              "dependents",
+                              "possibleDependents",
+                              "unitOpen",
+                              "requirements",
+                              "assessments",
+                              "costs",
+                              "durations",
+                              "totals",
+                              "closureSources",
+                              "missingRates",
+                              "missingDates"
+                            ]
+                          },
+                          "dependents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "personId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "fit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "covered",
+                                    "possible",
+                                    "not_covered",
+                                    "unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "personId",
+                                "fit"
+                              ]
+                            },
+                            "maxItems": 60
+                          },
+                          "principalGoesFrom": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 6
+                          }
+                        },
+                        "required": [
+                          "stage",
+                          "result",
+                          "dependents",
+                          "principalGoesFrom"
+                        ]
+                      },
+                      "maxItems": 20
+                    },
+                    "unplanned": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "maxItems": 60
+                    },
+                    "totals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          },
+                          "certain": {
+                            "type": "object",
+                            "properties": {
+                              "min": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              },
+                              "max": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ]
+                          },
+                          "possibleExtra": {
+                            "type": "object",
+                            "properties": {
+                              "min": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              },
+                              "max": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "amount": {
+                                    "type": "string",
+                                    "pattern": "^(-?)(0|[1-9]\\d{0,17})(?:\\.(\\d{1,12}))?$"
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "pattern": "^[A-Z]{3}$"
+                                  }
+                                },
+                                "required": [
+                                  "amount",
+                                  "currency"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "currency",
+                          "certain",
+                          "possibleExtra"
+                        ]
+                      },
+                      "maxItems": 50
+                    }
+                  },
+                  "required": [
+                    "revision",
+                    "rulesAsOf",
+                    "moves",
+                    "unplanned",
+                    "totals"
                   ]
                 }
               }

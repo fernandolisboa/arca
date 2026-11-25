@@ -8,7 +8,7 @@ interface ListedSource {
 }
 
 /**
- * The official pages an item of reviewed data rests on (ADR-0038, ADR-0040): each title, its host
+ * The official pages an item of reviewed data rests on (ADR-0038, ADR-0041): each title, its host
  * as a link and the day it was read. `message` keeps the `{host}` and `{date}` placeholders.
  */
 export function SourceList({

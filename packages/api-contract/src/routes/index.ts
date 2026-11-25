@@ -1,9 +1,10 @@
-import { routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
+import { maxPlanMoves, routeIdSchema, shareScopeSchema, slugSchema } from '@arca/domain';
 import { z } from 'zod';
 import { caseRoutes } from './case.js';
 import { comparisonRoutes } from './comparison.js';
 import { departureRoutes } from './departure.js';
 import { recognitionRoutes } from './recognition.js';
+import { planRoutes } from './plan.js';
 import { adminRoutes } from './admins.js';
 import { AiProvider, AiStage, aiSettingsRoutes } from './ai-settings.js';
 import { knowledgeRoutes } from './knowledge.js';
@@ -839,6 +840,8 @@ export const auditEventDetails = {
   /** `accountId`: the account the actor added. */
   member_joined: caseEvent.extend({ accountId: z.uuid() }),
   member_left: caseEvent,
+  /** A member replaced the family plan (ADR-0040): the count of moves only. */
+  plan_written: caseEvent.extend({ moves: z.int().min(0).max(maxPlanMoves) }),
   person_added: casePersonEvent,
   person_removed: casePersonEvent,
   /** `accountId`: the new keeper. */
@@ -1739,6 +1742,7 @@ export * from './case.js';
 export * from './comparison.js';
 export * from './departure.js';
 export * from './recognition.js';
+export * from './plan.js';
 export * from './knowledge.js';
 export * from './admins.js';
 export * from './uploads.js';
@@ -1805,6 +1809,7 @@ export const routes = {
   ...comparisonRoutes,
   ...departureRoutes,
   ...recognitionRoutes,
+  ...planRoutes,
   ...knowledgeRoutes,
   ...adminRoutes,
   ...aiSettingsRoutes,
@@ -1842,6 +1847,7 @@ export const webPathSegments = [
   'invite',
   'invites',
   'knowledge',
+  'plan',
   'questions',
   'recognition',
   'recover',

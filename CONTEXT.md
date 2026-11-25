@@ -11,7 +11,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Case | Caso | Everything Arca knows about one family: people, relationships, assets, aspirations, plan |
 | Person | Pessoa | An individual in a case |
 | Relationship | Vínculo | A typed link between two people (spouse, ex-spouse, partner, parent, child, sibling, in-law); stored as spouse, partner and parent edges, the rest derived |
-| Unit | Unidade | The group that moves together under one route: a principal applicant plus the dependents that route covers. Computed per route |
+| Unit | Unidade | The group that moves together under one route: a principal applicant plus the dependents that route covers, or, for a move of the family plan, only those of them the move takes. Computed per route |
 | Principal applicant | Requerente principal | The person whose eligibility a route is evaluated on |
 | Dependent | Dependente | A person covered through the principal applicant, as defined by the route |
 | Native national | Internal, no UI label | Someone who has held a country's citizenship since birth: by birth, or by descent or another basis acquired on the birth date, never by naturalization, marriage or investment. Read by the fact `person.citizenshipsFromBirth` |
@@ -57,6 +57,12 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Asset | Bem | Something of value owned by one or more people of the case, with each owner's share; a co-owner named by another keeper stays pending until their keeper confirms; a business also records its country, since when it operates and its head count (#512) |
 | Profile share | Compartilhamento de dados | A keeper letting a chosen member see a person's profile or, separately, their finances or their checklist marks; read only, and not a document share |
 | Case stage | Etapa do caso | Where a case stands on the home: telling about the family, the guided questions, then the routes; counted in the client from the case and its answers, never an eligibility decision |
+| Family plan | Plano da família | The moves the family intends, in stages; one per case, read and written by every member, evaluated by the engine and never an eligibility decision ([ADR-0040](docs/adr/0040-family-plan.md)) |
+| Move | Mudança | One application in the family plan: a member as principal, a route and the people it takes along, in a stage; a person who went in an earlier stage may be the principal of a later move, as in a family reunification; avoid "step", which the step-by-step plan uses. In pt-BR "mudança" means only this on the plan's screen; write "change" as "alteração" there |
+| Plan stage | Etapa | A move's place in the family plan's order, from 1, who goes first; the screen says "Etapa 1". Not a duration stage of the rule schema, a case stage or an update stage |
+| Dependent fit | (no label; "A rota leva junto") | Whether a move's route takes a person the move names: covered, possible, not covered, or unknown when no version was evaluated; read from the engine's unit, never decided elsewhere |
+| Plan total | Total em dinheiro do plano | Every move's cost total added per currency, in code; a closed route adds nothing |
+| Unplanned | Ainda sem etapa | A person in the planning who is in no move of the family plan, as principal or taken along |
 | Progress | Progresso | Documents obtained and steps done out of what a person's or the family's chosen routes need, computed in code; unknowns shown apart |
 | Shared analysis | Análise compartilhada | A comparison or recommendation an adult shares, read-only and revocable, with chosen people in the case; not a document share |
 | Destination comparison | Comparar destinos | One adult's ranking of the countries that have a route, by criteria they weigh themselves; computed in code, private to that adult unless shared as a shared analysis ([ADR-0026](docs/adr/0026-destination-comparison-data.md)) |
@@ -73,7 +79,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Document kind | Tipo de documento | An open lowercase tag naming what a document is, such as `birth_certificate`; route items and guide entries share it |
 | Document guide | Onde tirar | Reviewed data, with official sources, on how to get each document kind in one issuing country: office, cost, lead time, online link and how its apostille is obtained; no activation ([ADR-0039](docs/adr/0039-document-guides.md)) |
 | Checklist mark | Marcação | A keeper's had or missing on one document item for one person, with an optional linked vault document |
-| Recognition track | Revalidação profissional | How a regulated profession's foreign qualification is recognised in a destination, step by step, each step with official sources and the date they were read, and whom in the case it concerns by occupation or field of study; reviewed data, the same for every account ([ADR-0040](docs/adr/0040-professional-recognition-tracks.md)) |
+| Recognition track | Revalidação profissional | How a regulated profession's foreign qualification is recognised in a destination, step by step, each step with official sources and the date they were read, and whom in the case it concerns by occupation or field of study; reviewed data, the same for every account ([ADR-0041](docs/adr/0041-professional-recognition-tracks.md)) |
 | Departure checklist | Saída do país | What to do when leaving a country, and the documents that trace where the family's money came from, each item with official sources and the date they were read; reviewed data, the same for every account ([ADR-0038](docs/adr/0038-departure-checklists.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
 | Rating | Sua nota | The one to five stars an adult gives a country on a personal criterion or an own criterion |

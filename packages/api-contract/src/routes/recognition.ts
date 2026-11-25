@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { RouteDefinition } from './index.js';
 
 /*
- * How a regulated profession is recognised in each destination, step by step (ADR-0040): reviewed
+ * How a regulated profession is recognised in each destination, step by step (ADR-0041): reviewed
  * public data, the same for every account, plus the people of the viewer's case each track
  * concerns. The screen words each track and step from its ID; every step carries its sources.
  */

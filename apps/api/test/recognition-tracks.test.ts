@@ -78,7 +78,7 @@ interface Body {
   holders: { trackId: string; personIds: string[] }[];
 }
 
-describe('GET /v1/recognition-tracks (ADR-0040)', () => {
+describe('GET /v1/recognition-tracks (ADR-0041)', () => {
   it('answers the repository tracks and whom in the case each concerns', async () => {
     const { app, calls } = appFor(owner);
     const response = await app.request('/v1/recognition-tracks');
@@ -132,7 +132,7 @@ describe('GET /v1/recognition-tracks (ADR-0040)', () => {
   });
 });
 
-describe('the recognition tracks’ wording (ADR-0040)', () => {
+describe('the recognition tracks’ wording (ADR-0041)', () => {
   const { track, item } = ptBR.recognition as {
     track: Record<string, string>;
     item: Record<string, { title: string; body: string }>;

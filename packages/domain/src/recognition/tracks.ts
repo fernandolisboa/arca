@@ -37,7 +37,7 @@ const trackSchema = z.strictObject({
 
 /**
  * How a regulated profession's foreign qualification is recognised in each destination, step by
- * step (ADR-0040). Reviewed data: each step names official sources with the date they were read,
+ * step (ADR-0041). Reviewed data: each step names official sources with the date they were read,
  * and its wording lives in the interface catalog under its ID.
  */
 export const recognitionTracksSchema = z

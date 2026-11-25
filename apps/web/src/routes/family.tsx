@@ -610,6 +610,9 @@ function NextStep({ view }: { readonly view: CaseView }) {
             {t('results.open')}
           </Link>
         )}
+        <Link to="/family/plan" className={textLinkClass}>
+          {t('plan.open')}
+        </Link>
       </div>
     </section>
   );

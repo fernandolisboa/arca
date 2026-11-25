@@ -57,7 +57,7 @@ export interface CatalogParts {
   readonly departureChecklists?: Json | null;
   /** The highest-numbered document guides file (ADR-0039), or null when there is none. */
   readonly documentGuides?: Json | null;
-  /** The highest-numbered recognition tracks file (ADR-0040), or null when there is none. */
+  /** The highest-numbered recognition tracks file (ADR-0041), or null when there is none. */
   readonly recognitionTracks?: Json | null;
   /** Every route's texts in the screen's language, as the API ships them (ADR-0037). */
   readonly ruleTexts?: Json;
@@ -307,7 +307,7 @@ export const readDepartureChecklists = (dir: string, today: CalendarDate = today
 export const readDocumentGuides = (dir: string, today: CalendarDate = todayUtc()) =>
   readLatestSourced(dir, documentGuidesSchema, 'document guide', today);
 
-/** The highest-numbered recognition tracks file in `dir` (ADR-0040), or null. */
+/** The highest-numbered recognition tracks file in `dir` (ADR-0041), or null. */
 export const readRecognitionTracks = (dir: string, today: CalendarDate = todayUtc()) =>
   readLatestSourced(dir, recognitionTracksSchema, 'recognition track', today);
 

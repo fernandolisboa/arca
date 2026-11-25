@@ -32,6 +32,8 @@ const tables = [
   'person',
   'person_finances',
   'person_profile',
+  'plan_move',
+  'plan_move_dependent',
   'relationship',
   'rule_report',
   'share',
@@ -306,6 +308,8 @@ describe('the case schema access matrix (spec 0007, R1)', () => {
       'person_finances UPDATE': ['incomes', 'assets_recorded_in_full', 'updated_at'],
       'person_profile INSERT': ['person_id', 'facts', 'dependence_answered'],
       'person_profile UPDATE': ['facts', 'dependence_answered', 'updated_at'],
+      'plan_move INSERT': ['case_id', 'position', 'stage', 'route_id', 'principal_id'],
+      'plan_move_dependent INSERT': ['move_id', 'case_id', 'person_id'],
       'relationship INSERT': ['id', 'case_id', 'kind', 'from_person_id', 'to_person_id', 'details'],
       'relationship UPDATE': ['details'],
       'rule_report INSERT': [
@@ -1018,6 +1022,133 @@ describe('rule reports (spec 0007, R8)', () => {
       ]);
     expect(await reportsOf(bruno)).toBe(0);
     expect(await reportsOf(alice)).toBe(1);
+  });
+});
+
+describe('the family plan (ADR-0040)', () => {
+  const addMove = async (
+    client: pg.Client,
+    caseId: string,
+    principal: string,
+    taken: readonly string[] = [],
+  ) => {
+    const inserted = await client.query<{ id: string }>(
+      `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+       VALUES ($1, 0, 1, 'qm-sample', $2) RETURNING id`,
+      [caseId, principal],
+    );
+    const moveId = inserted.rows[0]?.id ?? '';
+    for (const person of taken) {
+      await client.query(
+        `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+        [moveId, caseId, person],
+      );
+    }
+    return moveId;
+  };
+  const moves = (client: pg.Client) =>
+    ids(client, "SELECT principal_id || ':' || stage AS id FROM cases.plan_move");
+  const taken = (client: pg.Client) =>
+    ids(client, 'SELECT person_id AS id FROM cases.plan_move_dependent');
+
+  it('lets every member of the case read, add and delete the plan, and nobody else', async () => {
+    const { caseId, otherCaseId, alice, bruno, diana, people } = await seedFamily();
+    const kept = await as(
+      'app_api',
+      alice,
+      (client) => addMove(client, caseId, people.bruno, [people.child, people.grandparent]),
+      { commit: true },
+    );
+    await as('app_api', bruno, async (client) => {
+      expect(await moves(client)).toEqual([`${people.bruno}:1`]);
+      expect(await taken(client)).toEqual(sorted(people.child, people.grandparent));
+      expect(await refused(client, 'UPDATE cases.plan_move SET stage = 2')).toBe(
+        insufficientPrivilege,
+      );
+      const deleted = await client.query('DELETE FROM cases.plan_move WHERE case_id = $1', [
+        caseId,
+      ]);
+      expect(deleted.rowCount).toBe(1);
+      expect(await taken(client)).toEqual([]);
+    });
+    await as('app_api', diana, async (client) => {
+      expect(await moves(client)).toEqual([]);
+      expect(await taken(client)).toEqual([]);
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, caseId, people.alice],
+        ),
+      ).toBe(insufficientPrivilege);
+      expect((await client.query('DELETE FROM cases.plan_move_dependent')).rowCount).toBe(0);
+      // A move of another case cannot be named under her own.
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move_dependent (move_id, case_id, person_id) VALUES ($1, $2, $3)`,
+          [kept, otherCaseId, people.alice],
+        ),
+      ).toBe(foreignKeyViolation);
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+           VALUES ($1, 1, 1, 'qm-sample', $2)`,
+          [caseId, people.alice],
+        ),
+      ).toBe(insufficientPrivilege);
+      const deleted = await client.query('DELETE FROM cases.plan_move');
+      expect(deleted.rowCount).toBe(0);
+      // Her own case cannot name a person of another case.
+      expect(
+        await refused(
+          client,
+          `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+           VALUES ($1, 0, 1, 'qm-sample', $2)`,
+          [otherCaseId, people.alice],
+        ),
+      ).toBe(foreignKeyViolation);
+    });
+    expect(await as('app_api', undefined, moves)).toEqual([]);
+    expect(await countAsAdmin('FROM cases.plan_move_dependent WHERE move_id = $1', [kept])).toBe(2);
+  });
+
+  it('goes with the people it names', async () => {
+    const { caseId, alice, people } = await seedFamily();
+    await as('app_api', alice, (client) => addMove(client, caseId, people.alice, [people.child]), {
+      commit: true,
+    });
+    await as(
+      'app_api',
+      alice,
+      (client) => client.query('DELETE FROM cases.person WHERE id = $1', [people.child]),
+      { commit: true },
+    );
+    expect(await countAsAdmin('FROM cases.plan_move_dependent WHERE case_id = $1', [caseId])).toBe(
+      0,
+    );
+    expect(await countAsAdmin('FROM cases.plan_move WHERE case_id = $1', [caseId])).toBe(1);
+  });
+
+  it('refuses a stage or a place outside the plan’s bounds', async () => {
+    const { caseId, alice, people } = await seedFamily();
+    await as('app_api', alice, async (client) => {
+      for (const [position, stage] of [
+        [20, 1],
+        [0, 0],
+        [0, 7],
+      ]) {
+        expect(
+          await refused(
+            client,
+            `INSERT INTO cases.plan_move (case_id, position, stage, route_id, principal_id)
+             VALUES ($1, $2, $3, 'qm-sample', $4)`,
+            [caseId, position, stage, people.alice],
+          ),
+        ).toBe(checkViolation);
+      }
+    });
   });
 });
 

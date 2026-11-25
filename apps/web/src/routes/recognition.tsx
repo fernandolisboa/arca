@@ -12,7 +12,7 @@ import { SourceList } from '../source-list.js';
 export const Route = createFileRoute('/recognition')({ component: Recognition });
 
 /**
- * Revalidação profissional (ADR-0040): how a profession is recognised in each destination, step by
+ * Revalidação profissional (ADR-0041): how a profession is recognised in each destination, step by
  * step with the official pages behind each, and whom in the family each track concerns.
  */
 function Recognition() {

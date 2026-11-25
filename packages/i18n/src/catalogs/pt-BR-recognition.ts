@@ -1,5 +1,5 @@
 /**
- * The recognition tracks' wording (ADR-0040), apart from the main catalog: it carries the deadlines,
+ * The recognition tracks' wording (ADR-0041), apart from the main catalog: it carries the deadlines,
  * thresholds and exam rules the reviewed file's sources back, so a change here goes to the same
  * reviewers and needs a new numbered tracks file (`wordingSha256`).
  */

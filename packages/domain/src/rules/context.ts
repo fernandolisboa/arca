@@ -26,6 +26,12 @@ export interface EvaluationContext {
   readonly states: DecisionStates;
   /** The engine's commit, recorded so an evaluation can be reproduced (ADR-0014). */
   readonly engineCommit: string;
+  /**
+   * The people a family plan takes along on this route, when it names them (ADR-0040): the unit
+   * keeps only these of the people the rules cover, so requirements and costs count only them,
+   * and nobody unrecorded can join it.
+   */
+  readonly chosenDependents?: readonly string[];
 }
 
 /** What evaluating one given version reads: no decision states, since it does no selection. */
@@ -60,6 +66,16 @@ export function prepare(
   }
   const indexed = indexSnapshot(snapshot);
   if (!snapshot.members.includes(principalId)) throw new RangeError('The principal is a member');
+  const chosen = context.chosenDependents;
+  if (
+    chosen !== undefined &&
+    (new Set(chosen).size !== chosen.length ||
+      chosen.some(
+        (id) => id === principalId || !snapshot.people.some((person) => person.id === id),
+      ))
+  ) {
+    throw new RangeError('Chosen dependents are other people of the snapshot, each once');
+  }
   const { factsAsOf, referenceDates } = contextDates(indexed, context);
   const countrySets = new Map(
     version.countrySets.map((pin) => {

@@ -27,6 +27,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as FamilyDocumentsRouteImport } from './routes/family_.documents'
 import { Route as FamilyIntakeRouteImport } from './routes/family_.intake'
+import { Route as FamilyPlanRouteImport } from './routes/family_.plan'
 import { Route as FamilyQuestionsRouteImport } from './routes/family_.questions'
 import { Route as FamilyResultsRouteImport } from './routes/family_.results'
 
@@ -117,6 +118,11 @@ const FamilyIntakeRoute = FamilyIntakeRouteImport.update({
   path: '/family/intake',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FamilyPlanRoute = FamilyPlanRouteImport.update({
+  id: '/family_/plan',
+  path: '/family/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FamilyQuestionsRoute = FamilyQuestionsRouteImport.update({
   id: '/family_/questions',
   path: '/family/questions',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/vault': typeof VaultLazyRoute
   '/family/documents': typeof FamilyDocumentsRoute
   '/family/intake': typeof FamilyIntakeRoute
+  '/family/plan': typeof FamilyPlanRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
 }
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/vault': typeof VaultLazyRoute
   '/family/documents': typeof FamilyDocumentsRoute
   '/family/intake': typeof FamilyIntakeRoute
+  '/family/plan': typeof FamilyPlanRoute
   '/family/questions': typeof FamilyQuestionsRoute
   '/family/results': typeof FamilyResultsRoute
 }
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/vault': typeof VaultLazyRoute
   '/family_/documents': typeof FamilyDocumentsRoute
   '/family_/intake': typeof FamilyIntakeRoute
+  '/family_/plan': typeof FamilyPlanRoute
   '/family_/questions': typeof FamilyQuestionsRoute
   '/family_/results': typeof FamilyResultsRoute
 }
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/family/documents'
     | '/family/intake'
+    | '/family/plan'
     | '/family/questions'
     | '/family/results'
   fileRoutesByTo: FileRoutesByTo
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/family/documents'
     | '/family/intake'
+    | '/family/plan'
     | '/family/questions'
     | '/family/results'
   id:
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/family_/documents'
     | '/family_/intake'
+    | '/family_/plan'
     | '/family_/questions'
     | '/family_/results'
   fileRoutesById: FileRoutesById
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   VaultLazyRoute: typeof VaultLazyRoute
   FamilyDocumentsRoute: typeof FamilyDocumentsRoute
   FamilyIntakeRoute: typeof FamilyIntakeRoute
+  FamilyPlanRoute: typeof FamilyPlanRoute
   FamilyQuestionsRoute: typeof FamilyQuestionsRoute
   FamilyResultsRoute: typeof FamilyResultsRoute
 }
@@ -401,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FamilyIntakeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/family_/plan': {
+      id: '/family_/plan'
+      path: '/family/plan'
+      fullPath: '/family/plan'
+      preLoaderRoute: typeof FamilyPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/family_/questions': {
       id: '/family_/questions'
       path: '/family/questions'
@@ -436,6 +456,7 @@ const rootRouteChildren: RootRouteChildren = {
   VaultLazyRoute: VaultLazyRoute,
   FamilyDocumentsRoute: FamilyDocumentsRoute,
   FamilyIntakeRoute: FamilyIntakeRoute,
+  FamilyPlanRoute: FamilyPlanRoute,
   FamilyQuestionsRoute: FamilyQuestionsRoute,
   FamilyResultsRoute: FamilyResultsRoute,
 }

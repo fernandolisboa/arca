@@ -21,7 +21,7 @@ On 2026-11-25 the owner approved the family-fit priorities, whose sixth item is 
 - A merged file changes what every account sees with no activation. A wrong or tampered file is held back only by the reviewers and the schema's domain check, and the file names its own domains, so the reviewers are the real gate; it never decides eligibility.
 - The voter registration and the e-CAC power of attorney rest on consular pages and a Receita news item, since the TSE and the e-CAC service pages refused automated reading; a later file should cite the TSE and the Receita service pages.
 - Marking items done per person, or linking an item to a vault document, would need case data and is left for later.
-- [ADR-0039](0039-document-guides.md) applies this approach to document guides, and [ADR-0040](0040-professional-recognition-tracks.md) to professional recognition tracks.
+- [ADR-0039](0039-document-guides.md) applies this approach to document guides, and [ADR-0041](0041-professional-recognition-tracks.md) to professional recognition tracks.
 
 ## Alternatives considered
 

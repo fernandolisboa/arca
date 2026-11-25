@@ -1,4 +1,4 @@
-# ADR-0040: Professional recognition tracks, from reviewed official sources in the repository
+# ADR-0041: Professional recognition tracks, from reviewed official sources in the repository
 
 - Status: Accepted
 - Date: 2026-11-25

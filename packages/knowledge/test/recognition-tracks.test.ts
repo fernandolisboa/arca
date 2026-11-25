@@ -9,7 +9,7 @@ import { occupationCodes, recognitionTracks, studyFieldCodes } from '../src/inde
 
 const repositoryDir = fileURLToPath(new URL('../recognition-tracks', import.meta.url));
 
-describe('readRecognitionTracks (ADR-0040)', () => {
+describe('readRecognitionTracks (ADR-0041)', () => {
   it('reads the repository file, which the schema accepts', async () => {
     const json = await readRecognitionTracks(repositoryDir);
     expect(recognitionTracksSchema.safeParse(json).success).toBe(true);
@@ -33,7 +33,7 @@ describe('readRecognitionTracks (ADR-0040)', () => {
   });
 });
 
-describe('the shipped recognition tracks (ADR-0040)', () => {
+describe('the shipped recognition tracks (ADR-0041)', () => {
   it('name only occupations and fields of study the classifications hold', () => {
     const occupations = new Set(occupationCodes);
     const fields = new Set(studyFieldCodes);
