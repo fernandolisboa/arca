@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "number": 1,
   "officialDomains": ["gov.br", "jus.br", "uscis.gov"],
+  "wordingSha256": "2d6095f9e11d322f17850a5b10669257d0245ed037e5543a0940adcd9271853c",
   "sources": [
     {
       "id": "exit-notice",

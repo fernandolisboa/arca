@@ -56,11 +56,15 @@ export const comparisonCatalog = createComparisonCatalog(parseComparisons(compar
 export const suggestedRatings =
   suggestedRatingData === null ? null : suggestedRatingsSchema.parse(suggestedRatingData);
 
+const departureFile =
+  departureChecklistData === null ? null : departureChecklistsSchema.parse(departureChecklistData);
+
 /** What to do when leaving a country, per country, with each item's sources (ADR-0037). */
 export const departureChecklists =
-  departureChecklistData === null
-    ? []
-    : departureChecklistViews(departureChecklistsSchema.parse(departureChecklistData));
+  departureFile === null ? [] : departureChecklistViews(departureFile);
+
+/** The SHA-256 of the catalog wording the departure file's sources were checked against. */
+export const departureWordingSha256 = departureFile?.wordingSha256 ?? null;
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
 export const pinnedCountries = z

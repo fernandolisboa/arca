@@ -1,5 +1,6 @@
 import { ptBR } from '@arca/i18n/catalog';
-import { departureChecklists } from '@arca/knowledge';
+import { createHash } from 'node:crypto';
+import { departureChecklists, departureWordingSha256 } from '@arca/knowledge';
 import type { Logger } from '@arca/telemetry';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
@@ -57,8 +58,15 @@ describe('the departure checklists’ wording (ADR-0037)', () => {
     ).toEqual([]);
   });
 
-  it('words no item the file does not list', () => {
-    const listed = new Set(items.map(({ id }) => id));
-    expect(Object.keys(item).filter((id) => !listed.has(id))).toEqual([]);
+  it('words no section or item the file does not list', () => {
+    const listedSections = new Set(sections.map(({ id }) => id));
+    const listedItems = new Set(items.map(({ id }) => id));
+    expect(Object.keys(section).filter((id) => !listedSections.has(id))).toEqual([]);
+    expect(Object.keys(item).filter((id) => !listedItems.has(id))).toEqual([]);
+  });
+
+  it('is the wording the file was checked against, so a wording change also changes the file', () => {
+    const sha256 = createHash('sha256').update(JSON.stringify({ section, item })).digest('hex');
+    expect(departureWordingSha256).toBe(sha256);
   });
 });

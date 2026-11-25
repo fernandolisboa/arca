@@ -45,6 +45,11 @@ export const departureChecklistsSchema = z
     schemaVersion: z.literal(1),
     number: versionNumberSchema,
     officialDomains: z.array(officialDomainSchema).min(1).max(20),
+    /**
+     * The SHA-256 of the catalog wording this file's sources were checked against, so a wording
+     * change also changes this file and its reviewers; a test computes it.
+     */
+    wordingSha256: z.string().regex(/^[0-9a-f]{64}$/),
     sources: z.array(plainSourceSchema).min(1).max(80),
     checklists: z.array(checklistSchema).min(1).max(50),
   })
@@ -64,17 +69,26 @@ export const departureChecklistsSchema = z
     if (new Set(countries).size !== countries.length) {
       issue(['checklists'], 'One checklist per country');
     }
+    // Wording is looked up by ID alone, so no two sections or items of the file may share one.
+    const sectionIds = new Set<string>();
     const itemIds = new Set<string>();
     const cited = new Set<string>();
     file.checklists.forEach(({ sections }, at) => {
-      if (new Set(sections.map(({ id }) => id)).size !== sections.length) {
-        issue(['checklists', at, 'sections'], 'Section IDs are unique within a checklist');
-      }
-      sections.forEach(({ items }, section) => {
+      sections.forEach(({ id: sectionId, items }, section) => {
+        if (sectionIds.has(sectionId)) {
+          issue(
+            ['checklists', at, 'sections', section, 'id'],
+            'Section IDs are unique in the file',
+          );
+        }
+        sectionIds.add(sectionId);
         items.forEach(({ id, sources }, item) => {
           const path = ['checklists', at, 'sections', section, 'items', item];
           if (itemIds.has(id)) issue([...path, 'id'], 'Item IDs are unique in the file');
           itemIds.add(id);
+          if (new Set(sources).size !== sources.length) {
+            issue([...path, 'sources'], 'An item cites a source once');
+          }
           sources.forEach((source, index) => {
             cited.add(source);
             if (!sourceIds.has(source)) issue([...path, 'sources', index], 'The source is listed');

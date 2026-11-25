@@ -106,6 +106,7 @@ const rules: readonly Rule[] = [
   {
     match: anyOf(
       /^packages\/knowledge\/(reviews\/|suggested-ratings\/|departure-checklists\/|(scripts|test)\/(session-review|suggested-ratings|departure-checklists)\.?)/,
+      /^packages\/i18n\/src\/catalogs\/pt-BR-departure\.ts$/,
       /^apps\/api\/test\/(postgres\/)?session-review/,
     ),
     reviewers: withCore('data-access', 'auth-crypto', 'ai-safety'),

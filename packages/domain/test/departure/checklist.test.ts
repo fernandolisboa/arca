@@ -16,6 +16,7 @@ const file = (overrides: Record<string, unknown> = {}) => ({
   schemaVersion: 1,
   number: 1,
   officialDomains: ['gov.qm'],
+  wordingSha256: '0'.repeat(64),
   sources: [source('notice'), source('law')],
   checklists: [
     {
@@ -89,6 +90,24 @@ describe('departureChecklistsSchema', () => {
         'Every source is cited',
         'Item IDs are unique in the file',
       ]),
+    );
+  });
+
+  it('refuses a section ID another checklist uses, and a source cited twice by one item', () => {
+    const [checklist] = file().checklists;
+    const issues = messages(
+      file({
+        checklists: [
+          checklist,
+          {
+            country: 'QN',
+            sections: [{ id: 'tax', items: [{ id: 'other', sources: ['notice', 'notice'] }] }],
+          },
+        ],
+      }),
+    );
+    expect(issues).toEqual(
+      expect.arrayContaining(['Section IDs are unique in the file', 'An item cites a source once']),
     );
   });
 

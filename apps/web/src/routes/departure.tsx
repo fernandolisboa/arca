@@ -56,9 +56,6 @@ function Departure() {
   );
 }
 
-/** The catalog's key for a section or item the reviewed file names; a test holds them in step. */
-type DepartureKey = 'departure.section.tax' | `departure.item.mei.${'title' | 'body'}`;
-
 function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
   const { t, i18n } = useTranslation();
   const country = new Intl.DisplayNames([i18n.language], { type: 'region', fallback: 'code' });
@@ -77,17 +74,13 @@ function Checklist({ checklist }: { readonly checklist: DepartureChecklist }) {
             className={`${cardClass} mb-5 flex break-inside-avoid flex-col gap-4 p-5`}
           >
             <h4 id={`${headingId}-${section.id}`} className="font-display text-lead">
-              {t(`departure.section.${section.id}` as DepartureKey)}
+              {t(`departure.section.${section.id}` as never)}
             </h4>
             <ol className="flex flex-col gap-4">
               {section.items.map((item) => (
                 <li key={item.id} className="flex flex-col gap-1">
-                  <p className="font-medium">
-                    {t(`departure.item.${item.id}.title` as DepartureKey)}
-                  </p>
-                  <p className="text-small">
-                    {t(`departure.item.${item.id}.body` as DepartureKey)}
-                  </p>
+                  <p className="font-medium">{t(`departure.item.${item.id}.title` as never)}</p>
+                  <p className="text-small">{t(`departure.item.${item.id}.body` as never)}</p>
                   <Sources sources={item.sources} />
                 </li>
               ))}

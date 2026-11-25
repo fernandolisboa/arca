@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type CalendarDate,
+  compareDates,
   maxKnowledgeJsonDepth,
   parseCalendarDate,
   sourceUrls,
@@ -238,9 +239,26 @@ async function readLatestNumbered(
 export const readSuggestedRatings = (dir: string) =>
   readLatestNumbered(dir, suggestedRatingsSchema);
 
-/** The highest-numbered departure checklists file in `dir` (ADR-0037), or null. */
-export const readDepartureChecklists = (dir: string) =>
-  readLatestNumbered(dir, departureChecklistsSchema);
+/**
+ * The highest-numbered departure checklists file in `dir` (ADR-0037), or null; a source verified
+ * after `today` fails the build, as route sources do.
+ */
+export async function readDepartureChecklists(
+  dir: string,
+  today: CalendarDate = todayUtc(),
+): Promise<Json | null> {
+  const json = await readLatestNumbered(dir, departureChecklistsSchema);
+  if (json === null) return null;
+  const late = departureChecklistsSchema
+    .parse(json)
+    .sources.filter(({ verifiedAt }) => compareDates(verifiedAt, today) > 0);
+  if (late.length > 0) {
+    throw new Error(
+      `departure checklist sources verified after ${today}: ${late.map(({ id }) => id).join(', ')}`,
+    );
+  }
+  return json;
+}
 
 export function formatIssue(issue: Issue): string {
   return `${issue.file}${issue.path === undefined ? '' : ` ${issue.path}`}: ${issue.message}`;
@@ -271,7 +289,7 @@ async function main(): Promise<void> {
   await writeFile(targets.catalog, catalogModule(parts));
   const [suggestedRatings, departureChecklists] = await Promise.all([
     readSuggestedRatings(join(packageDir, 'suggested-ratings')),
-    readDepartureChecklists(join(packageDir, 'departure-checklists')),
+    readDepartureChecklists(join(packageDir, 'departure-checklists'), today),
   ]);
   await writeFile(
     targets.runtime,
