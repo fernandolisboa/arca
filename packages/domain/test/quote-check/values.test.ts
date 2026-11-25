@@ -4,6 +4,7 @@ import {
   type CheckValue,
   canonicalNumber,
   digitsApart,
+  figureBounds,
   numbersIn,
   percentagesIn,
   statesValue,
@@ -96,6 +97,17 @@ describe('full-width digits', () => {
     expect(numbersIn('発行日から３か月以内')).toEqual(new Set(['3']));
     expect(statesValue(number('18'), '１８歳に達する前日までに入国してください。')).toBe(true);
     expect(percentagesIn('５０％')).toEqual(new Set(['0.5']));
+    expect(statesValue(number('1500'), '１，５００円')).toBe(true);
+    expect(statesValue(number('500'), '１，５００円')).toBe(false);
+    expect(statesValue(number('5'), '２．５か月')).toBe(false);
+  });
+
+  it('keeps full-width figures of two lines apart and widens a cut full-width figure', () => {
+    expect(numbersIn(digitsApart('第１条\n６００円'))).not.toContain('1600');
+    expect(figureBounds('１.５年', 2, 3)).toEqual({ start: 0, end: 3 });
+    expect(numbersIn(digitsApart('１  ６００'))).not.toContain('1600');
+    expect(figureBounds('１，５００円', 2, 5)).toEqual({ start: 0, end: 5 });
+    expect(figureBounds('１,５００円', 2, 5)).toEqual({ start: 0, end: 5 });
   });
 
   it('reads no other compatibility character as a digit', () => {

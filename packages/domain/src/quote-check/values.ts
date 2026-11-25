@@ -33,9 +33,9 @@ const spaceLike = /[\s\u00a0\u2009\u202f']/u;
 const numberToken = /\d+(?:[.,\s\u00a0\u2009\u202f']\d+)*/gu;
 const spaceRun = /[\s\u00a0\u2009\u202f]+/u;
 
-const digit = (char: string | undefined) => char !== undefined && /\d/u.test(char);
+const digit = (char: string | undefined) => char !== undefined && /[0-9\uff10-\uff19]/u.test(char);
 const separator = (char: string | undefined) =>
-  char !== undefined && /[.,\s\u00a0\u2009\u202f']/u.test(char);
+  char !== undefined && /[.,\s\u00a0\u2009\u202f'\uff0c\uff0e]/u.test(char);
 
 /**
  * The bounds of `text.slice(start, end)` widened to the whole figures its ends cut into, group
@@ -99,10 +99,13 @@ const readings = (token: string) =>
     .map((decimal) => readToken(token, decimal))
     .filter((read) => read !== undefined);
 
-/** Full-width digits (０ to ９, as Japanese text writes figures) as plain ones, one for one. */
+/**
+ * Full-width digits, comma and full stop (as Japanese text writes figures, `１，５００`) as plain
+ * ones, one character for one, so every reading and every guard sees the same figure.
+ */
 function halfWidthDigits(text: string): string {
-  return text.replace(/[\uff10-\uff19]/gu, (digit) =>
-    String.fromCharCode(digit.charCodeAt(0) - 0xfee0),
+  return text.replace(/[\uff0c\uff0e\uff10-\uff19]/gu, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0xfee0),
   );
 }
 
@@ -168,11 +171,14 @@ export function digitsApart(text: string): string {
   return text
     .split(lineBreak)
     .map((line) => {
-      const columns = line.replace(/(?<=\d)(?:\s{2,}|\t)(?=\d)/gu, ' | ');
+      const columns = line.replace(
+        /(?<=[0-9\uff10-\uff19])(?:\s{2,}|\t)(?=[0-9\uff10-\uff19])/gu,
+        ' | ',
+      );
       const words = columns.trim();
       if (words === '') return columns;
-      const barred = afterDigit && /^\d/u.test(words);
-      afterDigit = /\d$/u.test(words);
+      const barred = afterDigit && /^[0-9\uff10-\uff19]/u.test(words);
+      afterDigit = /[0-9\uff10-\uff19]$/u.test(words);
       return barred ? `| ${columns}` : columns;
     })
     .join('\n');
