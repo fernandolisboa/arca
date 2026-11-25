@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "number": 1,
+  "officialDomains": ["gov.br", "jus.br"],
+  "wordingSha256": "a06cb7bc4a9692f86a1dd4cc2863f828f0c04f3ce666d39fd573ebb8118afa0e",
+  "sources": [
+    {
+      "id": "passport",
+      "url": "https://www.gov.br/pt-br/servicos/obter-passaporte-comum-para-brasileiro",
+      "title": "Obter passaporte comum para brasileiro (Polícia Federal, gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "criminal-record",
+      "url": "https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais",
+      "title": "Emitir Certidão de Antecedentes Criminais (Polícia Federal, gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "registry-law",
+      "url": "https://www.planalto.gov.br/ccivil_03/leis/l6015compilada.htm",
+      "title": "Lei 6.015/1973, Registros Públicos: art. 19 (prazo de 5 dias, certidão eletrônica, pedido pelo Serp) e art. 30 (gratuidade da primeira certidão de nascimento)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "tax-return-copies",
+      "url": "https://www.gov.br/pt-br/servicos/obter-copia-de-declaracao-enviada-a-receita-federal",
+      "title": "Obter cópia de declaração enviada à Receita Federal (gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "federal-courts-certificate",
+      "url": "https://www.trf1.jus.br/trf1/noticias/lancado-sistema-de-certidao-unificada-da-justica-federal-saiba-como-acessar-",
+      "title": "Lançado sistema de Certidão Unificada da Justiça Federal: saiba como acessar (TRF1, 27/06/2024)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "vaccination",
+      "url": "https://www.gov.br/saude/pt-br/composicao/seidigi/meususdigital",
+      "title": "Meu SUS Digital: carteira de vacinação digital (Ministério da Saúde)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "apostille-faq",
+      "url": "https://www.cnj.jus.br/poder-judiciario/relacoes-internacionais/apostila-da-haia/perguntas-frequentes-5/",
+      "title": "Apostila da Haia: perguntas frequentes (CNJ)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "apostille-code",
+      "url": "https://atos.cnj.jus.br/atos/detalhar/5243",
+      "title": "Provimento 149/2023, Código Nacional de Normas (CNJ): apostila nos cartórios de notas e de registro das capitais, salvo dispensa",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "exchange-report",
+      "url": "https://www.gov.br/pt-br/servicos/gerar-relatorio-de-operacoes-de-cambio-e-transferencias-internacionais",
+      "title": "Gerar relatório de operações de câmbio e transferências internacionais (Banco Central, gov.br)",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    }
+  ],
+  "guides": [
+    {
+      "country": "BR",
+      "currency": "BRL",
+      "entries": [
+        {
+          "kind": "birth_certificate",
+          "leadTime": {
+            "min": "P0D",
+            "max": "P5D"
+          },
+          "sources": ["registry-law", "apostille-code", "apostille-faq"]
+        },
+        {
+          "kind": "court_records",
+          "sources": ["federal-courts-certificate", "apostille-code", "apostille-faq"]
+        },
+        {
+          "kind": "fund_transfer_records",
+          "onlineUrl": "https://www.gov.br/pt-br/servicos/gerar-relatorio-de-operacoes-de-cambio-e-transferencias-internacionais",
+          "cost": {
+            "min": 0,
+            "max": 0
+          },
+          "leadTime": {
+            "min": "P0D",
+            "max": "P2D",
+            "businessDays": true
+          },
+          "sources": ["exchange-report"]
+        },
+        {
+          "kind": "marriage_certificate",
+          "leadTime": {
+            "min": "P0D",
+            "max": "P5D"
+          },
+          "sources": ["registry-law", "apostille-code", "apostille-faq"]
+        },
+        {
+          "kind": "passport",
+          "onlineUrl": "https://www.gov.br/pt-br/servicos/obter-passaporte-comum-para-brasileiro",
+          "cost": {
+            "min": 25725,
+            "max": 25725
+          },
+          "leadTime": {
+            "min": "P6D",
+            "max": "P10D",
+            "businessDays": true
+          },
+          "sources": ["passport"]
+        },
+        {
+          "kind": "police_certificate",
+          "onlineUrl": "https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais",
+          "cost": {
+            "min": 0,
+            "max": 0
+          },
+          "leadTime": {
+            "min": "P0D",
+            "max": "P15D"
+          },
+          "sources": ["criminal-record", "apostille-code", "apostille-faq"]
+        },
+        {
+          "kind": "tax_return",
+          "onlineUrl": "https://www.gov.br/pt-br/servicos/obter-copia-de-declaracao-enviada-a-receita-federal",
+          "leadTime": {
+            "min": "P0D",
+            "max": "P30D"
+          },
+          "sources": ["tax-return-copies"]
+        },
+        {
+          "kind": "vaccination_record",
+          "onlineUrl": "https://meususdigital.saude.gov.br/login",
+          "sources": ["vaccination"]
+        }
+      ]
+    }
+  ]
+}

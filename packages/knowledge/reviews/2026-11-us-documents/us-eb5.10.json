@@ -1,0 +1,1029 @@
+{
+  "schemaVersion": 1,
+  "routeId": "us-eb5",
+  "number": 10,
+  "corrects": 9,
+  "title": "EB-5 immigrant investor (permanent residence)",
+  "country": "US",
+  "tags": ["investment", "permanent-residence"],
+  "effectiveFrom": "2026-11-30",
+  "status": "open",
+  "currency": "USD",
+  "sources": [
+    {
+      "id": "usc-1153",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5) and (d): employment creation visas, the capital and its lawful source, the Integrity Fund fee, and accompanying spouses and children",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(C) Amount of capital required: (i) In general; (ii) Adjustment for targeted employment areas and infrastructure projects; (iii) Automatic adjustment in minimum investment amount",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-term",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(A)(i): capital invested, or being invested, that is expected to remain invested for not less than 2 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-funds",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(L) Source of funds: (i) capital and fees obtained from a lawful source and through lawful means; (ii) Required information, the records a petition must contain",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-capital-definition",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(D)(ii) Capital: cash and tangible assets the investor owns and controls, at fair market value; (L)(iii): a gift or loan counts only if in good faith and not to evade source limits",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1101",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(b)(1): a child is an unmarried person under twenty-one, including a stepchild, an adopted child, a legitimated child and one born out of wedlock with a bona fide tie to the father",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1101-spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "title": "8 U.S.C. 1101(a)(35): spouse does not include one by a marriage ceremony where the parties are not physically present in the presence of each other, unless the marriage has been consummated",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-child-age",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(h)(1): a child's age is that on the date a visa number becomes available, if residence is sought within one year, reduced by the days the petition was pending",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1153-regional-center",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(E)(i) Regional center program: visas made available through September 30, 2027; (S) Protection from expired legislation: petitions filed on or before September 30, 2026",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "usc-1186b",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "title": "8 U.S.C. 1186b(a), (c)(3)(B) and (d)(2): conditional permanent residence for the investor, spouse and children, removed on a petition filed before the second anniversary",
+      "kind": "official",
+      "verifiedAt": "2026-11-19"
+    },
+    {
+      "id": "cfr-204-6",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(j)(2) to (j)(4): evidence of lawfully obtained capital placed at risk and of 10 full-time jobs; the vacated 2019 rule changed only an agency's name there",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "cfr-106-2",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "title": "8 CFR 106.2(c)(3): USCIS immigrant fee, for processing and issuing documents after the Department of State issues an immigrant visa",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=106&section=106.2"
+    },
+    {
+      "id": "fee-rule-2026-integrity-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "title": "The rule's regulatory text, Sec. 106.2 Fees, (d) EB-5 fees--(1) Petition Fee: $1,100 for each petition under INA section 203(b)(5)(E), in addition to any other fees",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
+    },
+    {
+      "id": "fee-rule-2026-petition-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "title": "The rule's regulatory text, Sec. 106.2 Fees, (d)(2) Immigrant Petition by Standalone or Regional Center Investor: (i) Form I-526: $7,615; (ii) Form I-526E initial filing: $7,850",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
+    },
+    {
+      "id": "fee-rule-2026-removal-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "title": "The rule's regulatory text, Sec. 106.2 Fees, (d)(4) Immigrant Petition by Investor to Remove Conditions on Permanent Resident Status, Form I-829: $5,000",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-09-30/html/2026-20016.htm"
+    },
+    {
+      "id": "cfr-22-1",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "title": "22 CFR 22.1, item 32(b): immigrant visa application processing fee for employment-based applications, per person",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-10-21/title-22?chapter=I&subchapter=C&part=22&section=22.1"
+    },
+    {
+      "id": "cfr-204-6-2019",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(j)(5) on 2019-11-20, the text restored when a court vacated the 2019 rule: engagement in the management; a limited partner with Uniform Limited Partnership Act rights counts",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2019-11-20/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "proposed-rule-2026",
+      "url": "https://www.federalregister.gov/documents/2026/07/02/2026-13392/eb-5-reform-and-integrity-act-of-2022-ensuring-the-integrity-of-the-eb-5-program-automatic",
+      "title": "DHS proposed rule, 91 FR 40676 (2026-07-02), background: a court vacated the 2019 rule at 84 FR 35750 on 2021-06-22, reverting 8 CFR 204.6 to its earlier text",
+      "kind": "official",
+      "verifiedAt": "2026-11-19",
+      "machineReadableUrl": "https://www.govinfo.gov/content/pkg/FR-2026-07-02/html/2026-13392.htm"
+    },
+    {
+      "id": "cfr-204-6-evidence",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(j)(1) to (j)(4): initial evidence of the new commercial enterprise, of the capital placed at risk, of its lawfully obtained source and of job creation",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "cfr-204-6-2019-engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(j)(5) on 2019-11-20, the text restored when a court vacated the 2019 rule: evidence of the investor's engagement in the management of the enterprise",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2019-11-20/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "usc-1153-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(L)(i) and (ii): capital and fees from a lawful source; the business and tax records and the judgment and litigation records a petition must contain",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153-gift-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(L)(iii)(II) Records requirement: for gifted or loaned funds, the records of clause (ii) from the donor or, if other than a bank, the lender",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153-indirect-jobs",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(E)(iv): regional center investors may meet up to 90 percent of the job requirement with indirect jobs, 75 percent for construction lasting under 2 years",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cfr-204-6-2019-filing",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "title": "8 CFR 204.6(a) on 2019-11-20, the text restored when a court vacated the 2019 rule: the petition is signed, with the fee and the initial supporting documentation attached",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2019-11-20/title-8?chapter=I&subchapter=B&part=204&subpart=A&section=204.6"
+    },
+    {
+      "id": "usc-1182-vaccination-waiver",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "title": "8 U.S.C. 1182(g)(2): the Attorney General may waive the vaccination documentation requirement in the cases it lists",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153-regional-center-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(E)(ii)(III): a petition is deemed to include the records the regional center filed under (F) if the investor certifies they are incorporated by reference",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1153-fee-disclosure",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "title": "8 U.S.C. 1153(b)(5)(K)(iv) Disclosure: each petition includes a disclosure, signed by the investor, of all fees, interest and compensation paid in connection with the investment",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cfr-103-2",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "title": "8 CFR 103.2(b)(3) Translations: a document in a foreign language submitted to USCIS comes with a full English translation the translator certifies as complete and accurate",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-17/title-8?chapter=I&subchapter=B&part=103&subpart=A&section=103.2"
+    },
+    {
+      "id": "usc-1202",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "title": "8 U.S.C. 1202(b): an immigrant visa applicant presents a passport and furnishes police, prison, military and birth records and the other records the consular officer requires",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "usc-1182-vaccination",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "title": "8 U.S.C. 1182(a)(1)(A)(ii): an immigrant who fails to present documentation of having received the required vaccinations is inadmissible",
+      "kind": "official",
+      "verifiedAt": "2026-11-25"
+    },
+    {
+      "id": "cfr-22-42-63",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "title": "22 CFR 42.63(a): every immigrant visa applicant applies on Form DS-260 or DS-230; for a child under 14 a parent or guardian may execute it",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-20/title-22?chapter=I&subchapter=E&part=42&subpart=G&section=42.63"
+    },
+    {
+      "id": "cfr-22-42-64",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.64",
+      "title": "22 CFR 42.64(b): an immigrant visa applicant presents a passport valid for at least 60 days beyond the period of validity of the visa",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-20/title-22?chapter=I&subchapter=E&part=42&subpart=G&section=42.64"
+    },
+    {
+      "id": "cfr-22-42-65",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "title": "22 CFR 42.65(b), (c) and (f): police certificates, prison, military and birth records, records of the relationship to a spouse or children, and photographs",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-20/title-22?chapter=I&subchapter=E&part=42&subpart=G&section=42.65"
+    },
+    {
+      "id": "cfr-22-42-66",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "title": "22 CFR 42.66: every immigrant visa applicant, regardless of age, undergoes a medical examination by a physician from the panel the consular officer approves",
+      "kind": "official",
+      "verifiedAt": "2026-11-25",
+      "machineReadableUrl": "https://www.ecfr.gov/api/renderer/v1/content/enhanced/2026-11-20/title-22?chapter=I&subchapter=E&part=42&subpart=G&section=42.66"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "us",
+      "number": 1
+    }
+  ],
+  "countrySets": [],
+  "leapDayBirthday": "unsettled",
+  "requirements": [
+    {
+      "id": "capital",
+      "title": "Capital of USD 800,000 or more (targeted employment area or infrastructure project; USD 1,050,000 elsewhere), filed before 2027-01-01; liquid assets compared; the law counts cash and tangible assets",
+      "expression": {
+        "op": "gte",
+        "left": {
+          "op": "fact",
+          "key": "unit.liquidAssets"
+        },
+        "right": {
+          "op": "money",
+          "amount": 80000000,
+          "currency": "USD"
+        }
+      },
+      "sources": ["usc-1153-capital", "usc-1153-capital-definition"]
+    }
+  ],
+  "assessments": [
+    {
+      "id": "lawful-source",
+      "title": "The capital, and the funds for the investment's administrative costs and fees, were obtained from a lawful source and through lawful means, shown by the records the petition must contain",
+      "evidence": [
+        "principal.monthlyActiveIncome",
+        "principal.monthlyPassiveIncome",
+        "unit.liquidAssets"
+      ],
+      "sources": ["usc-1153-funds", "cfr-204-6"]
+    },
+    {
+      "id": "at-risk",
+      "title": "The capital is invested, or actively being invested, at risk in a new commercial enterprise, with a present commitment beyond a mere intent to invest",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
+    },
+    {
+      "id": "investment-term",
+      "title": "The capital is expected to remain invested for at least 2 years",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153-term"]
+    },
+    {
+      "id": "job-creation",
+      "title": "The enterprise will create at least 10 full-time jobs for qualifying employees, not counting the investor or the investor's spouse, sons and daughters",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["usc-1153", "cfr-204-6"]
+    },
+    {
+      "id": "engagement",
+      "title": "The investor is or will be engaged in managing the enterprise, by day-to-day managerial control or policy formulation, not in a purely passive role; a limited partner with the usual rights counts",
+      "evidence": ["unit.liquidAssets"],
+      "sources": ["cfr-204-6-2019", "proposed-rule-2026"]
+    }
+  ],
+  "dependents": [
+    {
+      "id": "spouse",
+      "title": "Spouse; a marriage celebrated without both parties physically present counts only once consummated",
+      "path": ["spouse"],
+      "condition": {
+        "op": "bool",
+        "value": true
+      },
+      "sources": ["usc-1153", "usc-1101-spouse"]
+    },
+    {
+      "id": "children",
+      "title": "Unmarried biological children under 21 (age as 8 U.S.C. 1153(h) counts it); born out of wedlock, via the father only if legitimated as 8 U.S.C. 1101(b)(1)(C) requires or with a bona fide relationship",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "biological"
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    },
+    {
+      "id": "adopted-children",
+      "title": "Unmarried adopted children under 21 (age per 8 U.S.C. 1153(h)) adopted under 16, or 18 if a natural sibling adopted by the same parent, after 2 years in the adopter's custody and home or if battered",
+      "path": ["child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          },
+          {
+            "op": "any",
+            "operands": [
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 16
+                    }
+                  },
+                  {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "edge.custodyStart"
+                        },
+                        "duration": "P2Y"
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "operands": [
+                  {
+                    "op": "lt",
+                    "left": {
+                      "op": "fact",
+                      "key": "edge.ageAtStart"
+                    },
+                    "right": {
+                      "op": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "op": "any",
+                    "operands": [
+                      {
+                        "op": "since",
+                        "date": {
+                          "op": "fact",
+                          "key": "edge.custodyStart"
+                        },
+                        "duration": "P2Y"
+                      },
+                      {
+                        "op": "unmodeled"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "unmodeled"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    },
+    {
+      "id": "stepchildren",
+      "title": "Unmarried stepchildren under 21 (age as 8 U.S.C. 1153(h) counts it) whose parent married the principal before they turned 18",
+      "path": ["spouse", "child"],
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "person.ageYears"
+            },
+            "right": {
+              "op": "int",
+              "value": 21
+            }
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "lt",
+            "left": {
+              "op": "fact",
+              "key": "firstEdge.ageAtStart"
+            },
+            "right": {
+              "op": "int",
+              "value": 18
+            }
+          }
+        ]
+      },
+      "sources": ["usc-1153", "usc-1101", "usc-1153-child-age"]
+    }
+  ],
+  "costs": [
+    {
+      "id": "investment",
+      "title": "Minimum investment in a targeted employment area or infrastructure project",
+      "kind": "capital",
+      "amount": {
+        "op": "money",
+        "amount": 80000000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["usc-1153-capital"]
+    },
+    {
+      "id": "petition-fee",
+      "title": "Form I-526E regional center petition fee, technology fee included (standalone Form I-526: USD 7,615); the program runs to 2027-09-30 and a lapse spares only petitions filed by 2026-09-30",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 785000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-rule-2026-petition-fee", "usc-1153-regional-center"]
+    },
+    {
+      "id": "integrity-fund-fee",
+      "title": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 110000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-rule-2026-integrity-fee"]
+    },
+    {
+      "id": "removal-petition-fee",
+      "title": "Form I-829 petition to remove the conditions on permanent residence, filed in the 90 days before the second anniversary",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 500000,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "sources": ["fee-rule-2026-removal-fee", "usc-1186b"]
+    },
+    {
+      "id": "visa-application-fee",
+      "title": "Immigrant visa application fee, employment-based, for the investor, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 34500,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-1"]
+    },
+    {
+      "id": "visa-application-fee-dependents",
+      "title": "Immigrant visa application fee, employment-based, for each accompanying family member, when the visa is issued at a consulate abroad (not when adjusting status in the U.S.)",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 34500,
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-1"]
+    },
+    {
+      "id": "uscis-immigrant-fee",
+      "title": "USCIS immigrant fee for the investor, after an immigrant visa issued abroad, for the permanent resident card",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 23500,
+        "currency": "USD"
+      },
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-106-2"]
+    },
+    {
+      "id": "uscis-immigrant-fee-dependents",
+      "title": "USCIS immigrant fee for each accompanying family member, after an immigrant visa issued abroad, for the permanent resident card",
+      "kind": "fee",
+      "amount": {
+        "op": "money",
+        "amount": 23500,
+        "currency": "USD"
+      },
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-106-2"]
+    }
+  ],
+  "durations": [
+    {
+      "id": "conditional-residence",
+      "title": "Conditional permanent residence for the investor, spouse and children, to its second anniversary, or the third if DHS extends it a year while the jobs are still being created",
+      "min": "P2Y",
+      "max": "P3Y",
+      "sources": ["usc-1186b"]
+    }
+  ],
+  "documents": [
+    {
+      "id": "investor-petition",
+      "title": "Form I-526E (regional center investor) or Form I-526 (standalone investor) petition, signed by the investor, with the fee and the initial supporting documentation attached",
+      "kind": "immigrant_petition_form",
+      "appliesTo": "principal",
+      "sources": ["cfr-204-6-2019-filing", "fee-rule-2026-petition-fee"]
+    },
+    {
+      "id": "regional-center-records",
+      "title": "Regional center investment, optional: the investor's certification that the records the regional center filed for the offering are incorporated by reference, so the petition includes them",
+      "kind": "petition_certification",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1153-regional-center-records"]
+    },
+    {
+      "id": "fee-disclosure",
+      "title": "A disclosure, signed by the investor, of all fees, ongoing interest and other compensation paid in connection with the investment, except what the business plan already specifically identifies",
+      "kind": "fee_disclosure",
+      "appliesTo": "principal",
+      "note": "Covers what the regional center or enterprise knows was or will be paid to any person, including agents, finders and broker dealers involved in the offering",
+      "sources": ["usc-1153-fee-disclosure"]
+    },
+    {
+      "id": "enterprise-documents",
+      "title": "Evidence the new commercial enterprise was established, such as its organizational documents, and that it will create 10 jobs, such as records of those hired or a comprehensive business plan",
+      "kind": "business_formation_document",
+      "appliesTo": "principal",
+      "note": "In a regional center up to 90% of the jobs may be indirect, or 75% if they come from construction activity lasting less than 2 years",
+      "sources": ["cfr-204-6-evidence", "usc-1153-indirect-jobs"]
+    },
+    {
+      "id": "capital-at-risk",
+      "title": "Evidence the required capital is placed at risk, such as assets bought for the enterprise, property brought from abroad, money paid or committed for its stock, or loans the investor's assets secure",
+      "kind": "investment_evidence",
+      "appliesTo": "principal",
+      "note": "A loan counts only if secured by the investor's own assets, not the enterprise's, and the investor is personally and primarily liable for it",
+      "sources": ["cfr-204-6-evidence"]
+    },
+    {
+      "id": "source-of-funds",
+      "title": "Evidence identifying each source of the capital and of the funds for administrative costs and fees, obtained from a lawful source and through lawful means",
+      "kind": "source_of_funds_evidence",
+      "appliesTo": "principal",
+      "translation": "certified",
+      "sources": ["usc-1153-records", "cfr-103-2"]
+    },
+    {
+      "id": "business-registration",
+      "title": "Foreign business registration records, as applicable",
+      "kind": "business_registration",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "translation": "certified",
+      "sources": ["usc-1153-records", "cfr-204-6-evidence", "cfr-103-2"]
+    },
+    {
+      "id": "tax-returns",
+      "title": "Personal, corporate and partnership tax returns of any kind filed during the past 7 years with any taxing jurisdiction in or outside the U.S., as applicable (8 CFR 204.6 still says five years)",
+      "kind": "tax_return",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "translation": "certified",
+      "sources": ["usc-1153-records", "cfr-204-6-evidence", "cfr-103-2"]
+    },
+    {
+      "id": "judgment-records",
+      "title": "Certified copies of any monetary judgments, evidence of pending government civil, criminal or administrative actions and of private civil actions, pending or not, in any court, as applicable",
+      "kind": "court_records",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "translation": "certified",
+      "note": "Only actions involving possible monetary judgments; 8 CFR 204.6 asks for the past fifteen years",
+      "sources": ["usc-1153-records", "cfr-204-6-evidence", "cfr-103-2"]
+    },
+    {
+      "id": "fund-transferors",
+      "title": "The identity of all persons who transfer into the U.S., on the investor's behalf, funds used to meet the capital requirement, as applicable",
+      "kind": "fund_transfer_records",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1153-records"]
+    },
+    {
+      "id": "gift-or-loan-records",
+      "title": "If gifted or borrowed funds are invested: the business and tax records and judgment records of the donor or, if other than a bank, the lender",
+      "kind": "source_of_funds_evidence",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "translation": "certified",
+      "sources": ["usc-1153-gift-records", "cfr-103-2"]
+    },
+    {
+      "id": "engagement",
+      "title": "Evidence of the investor's engagement in managing the enterprise: the position and its duties, a seat as officer or director, or, in a partnership, management or policy making",
+      "kind": "management_role_evidence",
+      "appliesTo": "principal",
+      "note": "A limited partner whose partnership agreement gives the rights, powers and duties normally granted to limited partners under the Uniform Limited Partnership Act counts as engaged",
+      "sources": ["cfr-204-6-2019-engagement"]
+    },
+    {
+      "id": "visa-application",
+      "title": "Form DS-260 application, for an immigrant visa at a consulate abroad; a parent or guardian may execute it for a child under 14",
+      "kind": "visa_application_form",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-63"]
+    },
+    {
+      "id": "visa-application-dependent",
+      "title": "Form DS-260 application, for an immigrant visa at a consulate abroad; a parent or guardian may execute it for a child under 14",
+      "kind": "visa_application_form",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-63"]
+    },
+    {
+      "id": "passport",
+      "title": "Passport, for an immigrant visa at a consulate abroad",
+      "kind": "passport",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "Valid for at least 60 days beyond the period of validity of the visa",
+      "sources": ["usc-1202", "cfr-22-42-64"]
+    },
+    {
+      "id": "passport-dependent",
+      "title": "Passport, for an immigrant visa at a consulate abroad",
+      "kind": "passport",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "Valid for at least 60 days beyond the period of validity of the visa",
+      "sources": ["usc-1202", "cfr-22-42-64"]
+    },
+    {
+      "id": "birth-certificate",
+      "title": "Certified copy of the record of birth, if obtainable, from the custodian of birth records in the country of birth, with date, place and parentage, for an immigrant visa at a consulate abroad",
+      "kind": "birth_certificate",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "birth-certificate-dependent",
+      "title": "Certified copy of the record of birth, if obtainable, from the custodian of birth records in the country of birth, with date, place and parentage, for an immigrant visa at a consulate abroad",
+      "kind": "birth_certificate",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "police-certificate",
+      "title": "Police certificates, if obtainable, for an immigrant visa at a consulate abroad",
+      "kind": "police_certificate",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "From the countries of nationality and of residence, each if lived in six months or more, and any place lived in a year or more; the consul may ask for others where a police record is believed to exist",
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "police-certificate-dependent",
+      "title": "Police certificates, if obtainable, for an immigrant visa at a consulate abroad",
+      "kind": "police_certificate",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "From the countries of nationality and of residence, each if lived in six months or more, and any place lived in a year or more; the consul may ask for others where a police record is believed to exist",
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "prison-record",
+      "title": "Certified copy of any existing prison record, for an immigrant visa at a consulate abroad",
+      "kind": "prison_record",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "prison-record-dependent",
+      "title": "Certified copy of any existing prison record, for an immigrant visa at a consulate abroad",
+      "kind": "prison_record",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "military-record",
+      "title": "Certified copy of any existing military record, the complete record of service, for an immigrant visa at a consulate abroad",
+      "kind": "military_record",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "A discharge certificate or enrollment book is not accepted in its place unless it shows the complete record of military service",
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "military-record-dependent",
+      "title": "Certified copy of any existing military record, the complete record of service, for an immigrant visa at a consulate abroad",
+      "kind": "military_record",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "note": "A discharge certificate or enrollment book is not accepted in its place unless it shows the complete record of military service",
+      "sources": ["usc-1202", "cfr-22-42-65"]
+    },
+    {
+      "id": "marriage-record",
+      "title": "Records establishing the relationship to the spouse, for an immigrant visa at a consulate abroad",
+      "kind": "marriage_certificate",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "unmodeled"
+          },
+          {
+            "op": "fact",
+            "key": "person.hasSpouse"
+          }
+        ]
+      },
+      "sources": ["cfr-22-42-65"]
+    },
+    {
+      "id": "marriage-record-dependent",
+      "title": "Records establishing the relationship to the spouse, for an immigrant visa at a consulate abroad",
+      "kind": "marriage_certificate",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "unmodeled"
+          },
+          {
+            "op": "fact",
+            "key": "person.hasSpouse"
+          }
+        ]
+      },
+      "sources": ["cfr-22-42-65"]
+    },
+    {
+      "id": "adoption-records",
+      "title": "Records establishing the adopted child's relationship to the adoptive parent, for an immigrant visa at a consulate abroad",
+      "kind": "adoption_decree",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "all",
+        "operands": [
+          {
+            "op": "unmodeled"
+          },
+          {
+            "op": "not",
+            "operand": {
+              "op": "fact",
+              "key": "person.hasSpouse"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "op": "fact",
+              "key": "edge.parentKind"
+            },
+            "right": {
+              "op": "token",
+              "value": "adoptive"
+            }
+          }
+        ]
+      },
+      "sources": ["cfr-22-42-65"]
+    },
+    {
+      "id": "photographs",
+      "title": "Photographs of the number and specifications the Department of State prescribes, uploaded with the online application or on paper as directed, for an immigrant visa at a consulate abroad",
+      "kind": "photograph",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-65"]
+    },
+    {
+      "id": "photographs-dependent",
+      "title": "Photographs of the number and specifications the Department of State prescribes, uploaded with the online application or on paper as directed, for an immigrant visa at a consulate abroad",
+      "kind": "photograph",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-65"]
+    },
+    {
+      "id": "medical-examination",
+      "title": "Medical examination by a physician from the panel the consular officer approves, for every applicant regardless of age, for an immigrant visa at a consulate abroad",
+      "kind": "medical_examination",
+      "appliesTo": "principal",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-66"]
+    },
+    {
+      "id": "medical-examination-dependent",
+      "title": "Medical examination by a physician from the panel the consular officer approves, for every applicant regardless of age, for an immigrant visa at a consulate abroad",
+      "kind": "medical_examination",
+      "appliesTo": "each_dependent",
+      "condition": {
+        "op": "unmodeled"
+      },
+      "sources": ["cfr-22-42-66"]
+    },
+    {
+      "id": "vaccination-record",
+      "title": "Documentation of having received the vaccinations an immigrant needs, at least mumps, measles, rubella, polio, tetanus and diphtheria, pertussis, influenza type B and hepatitis B",
+      "kind": "vaccination_record",
+      "appliesTo": "principal",
+      "note": "May be waived if the vaccines are then received, if a panel physician or civil surgeon certifies one is not medically appropriate, or, by regulation, if one is against religious or moral convictions",
+      "sources": ["usc-1182-vaccination", "usc-1182-vaccination-waiver"]
+    },
+    {
+      "id": "vaccination-record-dependent",
+      "title": "Documentation of having received the vaccinations an immigrant needs, at least mumps, measles, rubella, polio, tetanus and diphtheria, pertussis, influenza type B and hepatitis B",
+      "kind": "vaccination_record",
+      "appliesTo": "each_dependent",
+      "note": "May be waived if the vaccines are then received, if a panel physician or civil surgeon certifies one is not medically appropriate, or, by regulation, if one is against religious or moral convictions",
+      "sources": ["usc-1182-vaccination", "usc-1182-vaccination-waiver"]
+    }
+  ]
+}

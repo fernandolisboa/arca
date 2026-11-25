@@ -81,6 +81,134 @@
     {
       "en": "EB-5 Integrity Fund fee for each Form I-526E regional center petition",
       "text": "Taxa do EB-5 Integrity Fund para cada petição Form I-526E de centro regional"
+    },
+    {
+      "en": "Form I-526E (regional center investor) or Form I-526 (standalone investor) petition, signed by the investor, with the fee and the initial supporting documentation attached",
+      "text": "Petição Form I-526E (investidor por centro regional) ou Form I-526 (investidor independente), assinada pelo investidor, com a taxa e a documentação inicial de apoio anexadas"
+    },
+    {
+      "en": "Regional center investment, optional: the investor's certification that the records the regional center filed for the offering are incorporated by reference, so the petition includes them",
+      "text": "Investimento por centro regional, opcional: declaração do investidor de que os documentos que o centro regional entregou para a oferta passam a fazer parte da petição por referência"
+    },
+    {
+      "en": "A disclosure, signed by the investor, of all fees, ongoing interest and other compensation paid in connection with the investment, except what the business plan already specifically identifies",
+      "text": "Declaração assinada pelo investidor com todas as taxas, juros correntes e outras remunerações pagas ligadas ao investimento, exceto o que o plano de negócios já identifica de forma específica"
+    },
+    {
+      "en": "Covers what the regional center or enterprise knows was or will be paid to any person, including agents, finders and broker dealers involved in the offering",
+      "text": "Inclui o que o centro regional ou o empreendimento sabe que foi ou será pago a qualquer pessoa, inclusive agentes, intermediários e corretoras envolvidos na oferta"
+    },
+    {
+      "en": "Evidence the new commercial enterprise was established, such as its organizational documents, and that it will create 10 jobs, such as records of those hired or a comprehensive business plan",
+      "text": "Provas de que o novo empreendimento foi constituído, como os documentos de constituição, e de que vai criar 10 empregos, como registros dos já contratados ou um plano de negócios completo"
+    },
+    {
+      "en": "In a regional center up to 90% of the jobs may be indirect, or 75% if they come from construction activity lasting less than 2 years",
+      "text": "Num centro regional até 90% dos empregos podem ser indiretos, ou 75% se vierem de obras que durem menos de 2 anos"
+    },
+    {
+      "en": "Evidence the required capital is placed at risk, such as assets bought for the enterprise, property brought from abroad, money paid or committed for its stock, or loans the investor's assets secure",
+      "text": "Provas de que o capital exigido está investido com risco, como bens comprados para o empreendimento, bens trazidos do exterior, dinheiro pago ou prometido por ações dele ou empréstimos garantidos por bens do investidor"
+    },
+    {
+      "en": "A loan counts only if secured by the investor's own assets, not the enterprise's, and the investor is personally and primarily liable for it",
+      "text": "Empréstimo só conta se for garantido por bens do próprio investidor, não do empreendimento, e se o investidor responder por ele pessoalmente, como devedor principal"
+    },
+    {
+      "en": "Evidence identifying each source of the capital and of the funds for administrative costs and fees, obtained from a lawful source and through lawful means",
+      "text": "Provas que identificam cada origem do capital e do dinheiro para custos administrativos e taxas, obtido de fonte legal e por meios legais"
+    },
+    {
+      "en": "Foreign business registration records, as applicable",
+      "text": "Registros de empresas fora dos EUA, quando houver"
+    },
+    {
+      "en": "Personal, corporate and partnership tax returns of any kind filed during the past 7 years with any taxing jurisdiction in or outside the U.S., as applicable (8 CFR 204.6 still says five years)",
+      "text": "Declarações de imposto de qualquer tipo, da pessoa física e de empresas, entregues nos últimos 7 anos a qualquer fisco, dentro ou fora dos EUA, quando houver (o 8 CFR 204.6 ainda fala em cinco anos)"
+    },
+    {
+      "en": "Certified copies of any monetary judgments, evidence of pending government civil, criminal or administrative actions and of private civil actions, pending or not, in any court, as applicable",
+      "text": "Cópias certificadas de condenações a pagar dinheiro, provas de ações cíveis, criminais ou administrativas do governo em andamento e de ações cíveis privadas, em andamento ou não, em qualquer tribunal, quando houver"
+    },
+    {
+      "en": "Only actions involving possible monetary judgments; 8 CFR 204.6 asks for the past fifteen years",
+      "text": "Só ações que possam levar a uma condenação a pagar dinheiro; o 8 CFR 204.6 pede os últimos quinze anos"
+    },
+    {
+      "en": "The identity of all persons who transfer into the U.S., on the investor's behalf, funds used to meet the capital requirement, as applicable",
+      "text": "A identificação de todas as pessoas que transferem para os EUA, em nome do investidor, dinheiro usado para cumprir o capital exigido, quando houver"
+    },
+    {
+      "en": "If gifted or borrowed funds are invested: the business and tax records and judgment records of the donor or, if other than a bank, the lender",
+      "text": "Se o dinheiro investido foi doado ou emprestado: os registros de empresas, as declarações de imposto e os registros de condenações de quem doou ou de quem emprestou, se não for um banco"
+    },
+    {
+      "en": "Evidence of the investor's engagement in managing the enterprise: the position and its duties, a seat as officer or director, or, in a partnership, management or policy making",
+      "text": "Provas de que o investidor participa da gestão do empreendimento: o cargo e suas funções, um posto de diretor ou conselheiro ou, numa sociedade de pessoas, a gestão ou a definição de políticas"
+    },
+    {
+      "en": "A limited partner whose partnership agreement gives the rights, powers and duties normally granted to limited partners under the Uniform Limited Partnership Act counts as engaged",
+      "text": "Conta como participação o sócio comanditário (limited partner) cujo contrato dá os direitos, poderes e deveres que o Uniform Limited Partnership Act costuma dar a esse tipo de sócio"
+    },
+    {
+      "en": "Form DS-260 application, for an immigrant visa at a consulate abroad; a parent or guardian may execute it for a child under 14",
+      "text": "Formulário DS-260, para o visto de imigrante num consulado fora dos EUA; para criança com menos de 14 anos, o pai, a mãe ou o responsável pode preencher"
+    },
+    {
+      "en": "Passport, for an immigrant visa at a consulate abroad",
+      "text": "Passaporte, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Valid for at least 60 days beyond the period of validity of the visa",
+      "text": "Válido por pelo menos 60 dias além da validade do visto"
+    },
+    {
+      "en": "Certified copy of the record of birth, if obtainable, from the custodian of birth records in the country of birth, with date, place and parentage, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro de nascimento, se for possível obtê-la, emitida pelo órgão que guarda o registro no país de nascimento, com data, local e filiação, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Police certificates, if obtainable, for an immigrant visa at a consulate abroad",
+      "text": "Atestados de antecedentes criminais, se for possível obtê-los, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "From the countries of nationality and of residence, each if lived in six months or more, and any place lived in a year or more; the consul may ask for others where a police record is believed to exist",
+      "text": "Do país de nacionalidade e do país onde mora, de cada um se viveu nele seis meses ou mais, e de qualquer lugar onde viveu um ano ou mais; o cônsul pode pedir outros onde acredite haver registro policial"
+    },
+    {
+      "en": "Certified copy of any existing prison record, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro prisional, se existir, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Certified copy of any existing military record, the complete record of service, for an immigrant visa at a consulate abroad",
+      "text": "Cópia certificada do registro militar, se existir, com o histórico completo do serviço, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "A discharge certificate or enrollment book is not accepted in its place unless it shows the complete record of military service",
+      "text": "Certificado de baixa do serviço ou caderneta militar não substitui o registro, a menos que mostre o histórico completo do serviço militar"
+    },
+    {
+      "en": "Records establishing the relationship to the spouse, for an immigrant visa at a consulate abroad",
+      "text": "Registros que comprovam o vínculo com o cônjuge, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Records establishing the adopted child's relationship to the adoptive parent, for an immigrant visa at a consulate abroad",
+      "text": "Registros que comprovam o vínculo do filho adotivo com quem o adotou, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Photographs of the number and specifications the Department of State prescribes, uploaded with the online application or on paper as directed, for an immigrant visa at a consulate abroad",
+      "text": "Fotos na quantidade e no padrão que o Departamento de Estado define, enviadas com o formulário on-line ou em papel, como ele orientar, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Medical examination by a physician from the panel the consular officer approves, for every applicant regardless of age, for an immigrant visa at a consulate abroad",
+      "text": "Exame médico com um médico da lista aprovada pelo consulado, para todo solicitante, de qualquer idade, para o visto de imigrante num consulado fora dos EUA"
+    },
+    {
+      "en": "Documentation of having received the vaccinations an immigrant needs, at least mumps, measles, rubella, polio, tetanus and diphtheria, pertussis, influenza type B and hepatitis B",
+      "text": "Comprovante das vacinas que o imigrante precisa ter, pelo menos caxumba, sarampo, rubéola, pólio, tétano e difteria, coqueluche, influenza tipo B e hepatite B"
+    },
+    {
+      "en": "May be waived if the vaccines are then received, if a panel physician or civil surgeon certifies one is not medically appropriate, or, by regulation, if one is against religious or moral convictions",
+      "text": "Pode ser dispensado se a pessoa tomar as vacinas depois, se médico credenciado (panel physician ou civil surgeon) atestar que uma não é adequada ou, por regulamento, se uma for contra crenças religiosas ou morais"
     }
   ]
 }
