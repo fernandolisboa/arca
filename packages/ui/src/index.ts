@@ -28,6 +28,14 @@ export { NextActionCard, type NextActionCardProps } from './patterns/next-action
 export { ProgressBar, type ProgressBarProps } from './patterns/progress-bar.js';
 export { RankingRow, type RankingRowProps } from './patterns/ranking-row.js';
 export { ScaleChoice, type ScaleChoiceProps } from './patterns/scale-choice.js';
+export { fieldControlClass, matchesSearch } from './patterns/field.js';
+export {
+  SearchPicker,
+  type SearchPickerGroup,
+  type SearchPickerLabels,
+  type SearchPickerOption,
+  type SearchPickerProps,
+} from './patterns/search-picker.js';
 export type { SignOut } from './shell/menu-panel.js';
 export { StarRating, type StarRatingProps } from './patterns/star-rating.js';
 export {

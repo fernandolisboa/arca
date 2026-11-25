@@ -7,7 +7,7 @@ import {
   type RuleEngineData,
   type RuleRowReading,
   type RuleRows,
-  countryFiles,
+  datasetFiles,
   refusedRows,
   ruleDataFromRows,
   ruleEngineData,
@@ -46,7 +46,7 @@ export const sha256 = (text: string): string =>
  */
 export function postgresRuleStore(db: () => Database, logger: Logger): RuleStore {
   let cached: { counts: string; rows: Promise<RuleRows> } | undefined;
-  const reading: RuleRowReading = { countryFiles, sha256, hostOf };
+  const reading: RuleRowReading = { datasetFiles, sha256, hostOf };
   const parsed = new WeakMap<RuleRows, RuleData>();
 
   const readRows = async (): Promise<RuleRows> => {

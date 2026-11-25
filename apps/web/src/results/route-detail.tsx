@@ -50,7 +50,7 @@ export function totalShort(result: RouteResult, words: KnowledgeWords): string |
 /**
  * One route in full (spec 0007, R6): who goes with each member as principal, what each rule says
  * of the case, the total cost and every source. The titles are in the screen's language where
- * they have a translation (ADR-0036), and the version's English is one switch away.
+ * they have a translation (ADR-0037), and the version's English is one switch away.
  */
 export function RouteDetail({
   row,

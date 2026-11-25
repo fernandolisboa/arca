@@ -1,4 +1,4 @@
-# ADR-0036: Route version titles in the screen's language, as reviewed data beside the versions
+# ADR-0037: Route version titles in the screen's language, as reviewed data beside the versions
 
 - Status: Accepted
 - Date: 2026-11-25

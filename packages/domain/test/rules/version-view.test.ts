@@ -256,6 +256,22 @@ describe('the activation view (spec 0007, R7)', () => {
     expect(shown?.rejection).toEqual({ selected: true, fallback: null });
   });
 
+  it('shows the classification files a version pins, and leaves them out when it pins none', () => {
+    const occupations = { id: 'occupations', number: 1 };
+    const pinning = entry({ occupations });
+    const pinned = versionView({
+      versions: [pinning],
+      number: 1,
+      cases,
+      states: new Map(),
+      today,
+      hostOf,
+    });
+    expect(pinned?.pins.occupations).toEqual(occupations);
+    expect(pinned?.pins).not.toHaveProperty('studyFields');
+    expect(view(1)?.pins).not.toHaveProperty('occupations');
+  });
+
   it('has no view of a version the catalog does not hold', () => {
     expect(view(9)).toBeUndefined();
   });

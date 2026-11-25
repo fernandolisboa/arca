@@ -24,7 +24,7 @@ Fix what is proven, then review again. **At most three rounds a route.** Whateve
 2. A fact the schema cannot hold (titles are capped at 200 characters; a requirement must be able to be false) is disclosed as far as the title allows and listed as a leftover. Do not bend an expression to pass the check.
 3. Set each source's `verifiedAt` to the São Paulo date its page was read.
 4. Add the review to `sessionReviews` in `packages/knowledge/scripts/session-review.ts`, and create its migration folder (a review ID holds only digits, lowercase letters and hyphens, or the `review-quotes` job fails): `pnpm --filter @arca/db exec drizzle-kit generate --custom --name knowledge_session_review_<yyyy>_<mm>_<country>`.
-5. Add the Portuguese of every new or reworded title to `packages/knowledge/rule-texts/pt-BR/<route>.json` ([ADR-0036](../adr/0036-rule-texts-in-the-screens-language.md)), keeping every number; `test/rule-texts.test.ts` fails until a version in effect or ahead has all of them.
+5. Add the Portuguese of every new or reworded title to `packages/knowledge/rule-texts/pt-BR/<route>.json` ([ADR-0037](../adr/0037-rule-texts-in-the-screens-language.md)), keeping every number; `test/rule-texts.test.ts` fails until a version in effect or ahead has all of them.
 6. Write `packages/knowledge/reviews/<review>/README.md`: what changed, the rounds, and the leftover list. Add a dated entry to the route's note in `docs/research/routes/` that points to it.
 
 ## 4. Check in code

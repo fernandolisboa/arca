@@ -7,7 +7,7 @@ export const ruleTextLocale = 'pt-BR';
 const translation = z.string().min(1).max(400);
 
 /**
- * One route's texts in the screen's language, as the repository keeps them (ADR-0036): each pairs
+ * One route's texts in the screen's language, as the repository keeps them (ADR-0037): each pairs
  * a title as a route version writes it, in English, with its translation. Not rule data: a
  * version's content and hash stay as they are, and a title with no entry shows in English.
  */

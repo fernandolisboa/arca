@@ -350,7 +350,7 @@ const currency = z.string().regex(/^[A-Z]{3}$/);
 const unitsMoney = z.object({ amount: decimalSchema, currency });
 const sources = z.array(sourceSchema).max(50);
 const people = z.array(z.uuid()).max(maxCasePeople);
-/** A version's title, in the screen's language when it has a translation (ADR-0036). */
+/** A version's title, in the screen's language when it has a translation (ADR-0037). */
 const shownText = z.string().max(400);
 /** The version's own English title, given only when the shown one is a translation. */
 const originalText = z.string().max(200).nullable();
@@ -370,7 +370,7 @@ export const RouteResult = z.object({
   ]),
   /**
    * The active version's title and country; null while no version is active. A title in the
-   * screen's language carries the version's own English beside it (ADR-0036).
+   * screen's language carries the version's own English beside it (ADR-0037).
    */
   route: z
     .object({ title: shownText, original: originalText, country: countryCodeSchema })

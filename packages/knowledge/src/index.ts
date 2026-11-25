@@ -6,7 +6,7 @@ import type { Json } from './canonical.js';
 import {
   comparisonData,
   countryData,
-  countryFileData,
+  datasetFileData,
   ruleTextData,
   suggestedRatingData,
 } from './generated/runtime.js';
@@ -54,7 +54,7 @@ export const suggestedRatings =
 
 export { type RuleTexts, type Sha256, createRuleTexts } from './rule-texts.js';
 
-/** Route version titles in the screen's language, keyed by their English's hash (ADR-0036). */
+/** Route version titles in the screen's language, keyed by their English's hash (ADR-0037). */
 export const shippedRuleTexts = shippedRuleTextsSchema.parse(ruleTextData);
 
 /** The pinned countries and former states, by code; their names come from the client's locale. */
@@ -68,9 +68,10 @@ export const pinnedCountries = z
 export type PinnedCountries = typeof pinnedCountries;
 
 /**
- * The countries and former-countries files, keyed `<kind>/<id>/<number>`: they stay in the
- * repository (ADR-0031), and a route version's or country set's hash covers the ones it pins.
+ * The dataset files (countries, former countries, occupations and study fields), keyed
+ * `<kind>/<id>/<number>`: they stay in the repository (ADR-0031), and a route version's or country
+ * set's hash covers the ones it pins.
  */
-export const countryFiles: Readonly<Record<string, Json>> = z
+export const datasetFiles: Readonly<Record<string, Json>> = z
   .record(z.string(), z.json())
-  .parse(countryFileData);
+  .parse(datasetFileData);

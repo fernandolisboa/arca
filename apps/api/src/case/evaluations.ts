@@ -17,7 +17,7 @@ export interface EvaluationSettings {
   /** Today in São Paulo: the snapshot's date, the rules' and the facts' (spec 0007, R6). */
   readonly today: CalendarDate;
   readonly engineCommit: string;
-  /** Route version titles in the screen's language (ADR-0036); none leaves them in English. */
+  /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
   readonly texts?: RuleTexts;
 }
 

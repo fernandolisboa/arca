@@ -4,8 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { type RouteVersion, routeVersionSchema } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { describe, expect, it } from 'vitest';
-import { buildKnowledge } from '../scripts/build.ts';
-import { importDate } from '../scripts/rule-import.ts';
+import { importBuild } from '../scripts/rule-import.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import type { Json } from '../src/canonical.ts';
 import { checkProposal } from '../src/proposal.ts';
@@ -16,7 +15,7 @@ const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').diges
 
 /** The newest version of a route whose cases all carry inline snapshots, as a proposal's must. */
 async function setUp() {
-  const { rows, countryFiles, issues } = await buildKnowledge(dataDir, importDate);
+  const { rows, datasetFiles, issues } = await importBuild(dataDir);
   expect(issues).toEqual([]);
   const newest = new Map<string, (typeof rows.routeVersions)[number]>();
   for (const row of rows.routeVersions) {
@@ -46,7 +45,7 @@ async function setUp() {
       effectiveFrom: later.toISOString().slice(0, 10),
       ...change,
     }) as unknown as Json;
-  const reading = { countryFiles, sha256, hostOf };
+  const reading = { datasetFiles, sha256, hostOf };
   const check = (content: Json, cases: unknown = row.cases) =>
     checkProposal(rows, { kind: 'update', base }, content, cases, reading);
   return { rows, row, base, next, reading, check };
@@ -63,7 +62,25 @@ describe('checkProposal (ADR-0031)', { timeout: 120_000 }, () => {
     expect(result.entry.identity.number).toBe(result.entry.version.number);
   });
 
+  it('takes a version that pins the classifications, hashed with their files', async () => {
+    const { rows, next, reading, check } = await setUp();
+    const pinned = next({
+      occupations: { id: 'occupations', number: 1 },
+      studyFields: { id: 'study-fields', number: 1 },
+    });
+    const result = await check(pinned);
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.hash).toBe(routeVersionContentHash(rows, pinned, reading));
+    expect(result.hash).not.toBe(routeVersionContentHash(rows, next(), reading));
+  });
+
   it.each<[string, (setup: Awaited<ReturnType<typeof setUp>>) => Json, RegExp]>([
+    [
+      'a pin to a classification file that does not exist',
+      ({ next }) => next({ occupations: { id: 'occupations', number: 2 } }),
+      /pinned file is missing/,
+    ],
     [
       'a number that is not the next',
       ({ base, next }) => next({ number: base.number + 2 }),

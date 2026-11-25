@@ -192,7 +192,7 @@ export interface CaseFilesSettings {
     readonly comparisons: ComparisonCatalog;
     /** The stars the comparison suggests per country (ADR-0035); none when absent. */
     readonly suggestions?: RatingSuggestions;
-    /** Route version titles in the screen's language (ADR-0036); none leaves them in English. */
+    /** Route version titles in the screen's language (ADR-0037); none leaves them in English. */
     readonly texts?: RuleTexts;
     readonly states: () => Promise<DecisionStates>;
     /** Today in São Paulo, which evaluations select versions and compute facts as of. */

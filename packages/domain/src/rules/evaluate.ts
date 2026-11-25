@@ -596,9 +596,11 @@ function unknownOf(type: FactType, currency: CurrencyCode): Value {
       return unknownDate();
     case 'country':
     case 'enum':
+    case 'code':
       return { type: 'token' };
     case 'countries':
     case 'enum-list':
+    case 'codes':
       return { type: 'tokens', definite: [], possible: [], complete: false };
   }
 }

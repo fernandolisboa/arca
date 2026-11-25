@@ -4,7 +4,7 @@ import {
   routeCountry,
   routeStatusOrder,
 } from '@arca/api-contract/client';
-import { matchesSearch } from '../forms/country-search.js';
+import { matchesSearch } from '@arca/ui';
 
 type Status = RouteResult['status'];
 type NamedRoute = NonNullable<RouteResult['route']>;

@@ -78,7 +78,7 @@ function shownFromToday(versions: readonly Version[], today: string): Version[] 
 const numbersIn = (text: string): readonly string[] =>
   text.replaceAll(/(?<=\d)[.,](?=\d)/gu, '').match(/\d+/gu) ?? [];
 
-describe('rule texts (ADR-0036)', async () => {
+describe('rule texts (ADR-0037)', async () => {
   const files = await readRuleTexts(textsDir);
   const versions = await repositoryVersions();
   const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');

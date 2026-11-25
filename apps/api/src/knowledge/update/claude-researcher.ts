@@ -11,7 +11,7 @@ import {
 } from './ports.js';
 
 /** Bumped only when what research is told changes; stored with nothing, so it stales nothing. */
-export const ruleResearchPromptVersion = 'rule-research-2';
+export const ruleResearchPromptVersion = 'rule-research-3';
 
 /** The most searches and fetches one research or correction call may run. */
 const maxSearches = 8;

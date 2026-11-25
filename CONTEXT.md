@@ -22,6 +22,9 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Ancestor | Ascendente | A parent, grandparent or earlier forebear of the principal, whether or not in the case; read in descent rules |
 | Lineage | Linha de ascendência | The chain of people from an ancestor down to the principal |
 | Rule summary | Resumo feito pelo Arca | A model's plain-text reading of one route version for an admin, with points to check; an aid to review that never decides and never reaches members; stored once per content, prompt and model, and shared by admins |
+| Occupation | Ocupação | What a person does for a living, as an ISCO-08 unit group code ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)); avoid "profession" and "job title" for the code |
+| Field of study | Área de formação | What a qualification was in, as an ISCED-F 2013 four-digit code ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)); `studyFields` and `study-fields` in code; avoid "course" and "major" |
+| Classification | Internal, no UI label | A numbered, sourced file of the codes of one official list, occupations or fields of study, that a route version pins so its requirements can name codes ([ADR-0036](docs/adr/0036-case-records-and-classifications.md)) |
 | Rule case | Caso de teste da regra | One table-driven test entry for a route version, in its cases file; not a family's case |
 | Official-domain list | Lista de sites oficiais | A versioned list of hosts that count as official for a country or international body |
 | Evaluation | Avaliação | The result of applying a route version to a person or unit |
@@ -56,7 +59,7 @@ This repo keeps its glossary as a table, not the `**Term**:` list of the `domain
 | Own criterion | Critério próprio | A criterion an adult creates and names for their own comparison, scored from their rating, or a suggested rating when its name matches a ready suggestion; case data, unlike a personal criterion. Avoid "custom criterion" |
 | Suggested criterion | Sugestão | A criterion the comparison screen proposes, from a ready list or from Arca's model, with a starting weight; becomes an own criterion when the adult adds it, or stays out of the suggestions when they turn it down ([ADR-0034](docs/adr/0034-criterion-suggestions.md)) |
 | Cost total | Total em dinheiro | What a route version's costs add up to for one principal, per currency, split into what certainly applies and what may on top; computed by the engine, never by a model. Durations are not summed |
-| Rule text | (no UI label) | A route version title in the screen's language, paired with the English the version writes, kept in the repository beside the versions; never part of a version or its hash ([ADR-0036](docs/adr/0036-rule-texts-in-the-screens-language.md)) |
+| Rule text | (no UI label) | A route version title in the screen's language, paired with the English the version writes, kept in the repository beside the versions; never part of a version or its hash ([ADR-0037](docs/adr/0037-rule-texts-in-the-screens-language.md)) |
 | Suggested rating | Sugestão do Arca | Stars from 1 to 5 the comparison suggests for a country on a personal or own criterion, from a public source in the repository; they score the criterion until the adult rates it, and the adult's own stars always win ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
 | Suggestion key | (no UI label) | The ID a suggested rating is filed under: a personal criterion's ID or a ready suggestion's ID; an own criterion takes the key whose catalog name it matches ([ADR-0035](docs/adr/0035-suggested-ratings.md)) |
 | Weight | Peso | How much a criterion counts in one adult's comparison, from 0 (left out) to 5 |
