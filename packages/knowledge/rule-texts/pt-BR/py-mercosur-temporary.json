@@ -63,8 +63,8 @@
       "text": "Certidão de nascimento emitida pela autoridade competente do país emissor, visada e legalizada ou apostilada"
     },
     {
-      "en": "Original plus an authenticated copy; issued abroad, legalized or apostilled, and translated into Spanish by a public translator, save Brazil's papers in Portuguese",
-      "text": "Original e uma cópia autenticada; se emitido no exterior, legalizado ou apostilado e traduzido para o espanhol por tradutor público, salvo documentos brasileiros em português"
+      "en": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
+      "text": "Original e uma cópia autenticada; se emitido no exterior, legalizado ou apostilado; se em outro idioma, traduzido para o espanhol por tradutor público, salvo documentos brasileiros em português"
     },
     {
       "en": "From age 14, a police or criminal record certificate with national coverage, from the issuing country or its consulate in Paraguay; some nationals aged 15 to 17 are exempt",
@@ -96,7 +96,7 @@
     },
     {
       "en": "Proof of entry into Paraguay: the stamped entry card, the entry stamp in the passport, the directorate's sworn statement or any other paper proving presence in the country",
-      "text": "Comprovante de entrada no Paraguai: cartão migratório carimbado, carimbo de entrada no passaporte, declaração juramentada da Direção de Migrações ou outro papel que prove a presença no país"
+      "text": "Comprovante de entrada no Paraguai: cartão migratório carimbado, carimbo de entrada no passaporte, declaração juramentada da Direção de Migrações ou outro documento que comprove a presença no país"
     },
     {
       "en": "For an applicant under 18: a copy of both parents' identity documents, authenticated where both parents are present",
@@ -113,10 +113,6 @@
     {
       "en": "For an applicant under 18 whose parent died: the parent's death certificate",
       "text": "Para quem tem menos de 18 anos e perdeu o pai ou a mãe: a certidão de óbito"
-    },
-    {
-      "en": "Original plus an authenticated copy; if issued abroad, legalized or apostilled; if in a foreign language, translated into Spanish by a public translator, save Brazil's papers in Portuguese",
-      "text": "Original e uma cópia autenticada; se emitido no exterior, legalizado ou apostilado; se em outro idioma, traduzido para o espanhol por tradutor público, salvo documentos brasileiros em português"
     }
   ]
 }
