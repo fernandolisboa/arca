@@ -81,7 +81,7 @@ interface NavLinkProps {
   /** Icon only, with the label as the accessible name (the top bar's gear). */
   readonly iconOnly?: boolean;
   /**
-   * The label shows once the top bar is 64rem wide, which grows with the text size; narrower, it is
+   * The label shows once the top bar is 72rem wide, which grows with the text size; narrower, it is
    * read but not shown, so the name and a full top bar fit.
    */
   readonly compact?: boolean;
@@ -92,7 +92,7 @@ interface NavLinkProps {
 
 function labelClass(compact: boolean, hideLabel: boolean): string {
   if (hideLabel) return 'sr-only';
-  return compact ? 'sr-only @5xl:not-sr-only @5xl:truncate' : 'max-w-full truncate';
+  return compact ? 'sr-only @6xl:not-sr-only @6xl:truncate' : 'max-w-full truncate';
 }
 
 export function NavLink({

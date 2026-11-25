@@ -167,8 +167,8 @@ describe('collapsed navigation', () => {
   });
 
   it('shows the names in a top bar wide enough for them, until collapsed', () => {
-    expect(render({ wide: 'top' })).toContain('@5xl:not-sr-only');
-    expect(render({ wide: 'top', collapse: 'collapsed' })).not.toContain('@5xl:not-sr-only');
+    expect(render({ wide: 'top' })).toContain('@6xl:not-sr-only');
+    expect(render({ wide: 'top', collapse: 'collapsed' })).not.toContain('@6xl:not-sr-only');
   });
 
   it('shrinks a collapsed dock to the touch target', () => {
