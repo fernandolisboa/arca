@@ -1,0 +1,695 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The amount of capital required under subparagraph (A) for an investment in a targeted employment area or in an infrastructure project shall be $800,000."
+    },
+    {
+      "key": "requirement:capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the amount of capital required under subparagraph (A) shall be $1,050,000"
+    },
+    {
+      "key": "requirement:capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "Beginning on January 1, 2027, and every 5 years thereafter, the amount in clause (i) shall automatically adjust for petitions filed on or after the effective date of each adjustment"
+    },
+    {
+      "key": "requirement:capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "means cash and all real, personal, or mixed tangible assets owned and controlled by the alien investor"
+    },
+    {
+      "key": "requirement:capital",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "were gifted or loaned to the alien investor in good faith; and (bb) were not gifted or loaned to circumvent any limitations imposed on permissible sources of capital under this subparagraph"
+    },
+    {
+      "key": "assessment:lawful-source",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "were obtained from a lawful source and through lawful means"
+    },
+    {
+      "key": "assessment:at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence of mere intent to invest, or of prospective investment arrangements entailing no present commitment, will not suffice to show that the petitioner is actively in the process of investing."
+    },
+    {
+      "key": "assessment:investment-term",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "which is expected to remain invested for not less than 2 years"
+    },
+    {
+      "key": "assessment:job-creation",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "by creating full-time employment for not fewer than 10 United States citizens, United States nationals, or aliens lawfully admitted for permanent residence or other immigrants lawfully authorized to be employed in the United States"
+    },
+    {
+      "key": "assessment:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "as opposed to maintaining a purely passive role in regard to the investment"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "by reason of any marriage ceremony where the contracting parties thereto are not physically present in the presence of each other, unless the marriage shall have been consummated"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "A spouse or child as defined in subparagraph (A), (B), (C), (D), or (E) of section 1101(b)(1) of this title shall, if not otherwise entitled to an immigrant status and the immediate issuance of a visa under subsection (a), (b), or (c), be entitled to the same status, and the same order of consideration provided in the respective subsection, if accompanying or following to join, the spouse or parent."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if the father has or had a bona fide parent-child relationship with the person"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "if such legitimation takes place before the child reaches the age of eighteen years and the child is in the legal custody of the legitimating parent or parents at the time of such legitimation"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a child adopted while under the age of sixteen years if the child has been in the legal custody of, and has resided with, the adopting parent or parents for at least two years or if the child has been battered or subject to extreme cruelty by the adopting parent or by a family member of the adopting parent residing in the same household"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "(I) is a natural sibling of a child described in clause (i) or subparagraph (F)(i); (II) was adopted by the adoptive parent or parents of the sibling described in such clause or subparagraph; and (III) is otherwise described in clause (i), except that the child was adopted while under the age of 18 years"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:adopted-children",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "a stepchild, whether or not born out of wedlock, provided the child had not reached the age of eighteen years at the time the marriage creating the status of stepchild occurred"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapI-sec1101.htm",
+      "quote": "means an unmarried person under twenty-one years of age who is"
+    },
+    {
+      "key": "dependent:stepchildren",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the age of the alien on the date on which an immigrant visa number becomes available for such alien (or, in the case of subsection (d), the date on which an immigrant visa number became available for the alien's parent), but only if the alien has sought to acquire the status of an alien lawfully admitted for permanent residence within one year of such availability; reduced by (B) the number of days in the period during which the applicable petition described in paragraph (2) was pending"
+    },
+    {
+      "key": "cost:investment",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The amount of capital required under subparagraph (A) for an investment in a targeted employment area or in an infrastructure project shall be $800,000."
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "Immigrant Petition by Regional Center Investor, Form I-526E initial filing: $7,850."
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "Immigrant Petition by Standalone Investor, Form I-526: $7,615."
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "Visas under this subparagraph shall be made available through September 30, 2027"
+    },
+    {
+      "key": "cost:petition-fee",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "that were filed on or before September 30, 2026"
+    },
+    {
+      "key": "cost:integrity-fund-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "must submit $1,100 in addition to any other fees associated with such petition"
+    },
+    {
+      "key": "cost:removal-petition-fee",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "conditions on their residence. $5,000."
+    },
+    {
+      "key": "cost:removal-petition-fee",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "quote": "shall be filed during the 90-day period immediately preceding the second anniversary"
+    },
+    {
+      "key": "cost:visa-application-fee",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:visa-application-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-C/part-22/section-22.1",
+      "quote": "Employment-based applications $345"
+    },
+    {
+      "key": "cost:uscis-immigrant-fee",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "cost:uscis-immigrant-fee-dependents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-106/section-106.2",
+      "quote": "For DHS domestic processing and issuance of required documents after an immigrant visa is issued by the U.S. Department of State: $235."
+    },
+    {
+      "key": "duration:conditional-residence",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "quote": "to have obtained such status on a conditional basis subject to the provisions of this section"
+    },
+    {
+      "key": "duration:conditional-residence",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "quote": "effective as of the second anniversary of the"
+    },
+    {
+      "key": "duration:conditional-residence",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "quote": "may provide a 1-year extension of the"
+    },
+    {
+      "key": "duration:conditional-residence",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1186b.htm",
+      "quote": "will create such employment before the third anniversary of the alien's lawful admission for permanent residence"
+    },
+    {
+      "key": "document:investor-petition",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "The petition must be accompanied by the appropriate fee. Before a petition is considered properly filed, the petition must be signed by the petitioner, and the initial supporting documentation required by this section must be attached."
+    },
+    {
+      "key": "document:investor-petition",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "Immigrant Petition by Standalone Investor, Form I-526"
+    },
+    {
+      "key": "document:investor-petition",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "Immigrant Petition by Regional Center Investor, Form I-526E initial filing"
+    },
+    {
+      "key": "document:investor-petition",
+      "url": "https://www.federalregister.gov/documents/2026/09/30/2026-20016/us-citizenship-and-immigration-services-employment-based-immigrant-visa-fifth-preference-eb-5-fee",
+      "quote": "Immigrant Petition by Standalone or Regional Center Investor, Forms I-526 and I-526E. To petition USCIS for status as an immigrant to the United States under section 203(b)(5) of the Act."
+    },
+    {
+      "key": "document:regional-center-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "shall deem such petitions to include records previously filed with the Secretary pursuant to subparagraph (F) if the alien petitioner certifies that such records are incorporated by reference into the alien's petition"
+    },
+    {
+      "key": "document:fee-disclosure",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "shall include a disclosure, signed by the investor, that reflects all fees, ongoing interest, and other compensation paid to any person that the regional center or new commercial enterprise knows has received, or will receive, in connection with the investment, including compensation to agents, finders, or broker dealers involved in the offering, to the extent not already specifically identified in the business plan filed under subparagraph (F)."
+    },
+    {
+      "key": "document:enterprise-documents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "articles of incorporation, certificate of merger or consolidation, partnership agreement, certificate of limited partnership, joint venture agreement, business trust agreement, or other similar organizational document for the new commercial enterprise"
+    },
+    {
+      "key": "document:enterprise-documents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Documentation consisting of photocopies of relevant tax records, Form I-9, or other similar documents for ten (10) qualifying employees, if such employees have already been hired following the establishment of the new commercial enterprise"
+    },
+    {
+      "key": "document:enterprise-documents",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "A copy of a comprehensive business plan showing that, due to the nature and projected size of the new commercial enterprise, the need for not fewer than ten (10) qualifying employees will result"
+    },
+    {
+      "key": "document:enterprise-documents",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The Secretary of Homeland Security shall permit aliens seeking admission under this subparagraph to satisfy only up to 90 percent of the requirement under subparagraph (A)(ii) with jobs that are estimated to be created indirectly through investment under this paragraph"
+    },
+    {
+      "key": "document:enterprise-documents",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "If the jobs estimated to be created are created by construction activity lasting less than 2 years, the Secretary shall permit aliens seeking admission under this subparagraph to satisfy only up to 75 percent of the requirement"
+    },
+    {
+      "key": "document:capital-at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "the petition must be accompanied by evidence that the petitioner has placed the required amount of capital at risk for the purpose of generating a return on the capital placed at risk"
+    },
+    {
+      "key": "document:capital-at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence of assets which have been purchased for use in the United States enterprise"
+    },
+    {
+      "key": "document:capital-at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence of monies transferred or committed to be transferred to the new commercial enterprise in exchange for shares of stock"
+    },
+    {
+      "key": "document:capital-at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence of property transferred from abroad for use in the United States enterprise"
+    },
+    {
+      "key": "document:capital-at-risk",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence of any loan or mortgage agreement, promissory note, security agreement, or other evidence of borrowing which is secured by assets of the petitioner, other than those of the new commercial enterprise, and for which the petitioner is personally and primarily liable."
+    },
+    {
+      "key": "document:source-of-funds",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "An alien investor shall demonstrate that the capital required under subparagraph (A) and any funds used to pay administrative costs and fees associated with the alien's investment were obtained from a lawful source and through lawful means."
+    },
+    {
+      "key": "document:source-of-funds",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "any other evidence identifying any other source of capital or administrative fees"
+    },
+    {
+      "key": "document:source-of-funds",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:business-registration",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The Secretary of Homeland Security shall require that an alien investor's petition under this paragraph contain, as applicable"
+    },
+    {
+      "key": "document:business-registration",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "foreign business registration records"
+    },
+    {
+      "key": "document:business-registration",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:tax-returns",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The Secretary of Homeland Security shall require that an alien investor's petition under this paragraph contain, as applicable"
+    },
+    {
+      "key": "document:tax-returns",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "corporate or partnership tax returns (or tax returns of any other entity in any form filed in any country or subdivision of such country), and personal tax returns, including income, franchise, property (whether real, personal, or intangible), or any other tax returns of any kind, filed during the past 7 years"
+    },
+    {
+      "key": "document:tax-returns",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "with any taxing jurisdiction within or outside the United States by or on behalf of the alien investor"
+    },
+    {
+      "key": "document:tax-returns",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "or any other tax returns of any kind filed within five years, with any taxing jurisdiction in or outside the United States by or on behalf of the petitioner"
+    },
+    {
+      "key": "document:tax-returns",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:judgment-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "evidence related to monetary judgments against the alien investor, including certified copies of any judgments, and evidence of all pending governmental civil or criminal actions, governmental administrative proceedings, and any private civil actions (pending or otherwise) involving possible monetary judgments against the alien investor from any court within or outside the United States"
+    },
+    {
+      "key": "document:judgment-records",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "involving monetary judgments against the petitioner from any court in or outside the United States within the past fifteen years"
+    },
+    {
+      "key": "document:judgment-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The Secretary of Homeland Security shall require that an alien investor's petition under this paragraph contain, as applicable"
+    },
+    {
+      "key": "document:judgment-records",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:fund-transferors",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "The Secretary of Homeland Security shall require that an alien investor's petition under this paragraph contain, as applicable"
+    },
+    {
+      "key": "document:fund-transferors",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "the identity of all persons who transfer into the United States, on behalf of the investor, any funds that are used to meet the capital requirement under subparagraph (A)"
+    },
+    {
+      "key": "document:gift-or-loan-records",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partI-sec1153.htm",
+      "quote": "If funds invested under subparagraph (A) are gifted or loaned to the alien investor, the Secretary shall require that the alien investor's petition under this paragraph includes the records described in subclauses (I) and (II) of clause (ii) from the donor or, if other than a bank, the lender."
+    },
+    {
+      "key": "document:gift-or-loan-records",
+      "url": "https://www.ecfr.gov/current/title-8/chapter-I/subchapter-B/part-103/subpart-A/section-103.2",
+      "quote": "Any document containing foreign language submitted to USCIS shall be accompanied by a full English language translation which the translator has certified as complete and accurate"
+    },
+    {
+      "key": "document:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "To show that the petitioner is or will be engaged in the management of the new commercial enterprise, either through the exercise of day-to-day managerial control or through policy formulation, as opposed to maintaining a purely passive role in regard to the investment, the petition must be accompanied by"
+    },
+    {
+      "key": "document:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "A statement of the position title that the petitioner has or will have in the new enterprise and a complete description of the position's duties"
+    },
+    {
+      "key": "document:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "Evidence that the petitioner is a corporate officer or a member of the corporate board of directors"
+    },
+    {
+      "key": "document:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "If the new enterprise is a partnership, either limited or general, evidence that the petitioner is engaged in either direct management or policy making activities"
+    },
+    {
+      "key": "document:engagement",
+      "url": "https://www.ecfr.gov/on/2019-11-20/title-8/chapter-I/subchapter-B/part-204/subpart-A/section-204.6",
+      "quote": "if the petitioner is a limited partner and the limited partnership agreement provides the petitioner with certain rights, powers, and duties normally granted to limited partners under the Uniform Limited Partnership Act, the petitioner will be considered sufficiently engaged in the management of the new commercial enterprise"
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "Every alien applying for an immigrant visa must make application, as directed by the consular officer, on Form DS-230, Application for Immigrant Visa and Alien Registration, or on Form DS-260, Electronic Application for Immigrant Visa and Alien Registration."
+    },
+    {
+      "key": "document:visa-application",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "The application on Form DS-230 or on Form DS-260 for an alien under 14 years of age or one physically incapable of completing an application may be executed by the alien's parent or guardian"
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "Every alien applying for an immigrant visa must make application, as directed by the consular officer, on Form DS-230, Application for Immigrant Visa and Alien Registration, or on Form DS-260, Electronic Application for Immigrant Visa and Alien Registration."
+    },
+    {
+      "key": "document:visa-application-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.63",
+      "quote": "The application on Form DS-230 or on Form DS-260 for an alien under 14 years of age or one physically incapable of completing an application may be executed by the alien's parent or guardian"
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "Every alien applying for an immigrant visa shall present a valid unexpired passport or other suitable travel document, or document of identity and nationality, if such document is required under the regulations issued by the Secretary of State."
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.64",
+      "quote": "every applicant for an immigrant visa shall present a passport, as defined in INA 101(a)(30), that is valid for at least 60 days beyond the period of validity of the visa"
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "Every alien applying for an immigrant visa shall present a valid unexpired passport or other suitable travel document, or document of identity and nationality, if such document is required under the regulations issued by the Secretary of State."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.64",
+      "quote": "every applicant for an immigrant visa shall present a passport, as defined in INA 101(a)(30), that is valid for at least 60 days beyond the period of validity of the visa"
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates; a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certified copy of an alien's record of birth means a certificate issued by the official custodian of birth records in the country of birth showing the date and place of birth and the parentage of the alien, based upon the original registration of birth."
+    },
+    {
+      "key": "document:birth-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a certified copy of any existing prison record, military record, and record of his birth"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates; a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certified copy of an alien's record of birth means a certificate issued by the official custodian of birth records in the country of birth showing the date and place of birth and the parentage of the alien, based upon the original registration of birth."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a certified copy of any existing prison record, military record, and record of his birth"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates"
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of the country of an alien's nationality and the country of an alien's current residence (as of the time of visa application) the term “appropriate police authorities” means those of a country, area or locality in which the alien has resided for at least six months."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of all other countries, areas, or localities, the term “appropriate police authorities” means the authorities of any country, area, or locality in which the alien has resided for at least one year."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A consular officer may require a police certificate regardless of length of residence in any country if he or she has reason to believe that a police record exists in the country, area, or locality concerned."
+    },
+    {
+      "key": "document:police-certificate",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a copy of a certification by the appropriate police authorities stating what their records show concerning the immigrant"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "An alien applying for an immigrant visa shall be required to furnish, if obtainable: A copy of a police certificate or certificates"
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of the country of an alien's nationality and the country of an alien's current residence (as of the time of visa application) the term “appropriate police authorities” means those of a country, area or locality in which the alien has resided for at least six months."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "In the case of all other countries, areas, or localities, the term “appropriate police authorities” means the authorities of any country, area, or locality in which the alien has resided for at least one year."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A consular officer may require a police certificate regardless of length of residence in any country if he or she has reason to believe that a police record exists in the country, area, or locality concerned."
+    },
+    {
+      "key": "document:police-certificate-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partIII-sec1202.htm",
+      "quote": "a copy of a certification by the appropriate police authorities stating what their records show concerning the immigrant"
+    },
+    {
+      "key": "document:prison-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:prison-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Prison record means an official document containing a report of the applicant's record of confinement and conduct in a penal or correctional institution."
+    },
+    {
+      "key": "document:prison-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:prison-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Prison record means an official document containing a report of the applicant's record of confinement and conduct in a penal or correctional institution."
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Military record means an official document containing a complete record of the applicant's service and conduct while in military service"
+    },
+    {
+      "key": "document:military-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certificate of discharge from the military forces or an enrollment book belonging to the applicant shall not be acceptable in lieu of the official military record, unless it shows the alien's complete record while in military service."
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of any existing prison record, military record, and record of birth"
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Military record means an official document containing a complete record of the applicant's service and conduct while in military service"
+    },
+    {
+      "key": "document:military-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "A certificate of discharge from the military forces or an enrollment book belonging to the applicant shall not be acceptable in lieu of the official military record, unless it shows the alien's complete record while in military service."
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:marriage-record",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Other records or documents include any records or documents establishing the applicant's relationship to a spouse or children, if any"
+    },
+    {
+      "key": "document:marriage-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:marriage-record-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Other records or documents include any records or documents establishing the applicant's relationship to a spouse or children, if any"
+    },
+    {
+      "key": "document:adoption-records",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "a certified copy of all other records or documents which the consular officer considers necessary"
+    },
+    {
+      "key": "document:adoption-records",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "any records or documents pertinent to a determination of the applicant's identity, classification, or any other matter relating to the applicant's visa eligibility"
+    },
+    {
+      "key": "document:photographs",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Every applicant shall furnish photographs of the number and specifications prescribed by the Department."
+    },
+    {
+      "key": "document:photographs",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "The applicant must either upload a digital photograph electronically as part of submitting an online visa application, or a paper photograph at the direction of the Department."
+    },
+    {
+      "key": "document:photographs-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "Every applicant shall furnish photographs of the number and specifications prescribed by the Department."
+    },
+    {
+      "key": "document:photographs-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.65",
+      "quote": "The applicant must either upload a digital photograph electronically as part of submitting an online visa application, or a paper photograph at the direction of the Department."
+    },
+    {
+      "key": "document:medical-examination",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "Before the issuance of an immigrant visa, the consular officer shall require every alien, regardless of age, to undergo a medical examination in order to determine eligibility to receive a visa."
+    },
+    {
+      "key": "document:medical-examination",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "by a physician selected by the alien from a panel of physicians approved by the consular officer"
+    },
+    {
+      "key": "document:medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "Before the issuance of an immigrant visa, the consular officer shall require every alien, regardless of age, to undergo a medical examination in order to determine eligibility to receive a visa."
+    },
+    {
+      "key": "document:medical-examination-dependent",
+      "url": "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-E/part-42/subpart-G/section-42.66",
+      "quote": "by a physician selected by the alien from a panel of physicians approved by the consular officer"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who receives vaccination against the vaccine-preventable disease or diseases for which the alien has failed to present documentation of previous vaccination"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The Attorney General may waive the application of"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "civil surgeon, medical officer, or panel physician (as those terms are defined by section 34.2 of title 42 of the Code of Federal Regulations) certifies, according to such regulations as the Secretary of Health and Human Services may prescribe, that such vaccination would not be medically appropriate"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "under such circumstances as the Attorney General provides by regulation, with respect to whom the requirement of such a vaccination would be contrary to the alien's religious beliefs or moral convictions"
+    },
+    {
+      "key": "document:vaccination-record",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who seeks admission as an immigrant, or who seeks adjustment of status to the status of an alien lawfully admitted for permanent residence, and who has failed to present documentation of having received vaccination against vaccine-preventable diseases, which shall include at least the following diseases: mumps, measles, rubella, polio, tetanus and diphtheria toxoids, pertussis, influenza type B and hepatitis B"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who receives vaccination against the vaccine-preventable disease or diseases for which the alien has failed to present documentation of previous vaccination"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "The Attorney General may waive the application of"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "civil surgeon, medical officer, or panel physician (as those terms are defined by section 34.2 of title 42 of the Code of Federal Regulations) certifies, according to such regulations as the Secretary of Health and Human Services may prescribe, that such vaccination would not be medically appropriate"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "under such circumstances as the Attorney General provides by regulation, with respect to whom the requirement of such a vaccination would be contrary to the alien's religious beliefs or moral convictions"
+    },
+    {
+      "key": "document:vaccination-record-dependent",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title8/html/USCODE-2024-title8-chap12-subchapII-partII-sec1182.htm",
+      "quote": "who seeks admission as an immigrant, or who seeks adjustment of status to the status of an alien lawfully admitted for permanent residence, and who has failed to present documentation of having received vaccination against vaccine-preventable diseases, which shall include at least the following diseases: mumps, measles, rubella, polio, tetanus and diphtheria toxoids, pertussis, influenza type B and hepatitis B"
+    }
+  ]
+}
