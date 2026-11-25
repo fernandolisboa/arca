@@ -32614,6 +32614,40 @@
                             "number"
                           ]
                         },
+                        "occupations": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
+                        "studyFields": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "maxLength": 64
+                            },
+                            "number": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "number"
+                          ]
+                        },
                         "officialDomains": {
                           "type": "array",
                           "items": {

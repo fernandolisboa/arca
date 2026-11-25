@@ -1,3 +1,4 @@
+import { fieldControlClass } from '@arca/ui';
 import { useId } from 'react';
 
 export interface SelectOption {
@@ -15,9 +16,6 @@ export interface SelectFieldProps {
   readonly placeholder?: string;
   readonly required?: boolean;
 }
-
-export const selectClass =
-  'min-h-touch rounded-control border border-line bg-surface px-3 text-body text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
 /** A labelled native select at the touch target's height, which phones open as their own picker. */
 export function SelectField({
@@ -38,7 +36,7 @@ export function SelectField({
       </label>
       <select
         id={id}
-        className={selectClass}
+        className={fieldControlClass}
         value={value}
         required={required}
         aria-describedby={hint === undefined ? undefined : hintId}

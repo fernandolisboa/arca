@@ -121,9 +121,14 @@ function Settings({ view, words }: { readonly view: VersionView; readonly words:
         <li className={card}>
           {t('knowledge.pins', {
             pins: words.list(
-              [view.pins.countries, view.pins.formerCountries, ...view.pins.officialDomains].map(
-                (pin) => t('knowledge.pin', { id: pin.id, number: pin.number }),
-              ),
+              [
+                view.pins.countries,
+                view.pins.formerCountries,
+                ...[view.pins.occupations, view.pins.studyFields].filter(
+                  (pin) => pin !== undefined,
+                ),
+                ...view.pins.officialDomains,
+              ].map((pin) => t('knowledge.pin', { id: pin.id, number: pin.number })),
             ),
           })}
         </li>

@@ -5,9 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { routeVersionSchema } from '@arca/domain';
 import { hostOf } from '@arca/scripts/host';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { buildKnowledge } from '../scripts/build.ts';
 import { inlineCasesMigrationFile, inlineCasesSql, inlinedRows } from '../scripts/inline-cases.ts';
-import { importDate } from '../scripts/rule-import.ts';
+import { importBuild } from '../scripts/rule-import.ts';
 import type { Json } from '../src/canonical.ts';
 import { casesFileSchema } from '../src/cases.ts';
 import { checkProposal } from '../src/proposal.ts';
@@ -24,9 +23,9 @@ const withoutSnapshot = (ruleCase: object) =>
   );
 
 async function setUp() {
-  const { rows, countryFiles, issues } = await buildKnowledge(dataDir, importDate);
+  const { rows, datasetFiles, issues } = await importBuild(dataDir);
   expect(issues).toEqual([]);
-  return { rows, countryFiles, inlined: await inlinedRows(rows, familiesDir) };
+  return { rows, datasetFiles, inlined: await inlinedRows(rows, familiesDir) };
 }
 
 // Building the knowledge and running the cases is slow on a busy CI runner, so it happens once.
@@ -68,12 +67,12 @@ describe('inline imported cases (ADR-0031)', () => {
   it(
     'lets the newest version of each rewritten route pass the proposal check for its next',
     async () => {
-      const { rows, countryFiles, inlined } = built;
+      const { rows, datasetFiles, inlined } = built;
       const newest = new Map<string, (typeof inlined)[number]>();
       for (const row of inlined) {
         if ((newest.get(row.routeId)?.number ?? 0) < row.number) newest.set(row.routeId, row);
       }
-      const reading = { countryFiles, sha256, hostOf };
+      const reading = { datasetFiles, sha256, hostOf };
       for (const row of newest.values()) {
         const stored = rows.routeVersions.find(
           (each) => each.routeId === row.routeId && each.number === row.number,

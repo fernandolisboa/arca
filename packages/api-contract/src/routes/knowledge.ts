@@ -203,7 +203,13 @@ export const VersionView = z.object({
   leapDayBirthdaySources: sourceIds,
   referenceDates: z.array(z.string().max(32)).max(10),
   closureSources: sourceIds,
-  pins: z.object({ countries: pin, formerCountries: pin, officialDomains: z.array(pin).max(10) }),
+  pins: z.object({
+    countries: pin,
+    formerCountries: pin,
+    occupations: pin.optional(),
+    studyFields: pin.optional(),
+    officialDomains: z.array(pin).max(10),
+  }),
   requirements: z
     .array(
       z.object({

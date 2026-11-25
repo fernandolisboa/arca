@@ -27,10 +27,10 @@ import {
   type RuleRows,
   casesHashOf,
 } from '../src/rule-rows.ts';
-import { buildKnowledge, formatIssue } from './build.ts';
+import { formatIssue } from './build.ts';
 import { inlinedRows } from './inline-cases.ts';
 import { readKnowledgeFile } from './load.ts';
-import { importDate } from './rule-import.ts';
+import { importBuild } from './rule-import.ts';
 import { json, literal } from './sql.ts';
 
 /**
@@ -259,9 +259,9 @@ export async function reviewedVersions(
   dirs: ReviewDirs,
   review: SessionReview,
 ): Promise<ReviewedVersion[]> {
-  const { issues, rows: imported, countryFiles } = await buildKnowledge(dirs.dataDir, importDate);
+  const { issues, rows: imported, datasetFiles } = await importBuild(dirs.dataDir);
   if (issues.length > 0) throw new Error(issues.map(formatIssue).join('\n'));
-  const reading: RuleRowReading = { countryFiles, sha256, hostOf };
+  const reading: RuleRowReading = { datasetFiles, sha256, hostOf };
   const inlined = new Map(
     (await inlinedRows(imported, dirs.familiesDir)).map((row) => [
       `${row.routeId}/${String(row.number)}`,

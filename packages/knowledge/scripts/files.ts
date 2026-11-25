@@ -1,5 +1,6 @@
 import { plainSourceSchema } from '@arca/domain';
 import { z } from 'zod';
+import { classificationKinds } from '../src/datasets.ts';
 import { sha256Schema as sha256 } from '../src/entries.ts';
 
 const number = z.number().int().min(1);
@@ -35,6 +36,28 @@ export const formerCountriesFileSchema = z.strictObject({
 });
 
 /**
+ * A classification's codes at one level, such as ISCO-08 unit groups: their labels live in the i18n
+ * catalogs, so a code is never shown untranslated.
+ */
+const classificationFileSchema = <Id extends string>(id: Id) =>
+  z.strictObject({
+    schemaVersion: z.literal(1),
+    id: z.literal(id),
+    number,
+    classification: z.string().min(1).max(100),
+    sources: z.array(plainSourceSchema).min(1).max(10),
+    codes: z
+      .array(z.string().regex(/^[0-9]{4}$/))
+      .min(1)
+      .max(1000),
+  });
+
+/** ISCO-08 unit groups (ILO). */
+export const occupationsFileSchema = classificationFileSchema(classificationKinds.occupations);
+/** ISCED-F 2013 detailed fields (UNESCO). */
+export const studyFieldsFileSchema = classificationFileSchema(classificationKinds.studyFields);
+
+/**
  * Committed content hashes, append-only (spec 0002, R6): one per route version and country set,
  * keyed by its path under `data` without the extension, and one per RFC 8785 test vector.
  */
@@ -47,3 +70,6 @@ export const hashesFileSchema = z.strictObject({
 export type CountriesFile = z.infer<typeof countriesFileSchema>;
 export type FormerCountriesFile = z.infer<typeof formerCountriesFileSchema>;
 export type HashesFile = z.infer<typeof hashesFileSchema>;
+export type ClassificationFile = z.infer<
+  typeof occupationsFileSchema | typeof studyFieldsFileSchema
+>;

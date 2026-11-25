@@ -6,7 +6,7 @@ import type { Json } from './canonical.js';
 import {
   comparisonData,
   countryData,
-  countryFileData,
+  datasetFileData,
   suggestedRatingData,
 } from './generated/runtime.js';
 
@@ -61,9 +61,10 @@ export const pinnedCountries = z
 export type PinnedCountries = typeof pinnedCountries;
 
 /**
- * The countries and former-countries files, keyed `<kind>/<id>/<number>`: they stay in the
- * repository (ADR-0031), and a route version's or country set's hash covers the ones it pins.
+ * The dataset files (countries, former countries, occupations and study fields), keyed
+ * `<kind>/<id>/<number>`: they stay in the repository (ADR-0031), and a route version's or country
+ * set's hash covers the ones it pins.
  */
-export const countryFiles: Readonly<Record<string, Json>> = z
+export const datasetFiles: Readonly<Record<string, Json>> = z
   .record(z.string(), z.json())
-  .parse(countryFileData);
+  .parse(datasetFileData);

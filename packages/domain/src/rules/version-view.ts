@@ -110,6 +110,12 @@ export interface VersionView {
   readonly pins: {
     readonly countries: Pin;
     readonly formerCountries: Pin;
+    /**
+     * The classification files the version pins (ADR-0036). Absent rather than null when unpinned,
+     * so the rule summary of a version that pins none reads, and is keyed, as before.
+     */
+    readonly occupations?: Pin | undefined;
+    readonly studyFields?: Pin | undefined;
     readonly officialDomains: readonly Pin[];
   };
   readonly requirements: readonly {
@@ -345,6 +351,8 @@ export function versionView({
     pins: {
       countries: version.countries,
       formerCountries: version.formerCountries,
+      ...(version.occupations && { occupations: version.occupations }),
+      ...(version.studyFields && { studyFields: version.studyFields }),
       officialDomains: version.officialDomains,
     },
     requirements: version.requirements.map(({ id, title, expression, sources }) =>
