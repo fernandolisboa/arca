@@ -5,12 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { readRuleTexts, todayUtc } from '../scripts/build.ts';
-import {
-  createRuleTexts,
-  ruleTextFileSchema,
-  ruleTextLocale,
-  shipRuleTexts,
-} from '../src/rule-texts.ts';
+import { createRuleTexts, ruleTextLocale, shipRuleTexts } from '../src/rule-texts.ts';
 
 const packageDir = fileURLToPath(new URL('..', import.meta.url));
 const textsDir = join(packageDir, 'rule-texts', ruleTextLocale);
