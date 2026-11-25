@@ -1,5 +1,6 @@
 import { departure } from './pt-BR-departure.js';
 import { recognition } from './pt-BR-recognition.js';
+import { regions } from './pt-BR-regions.js';
 import { documentGuide } from './pt-BR-document-guides.js';
 import { occupationGroups, occupations } from './pt-BR-occupations.js';
 import { studyFieldGroups, studyFields } from './pt-BR-study-fields.js';
@@ -1530,6 +1531,35 @@ export const ptBR = {
         outdoors: '{value}% do território é área protegida',
       },
     },
+    /** Regions inside a country (ADR-0042): ranked with the same weights; visas stay national. */
+    regions: {
+      show: '{n, plural, one {Ver a região} other {Ver as # regiões}}',
+      hide: 'Esconder as regiões',
+      showLabel:
+        '{n, plural, one {Ver a região de {country}} other {Ver as # regiões de {country}}}',
+      hideLabel: 'Esconder as regiões de {country}',
+      title: 'Regiões de {country}',
+      lead: 'O visto vale para o país todo. Aqui você vê onde morar dentro dele, com os mesmos pesos. Notas em cinza são as do país, onde ainda não há dado da região.',
+      likeCountry: 'como no país',
+      likeCountryScore: '{score} · como no país',
+      place: '{rank}º lugar em {country}',
+      sourcesLabel: 'Ver as fontes de {region}',
+    },
+    /** A region's suggestion reason where the country's wording would mislead, by suggestion key. */
+    regionReason: {
+      climate: 'temperatura média anual da região: {value} °C',
+      taxes: 'maior alíquota do imposto de renda na região: {value}%',
+      'housing-cost': 'preço da moradia: {value}% da média do país',
+      /** A token's whole phrase, since an ICU select cannot name a hyphenated token. */
+      language: {
+        'es-ca': 'além do espanhol, fala-se catalão (ou valenciano)',
+        'es-gl': 'além do espanhol, fala-se galego, bem próximo do português',
+        'es-eu': 'além do espanhol, fala-se basco, bem diferente do português',
+      },
+      'brazilian-community': '{value} pessoas nascidas no Brasil moram na região',
+      'direct-flight':
+        '{value, select, direct {tem voo direto saindo do Brasil para um aeroporto da região} other {só com conexão saindo do Brasil}}',
+    },
     valueUnit: '{value} · {unit}',
     inYear: '{reading} ({year})',
   },
@@ -2690,6 +2720,7 @@ export const ptBR = {
     YUCS: 'Iugoslávia',
     ZRCD: 'Zaire',
   },
+  regions,
   occupationGroups,
   occupations,
   studyFieldGroups,

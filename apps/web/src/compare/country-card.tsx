@@ -1,21 +1,15 @@
-import { staleAfterDays, type DestinationComparison } from '@arca/api-contract/client';
-import { Bar, StarRating, StatusChip, cardClass, formatCalendarDate } from '@arca/ui';
+import type { DestinationComparison } from '@arca/api-contract/client';
+import { Bar, StatusChip, cardClass } from '@arca/ui';
 import { Link } from '@tanstack/react-router';
 import { useId } from 'react';
 import { FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { resultsAnchor } from '../results/group.js';
 import { statusTones } from '../results/status-tone.js';
+import { CriterionLine } from './criterion-lines.js';
 import type { Edit, Preferences } from './edits.js';
-import {
-  measured,
-  type CompareWords,
-  type Criterion,
-  type Reading,
-  type Suggested,
-} from './words.js';
-
-type ComparedCountry = DestinationComparison['countries'][number];
+import { RegionList } from './regions.js';
+import type { CompareWords, ComparedCountry, Criterion } from './words.js';
 
 /**
  * One country of the comparison: its place, total and coverage as the API computed them, the
@@ -119,8 +113,8 @@ export function CountryCard({
                 weight={weightOf(criterion)}
                 score={scores.get(criterion.id)}
                 rating={preferences.ratings[criterion.id]?.[country.country]}
-                country={country.country}
-                countryName={name}
+                place={country.country}
+                placeName={name}
                 change={change}
                 words={words}
               />
@@ -130,170 +124,17 @@ export function CountryCard({
             <p className="mt-2 text-small text-muted">{t('compare.zeroLeftOut')}</p>
           )}
         </details>
+        {country.regions.length > 0 && (
+          <RegionList
+            country={country}
+            criteria={counted}
+            weightOf={weightOf}
+            preferences={preferences}
+            change={change}
+            words={words}
+          />
+        )}
       </article>
     </li>
-  );
-}
-
-function CriterionLine({
-  criterion,
-  weight,
-  score,
-  rating,
-  country,
-  countryName,
-  change,
-  words,
-}: {
-  readonly criterion: Criterion;
-  readonly weight: number;
-  readonly score: ComparedCountry['scores'][number] | undefined;
-  /** The person's stars as they just chose them. */
-  readonly rating: number | undefined;
-  readonly country: string;
-  readonly countryName: string;
-  readonly change: (edit: Edit) => void;
-  readonly words: CompareWords;
-}) {
-  const { t } = words;
-  const label = words.label(criterion);
-  const objective = measured(criterion);
-  const fromSuggestion = rating === undefined && score?.suggested !== undefined;
-  const value =
-    score?.score == null
-      ? t(objective ? 'compare.noData' : 'compare.notRated')
-      : fromSuggestion
-        ? t('compare.suggested.scored', { score: words.decimal(score.score) })
-        : words.decimal(score.score);
-  return (
-    <li className="flex flex-col gap-1 py-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="min-w-0 break-words">
-          <span className="font-medium">{label}</span>{' '}
-          <span className="text-small text-muted">
-            {t('compare.weightOf', { weight: String(weight) })}
-          </span>
-        </p>
-        <span
-          className={`shrink-0 tabular-nums ${score?.score == null ? 'text-small text-muted' : 'font-medium'}`}
-        >
-          {value}
-        </span>
-      </div>
-      {score?.reading !== undefined && (
-        <ReadingLines criterion={criterion} reading={score.reading} words={words} />
-      )}
-      {!objective && (
-        <StarRating
-          legend={t('compare.ratingFor', { criterion: label, country: countryName })}
-          caption={t('compare.rating')}
-          value={rating}
-          onChange={(stars) => {
-            change({ kind: 'rating', criterion: criterion.id, country, rating: stars });
-          }}
-          onClear={() => {
-            change({ kind: 'rating', criterion: criterion.id, country, rating: undefined });
-          }}
-          starLabel={(n) => t('compare.star', { n })}
-          clearLabel={t('compare.clearStars')}
-          suggested={score?.suggested?.stars}
-        />
-      )}
-      {!objective && score?.suggested !== undefined && (
-        <SuggestionLines
-          suggested={score.suggested}
-          rated={rating !== undefined}
-          confirmLabel={t('compare.suggested.confirmFor', {
-            criterion: label,
-            country: countryName,
-          })}
-          onConfirm={(stars) => {
-            change({ kind: 'rating', criterion: criterion.id, country, rating: stars });
-          }}
-          words={words}
-        />
-      )}
-    </li>
-  );
-}
-
-/** What an objective score comes from: the value and its year, then its source as plain text. */
-export function ReadingLines({
-  criterion,
-  reading,
-  words,
-}: {
-  readonly criterion: Criterion;
-  readonly reading: Reading;
-  readonly words: CompareWords;
-}) {
-  const { t } = words;
-  return (
-    <>
-      <p className="text-small">{words.reading(criterion, reading)}</p>
-      <p className="text-caption break-all text-muted">
-        {t('compare.source', {
-          url: reading.source.url,
-          date: formatCalendarDate(reading.source.verifiedAt, words.language),
-        })}
-      </p>
-      {reading.stale && (
-        <p className="text-caption text-warn-ink">
-          {t('compare.stale', { days: String(staleAfterDays) })}
-        </p>
-      )}
-    </>
-  );
-}
-
-/**
- * The stars Arca suggests (ADR-0035): how many, why, and the source as plain text. While the
- * person has not rated the country they score it, and one tap keeps them as the person's own.
- */
-export function SuggestionLines({
-  suggested,
-  rated,
-  confirmLabel,
-  onConfirm,
-  words,
-}: {
-  readonly suggested: Suggested;
-  /** The person already gave their own stars, which count instead. */
-  readonly rated: boolean;
-  readonly confirmLabel: string;
-  readonly onConfirm: (stars: number) => void;
-  readonly words: CompareWords;
-}) {
-  const { t } = words;
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-small">
-        <span className="font-medium">{t('compare.suggested.stars', { n: suggested.stars })}</span>{' '}
-        · {words.suggestionReason(suggested)}
-      </p>
-      <p className="text-caption break-all text-muted">
-        {t('compare.source', {
-          url: suggested.source.url,
-          date: formatCalendarDate(suggested.source.verifiedAt, words.language),
-        })}
-      </p>
-      {suggested.stale && (
-        <p className="text-caption text-warn-ink">
-          {t('compare.stale', { days: String(staleAfterDays) })}
-        </p>
-      )}
-      {!rated && (
-        <button
-          type="button"
-          className={`${textLinkClass} self-start text-small`}
-          aria-label={confirmLabel}
-          onClick={() => {
-            onConfirm(suggested.stars);
-          }}
-        >
-          {t('compare.suggested.confirm')}
-        </button>
-      )}
-    </div>
   );
 }

@@ -567,6 +567,13 @@ async function memberCompares(browser: Browser) {
   await expect(ranking.getByRole('row').filter({ hasText: 'lugar Portugal' })).toContainText(
     'nota final 2,5 de 10',
   );
+  // A country's regions rank with the same weights (ADR-0042): with climate alone, Madeira's
+  // suggested 5 stars in regions/1.json lead Portugal. A new regions file may change this.
+  await ranking.getByRole('button', { name: 'Ver as 20 regiões de Portugal' }).click();
+  await expect(
+    ranking.getByRole('rowheader').filter({ hasText: 'lugar em Portugal' }).first(),
+  ).toHaveText(/^1º lugar em Portugal Madeira/);
+  await ranking.getByRole('button', { name: 'Esconder as regiões de Portugal' }).click();
 
   // A suggestion shows where it comes from, and one tap keeps it as the account's own stars.
   await ranking
