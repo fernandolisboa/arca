@@ -20,7 +20,7 @@ All on `likumi.lv`, Latvia's one official domain:
 
 **The quote check reads Latvian number words** from this review on (`packages/domain/src/quote-check/number-words.ts`): point 11 writes the validity as "trīs mēnešus" and "sešus mēnešus", and Latvian numbers decline, so the table holds the forms of each unit by gender and case.
 
-**Brazil's document guide** needs no new version. `passport`, `police_certificate` and `marriage_certificate` are in it already; the other kinds have no Brazilian issuer as such, or are Latvian (the health certificate) or the parents' own (the consent).
+**Brazil's document guide** needs no new version. `passport`, `police_certificate` and `marriage_certificate` are in it already; the other kinds are not (leftover 9).
 
 ## Rounds
 
@@ -42,4 +42,6 @@ The quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-11-lv-documents`, in `a
 6. **The marriage condition** asks only whether the person has a spouse, so it also fires for a married child, who is not a family member on the route.
 7. **The military record's six months** read point 11.3 as written; a discharge paper is often older, and 11.3 leaves out archive certificates, so the Office may accept an older one.
 8. **The investment's own documents** are not listed: Regulations No. 564 name none for this ground, and the Office checks the investment.
-9. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
+9. **Brazil's guide does not cover** `military_record` (its channel is on `eb.mil.br`, outside the guide's domains, as in the U.S. review), `guardianship_ruling` (a Brazilian court's ruling, with no official page read for it), `family_relationship_proof` (a birth certificate, which the guide covers under its own kind), or the kinds no Brazilian office issues as such: `residence_permit_application_form`, `photograph`, `means_of_subsistence_proof`, `health_insurance`, `accommodation_proof`, `parental_authorization` and `fee_payment_proof`. The health certificate is Latvian.
+10. **Corrections no adversarial round saw:** the fixes after round 3, the Latvian number-word table (read by the repository's reviewers, not by an adversarial round) and the pt-BR wordings the standards reviewer asked for; only the session, the proposal check and the quote check read the result.
+11. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.

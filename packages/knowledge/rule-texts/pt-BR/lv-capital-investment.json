@@ -144,7 +144,7 @@
     },
     {
       "en": "Valid travel document, shown; a copy goes with the request when it is filed by post or online",
-      "text": "Documento de viagem válido, apresentado; uma cópia acompanha o pedido quando ele é enviado pelo correio ou pela internet"
+      "text": "Documento de viagem válido, que deve ser apresentado; uma cópia acompanha o pedido quando ele é enviado pelo correio ou pela internet"
     },
     {
       "en": "Residence permit request form, filled in, on the set model",
@@ -164,7 +164,7 @@
     },
     {
       "en": "Payment document for the state fee, or its copy, when the request is filed at a Latvian mission",
-      "text": "Comprovante de pagamento da taxa estatal, ou uma cópia, quando o pedido é entregue numa representação da Letônia"
+      "text": "Comprovante de pagamento da taxa oficial, ou uma cópia, quando o pedido é entregue numa representação da Letônia"
     },
     {
       "en": "Document proving the means of subsistence needed while in Latvia",
@@ -172,7 +172,7 @@
     },
     {
       "en": "Not handed in if it was already handed in when the call was approved",
-      "text": "Não é entregue se já foi entregue quando o convite (izsaukums) foi aprovado"
+      "text": "Não é entregue se já foi entregue quando a carta-convite (izsaukums) foi aprovada"
     },
     {
       "en": "Valid health insurance policy, shown on receiving the permit, with an insurer liability limit of at least EUR 42,600",
@@ -180,7 +180,7 @@
     },
     {
       "en": "Certificate of health from a Latvian medical institution, handed in on receiving the permit, stating none of the illnesses the regulations list",
-      "text": "Atestado de saúde de uma instituição médica da Letônia, entregue ao receber a autorização, dizendo que a pessoa não tem nenhuma das doenças que as normas listam"
+      "text": "Atestado de saúde de uma instituição médica da Letônia, entregue ao receber a autorização, atestando que a pessoa não tem nenhuma das doenças que as normas listam"
     },
     {
       "en": "Documents proving the intended place of residence, handed in on receiving the permit",
@@ -200,7 +200,7 @@
     },
     {
       "en": "Consent of the parent not coming to the child's travel to Latvia, notarised or signed before an Office or mission official",
-      "text": "Autorização para a viagem da criança à Letônia, do pai ou da mãe que não vai junto, com firma reconhecida em cartório ou assinada diante de um funcionário do Departamento ou da representação"
+      "text": "Autorização para a viagem da criança à Letônia, do pai ou da mãe que não vai junto, com firma reconhecida em cartório ou assinada diante de um funcionário do Escritório ou de uma representação"
     },
     {
       "en": "If the parent coming has daily care and no limit on moving the child without the other parent is set, a document from that state's competent authority instead",
