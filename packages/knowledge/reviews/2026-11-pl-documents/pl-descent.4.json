@@ -5,10 +5,7 @@
   "corrects": 3,
   "title": "Confirmation of Polish citizenship held from birth through a line of Polish parents",
   "country": "PL",
-  "tags": [
-    "descent",
-    "citizenship"
-  ],
+  "tags": ["descent", "citizenship"],
   "effectiveFrom": "2026-01-01",
   "status": "open",
   "currency": "PLN",
@@ -341,9 +338,7 @@
                       },
                       "set": {
                         "op": "tokens",
-                        "values": [
-                          "PL"
-                        ]
+                        "values": ["PL"]
                       }
                     },
                     {
@@ -381,9 +376,7 @@
                       },
                       "set": {
                         "op": "tokens",
-                        "values": [
-                          "PL"
-                        ]
+                        "values": ["PL"]
                       }
                     },
                     {
@@ -443,9 +436,7 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": [
-                            "PL"
-                          ]
+                          "values": ["PL"]
                         }
                       },
                       {
@@ -483,9 +474,7 @@
                         },
                         "set": {
                           "op": "tokens",
-                          "values": [
-                            "PL"
-                          ]
+                          "values": ["PL"]
                         }
                       },
                       {
@@ -517,9 +506,7 @@
                           },
                           "set": {
                             "op": "tokens",
-                            "values": [
-                              "PL"
-                            ]
+                            "values": ["PL"]
                           }
                         }
                       },
@@ -574,9 +561,7 @@
   "assessments": [
     {
       "id": "no-own-loss",
-      "evidence": [
-        "principal.citizenships"
-      ],
+      "evidence": ["principal.citizenships"],
       "sources": [
         "ustawa-2009-art-46",
         "ustawa-2009-art-7",
@@ -587,107 +572,62 @@
     },
     {
       "id": "parentage-settled-within-a-year",
-      "evidence": [
-        "principal.citizenships"
-      ],
-      "sources": [
-        "ustawa-2009-art-6"
-      ],
+      "evidence": ["principal.citizenships"],
+      "sources": ["ustawa-2009-art-6"],
       "title": "A change in who is found to be a parent, or in a parent's citizenship, counts only within a year of birth; a ruling denying paternity or its acknowledgment counts until adulthood (from 16 by consent)"
     },
     {
       "id": "full-adoption-before-16",
-      "evidence": [
-        "principal.citizenships"
-      ],
-      "sources": [
-        "ustawa-2009-art-16"
-      ],
+      "evidence": ["principal.citizenships"],
+      "sources": ["ustawa-2009-art-16"],
       "title": "Under the 2009 act, a foreign minor fully adopted by a Polish citizen before turning 16 is Polish as from birth; the requirement does not read adoption, so such a link shows as missing information"
     },
     {
       "id": "application-and-proof",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "ustawa-2009-art-56",
-        "wniosek-formularz"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-56", "wniosek-formularz"],
       "title": "The application, whose form a regulation sets, gives the data of the person and of their parents and grandparents, with documents that prove it, unless getting them meets obstacles hard to overcome"
     },
     {
       "id": "documents-in-polish",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "ustawa-2009-art-12",
-        "wniosek-formularz",
-        "oplaty-konsularne-translation"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-12", "wniosek-formularz", "oplaty-konsularne-translation"],
       "title": "The application is filled in in Polish; documents in a foreign language go with a Polish translation made or certified by a sworn translator or a consul (for a fee), unless a treaty says otherwise"
     },
     {
       "id": "documents-at-a-consul",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "konsulat-brazylia-page"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["konsulat-brazylia-page"],
       "title": "At a consul, as the consulates in Brazil ask: ID shown; full birth record naming the parents if born abroad; civil status record; non-EU papers apostilled or legalized; copies certified by the consul"
     },
     {
       "id": "documents-at-the-voivode",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "uw-pomorski-page"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["uw-pomorski-page"],
       "title": "With the voivode, as the Pomeranian office asks: ID copy; proof of stamp duty paid; by post, copies certified by a notary or the lawyer acting; civil records made abroad may need Polish registration"
     },
     {
       "id": "attorney-for-service",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "kpa-art-40",
-        "wniosek-formularz"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["kpa-art-40", "wniosek-formularz"],
       "title": "Living outside Poland, the EU, Switzerland and the EEA's EFTA states, not filing through a consul, with no representative in Poland: name someone there to receive letters, unless served electronically"
     },
     {
       "id": "deciding-voivode",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "ustawa-2009-art-55"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["ustawa-2009-art-55"],
       "title": "The voivode of the person's place of residence, or last place of residence, in Poland decides; with neither, the Mazovian voivode"
     },
     {
       "id": "appeal-within-14-days",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "mswia-confirmation-page",
-        "ustawa-2009-art-10-4"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["mswia-confirmation-page", "ustawa-2009-art-10-4"],
       "title": "A decision can be appealed to the minister responsible for internal affairs, through the voivode who gave it, within 14 days of the day it is delivered"
     },
     {
       "id": "own-application-for-each-minor",
-      "evidence": [
-        "principal.residenceCountry"
-      ],
-      "sources": [
-        "mswia-confirmation-page"
-      ],
+      "evidence": ["principal.residenceCountry"],
+      "sources": ["mswia-confirmation-page"],
       "title": "A parent's application does not cover minor children: each child needs an application of their own"
     }
   ],
@@ -788,11 +728,7 @@
       "condition": {
         "op": "unmodeled"
       },
-      "sources": [
-        "oplata-skarbowa-part-iv",
-        "oplata-skarbowa-art-7",
-        "mswia-confirmation-page"
-      ]
+      "sources": ["oplata-skarbowa-part-iv", "oplata-skarbowa-art-7", "mswia-confirmation-page"]
     }
   ],
   "durations": [
@@ -801,11 +737,7 @@
       "title": "Decision on the application, from the day it reaches the deciding voivode; steps with legal time limits of their own, suspensions and delays not the office's fault do not count; extended if justified",
       "min": "P0D",
       "max": "P6M",
-      "sources": [
-        "ustawa-2009-term",
-        "ustawa-2025-921",
-        "mswia-confirmation-page"
-      ]
+      "sources": ["ustawa-2009-term", "ustawa-2025-921", "mswia-confirmation-page"]
     }
   ],
   "documents": [
@@ -827,10 +759,7 @@
       "title": "Current identity document, in original with the pages bearing official annotations, shown to the consul; with the voivode, a photocopy, as the Pomeranian office asks",
       "kind": "identity_document",
       "appliesTo": "principal",
-      "sources": [
-        "konsulat-brazylia-page",
-        "uw-pomorski-page"
-      ]
+      "sources": ["konsulat-brazylia-page", "uw-pomorski-page"]
     },
     {
       "id": "birth-record",
@@ -838,11 +767,7 @@
       "kind": "birth_certificate",
       "appliesTo": "principal",
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
-      "sources": [
-        "wniosek-formularz",
-        "konsulat-brazylia-page",
-        "ustawa-2009-art-12"
-      ]
+      "sources": ["wniosek-formularz", "konsulat-brazylia-page", "ustawa-2009-art-12"]
     },
     {
       "id": "marriage-record",
@@ -854,11 +779,7 @@
         "key": "person.hasSpouse"
       },
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
-      "sources": [
-        "konsulat-brazylia-page",
-        "wniosek-formularz",
-        "ustawa-2009-art-12"
-      ]
+      "sources": ["konsulat-brazylia-page", "wniosek-formularz", "ustawa-2009-art-12"]
     },
     {
       "id": "divorce-or-death-record",
@@ -881,10 +802,7 @@
         ]
       },
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
-      "sources": [
-        "konsulat-brazylia-page",
-        "ustawa-2009-art-12"
-      ]
+      "sources": ["konsulat-brazylia-page", "ustawa-2009-art-12"]
     },
     {
       "id": "ancestry-records",
@@ -908,11 +826,7 @@
         "op": "unmodeled"
       },
       "note": "Foreign-language: Polish translation by a sworn translator or a consul. Non-EU: apostille, or a Polish consul's legalization where the Hague Convention does not apply",
-      "sources": [
-        "konsulat-brazylia-page",
-        "uw-pomorski-page",
-        "ustawa-2009-art-12"
-      ]
+      "sources": ["konsulat-brazylia-page", "uw-pomorski-page", "ustawa-2009-art-12"]
     },
     {
       "id": "attorney-for-service",
@@ -942,11 +856,7 @@
         ]
       },
       "note": "Not needed when letters are served by the registered electronic delivery service",
-      "sources": [
-        "wniosek-formularz",
-        "uw-pomorski-page",
-        "kpa-art-40"
-      ]
+      "sources": ["wniosek-formularz", "uw-pomorski-page", "kpa-art-40"]
     },
     {
       "id": "power-of-attorney",
@@ -957,9 +867,7 @@
         "op": "unmodeled"
       },
       "note": "A spouse, parent, child or sibling acting pays no stamp duty on it; documents in the case should prove the kinship",
-      "sources": [
-        "mswia-confirmation-page"
-      ]
+      "sources": ["mswia-confirmation-page"]
     },
     {
       "id": "stamp-duty-proof",
@@ -986,11 +894,7 @@
         ]
       },
       "note": "Not needed by someone exempt from the duty, such as a person who files with a certificate of receiving social assistance because of poverty",
-      "sources": [
-        "uw-pomorski-page",
-        "oplata-skarbowa-due",
-        "oplata-skarbowa-art-7"
-      ]
+      "sources": ["uw-pomorski-page", "oplata-skarbowa-due", "oplata-skarbowa-art-7"]
     }
   ]
 }
