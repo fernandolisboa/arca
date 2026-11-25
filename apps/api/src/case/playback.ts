@@ -4,6 +4,7 @@ import {
   type PlaybackVisibility,
   buildCaseSnapshot,
   describeCase,
+  labelWorkPeriods,
   renamePeople,
 } from '@arca/domain';
 import { type CaseRows, sharedWith } from './view.js';
@@ -36,18 +37,22 @@ export function playbackVisibility(
   );
 }
 
-/** The case read back for the viewer (spec 0007, R5). */
+/**
+ * The case read back for the viewer (spec 0007, R5), with the work period labels the snapshot
+ * leaves out taken from the profiles the viewer sees.
+ */
 export function casePlayback(rows: CaseRows, accountId: string, at: CalendarDate): CasePlayback {
   const { snapshot, personIds } = buildCaseSnapshot(rows, at);
   const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
-  return {
-    sentences: renamePeople(
-      describeCase(snapshot, playbackVisibility(rows, accountId, personIds), at),
-      (opaque) => {
-        const uuid = uuids.get(opaque);
-        if (uuid === undefined) throw new Error('A sentence names a person not in the case');
-        return uuid;
-      },
-    ),
+  const uuidOf = (opaque: string) => {
+    const uuid = uuids.get(opaque);
+    if (uuid === undefined) throw new Error('A sentence names a person not in the case');
+    return uuid;
   };
+  const described = describeCase(snapshot, playbackVisibility(rows, accountId, personIds), at);
+  const labelled = labelWorkPeriods(described, (opaque) => {
+    const profile = rows.profiles.find(({ personId }) => personId === uuidOf(opaque));
+    return profile?.facts.workPeriods?.map(({ label }) => label) ?? [];
+  });
+  return { sentences: renamePeople(labelled, uuidOf) };
 }

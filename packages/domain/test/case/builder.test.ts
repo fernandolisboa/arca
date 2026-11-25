@@ -64,6 +64,26 @@ const rows = (overrides: Partial<VisibleCaseRows> = {}): VisibleCaseRows => ({
 });
 
 describe('the snapshot builder (spec 0007, R3)', () => {
+  it('leaves work period labels with the profile, out of the snapshot (ADR-0036)', () => {
+    const built = buildCaseSnapshot(
+      rows({
+        profiles: [
+          {
+            personId: alice,
+            facts: facts({
+              workPeriods: [{ label: 'Clínica', occupation: '2211', start: '2019', end: 'none' }],
+            }),
+            dependenceAnswered: false,
+          },
+        ],
+      }),
+      recordedOn,
+    );
+    expect(built.snapshot.people[0]?.workPeriods).toEqual([
+      { occupation: '2211', start: '2019', end: 'none' },
+    ]);
+  });
+
   it('replaces UUIDs with opaque IDs and keeps members, people and relationships', () => {
     const built = buildCaseSnapshot(rows(), recordedOn);
     expect(Object.fromEntries(built.personIds)).toEqual({

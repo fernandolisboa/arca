@@ -2,6 +2,7 @@ import { createI18n, type I18n } from '@arca/i18n';
 import {
   comparisonCatalog,
   departureChecklists,
+  occupationCodes,
   pinnedCountries,
   createRuleTexts,
   shippedRuleTexts,
@@ -568,6 +569,7 @@ const app = createApp({
     audit: lazyAudit,
     today: () => new Date(),
     countries: pinnedCountries,
+    occupations: occupationCodes,
     evaluation: {
       rules: rules.engine,
       comparisons: comparisonCatalog,

@@ -6093,6 +6093,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -7171,6 +7248,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -8256,6 +8410,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -9347,6 +9578,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -10426,6 +10734,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -11511,6 +11896,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -12620,6 +13082,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -13632,6 +14171,83 @@
                         },
                         "maxItems": 10
                       },
+                      "workPeriods": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "employerCountry": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "workplaceCountry": {
+                              "type": "string",
+                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                            },
+                            "relation": {
+                              "type": "string",
+                              "enum": [
+                                "employee",
+                                "contractor",
+                                "self_employed",
+                                "owner"
+                              ]
+                            },
+                            "occupation": {
+                              "type": "string",
+                              "pattern": "^[0-9]{4}$"
+                            },
+                            "capacity": {
+                              "type": "string",
+                              "enum": [
+                                "executive",
+                                "manager",
+                                "other"
+                              ]
+                            },
+                            "fullTime": {
+                              "type": "boolean"
+                            },
+                            "start": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                }
+                              ]
+                            },
+                            "end": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "none"
+                                  ]
+                                }
+                              ]
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20
+                      },
                       "studying": {
                         "type": "boolean"
                       },
@@ -13932,6 +14548,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -15228,6 +15921,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -16325,6 +17095,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -17531,6 +18378,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -18610,6 +19534,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -19930,6 +20931,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -21244,6 +22322,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -22323,6 +23478,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -23414,6 +24646,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -24498,6 +25807,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -25584,6 +26970,83 @@
                                         },
                                         "maxItems": 10
                                       },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
+                                      },
                                       "studying": {
                                         "type": "boolean"
                                       },
@@ -26435,6 +27898,7 @@
                                           "educationLevel",
                                           "studying",
                                           "languages",
+                                          "workPeriods",
                                           "jobOffers",
                                           "incomes",
                                           "dependsOn",
@@ -26489,12 +27953,20 @@
                         "type": "string",
                         "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
                       }
+                    },
+                    "occupations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}$"
+                      }
                     }
                   },
                   "required": [
                     "people",
                     "countries",
-                    "formerCountries"
+                    "formerCountries",
+                    "occupations"
                   ]
                 }
               }
@@ -26559,6 +28031,7 @@
                             "educationLevel",
                             "studying",
                             "languages",
+                            "workPeriods",
                             "jobOffers",
                             "incomes",
                             "dependsOn",
@@ -26580,7 +28053,7 @@
                       "additionalProperties": false
                     },
                     "minItems": 1,
-                    "maxItems": 17
+                    "maxItems": 18
                   }
                 },
                 "required": [
@@ -26847,6 +28320,83 @@
                                           "additionalProperties": false
                                         },
                                         "maxItems": 10
+                                      },
+                                      "workPeriods": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "employerCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "workplaceCountry": {
+                                              "type": "string",
+                                              "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                                            },
+                                            "relation": {
+                                              "type": "string",
+                                              "enum": [
+                                                "employee",
+                                                "contractor",
+                                                "self_employed",
+                                                "owner"
+                                              ]
+                                            },
+                                            "occupation": {
+                                              "type": "string",
+                                              "pattern": "^[0-9]{4}$"
+                                            },
+                                            "capacity": {
+                                              "type": "string",
+                                              "enum": [
+                                                "executive",
+                                                "manager",
+                                                "other"
+                                              ]
+                                            },
+                                            "fullTime": {
+                                              "type": "boolean"
+                                            },
+                                            "start": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                }
+                                              ]
+                                            },
+                                            "end": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "none"
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            "label": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 80
+                                            }
+                                          },
+                                          "additionalProperties": false
+                                        },
+                                        "maxItems": 20
                                       },
                                       "studying": {
                                         "type": "boolean"
@@ -27682,6 +29232,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -27732,6 +29283,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -27782,6 +29334,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -27832,6 +29385,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -27913,6 +29467,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28009,6 +29564,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28059,6 +29615,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28114,6 +29671,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28170,6 +29728,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28224,6 +29783,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28291,6 +29851,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28341,6 +29902,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28427,6 +29989,176 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "workPeriod"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
+                                  "jobOffers",
+                                  "incomes",
+                                  "dependsOn",
+                                  "assets",
+                                  "allAssets",
+                                  "immigrationHistory",
+                                  "allSpouses",
+                                  "allPartners",
+                                  "allChildren",
+                                  "allParents",
+                                  "relationships"
+                                ]
+                              },
+                              "about": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1,
+                                "maxItems": 12
+                              },
+                              "person": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "occupation": {
+                                "type": "string",
+                                "pattern": "^[0-9]{4}$"
+                              },
+                              "relation": {
+                                "type": "string",
+                                "enum": [
+                                  "employee",
+                                  "contractor",
+                                  "self_employed",
+                                  "owner"
+                                ]
+                              },
+                              "capacity": {
+                                "type": "string",
+                                "enum": [
+                                  "executive",
+                                  "manager",
+                                  "other"
+                                ]
+                              },
+                              "fullTime": {
+                                "type": "boolean"
+                              },
+                              "employerCountry": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "workplaceCountry": {
+                                "type": "string",
+                                "pattern": "^(?:[A-Z]{2}|[A-Z]{4})$"
+                              },
+                              "start": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  }
+                                ]
+                              },
+                              "end": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})-(\\d{2})-(\\d{2})$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "pattern": "^(\\d{4})(?:-(\\d{2}))?$"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "none"
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "about",
+                              "person"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "noWorkPeriod"
+                                ]
+                              },
+                              "question": {
+                                "type": "string",
+                                "enum": [
+                                  "birthDate",
+                                  "citizenships",
+                                  "residenceCountry",
+                                  "educationLevel",
+                                  "studying",
+                                  "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28477,6 +30209,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28556,6 +30289,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28606,6 +30340,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28664,6 +30399,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28714,6 +30450,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -28775,6 +30512,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -29023,6 +30761,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -29073,6 +30812,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -29169,6 +30909,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -29262,6 +31003,7 @@
                                   "educationLevel",
                                   "studying",
                                   "languages",
+                                  "workPeriods",
                                   "jobOffers",
                                   "incomes",
                                   "dependsOn",
@@ -30340,6 +32082,7 @@
                               "educationLevel",
                               "studying",
                               "languages",
+                              "workPeriods",
                               "jobOffers",
                               "incomes",
                               "dependsOn",

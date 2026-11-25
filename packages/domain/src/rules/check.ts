@@ -1,7 +1,19 @@
-import { type Classification, type FactType, classifications } from '../case/facts.js';
+import {
+  type Classification,
+  type FactType,
+  type PersonRecord,
+  classifications,
+} from '../case/facts.js';
 import { countryCodeSchema } from '../case/snapshot.js';
 import type { CurrencyCode } from '../money/currency.js';
-import { type CollectionName, type Expression, maxExpressionDepth, depth } from './expression.js';
+import {
+  type CollectionName,
+  type Expression,
+  depth,
+  isRecordCollection,
+  maxExpressionDepth,
+  recordCollections,
+} from './expression.js';
 import { type FactTarget, resolveFactReference } from './fact-reference.js';
 
 /** A version that reads an age states how a 29 February birthday counts (spec 0002, R2). */
@@ -36,6 +48,8 @@ export interface CheckScope {
   readonly lineage?: 'ancestor' | 'link';
   /** Inside a collection, where only `lineage.links` (inside ancestors) may nest. */
   readonly nested?: boolean;
+  /** Inside a record collection: the record each item is, whose facts it may read. */
+  readonly record?: PersonRecord['kind'];
 }
 
 export interface CheckContext {
@@ -228,6 +242,24 @@ class Checker {
         if (value === undefined) return undefined;
         return value.kind === 'number' ? value : this.fail(path, 'sum takes a number');
       }
+      case 'covers': {
+        if (!this.declared(expression.at, path)) return undefined;
+        if (!isRecordCollection(expression.over)) {
+          return this.fail(path, 'covers reads a collection of periods');
+        }
+        if (![expression.atLeast, expression.window ?? 'P1D'].every(isPositive)) {
+          return this.fail(path, 'covers needs a time and a window longer than zero');
+        }
+        const inner = this.collection(expression.over, undefined, scope, path);
+        if (inner === undefined) return undefined;
+        if (
+          expression.where !== undefined &&
+          !this.allBoolean([[expression.where, at('where')]], inner)
+        ) {
+          return undefined;
+        }
+        return boolean;
+      }
     }
   }
 
@@ -274,6 +306,15 @@ class Checker {
     if ((over === 'principal.ancestors') !== (generations !== undefined)) {
       this.fail(path, 'generations is given for principal.ancestors, and only there');
       return undefined;
+    }
+    if (isRecordCollection(over)) {
+      const { owner, record } = recordCollections[over];
+      if (owner === 'current' && !scope.current) {
+        this.fail(path, `${over} cannot be read here`);
+        return undefined;
+      }
+      // `person.*` reads the records' owner; the unit stays reachable, edges and lines do not.
+      return { current: true, unit: scope.unit, edge: false, nested: true, record };
     }
     switch (over) {
       case 'unit.members':
@@ -403,6 +444,8 @@ function reachable(target: FactTarget, scope: CheckScope): boolean {
     case 'lineage':
     case 'ancestor':
       return scope.lineage !== undefined;
+    case 'workPeriod':
+      return scope.record === 'workPeriod';
   }
 }
 
@@ -451,3 +494,5 @@ function fitsDomain(target: TokenDomain, values: TokenDomain): boolean {
   if (typeof target === 'string' || typeof values === 'string') return target === values;
   return target.length === values.length && target.every((value) => values.includes(value));
 }
+
+const isPositive = (duration: string) => /[1-9]/.test(duration);

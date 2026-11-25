@@ -8,6 +8,7 @@ import {
 } from '@arca/domain';
 import { z } from 'zod';
 import type { Json } from './canonical.js';
+import { classificationKinds } from './datasets.js';
 import {
   comparisonData,
   countryData,
@@ -91,3 +92,20 @@ export type PinnedCountries = typeof pinnedCountries;
 export const datasetFiles: Readonly<Record<string, Json>> = z
   .record(z.string(), z.json())
   .parse(datasetFileData);
+
+/**
+ * The codes of the newest occupations file (ADR-0036): the ISCO-08 unit groups a person may pick
+ * for a work period, which the API checks answers against.
+ */
+export const occupationCodes: readonly string[] = newestCodes(classificationKinds.occupations);
+
+function newestCodes(kind: string): readonly string[] {
+  const prefix = `${kind}/${kind}/`;
+  const numbers = Object.keys(datasetFiles)
+    .filter((key) => key.startsWith(prefix))
+    .map((key) => Number(key.slice(prefix.length)));
+  if (numbers.length === 0) return [];
+  const newest = Math.max(...numbers);
+  return z.object({ codes: z.array(z.string()) }).parse(datasetFiles[`${prefix}${String(newest)}`])
+    .codes;
+}

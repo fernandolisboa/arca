@@ -168,6 +168,17 @@ describe('expressionValues', () => {
       [],
     ],
     [
+      'the time and window of a covers',
+      {
+        op: 'covers',
+        over: 'person.workPeriods',
+        atLeast: 'P2Y',
+        window: 'P5Y',
+        continuous: false,
+      },
+      ['2', '5'],
+    ],
+    [
       'a date',
       { op: 'gte', left: fact, right: { op: 'date', value: '2012-01-01' } },
       ['2012-01-01'],

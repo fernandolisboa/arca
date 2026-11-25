@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "routeId": "qr-remote-work",
+  "number": 1,
+  "title": "Fixture: remote work for an employer abroad",
+  "country": "QR",
+  "tags": ["fixture", "work"],
+  "effectiveFrom": "2020-01-01",
+  "status": "open",
+  "currency": "EUR",
+  "sources": [
+    {
+      "id": "law",
+      "url": "https://www.gov.example/fixture-act",
+      "title": "Fixture residence act",
+      "kind": "official",
+      "verifiedAt": "2026-09-01"
+    }
+  ],
+  "countries": {
+    "id": "countries",
+    "number": 1
+  },
+  "formerCountries": {
+    "id": "former-countries",
+    "number": 1
+  },
+  "officialDomains": [
+    {
+      "id": "fixture-gov",
+      "number": 1
+    }
+  ],
+  "occupations": {
+    "id": "occupations",
+    "number": 1
+  },
+  "countrySets": [],
+  "requirements": [
+    {
+      "id": "employer-abroad",
+      "title": "Three months of full-time work for an employer or client seated abroad, up to the date",
+      "expression": {
+        "op": "covers",
+        "over": "principal.workPeriods",
+        "where": {
+          "op": "all",
+          "operands": [
+            {
+              "op": "in",
+              "item": {
+                "op": "fact",
+                "key": "workPeriod.relation"
+              },
+              "set": {
+                "op": "tokens",
+                "values": ["employee", "contractor"]
+              }
+            },
+            {
+              "op": "ne",
+              "left": {
+                "op": "fact",
+                "key": "workPeriod.employerCountry"
+              },
+              "right": {
+                "op": "token",
+                "value": "QR"
+              }
+            },
+            {
+              "op": "fact",
+              "key": "workPeriod.fullTime"
+            }
+          ]
+        },
+        "atLeast": "P3M",
+        "window": "P3M",
+        "continuous": true
+      },
+      "sources": ["law"]
+    },
+    {
+      "id": "qualified-experience",
+      "title": "A year in all as a medical doctor or a software developer",
+      "expression": {
+        "op": "covers",
+        "over": "principal.workPeriods",
+        "where": {
+          "op": "in",
+          "item": {
+            "op": "fact",
+            "key": "workPeriod.occupation"
+          },
+          "set": {
+            "op": "tokens",
+            "values": ["2211", "2512"]
+          }
+        },
+        "atLeast": "P1Y",
+        "continuous": false
+      },
+      "sources": ["law"]
+    }
+  ],
+  "assessments": [],
+  "dependents": [],
+  "costs": [],
+  "durations": []
+}

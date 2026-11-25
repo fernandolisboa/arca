@@ -97,6 +97,7 @@ export {
   type CountryCode,
   type Person,
   type Relationship,
+  type WorkPeriod,
   assetKinds,
   caseSnapshotSchema,
   citizenshipBases,
@@ -111,7 +112,11 @@ export {
   maxCaseMembers,
   maxCasePeople,
   maxCaseRelationships,
+  maxWorkPeriods,
+  occupationCodeSchema,
   opaqueIdSchema,
+  workCapacities,
+  workRelations,
 } from './case/snapshot.js';
 export {
   type ShareScope,
@@ -119,6 +124,7 @@ export {
   type StoredFinances,
   type StoredProfile,
   type StoredRelationship,
+  type StoredWorkPeriod,
   displayNameSchema,
   profileMarkers,
   relationshipKinds,
@@ -131,6 +137,7 @@ export {
   storedProfileFactsSchema,
   storedProfileSchema,
   storedRelationshipSchema,
+  storedWorkPeriodSchema,
 } from './case/storage.js';
 export {
   type BuiltSnapshot,
@@ -168,6 +175,7 @@ export {
 } from './rules/route-version.js';
 export {
   collectionNames,
+  recordCollections,
   comparisonOperators,
   expressionOperators,
   nodeCount,
@@ -341,6 +349,7 @@ export {
   type Sentence,
   type SentenceKind,
   describeCase,
+  labelWorkPeriods,
   renamePeople,
   sentenceSchema,
 } from './case/playback.js';

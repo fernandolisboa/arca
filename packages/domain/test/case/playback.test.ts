@@ -3,6 +3,7 @@ import {
   type SentenceKind,
   caseSnapshotSchema,
   describeCase,
+  labelWorkPeriods,
   parseCalendarDate,
   renamePeople,
   sentenceSchema,
@@ -27,6 +28,19 @@ const snapshot = caseSnapshotSchema.parse({
       studying: false,
       languages: [{ language: 'pt', level: 'native' }],
       jobOffers: [{ country: 'PT', sector: 'J', temporary: false }],
+      workPeriods: [
+        {
+          occupation: '2512',
+          relation: 'contractor',
+          capacity: 'other',
+          fullTime: true,
+          employerCountry: 'US',
+          workplaceCountry: 'BR',
+          start: '2021-03',
+          end: 'none',
+        },
+        { occupation: '3512', start: '2015', end: '2021-02' },
+      ],
       immigrationHistory: [{ country: 'US', kind: 'visa_refusal', date: '2018' }],
       financiallyDependentOn: [],
       incomes: [
@@ -40,6 +54,7 @@ const snapshot = caseSnapshotSchema.parse({
       citizenships: [],
       languages: [],
       jobOffers: [],
+      workPeriods: [],
       immigrationHistory: [],
       incomes: [],
       financiallyDependentOn: ['p1'],
@@ -98,6 +113,21 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p1', 'jobOffer', { question: 'jobOffers', country: 'PT', sector: 'J', temporary: false }],
     [
       'p1',
+      'workPeriod',
+      {
+        question: 'workPeriods',
+        occupation: '2512',
+        relation: 'contractor',
+        capacity: 'other',
+        fullTime: true,
+        employerCountry: 'US',
+        workplaceCountry: 'BR',
+        start: '2021-03',
+        end: 'none',
+      },
+    ],
+    [
+      'p1',
       'immigrationEvent',
       { question: 'immigrationHistory', country: 'US', event: 'visa_refusal', date: '2018' },
     ],
@@ -117,6 +147,7 @@ describe('playing the case back (spec 0007, R5)', () => {
     ['p2', 'noCitizenship', { question: 'citizenships' }],
     ['p2', 'noLanguage', { question: 'languages' }],
     ['p2', 'noJobOffer', { question: 'jobOffers' }],
+    ['p2', 'noWorkPeriod', { question: 'workPeriods' }],
     ['p2', 'noImmigrationEvent', { question: 'immigrationHistory' }],
     ['p2', 'noIncome', { question: 'incomes' }],
     ['p2', 'dependsOn', { question: 'dependsOn', on: ['p1'] }],
@@ -139,6 +170,7 @@ describe('playing the case back (spec 0007, R5)', () => {
       'educationLevel',
       'studying',
       'languages',
+      'workPeriods',
       'jobOffers',
       'dependsOn',
       'immigrationHistory',
@@ -148,6 +180,33 @@ describe('playing the case back (spec 0007, R5)', () => {
       { kind: 'profileHidden', about: ['p4'], person: 'p4' },
       { kind: 'financesHidden', about: ['p4'], person: 'p4' },
     ]);
+  });
+
+  it('reads back every work period, in the order recorded, with only what is known', () => {
+    expect(of('p1', 'workPeriod')).toEqual([
+      expect.objectContaining({ occupation: '2512', end: 'none' }),
+      {
+        kind: 'workPeriod',
+        question: 'workPeriods',
+        about: ['p1'],
+        person: 'p1',
+        occupation: '3512',
+        start: '2015',
+        end: '2021-02',
+      },
+    ]);
+  });
+
+  it('labels work periods by their order in each person’s profile', () => {
+    const labelled = labelWorkPeriods(said, (person) =>
+      person === 'p1' ? ['Consultoria', undefined] : [],
+    );
+    expect(
+      labelled.flatMap((sentence) => (sentence.kind === 'workPeriod' ? [sentence.label] : [])),
+    ).toEqual(['Consultoria', undefined]);
+    expect(labelled.filter(({ kind }) => kind !== 'workPeriod')).toEqual(
+      said.filter(({ kind }) => kind !== 'workPeriod'),
+    );
   });
 
   it('marks the assets recorded in full only with the finances in view', () => {

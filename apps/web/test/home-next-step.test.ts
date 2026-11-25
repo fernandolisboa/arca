@@ -24,6 +24,7 @@ function questionsWith(...people: (readonly Question[])[]): CaseQuestions {
     })),
     countries: [],
     formerCountries: [],
+    occupations: [],
   };
 }
 

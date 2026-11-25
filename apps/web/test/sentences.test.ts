@@ -69,6 +69,33 @@ describe('wording the case summary in pt-BR (spec 0007, R5)', () => {
     ],
     [{ kind: 'noJobOffer', ...ana }, 'Ofertas de emprego para Ana: nenhuma.'],
     [
+      {
+        kind: 'workPeriod',
+        ...ana,
+        label: 'Cliente dos EUA',
+        occupation: '2512',
+        relation: 'contractor',
+        fullTime: true,
+        employerCountry: 'US',
+        workplaceCountry: 'BR',
+        start: '2022-03',
+        end: 'none',
+      },
+      'Trabalho de Ana (Cliente dos EUA): Desenvolvedores de software, prestando serviço, em tempo integral, empresa ou cliente: Estados Unidos, local de trabalho: Brasil, começou em março de 2022, trabalho atual.',
+    ],
+    [
+      {
+        kind: 'workPeriod',
+        ...ana,
+        capacity: 'manager',
+        fullTime: false,
+        start: '2015',
+        end: '2019-06',
+      },
+      'Trabalho de Ana: ocupação não informada, em cargo de gerência, em tempo parcial, de 2015 a junho de 2019.',
+    ],
+    [{ kind: 'noWorkPeriod', ...ana }, 'Trabalhos de Ana: nenhum anotado.'],
+    [
       { kind: 'immigrationEvent', ...ana, country: 'US', event: 'visa_refusal', date: '2018' },
       'Imigração de Ana: Visto negado, Estados Unidos, em 2018.',
     ],

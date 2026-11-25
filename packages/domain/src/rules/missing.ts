@@ -3,16 +3,18 @@ import { type Relationship, edgeKey } from '../case/snapshot.js';
 import { type Truth, and, not, or } from '../logic/truth.js';
 import { isKnown } from '../logic/value.js';
 import type { CurrencyPair, FxRate } from '../money/fx.js';
-import { type FactRead, type Trace, truthOf } from './evaluate.js';
+import { type FactRead, type Trace, type UnknownRecords, truthOf } from './evaluate.js';
 
 /**
  * Something the family can answer that would change a result: a fact about a person, whether a
- * relationship held at the date, or whether a kind of relationship or asset is recorded in full.
+ * relationship held at the date, whether a kind of relationship or asset is recorded in full, or
+ * a list of a person's records, such as their work periods, not answered at all.
  */
 export type MissingFact =
   | ({ readonly kind: 'fact' } & FactRead)
   | { readonly kind: 'relationship'; readonly edge: Relationship }
-  | ({ readonly kind: 'marker' } & MissingMarker);
+  | ({ readonly kind: 'marker' } & MissingMarker)
+  | ({ readonly kind: 'records' } & UnknownRecords);
 
 /** What makes each possible unit member possible, and the unit's own open markers. */
 export interface UnitGaps {
@@ -45,6 +47,8 @@ function collect(trace: Trace, unit: UnitGaps): MissingFact[] {
     case 'every':
     case 'sum':
       return collectionGaps(trace, unit);
+    case 'covers':
+      return coversGaps(trace, unit);
     default:
       return trace.children.flatMap((child) => collect(child, unit));
   }
@@ -58,8 +62,26 @@ function factGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
   return gaps;
 }
 
+function incompleteGaps(trace: Trace): MissingFact[] {
+  const records = trace.incomplete?.records;
+  return [
+    ...(trace.incomplete?.missingMarkers ?? []).map(marker),
+    ...(records === undefined ? [] : [{ kind: 'records' as const, ...records }]),
+  ];
+}
+
+/** An unknown list, and what is unknown about each period that may count: its condition, its dates. */
+function coversGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
+  return [
+    ...incompleteGaps(trace),
+    ...trace.children
+      .filter((item) => truthOf(item) !== false)
+      .flatMap((item) => item.children.flatMap((child) => collect(child, unit))),
+  ];
+}
+
 function collectionGaps(trace: Trace, unit: UnitGaps): MissingFact[] {
-  const gaps: MissingFact[] = (trace.incomplete?.missingMarkers ?? []).map(marker);
+  const gaps = incompleteGaps(trace);
   for (const item of trace.children) {
     const membershipInfo = item.item;
     if (membershipInfo === undefined) continue;
@@ -144,6 +166,8 @@ function keyOf(fact: MissingFact): string {
       return `marker:${fact.personId}:${fact.marker}`;
     case 'relationship':
       return `relationship:${edgeKey(fact.edge)}`;
+    case 'records':
+      return `records:${fact.personId}:${fact.list}`;
   }
 }
 

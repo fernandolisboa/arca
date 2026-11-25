@@ -403,6 +403,96 @@ describe('checkExpression', () => {
   });
 });
 
+describe('record collections and covers (ADR-0036)', () => {
+  const capacity = {
+    op: 'eq',
+    left: fact('workPeriod.capacity'),
+    right: { op: 'token', value: 'manager' },
+  };
+  const covers = (over: string, extra: object = {}): object => ({
+    op: 'covers',
+    over,
+    where: capacity,
+    atLeast: 'P1Y',
+    window: 'P3Y',
+    continuous: true,
+    ...extra,
+  });
+
+  it.each<[string, unknown, CheckScope]>([
+    ['covers over the person’s work periods', covers('person.workPeriods'), requirement],
+    [
+      'covers with a declared reference date',
+      covers('person.workPeriods', { at: 'filingDate' }),
+      requirement,
+    ],
+    [
+      'the principal’s work periods from a dependent',
+      { op: 'some', over: 'principal.workPeriods', where: capacity },
+      dependent,
+    ],
+    [
+      'the owner’s own facts inside a work period',
+      {
+        op: 'every',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('person.residenceCountry'),
+          right: fact('workPeriod.workplaceCountry'),
+        },
+      },
+      requirement,
+    ],
+  ])('accepts %s', (_label, input, scope) => {
+    expect(check(input, scope).issues).toEqual([]);
+  });
+
+  it.each<[string, unknown, string]>([
+    [
+      'a work-period fact outside its collection',
+      capacity,
+      '/left: workPeriod.capacity cannot be read here',
+    ],
+    ['covers over people', covers('unit.members'), ': covers reads a collection of periods'],
+    [
+      'covers of no time',
+      covers('person.workPeriods', { atLeast: 'P0D' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
+      'covers in an empty window',
+      covers('person.workPeriods', { window: 'P0Y0M' }),
+      ': covers needs a time and a window longer than zero',
+    ],
+    [
+      'covers at an undeclared date',
+      covers('person.workPeriods', { at: 'arrival' }),
+      ': Reference date arrival is not declared by the version',
+    ],
+    [
+      'work periods nested in the unit',
+      { op: 'some', over: 'unit.members', where: covers('person.workPeriods') },
+      '/where: Collections do not nest, except lineage.links inside principal.ancestors',
+    ],
+    [
+      'a relation outside its values',
+      {
+        op: 'some',
+        over: 'person.workPeriods',
+        where: {
+          op: 'eq',
+          left: fact('workPeriod.relation'),
+          right: { op: 'token', value: 'intern' },
+        },
+      },
+      '/where: The values are outside the domain of the fact',
+    ],
+  ])('refuses %s', (_label, input, issue) => {
+    expect(check(input).issues.map(({ path, message }) => `${path}: ${message}`)).toEqual([issue]);
+  });
+});
+
 describe('isNonNegative', () => {
   it.each<[string, unknown, boolean]>([
     ['a count', { op: 'count', over: 'unit.members', where: { op: 'bool', value: true } }, true],

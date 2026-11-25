@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { calendarDateSchema } from '../calendar/calendar-date.js';
-import { compareDateValues, dateValueSchema } from '../calendar/partial-date.js';
+import { type DateValue, compareDateValues, dateValueSchema } from '../calendar/partial-date.js';
 import { currencyCodeSchema } from '../money/currency.js';
 import {
   type Decimal,
@@ -112,6 +112,48 @@ const jobOfferSchema = z.strictObject({
   temporary: z.boolean(),
 });
 
+/** An ISCO-08 unit group code; the API checks it against the occupations classification. */
+export const occupationCodeSchema = z.string().regex(/^[0-9]{4}$/);
+
+export const workRelations = ['employee', 'contractor', 'self_employed', 'owner'] as const;
+/** The role a person says they had; whether it meets a route's legal definition is an assessment. */
+export const workCapacities = ['executive', 'manager', 'other'] as const;
+export const maxWorkPeriods = 20;
+
+/**
+ * A work period's fields (ADR-0036): where the employer or main client is seated, where the person
+ * works from, codes and dates only. `end` is `"none"` while it goes on.
+ */
+export const workPeriodFieldsSchema = z.strictObject({
+  employerCountry: countryCodeSchema.optional(),
+  workplaceCountry: countryCodeSchema.optional(),
+  relation: z.enum(workRelations).optional(),
+  occupation: occupationCodeSchema.optional(),
+  capacity: z.enum(workCapacities).optional(),
+  fullTime: z.boolean().optional(),
+  start: dateValueSchema.optional(),
+  end: dateOrNoneSchema.optional(),
+});
+
+/** A period does not end before it starts. */
+export const periodInOrder = ({
+  start,
+  end,
+}: {
+  readonly start?: DateValue | undefined;
+  readonly end?: DateValue | 'none' | undefined;
+}): boolean =>
+  start === undefined ||
+  end === undefined ||
+  end === 'none' ||
+  compareDateValues(end, 'lt', start) !== true;
+
+export const periodOrderMessage = { message: 'A period does not end before it starts' };
+
+export const workPeriodSchema = workPeriodFieldsSchema.refine(periodInOrder, periodOrderMessage);
+
+export type WorkPeriod = z.infer<typeof workPeriodSchema>;
+
 /** A person's fields, before the checks across them; storage derives its schemas from these. */
 export const personFieldsSchema = z.strictObject({
   id: opaqueIdSchema,
@@ -124,6 +166,8 @@ export const personFieldsSchema = z.strictObject({
   incomes: z.array(incomeSchema).max(20).optional(),
   immigrationHistory: z.array(immigrationEventSchema).max(50).optional(),
   jobOffers: z.array(jobOfferSchema).max(10).optional(),
+  /** Work periods, past and current, in any order. */
+  workPeriods: z.array(workPeriodSchema).max(maxWorkPeriods).optional(),
   /** People this person depends on financially. */
   financiallyDependentOn: z.array(opaqueIdSchema).max(20).optional(),
   studying: z.boolean().optional(),
