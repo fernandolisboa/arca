@@ -83,7 +83,7 @@ for (const [width, baseLayouts] of sizes) {
             'aria-current',
             'page',
           );
-          await tabTo(page, 'Configurações', 4);
+          await tabTo(page, 'Configurações', 5);
           await expect(page.getByRole('button', { name: 'Abrir menu' })).toHaveCount(0);
         }
         expect(await horizontalOverflow(page)).toBe(0);
@@ -151,7 +151,7 @@ test.describe('collapsed navigation', () => {
       await page.setViewportSize({ width, height: 800 });
       await open(page, layout, { extra: { navCollapse: 'collapsed' } });
       await tabTo(page, 'Início');
-      await tabTo(page, 'Configurações', 4);
+      await tabTo(page, 'Configurações', 5);
       expect(await smallestNavTarget(page)).toBeGreaterThanOrEqual(44);
       expect(await horizontalOverflow(page)).toBe(0);
     });
