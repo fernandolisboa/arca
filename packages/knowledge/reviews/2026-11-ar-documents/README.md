@@ -15,12 +15,12 @@ All on www.argentina.gob.ar, Argentina's official-domain list:
 The same 20 items in both, ten for the principal and ten for each family member.
 
 - **Everyone:** proof of the fee paid or of an exemption (paid in RaDEX, the online system); a valid identity document (a passport, another document in annex I of the Mercosur travel documents agreement, or a consulate's nationality certificate with a photo); proof of lawful entry; proof of an address in the area of the office handling the application; the sworn statement of no international criminal record.
-- **From age 16:** Argentina's criminal record certificate (included in RaDEX; got outside it, valid 90 days); and, possible, a certificate from each country lived in for over a year in the last three years, showing no convictions or pending criminal proceedings.
-- **Under 18:** the authorization of one parent or the guardian, signed before a migration officer; for the principal, also a legalized birth certificate and, possible, the instrument appointing a guardian when the parents are not in Argentina. A family member under 18 joins a resident parent, so neither the guardian nor a second birth certificate is listed for them: the family link item already asks for it.
-- **Each family member** also hands in the birth or marriage certificate, or the registered cohabiting union record, proving the link with the resident, and, possible, an adult child with a disability the Single Disability Certificate (CUD) or a court ruling.
+- **From age 16:** Argentina's criminal record certificate (included in RaDEX; got outside it, valid 90 days); and, where it applies, a certificate from each country lived in for over a year in the last three years, showing no convictions or pending criminal proceedings.
+- **Under 18:** the authorization of one parent or the guardian, signed before a migration officer; for the principal, also a legalized birth certificate and, where it applies, the instrument appointing a guardian when the parents are not in Argentina. A family member under 18 joins a resident parent, so neither the guardian nor a second birth certificate is listed for them: the family link item already asks for it.
+- **Each family member** also hands in the birth or marriage certificate, or the registered cohabiting union record, proving the link with the resident, and, where it applies, for an adult child with a disability the Single Disability Certificate (CUD) or a court ruling.
 - Legalization and translation depend on the paper and the country that issued it: an apostille, an Argentine consulate's legalization, or, for a Mercosur paper only, the issuing country's consulate in Argentina; a national public translator's translation unless the paper is in Spanish, and Brazilian passports, identity cards, birth and marriage records and criminal record certificates in Portuguese are exempt (Ley 25.901). So they are notes, not the `apostille` and `translation` fields.
 
-**Brazil's document guide** needs no new version: `birth_certificate`, `marriage_certificate` and `police_certificate` are in it already; the new kinds (`entry_proof`, `argentine_police_certificate`) and the others have no Brazilian issuer.
+**Brazil's document guide** needs no new version: `birth_certificate`, `marriage_certificate` and `police_certificate` are in it already; `entry_proof` and `argentine_police_certificate` are issued in Argentina, and the remaining kinds are papers the applicant or an Argentine office makes. Brazil's guide has no entry for `identity_document` or `family_relationship_proof`, though Brazil issues both (leftover 7).
 
 ## Rounds
 
@@ -36,3 +36,5 @@ The proposal check and the quote check, the app's own (`ARCA_REVIEW_QUOTES=2026-
 4. **The consular path** from abroad (annex, chapter IV) is not listed, as the versions model applying in Argentina.
 5. **The directorate may ask for more papers** (service page); none is listed.
 6. **Production rows were not read.** This session has no database credentials; the proof of publishing is the production build, which runs the migration.
+7. **Brazil's guide** has no entry for `identity_document` (passport, RG) or `family_relationship_proof` (birth or marriage record as the link); a later guide version can add them.
+8. **RaDEX in version 6.** The notes on paying in RaDEX and on the certificate inside it come from the service page read on 2026-11-25; no text read dates RaDEX back to 2025-05-29.
