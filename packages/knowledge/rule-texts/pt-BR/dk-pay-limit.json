@@ -77,6 +77,106 @@
     {
       "en": "SIRI's processing of an accompanying family member's application: normally 2 months, up to 3 months if further information is needed",
       "text": "Análise do pedido de um familiar que acompanha pela SIRI: normalmente 2 meses, até 3 meses se precisar de mais informações"
+    },
+    {
+      "en": "Receipt for the paid case processing fee",
+      "text": "Comprovante de pagamento da taxa de processamento do pedido"
+    },
+    {
+      "en": "Copy of all pages of the passport, including all empty pages and the front and back cover",
+      "text": "Cópia de todas as páginas do passaporte, inclusive as páginas em branco, a capa e a contracapa"
+    },
+    {
+      "en": "Employment contract or job offer stating the salary, the terms of employment and a job description",
+      "text": "Contrato de trabalho ou oferta de emprego com o salário, as condições de trabalho e a descrição do cargo"
+    },
+    {
+      "en": "Documentation of any work experience relevant to the job offered",
+      "text": "Comprovação da experiência profissional relevante para o cargo oferecido, se houver"
+    },
+    {
+      "en": "Documentation of any education relevant to the job offered",
+      "text": "Comprovação da formação relevante para o cargo oferecido, se houver"
+    },
+    {
+      "en": "Translated by an authorised translator into Danish, Norwegian, Swedish, English, French or German; attach the original and the translation",
+      "text": "Tradução por tradutor autorizado para dinamarquês, norueguês, sueco, inglês, francês ou alemão; anexe o original e a tradução"
+    },
+    {
+      "en": "Documentation of the authorisation, where the job requires a Danish authorisation",
+      "text": "Comprovação da autorização, quando o cargo exige uma autorização dinamarquesa"
+    },
+    {
+      "en": "When applying from Denmark, documentation of staying there legally",
+      "text": "Ao pedir de dentro da Dinamarca, comprovação de que está legalmente no país"
+    },
+    {
+      "en": "Documentation of any salary components the employment document does not state",
+      "text": "Comprovação de partes do salário que o contrato de trabalho não informa, se houver"
+    },
+    {
+      "en": "CV, if relevant",
+      "text": "Currículo, se for o caso"
+    },
+    {
+      "en": "Without MitID, SIRI's sworn declaration, signed by hand and attached to the AR1 application",
+      "text": "Sem MitID, a declaração juramentada da SIRI, assinada à mão e anexada ao formulário AR1"
+    },
+    {
+      "en": "Receipt for the paid case processing fee of the family member's own application",
+      "text": "Comprovante de pagamento da taxa de processamento do pedido do próprio familiar"
+    },
+    {
+      "en": "Copy of all pages of the passport, including the cover",
+      "text": "Cópia de todas as páginas do passaporte, inclusive a capa"
+    },
+    {
+      "en": "Spouse or registered partner: a copy of the original marriage or partnership certificate, with its translation",
+      "text": "Cônjuge ou parceiro registrado: cópia da certidão original de casamento ou de parceria registrada, com a tradução"
+    },
+    {
+      "en": "A marriage certificate is translated by an authorised translator into Danish or English; attach the original and the translation",
+      "text": "A certidão de casamento precisa ser traduzida por tradutor autorizado para dinamarquês ou inglês; anexe o original e a tradução"
+    },
+    {
+      "en": "Cohabiting partner: documentation of living together, such as leases, insurance policies, bank statements, letters or joint payments received at the same address",
+      "text": "Companheiro em união estável: comprovação de que moram juntos, como contratos de aluguel, apólices de seguro, extratos bancários, cartas ou pagamentos conjuntos recebidos no mesmo endereço"
+    },
+    {
+      "en": "Child under 18 not born in Denmark: a copy of the original birth certificate stating the parents' names",
+      "text": "Filho menor de 18 anos nascido fora da Dinamarca: cópia da certidão de nascimento original com o nome dos pais"
+    },
+    {
+      "en": "Child under 18 whose other custody holder is not coming to Denmark: that person's consent, on SIRI's declaration of consent",
+      "text": "Filho menor de 18 anos cujo outro responsável pela guarda não vai para a Dinamarca: o consentimento dessa pessoa, no formulário de consentimento da SIRI"
+    },
+    {
+      "en": "Same child: a copy of the passport data page of the other custody holder, or a copy of their ID card and birth certificate",
+      "text": "Mesmo filho: cópia da página de dados do passaporte do outro responsável pela guarda, ou cópia do documento de identidade e da certidão de nascimento dele"
+    },
+    {
+      "en": "Child under 18 of a principal with full custody: documentation that only one parent has full parental custody",
+      "text": "Filho menor de 18 anos sob guarda exclusiva do requerente principal: comprovação de que só um dos pais tem a guarda"
+    },
+    {
+      "en": "Translated by an authorised translator into Danish or English; attach the original and the translation",
+      "text": "Tradução por tradutor autorizado para dinamarquês ou inglês; anexe o original e a tradução"
+    },
+    {
+      "en": "Other family, anyone but a spouse, partner or child under 18: documentation of the circumstances that make them particularly dependent on the principal",
+      "text": "Outros familiares, ou seja, qualquer um que não seja cônjuge, companheiro ou filho menor de 18 anos: comprovação das circunstâncias que os tornam especialmente dependentes do requerente principal"
+    },
+    {
+      "en": "Without MitID, SIRI's sworn declaration, signed by hand and attached to the MF1 application",
+      "text": "Sem MitID, a declaração juramentada da SIRI, assinada à mão e anexada ao formulário MF1"
+    },
+    {
+      "en": "When applying at a Norwegian diplomatic mission, one passport photo",
+      "text": "Ao pedir numa representação diplomática da Noruega, uma foto de passaporte"
+    },
+    {
+      "en": "When a third party represents the family member, a power of attorney, unless the representative has an employment authorisation, such as an attorney",
+      "text": "Quando um terceiro representa o familiar, uma procuração, a menos que o representante tenha habilitação profissional para isso, como um advogado"
     }
   ]
 }
