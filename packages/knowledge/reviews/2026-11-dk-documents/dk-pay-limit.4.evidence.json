@@ -1,0 +1,480 @@
+{
+  "schemaVersion": 1,
+  "quotes": [
+    {
+      "key": "requirement:not-nordic-eu-eea-or-swiss-citizen",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "§ 1. Statsborgere i Finland, Island, Norge og Sverige kan uden tilladelse indrejse og opholde sig her i landet."
+    },
+    {
+      "key": "requirement:not-nordic-eu-eea-or-swiss-citizen",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "§ 2. Udlændinge, der er statsborgere i et land, der er tilsluttet Den Europæiske Union eller er omfattet af aftalen om Det Europæiske Økonomiske Samarbejdsområde, kan indrejse og opholde sig her i landet i indtil 3 måneder fra indrejsen."
+    },
+    {
+      "key": "requirement:not-nordic-eu-eea-or-swiss-citizen",
+      "url": "https://www.retsinformation.dk/eli/lta/2020/1457",
+      "quote": "Stk. 2. En statsborger i et land, der er omfattet af EØS-aftalen, og en statsborger i Schweiz sidestilles i denne bekendtgørelse med en unionsborger."
+    },
+    {
+      "key": "assessment:pay-limit",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "3) der har indgået aftale eller fået tilbud om ansættelse inden for et fagområde, hvor ansættelsen indebærer en årlig aflønning på mindst 400.000 kr.,"
+    },
+    {
+      "key": "assessment:pay-limit",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 29. Det beløb, der er angivet i stk. 2, nr. 3 og 13, reguleres årligt med satsreguleringsprocenten, jf. lov om satsreguleringsprocent, og en tilpasningsprocent, så reguleringen i alt svarer til lønudvikling i samfundet. Det regulerede beløb afrundes til det nærmeste beløb, som er deleligt med 1.000."
+    },
+    {
+      "key": "assessment:pay-limit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "You must have been offered a job with an annual salary that meets, at least, the minimum amount. The minimum amount DKK 552,000 (2026 level). The minimum amount is regulated every year on 1 January."
+    },
+    {
+      "key": "assessment:working-hours",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 10. Opholdstilladelse på grundlag af beskæftigelse efter stk. 2, nr. 3, jf. stk. 1, meddeles på baggrund af ansættelse minimum 30 timer om ugen."
+    },
+    {
+      "key": "assessment:working-hours",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "It is a requirement that your working hours are at least 30 hours a week."
+    },
+    {
+      "key": "assessment:danish-bank-account",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 25. Udbetaling af løn til en udlænding, der gives opholdstilladelse efter stk. 2, nr. 1-3, 7, 9 eller 11-13 eller nr. 14, litra e, skal ske til en dansk bankkonto. Udlændinge, der ikke allerede har opholdstilladelse af mindst 180 dages varighed, skal inden for 180 dage fra indrejsetidspunktet, hvis udlændingen er indrejst i Danmark, efter at udlændingen er meddelt opholdstilladelse, eller i andre tilfælde inden for 180 dage fra tidspunktet for meddelelse af opholdstilladelse oprette en dansk bankkonto, hvortil udlændingens løn skal udbetales."
+    },
+    {
+      "key": "assessment:danish-bank-account",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Your salary must be paid into a Danish bank account in your own name, and the bank has to be operating legally in Denmark."
+    },
+    {
+      "key": "assessment:danish-bank-account",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Your Danish bank account must be opened within 180 days of your residence and work permit being granted."
+    },
+    {
+      "key": "assessment:usual-terms",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "The salary that you have been offered must not be inferior to the standards within the professional field in which you are going to work."
+    },
+    {
+      "key": "assessment:usual-terms",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Your terms of employment, such as your holiday entitlements, terms of notice, etc. must not be inferior to the standards within the professional field in which you are going to work."
+    },
+    {
+      "key": "assessment:genuine-offer",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 9. Opholdstilladelse efter stk. 2, nr. 1-9 og 12-14, kan ikke gives, hvis den ansættelse, som udlændingen har indgået aftale eller fået tilbud om, er omfattet af en lovlig arbejdskonflikt."
+    },
+    {
+      "key": "assessment:genuine-offer",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 26. Der kan ikke gives opholdstilladelse efter stk. 2, nr. 1-4, 6-9 og 11-14, hvis der er en vis formodning om, at de faktiske ansættelsesforhold ikke stemmer overens med det, der fremgår af ansøgningen, og de faktiske ansættelsesforhold ikke vil opfylde betingelserne for en opholdstilladelse efter stk. 2, nr. 1-4, 6-9 og 11-14, eller hvis det afgørende formål med aftalen eller tilbuddet om ansættelse er at skaffe udlændingen et ophold, som udlændingen ellers ikke ville kunne opnå."
+    },
+    {
+      "key": "assessment:no-social-assistance",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Stk. 4. Opholdstilladelse efter stk. 2 og 3 skal betinges af, at udlændingen og personer, der meddeles opholdstilladelse som følge af familiemæssig tilknytning til udlændingen, ikke modtager hjælp efter lov om aktiv socialpolitik."
+    },
+    {
+      "key": "assessment:shared-home",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Opholdstilladelse skal betinges af, at udlændingen og den, som udlændingen har familiemæssig tilknytning til, bor på fælles bopæl og ikke modtager hjælp efter lov om aktiv socialpolitik."
+    },
+    {
+      "key": "assessment:shared-home",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "It is a condition that you reside at the same address in Denmark as the sponsor when you are granted a residence permit as an accompanying family member."
+    },
+    {
+      "key": "assessment:danish-authorisation",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "In some cases, before you can be granted a residence and work permit, it is required that you have a Danish authorisation or a temporary authorisation for employment for adaption and training purposes."
+    },
+    {
+      "key": "assessment:family-permits-not-revoked",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "Opholdstilladelse efter stk. 2, nr. 1-3, 6-9 og 11-13 og nr. 14, litra a og c-e, skal betinges af, at personer, der meddeles opholdstilladelse som følge af familiemæssig tilknytning til udlændingen, ikke mere end en gang får opholdstilladelsen inddraget efter § 19, stk. 1, nr. 19."
+    },
+    {
+      "key": "assessment:family-permits-not-revoked",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "One of the conditions for a residence permit under the Pay Limit Scheme is that your spouse, cohabiting partner, children or, in certain circumstances, other family members holding a residence permit as accompanying family members, have not had their residence permit revoked more than once due to lack of a required work permit."
+    },
+    {
+      "key": "duration:family-processing",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Normal processing time 2 months"
+    },
+    {
+      "key": "duration:family-processing",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If further information is needed, the processing time can be up to 3 months"
+    },
+    {
+      "key": "assessment:danish-employer",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "As a general rule, you must have an employment agreement with a company registered in Denmark to be able to apply. However, there are certain exceptions, e.g. if you work for a foreign company that provides services in Denmark."
+    },
+    {
+      "key": "assessment:custody-consent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If your parents have joint custody and only one of your parents is to stay with you in Denmark, you must get consent from your other parent that you can stay in Denmark. If one of your parents has full custody, you must document this."
+    },
+    {
+      "key": "assessment:recognised-union",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Your marriage must be recognised under Danish law. This means that the marriage can be recognised if the marriage is legal in the country where it took place and that:"
+    },
+    {
+      "key": "assessment:recognised-union",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "you were both physically present at the wedding,"
+    },
+    {
+      "key": "assessment:recognised-union",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "you had both turned 18 years old at the time of the wedding,"
+    },
+    {
+      "key": "assessment:recognised-union",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "the marriage is not a marriage of convenience,"
+    },
+    {
+      "key": "assessment:recognised-union",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "the marriage does not violate fundamental legal principles."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "§ 9 m. Der kan, hvis væsentlige erhvervs- eller beskæftigelsesmæssige hensyn taler herfor, efter ansøgning gives opholdstilladelse til en udlænding, som har familiemæssig tilknytning til en udlænding med tidsbegrænset eller tidsubegrænset opholdstilladelse i forlængelse af en tidsbegrænset opholdstilladelse efter § 9 a, stk. 2, nr. 1-14,"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "you had both turned 18 years old at the time of the wedding,"
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you are not married or if the marriage cannot be recognised under Danish law, we will instead assess if you can be considered as cohabiting partners."
+    },
+    {
+      "key": "dependent:spouse",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You must have lived together with the sponsor for at least 1.5-2 years prior to the application date."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Cohabiting partners over the age of 18 are equivalent to spouses. Cohabiting partners are people that live together in a committed relationship of longer duration. You must have lived together with the sponsor for at least 1.5-2 years prior to the application date."
+    },
+    {
+      "key": "dependent:partner",
+      "url": "https://www.retsinformation.dk/eli/lta/2021/1122",
+      "quote": "§ 1. Børn og unge under 18 år, der ikke har indgået ægteskab, er mindreårige og dermed umyndige."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You can be granted a residence permit as an accompanying child if you are under the age of 18."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you are other family, SIRI cannot grant you a residence permit as accompanying family unless extraordinary circumstances and weighty considerations apply."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "The sponsor has always financially supported you and has always resided at the same address as you."
+    },
+    {
+      "key": "dependent:children",
+      "url": "https://www.retsinformation.dk/eli/lta/2021/1122",
+      "quote": "§ 1. Børn og unge under 18 år, der ikke har indgået ægteskab, er mindreårige og dermed umyndige."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you are other family, SIRI cannot grant you a residence permit as accompanying family unless extraordinary circumstances and weighty considerations apply."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "The sponsor has always financially supported you and has always resided at the same address as you."
+    },
+    {
+      "key": "dependent:parents",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You are particularly dependent on the sponsor due to a disability, advanced age or similar."
+    },
+    {
+      "key": "cost:application-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "quote": "Stk. 2. Med virkning for perioden 1. januar 2026 til 31. december 2026 fastsættes gebyret for indgivelse af ansøgning til 6.810 kr."
+    },
+    {
+      "key": "cost:application-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "quote": "1) Indgivelse af ansøgning om opholdstilladelse og forlængelse af opholdstilladelse efter udlændingelovens § 9 a, stk. 2, nr. 1-9, 11-14, og stk. 3."
+    },
+    {
+      "key": "cost:application-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "4) opholdstilladelse efter § 9 a, stk. 2, nr. 1-14, og stk. 3,"
+    },
+    {
+      "key": "cost:family-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "quote": "Stk. 5. Med virkning for perioden 1. januar 2026 til 31. december 2026 fastsættes gebyret for indgivelse af ansøgning om opholdstilladelse til 3.080 kr."
+    },
+    {
+      "key": "cost:family-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2025/1612",
+      "quote": "1) Indgivelse af ansøgning om opholdstilladelse og forlængelse af opholdstilladelse efter udlændingelovens § 9 m, stk. 1 og 2."
+    },
+    {
+      "key": "cost:family-fee",
+      "url": "https://www.retsinformation.dk/eli/lta/2026/953",
+      "quote": "9) opholdstilladelse efter § 9 m, stk. 1 og 2,"
+    },
+    {
+      "key": "duration:processing",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Normal processing time 1 month"
+    },
+    {
+      "key": "duration:processing",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If further information is needed, the processing time can be up to 3 months"
+    },
+    {
+      "key": "duration:permit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If your employment is for a period of 4 years or more, you will normally be granted a permit valid for 4 years."
+    },
+    {
+      "key": "duration:permit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If you are employed for a shorter period than 4 years, your residence and work permit will normally be valid for the period of your employment."
+    },
+    {
+      "key": "duration:permit",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "A residence permit can only be valid until 3 months before the expiry date of your passport."
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://european-union.europa.eu/easy-read_en",
+      "quote": "Today, 27 countries are part of the European Union. These countries are: Austria Belgium Bulgaria Croatia Cyprus Czechia Denmark Estonia Finland France Germany Greece Hungary Ireland Italy Latvia Lithuania Luxembourg Malta Netherlands Poland Portugal Romania Slovakia Slovenia Spain Sweden"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement",
+      "quote": "The European Economic Area (EEA) Agreement brings Iceland, Liechtenstein, and Norway (EEA EFTA countries) into the EU’s internal market, guaranteeing the freedom of movement for goods, services, people and capital"
+    },
+    {
+      "key": "countrySet:eu-free-movement/2",
+      "url": "https://trade.ec.europa.eu/access-to-markets/en/content/switzerland",
+      "quote": "In 1999 seven sectoral agreements were signed, known as ‘Bilaterals I’. They cover free movement of persons"
+    },
+    {
+      "key": "document:fee-receipt",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation of paid fee. Attach receipt for your payment"
+    },
+    {
+      "key": "document:passport",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Copy of all pages of your passport – including all empty pages and the passport’s front and back cover"
+    },
+    {
+      "key": "document:employment-contract",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Employment contract or job offer which contains information about your salary and terms of employment and a job description"
+    },
+    {
+      "key": "document:work-experience",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation of work experience relevant to the job offered, if any"
+    },
+    {
+      "key": "document:education",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation of education relevant to the job offered, if any"
+    },
+    {
+      "key": "document:education",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Documents must always be translated by an authorised translator, and you must attach both the original document and the translation to your application."
+    },
+    {
+      "key": "document:education",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Educational documents (diplomas, certificates, transcripts, etc.) must be translated into Danish, Norwegian, Swedish, English, French or German."
+    },
+    {
+      "key": "document:danish-authorisation",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation of authorisation. Only relevant if the job requires a Danish authorisation"
+    },
+    {
+      "key": "document:legal-stay",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation that you are staying in Denmark legally, if relevant"
+    },
+    {
+      "key": "document:legal-stay",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If you are in Denmark when submitting the application, you must be here legally."
+    },
+    {
+      "key": "document:salary-components",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Documentation for any salary components that are not directly stated in the employment document, if relevant"
+    },
+    {
+      "key": "document:cv",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "Your CV, if relevant"
+    },
+    {
+      "key": "document:sworn-declaration",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If you do not have MitID, you can send AR1 by signing our sworn declaration by hand and attaching it to the application. It is important that you sign and attach our sworn declaration."
+    },
+    {
+      "key": "document:fee-receipt-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Documentation of paid fee. Attach receipt for your payment"
+    },
+    {
+      "key": "document:fee-receipt-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Each accompanying family member must submit an individual application."
+    },
+    {
+      "key": "document:passport-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Copy of all pages of your passport, including the cover"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Copy of your original marriage or partnership certificate and translation"
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Documents must always be translated by an authorised translator, and you must attach both the original document and the translation to your application."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Marriage certificates must be translated into Danish or English (alternatively by means of a complete multilingual standard form in Danish or English if the document was issued by an EU country)."
+    },
+    {
+      "key": "document:cohabitation-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Documentation of cohabitation such as e.g. lease contracts, insurance policies, bank statements or letters, joint payments or similar, received at the same address."
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "A copy of your original birth certificate (your parents' names must be stated in the certifiate). Must only be submitted if you are not born in Denmark"
+    },
+    {
+      "key": "document:birth-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You can be granted a residence permit as an accompanying child if you are under the age of 18."
+    },
+    {
+      "key": "document:custody-consent-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Consent from another person who has parental custody, if the second parent is not coming to Denmark"
+    },
+    {
+      "key": "document:custody-consent-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You can be granted a residence permit as an accompanying child if you are under the age of 18."
+    },
+    {
+      "key": "document:custody-consent-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If your parents have joint custody and only one of your parents is to stay with you in Denmark, you must get consent from your other parent that you can stay in Denmark."
+    },
+    {
+      "key": "document:other-parent-id-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "A copy of the data page from the other person with parental custody's passport (or a copy of their ID card and birth certificate), if the second parent is not coming to Denmark"
+    },
+    {
+      "key": "document:other-parent-id-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You can be granted a residence permit as an accompanying child if you are under the age of 18."
+    },
+    {
+      "key": "document:sole-custody-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "Documentation proving that only one of the parents has full parental custody, if relevant"
+    },
+    {
+      "key": "document:sole-custody-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You can be granted a residence permit as an accompanying child if you are under the age of 18."
+    },
+    {
+      "key": "document:sole-custody-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Documents must always be translated by an authorised translator, and you must attach both the original document and the translation to your application."
+    },
+    {
+      "key": "document:sole-custody-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/Words-and-concepts/SIRI/Documentation---SIRI-has-these-requirements-for-documents/",
+      "quote": "Documents regarding parental custody must be translated into Danish or English (alternatively by means of a complete multilingual standard form in Danish or English if the document was issued by an EU country)."
+    },
+    {
+      "key": "document:dependence-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "You must document the specific circumstances that make you particulary dependent on the sponsor."
+    },
+    {
+      "key": "document:dependence-proof-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you are a family member to the sponsor, but you are not the spouse/cohabiting partner/registered partner nor a child under the age of 18, you are other family."
+    },
+    {
+      "key": "document:sworn-declaration-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you do not have MitID, you can send the application by signing our sworn declaration by hand and attaching it to the application. It is important that you sign and attach our sworn declaration."
+    },
+    {
+      "key": "document:marriage-certificate-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "A registered partnership can be recognised in Denmark if the partnership is equivalent to a marriage under Danish law."
+    },
+    {
+      "key": "document:passport-photo-norwegian-mission",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Work/Pay-limit-scheme",
+      "quote": "If you submit your application to a Norwegian diplomatic mission, you must also submit one passport photo."
+    },
+    {
+      "key": "document:passport-photo-norwegian-mission-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you submit your application to a Norwegian diplomatic mission, you must also submit one passport photo."
+    },
+    {
+      "key": "document:power-of-attorney-dependent",
+      "url": "https://www.nyidanmark.dk/en-GB/You-want-to-apply/Family/Accompanying-family-members/Accompanying-family---work",
+      "quote": "If you choose to be represented, you must give the third party representing you power of attorney to handle the application on your behalf. However, you do not have to give a power of attorney if you want to be represented by someone who has an employment authorisation, e.g. an attorney."
+    }
+  ]
+}
