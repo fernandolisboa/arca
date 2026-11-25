@@ -132,8 +132,11 @@ const needed = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: false }) as const;
 const maybe = <Key extends string>(key: Key, input: FieldInput) =>
   ({ key, input, optional: true }) as const;
-const businessOnly = <Field extends QuestionField>(field: Field) =>
-  ({ ...field, onlyWhen: { key: 'kind', value: 'business' } }) as const;
+const onlyWhen =
+  (key: string, value: string) =>
+  <Field extends QuestionField>(field: Field) =>
+    ({ ...field, onlyWhen: { key, value } }) as const;
+const businessOnly = onlyWhen('kind', 'business');
 const fact = (key: FactKey) => ({ kind: 'fact', key }) as const;
 const marker = <Id extends string>(id: Id, value: ProfileMarker) =>
   ({
@@ -200,10 +203,7 @@ export const questionFlow = [
         maybe('workplaceCountry', { kind: 'country' }),
         maybe('start', partialDate),
         maybe('end', { ...partialDate, none: true }),
-        {
-          ...maybe('business', { kind: 'business' }),
-          onlyWhen: { key: 'relation', value: 'owner' },
-        },
+        onlyWhen('relation', 'owner')(maybe('business', { kind: 'business' })),
       ],
     },
   },
@@ -374,6 +374,7 @@ const mapList = (input: QuestionInput, value: unknown, money: (value: unknown) =
     ? value.map((item) => mapFields(input.fields, item, money))
     : value;
 
+/** Whether every code an answer names is a known one, and every field it fills is one it asks. */
 function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): boolean {
   const fieldKnown = (field: FieldInput, entry: unknown): boolean => {
     if (entry === undefined) return true;
@@ -394,7 +395,13 @@ function knownCodes(input: QuestionInput, value: unknown, known: KnownCodes): bo
       value.every(
         (item) =>
           isRecord(item) &&
-          input.fields.every(({ key, input: field }) => fieldKnown(field, item[key])),
+          input.fields.every(
+            ({ key, input: field, onlyWhen }: QuestionField) =>
+              fieldKnown(field, item[key]) &&
+              (onlyWhen === undefined ||
+                item[key] === undefined ||
+                item[onlyWhen.key] === onlyWhen.value),
+          ),
       )
     );
   }

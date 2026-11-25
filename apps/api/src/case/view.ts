@@ -1,7 +1,9 @@
 import type { CaseView } from '@arca/api-contract/routes';
 import { lockKey, type Transaction } from '@arca/db';
 import {
+  type StoredProfile,
   type VisibleCaseRows,
+  ownsBusiness,
   storedAssetSchema,
   storedFinancesSchema,
   storedProfileFactsSchema,
@@ -182,6 +184,26 @@ export const sharedWith = (rows: CaseRows, accountId: string, personId: string) 
     .filter((row) => row.personId === personId && row.accountId === accountId)
     .map((row) => row.scope);
 
+/**
+ * A profile shown to someone other than its keeper: a work period names its business only while
+ * the viewer sees the person own it, so the profile share alone reveals no asset (ADR-0036).
+ */
+function withVisibleBusinesses(
+  rows: CaseRows,
+  personId: string,
+  facts: StoredProfile['facts'],
+): StoredProfile['facts'] {
+  if (facts.workPeriods === undefined) return facts;
+  return {
+    ...facts,
+    workPeriods: facts.workPeriods.map(({ business, ...period }) =>
+      business !== undefined && ownsBusiness(rows, personId, business)
+        ? { ...period, business }
+        : period,
+    ),
+  };
+}
+
 /** The case as the viewer sees it: what they see, and what they may change (spec 0007, R3). */
 export function caseView(rows: CaseRows, accountId: string): CaseView {
   const kept = new Set(rows.people.filter((person) => person.keptByMe).map(({ id }) => id));
@@ -207,7 +229,9 @@ export function caseView(rows: CaseRows, accountId: string): CaseView {
           profile === undefined
             ? null
             : {
-                facts: profile.facts,
+                facts: kept.has(person.id)
+                  ? profile.facts
+                  : withVisibleBusinesses(rows, person.id, profile.facts),
                 dependsOn: profile.dependenceAnswered
                   ? rows.dependence
                       .filter((row) => row.personId === person.id)

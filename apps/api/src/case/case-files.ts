@@ -35,6 +35,7 @@ import {
   comparedCountries,
   comparisonPreferencesSchema,
   heldAssetChanges,
+  ownsBusiness,
   maxCaseMembers,
   maxCasePeople,
   nextPreferences,
@@ -278,20 +279,14 @@ const isoDate = (date: Date) => parseCalendarDate(date.toISOString().slice(0, 10
  * another answer still saves; the snapshot leaves such a link out (ADR-0036).
  */
 function linksOwnedBusinesses(rows: CaseRows, personId: string, facts: StoredProfile['facts']) {
-  const linked = (periods: StoredProfile['facts']['workPeriods']) =>
-    (periods ?? []).flatMap(({ business }) => (business === undefined ? [] : [business]));
   const stored = new Set(
-    linked(rows.profiles.find((profile) => profile.personId === personId)?.facts.workPeriods),
+    rows.profiles
+      .find((profile) => profile.personId === personId)
+      ?.facts.workPeriods?.map(({ business }) => business),
   );
-  const owned = new Set(
-    rows.owners
-      .filter((owner) => owner.personId === personId && owner.confirmed)
-      .map(({ assetId }) => assetId),
-  );
-  return linked(facts.workPeriods).every(
-    (id) =>
-      stored.has(id) ||
-      (owned.has(id) && rows.assets.some((asset) => asset.id === id && asset.kind === 'business')),
+  return (facts.workPeriods ?? []).every(
+    ({ business }) =>
+      business === undefined || stored.has(business) || ownsBusiness(rows, personId, business),
   );
 }
 

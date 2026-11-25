@@ -817,7 +817,7 @@ export const ptBR = {
     /** A field's label where one question needs other words than the rest. */
     fieldFor: {
       assets: {
-        country: 'País onde a empresa está registrada',
+        country: 'País da sede da empresa',
       },
     },
     business: {
@@ -1018,7 +1018,7 @@ export const ptBR = {
       between: ', de {start} a {end}',
       startedIn: ', começou em {date}',
       current: ', trabalho atual',
-      atOwnBusiness: ', na empresa anotada nos bens',
+      atOwnBusiness: ', na empresa listada nos bens',
       businessCountry: ', sede: {country}',
       operatingSince: ', funcionando desde {date}',
       employees:

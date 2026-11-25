@@ -32,9 +32,9 @@ export const displayNameSchema = z
   .refine((name) => name === name.trim(), { message: 'A name has no outer spaces' });
 
 /**
- * A work period as the profile stores it: with an optional label that tells work periods apart on screen,
- * which stays with the profile and never enters the snapshot or a model call (ADR-0036), and the
- * business asset it is at by its row's UUID.
+ * A work period as the profile stores it: with an optional label that tells work periods apart on
+ * screen, which stays with the profile and never enters the snapshot or a model call (ADR-0036),
+ * and the business asset it is at by its row's UUID.
  */
 export const storedWorkPeriodSchema = workPeriodFieldsSchema
   .extend({ label: displayNameSchema.optional(), business: storedIdSchema.optional() })

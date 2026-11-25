@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  type QuestionId,
   buildCaseSnapshot,
   identityKey,
   parseCalendarDate,
@@ -934,7 +935,7 @@ describe('a business and a work period at it (ADR-0036)', () => {
       if (rows === undefined) throw new Error('no case');
       return buildCaseSnapshot(rows, parseCalendarDate('2026-11-06')).snapshot;
     });
-  const answer = (accountId: string, personId: string, questionId: string, value: unknown) =>
+  const answer = (accountId: string, personId: string, questionId: QuestionId, value: unknown) =>
     files.answerQuestions(accountId, { personId, answers: [{ questionId, answer: value }] });
 
   it('stores a business’s details, links a work period to it, and shows both only with the finances', async () => {
@@ -960,6 +961,10 @@ describe('a business and a work period at it (ADR-0036)', () => {
       { relation: 'owner', capacity: 'manager' },
     ]);
     expect(profileOnly.assets).toEqual([]);
+    const seenBy = async (viewer: string) =>
+      (await files.view(viewer))?.people.find(({ id }) => id === people.alice)?.profile?.facts
+        .workPeriods;
+    expect(await seenBy(bruno)).toEqual([{ relation: 'owner', capacity: 'manager' }]);
     const played = (await files.playback(bruno))?.sentences ?? [];
     expect(played.filter(({ kind }) => kind === 'asset')).toEqual([]);
     expect(played.find(({ kind }) => kind === 'workPeriod')).not.toHaveProperty('atOwnBusiness');
@@ -969,6 +974,7 @@ describe('a business and a work period at it (ADR-0036)', () => {
       profile: [bruno],
       finances: [bruno],
     });
+    expect(await seenBy(bruno)).toEqual([owner]);
     const shared = (await files.playback(bruno))?.sentences ?? [];
     expect(shared.find(({ kind }) => kind === 'workPeriod')).toMatchObject({ atOwnBusiness: true });
     expect(shared.find(({ kind }) => kind === 'asset')).toMatchObject({
@@ -1007,10 +1013,14 @@ describe('a business and a work period at it (ADR-0036)', () => {
     const { alice, people } = await family();
     const businessId =
       viewOf(await answer(alice, people.alice, 'assets', [company])).assets[0]?.id ?? '';
-    viewOf(await answer(alice, people.alice, 'workPeriods', [{ business: businessId }]));
+    viewOf(
+      await answer(alice, people.alice, 'workPeriods', [
+        { relation: 'owner', business: businessId },
+      ]),
+    );
     viewOf(await answer(alice, people.alice, 'assets', [{ id: businessId, dropped: true }]));
     viewOf(await answer(alice, people.alice, 'studying', true));
-    expect((await snapshotFor(alice)).people[0]?.workPeriods).toEqual([{}]);
+    expect((await snapshotFor(alice)).people[0]?.workPeriods).toEqual([{ relation: 'owner' }]);
   });
 });
 

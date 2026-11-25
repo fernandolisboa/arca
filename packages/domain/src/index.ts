@@ -143,6 +143,7 @@ export {
   type BuiltSnapshot,
   type VisibleCaseRows,
   buildCaseSnapshot,
+  ownsBusiness,
   validCaseStructure,
 } from './case/builder.js';
 export {

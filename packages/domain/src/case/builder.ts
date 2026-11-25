@@ -84,11 +84,10 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
         ([key]) => key !== 'business' && Object.hasOwn(workPeriodFieldsSchema.shape, key),
       ),
     );
-    const linked = stored.business === undefined ? undefined : assetIds.get(stored.business);
-    const asset = assets.find(({ id }) => id === linked);
-    const owns =
-      asset?.kind === 'business' && asset.owners.some(({ person }) => person === personId(owner));
-    return owns ? { ...period, business: asset.id } : period;
+    const { business } = stored;
+    return business !== undefined && ownsBusiness(rows, owner, business)
+      ? { ...period, business: mapped(assetIds, business) }
+      : period;
   };
 
   const people = rows.people.map(({ id }) => {
@@ -123,6 +122,23 @@ export function buildCaseSnapshot(rows: VisibleCaseRows, recordedOn: CalendarDat
     assets,
   });
   return { snapshot, personIds, assetIds };
+}
+
+/**
+ * Whether the rows the viewer sees show the person owning a confirmed share of this business, the
+ * only case in which a work period's link to it is shown or newly stored (ADR-0036).
+ */
+export function ownsBusiness(
+  rows: Pick<VisibleCaseRows, 'assets' | 'owners'>,
+  personId: string,
+  assetId: string,
+): boolean {
+  return (
+    rows.assets.some(({ id, kind }) => id === assetId && kind === 'business') &&
+    rows.owners.some(
+      (owner) => owner.assetId === assetId && owner.personId === personId && owner.confirmed,
+    )
+  );
 }
 
 /**

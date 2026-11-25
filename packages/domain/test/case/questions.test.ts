@@ -398,6 +398,10 @@ describe('answering the guided questions (spec 0007, R4)', () => {
     ['a work relation outside its set', { workPeriods: [{ relation: 'intern' }] }],
     ['a business named by something other than its ID', { workPeriods: [{ business: 'a1' }] }],
     [
+      'a business on a work period that is not at the person’s own company',
+      { workPeriods: [{ relation: 'employee', business: '8b7c6d5e-4f3a-4b2c-8d9e-8f7a6b5c4d3e' }] },
+    ],
+    [
       'a field the item does not have',
       { jobOffers: [{ country: 'US', sector: 'A', temporary: true, extra: 1 }] },
     ],

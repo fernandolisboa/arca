@@ -236,10 +236,10 @@ export const assetKinds = [
   'other',
 ] as const;
 
-export const maxBusinessEmployees = 10_000_000;
+const maxBusinessEmployees = 10_000_000;
 
 /** What only a business records: where it is seated, since when it operates, how many it employs. */
-export const businessFieldsSchema = z.strictObject({
+const businessFieldsSchema = z.strictObject({
   country: countryCodeSchema.optional(),
   operatingSince: dateValueSchema.optional(),
   employees: z.number().int().min(0).max(maxBusinessEmployees).optional(),
