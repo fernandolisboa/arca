@@ -1155,9 +1155,9 @@ export const ptBR = {
   },
   /** A route's document checklist (spec #519): what each person hands in, with its sources. */
   checklist: {
-    title: 'Documentos',
-    open: 'Ver os documentos desta rota',
-    lead: '{name} como requerente principal. Para cada pessoa, o que entregar e onde conferir.',
+    title: 'Lista de documentos',
+    open: 'Ver a lista de documentos',
+    lead: '{name} como requerente principal. Antes de juntar cada documento, confira a fonte oficial: ela vale mais que este resumo.',
     signIn: 'Entre para ver os documentos.',
     noCase: 'Comece o caso na área da família para ver os documentos.',
     missing: 'Esta lista não existe mais. Volte para as rotas e escolha de novo.',
@@ -1168,14 +1168,15 @@ export const ptBR = {
     back: 'Voltar para as rotas',
     unavailable: 'Esta rota não tem uma regra em vigor no Arca.',
     pending:
-      'A regra desta rota está esperando aprovação. A lista de documentos aparece quando ela for aprovada.',
+      'A regra desta rota está aguardando ativação. A lista de documentos aparece quando ela for ativada.',
     newerVersion:
-      'Uma versão nova desta regra vale a partir de {date} e ainda espera aprovação. A lista pode mudar.',
+      'Uma versão nova desta regra vale a partir de {date} e ainda aguarda ativação. A lista pode mudar.',
     notCovered:
       'O Arca ainda não sabe quais documentos esta rota pede. A lista aparece depois que a regra for pesquisada nos sites oficiais.',
     noneAsked: 'Esta rota não pede nenhum documento.',
+    noneApply: 'Nenhum documento desta rota vale para esta família agora.',
     peopleTabs: 'De quem é a lista',
-    role: '{role, select, principal {Requerente principal} dependent {Vai junto} possible_dependent {Pode ir junto} other {Família toda}}',
+    role: '{role, select, principal {Requerente principal} dependent {Dependente} possible_dependent {Possível dependente} other {Família toda}}',
     possibleNote:
       'Ainda não dá para saber se esta pessoa entra na rota. Se entrar, estes são os documentos dela.',
     unitTitle: 'Família toda',
@@ -1184,6 +1185,8 @@ export const ptBR = {
     nothingHere: 'Nada a entregar aqui.',
     mayApply: 'Pode ser pedido',
     dependsOn: 'Para saber, falta responder:',
+    dependsOnSource:
+      'Depende de uma informação que o Arca ainda não pergunta. Confira na fonte oficial.',
     answer: 'Responder',
     askKeeper: 'Peça para quem cuida dos dados de {name}: {question}',
     apostille: 'Apostila: {value, select, yes {precisa} no {não precisa} other {o Arca não sabe}}',
@@ -1195,8 +1198,8 @@ export const ptBR = {
     guideUnknown: 'O Arca ainda não sabe onde tirar este documento.',
     cost: 'Custo: {amount}',
     leadTime: 'Prazo: de {min} a {max}{business, select, yes {, em dias úteis} other {}}',
+    leadTimeExact: 'Prazo: {duration}{business, select, yes {, em dias úteis} other {}}',
     online: 'Pedir pela internet',
-    source: 'Fonte: {host} · conferida em {date}',
   },
   /** Leaving a country (ADR-0038): what to do, and the documents that trace the money. */
   departure,

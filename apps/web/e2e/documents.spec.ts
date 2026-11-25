@@ -75,6 +75,7 @@ async function fixtureRoute(page: Page, people: { ana: string; child: string }) 
     newerProposedVersion: null,
     documents: {
       kind: 'listed',
+      asksNone: false,
       people: [
         {
           personId: people.ana,
@@ -143,6 +144,7 @@ async function fixtureRoute(page: Page, people: { ana: string; child: string }) 
   };
   await page.route('**/v1/case/evaluations', (request) => request.fulfill({ json: evaluations }));
   await page.route('**/v1/case/documents?*', (request) => request.fulfill({ json: documents }));
+  return documents;
 }
 
 test('opens a route’s document checklist from the results and reads two people’s lists (spec #519)', async ({
@@ -156,14 +158,14 @@ test('opens a route’s document checklist from the results and reads two people
   };
   const id = (name: string) =>
     view.case.people.find(({ displayName }) => displayName === name)?.id ?? '';
-  await fixtureRoute(page, { ana: id('Ana'), child: id('Criança') });
+  const documents = await fixtureRoute(page, { ana: id('Ana'), child: id('Criança') });
 
   await page.getByRole('link', { name: 'Ver as rotas para a família' }).click();
   const phone = testInfo.project.name === 'phone';
   // A wide screen opens the first route beside the table; a phone opens its card.
   if (phone) await page.getByRole('button', { name: /Rota de teste para famílias/ }).click();
-  await page.getByRole('link', { name: 'Ver os documentos desta rota' }).click();
-  await expect(page.getByRole('heading', { level: 2, name: 'Documentos' })).toBeVisible();
+  await page.getByRole('link', { name: 'Ver a lista de documentos' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Lista de documentos' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 3, name: route.title })).toBeVisible();
 
   const list = (name: string) => page.getByRole('region', { name, exact: true });
@@ -179,7 +181,7 @@ test('opens a route’s document checklist from the results and reads two people
     await expect(list('Família toda')).toContainText('Extrato bancário');
   }
   const child = list('Criança');
-  await expect(child).toContainText('Vai junto · 2 documentos');
+  await expect(child).toContainText('Dependente · 2 documentos');
   const certificate = child.getByRole('listitem').filter({ hasText: 'Certidão de nascimento' });
   await expect(certificate).toContainText('Apostila: precisa');
   await expect(certificate).toContainText('Tradução: juramentada');
@@ -197,5 +199,21 @@ test('opens a route’s document checklist from the results and reads two people
   expect(violations.map(({ id: rule, nodes }) => [rule, nodes.map((node) => node.target)])).toEqual(
     [],
   );
+
+  // A route with no list and a route whose list asks nothing read differently.
+  const answer = async (body: unknown) => {
+    await page.unroute('**/v1/case/documents?*');
+    await page.route('**/v1/case/documents?*', (request) => request.fulfill({ json: body }));
+    await page.reload();
+  };
+  await answer({ ...documents, documents: { kind: 'not_covered' } });
+  await expect(
+    page.getByText('O Arca ainda não sabe quais documentos esta rota pede.'),
+  ).toBeVisible();
+  await answer({
+    ...documents,
+    documents: { kind: 'listed', asksNone: true, people: [], unit: [] },
+  });
+  await expect(page.getByText('Esta rota não pede nenhum documento.')).toBeVisible();
   expect(problems).toEqual([]);
 });

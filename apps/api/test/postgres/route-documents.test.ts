@@ -244,7 +244,8 @@ describe('a route’s document checklist (spec #519)', () => {
       newerProposedVersion: null,
     });
     if (checklist.documents?.kind !== 'listed') throw new Error('a listed checklist');
-    const { people: lists, unit } = checklist.documents;
+    const { people: lists, unit, asksNone } = checklist.documents;
+    expect(asksNone).toBe(false);
     expect(lists.map(({ personId, role }) => [personId, role])).toEqual([
       [people.ana, 'principal'],
       [people.child, 'dependent'],
@@ -304,7 +305,7 @@ describe('a route’s document checklist (spec #519)', () => {
       people.ana,
       filesWith([none], new Map([[identityKey(none.identity), 'active']])),
     );
-    expect(empty.documents).toMatchObject({ kind: 'listed', unit: [] });
+    expect(empty.documents).toMatchObject({ kind: 'listed', asksNone: true, unit: [] });
     expect(empty.documents?.kind === 'listed' && empty.documents.people[1]?.items).toEqual([]);
   });
 

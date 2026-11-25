@@ -1,13 +1,13 @@
 import {
   type DocumentGuideEntry,
   type DocumentResult,
-  buildCaseSnapshot,
   citizenshipsHeldOn,
   decisiveQuestions,
   guideEntriesFor,
   routeDocuments,
   unitsAmount,
 } from '@arca/domain';
+import { translatedText, viewedSnapshot } from './case-snapshot.js';
 import type { EvaluationSettings } from './evaluations.js';
 import type { CaseRows } from './view.js';
 
@@ -30,15 +30,9 @@ export function caseRouteDocuments(
   principalUuid: string,
   { catalog, states, today, engineCommit, texts, guides }: RouteDocumentsSettings,
 ) {
-  const { snapshot, personIds } = buildCaseSnapshot(rows, today);
+  const { snapshot, personIds, uuid, kept, bornOn } = viewedSnapshot(rows, today);
   const principal = personIds.get(principalUuid);
   if (principal === undefined || !snapshot.members.includes(principal)) return null;
-  const uuids = new Map([...personIds].map(([uuid, opaque]) => [opaque, uuid]));
-  const uuid = (opaque: string) => {
-    const found = uuids.get(opaque);
-    if (found === undefined) throw new Error('A checklist names a person not in the case');
-    return found;
-  };
   const selected = routeDocuments(snapshot, catalog, routeId, principal, {
     rulesAsOf: today,
     factsAsOf: today,
@@ -47,35 +41,24 @@ export function caseRouteDocuments(
     states,
     engineCommit,
   });
-  const empty = {
+  const none = {
     routeId,
     principalId: principalUuid,
     route: null,
     newerProposedVersion: null,
     documents: null,
   };
-  if (selected.kind === 'no_version') return { ...empty, status: 'unavailable', version: null };
+  if (selected.kind === 'no_version') return { ...none, status: 'unavailable', version: null };
   if (selected.kind === 'pending') {
     return {
-      ...empty,
+      ...none,
       status: 'pending_activation',
       version: { number: selected.pending.number },
     };
   }
   const { entry, checklist, newerProposedVersion } = selected;
-  const translated = (english: string) => {
-    const shown = texts?.(routeId, english);
-    return shown === undefined
-      ? { text: english, original: null }
-      : { text: shown, original: english };
-  };
+  const translated = translatedText(texts, routeId);
   const title = translated(entry.version.title);
-  const kept = new Set(
-    rows.people.filter((person) => person.keptByMe).flatMap(({ id }) => personIds.get(id) ?? []),
-  );
-  const bornOn = new Set(
-    snapshot.people.filter(({ birthDate }) => birthDate !== undefined).map(({ id }) => id),
-  );
   const citizenships = new Map(
     snapshot.people.map((person) => [person.id, citizenshipsHeldOn(person, today)]),
   );
@@ -133,7 +116,7 @@ export function caseRouteDocuments(
   const shown = (items: readonly DocumentResult[], holder: string) =>
     items.filter(({ applies }) => applies !== false).map((document) => item(document, holder));
   return {
-    ...empty,
+    ...none,
     status: 'active',
     route: { title: title.text, original: title.original, country: entry.version.country },
     version: { number: entry.identity.number },
@@ -146,6 +129,7 @@ export function caseRouteDocuments(
         ? { kind: 'not_covered' }
         : {
             kind: 'listed',
+            asksNone: entry.version.documents?.length === 0,
             people: [
               { person: checklist.principal, role: 'principal' },
               ...checklist.dependents.map((person) => ({

@@ -397,6 +397,19 @@ describe('the case routes (spec 0007, R3)', () => {
     expect(bad.status).toBe(400);
   });
 
+  it('refuses the document checklist to an unconfirmed account and over the limit', async () => {
+    for (const [options, status, code] of [
+      [{ confirmedAccount: false }, 403, 'account_unconfirmed'],
+      [{ allowed: false }, 429, 'rate_limited'],
+    ] as const) {
+      const { call, calls } = setup(options);
+      const response = await call('GET', `/case/documents?routeId=us-eb5&principalId=${me}`);
+      expect(response.status).toBe(status);
+      expect(await errorOf(response)).toBe(code);
+      expect(calls).toEqual([]);
+    }
+  });
+
   it.each(writes)(
     'POST %s calls the case and answers its view',
     async (path, body, method, arg) => {

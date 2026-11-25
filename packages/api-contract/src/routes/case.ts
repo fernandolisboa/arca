@@ -469,12 +469,15 @@ export const getCaseEvaluations = {
 
 const dependsOn = z
   .array(z.object({ personId: z.uuid(), question: z.enum(questionIds), kept: z.boolean() }))
-  .max(50);
+  .max(maxCasePeople * questionIds.length);
 
 /** Where to get a document in a country whose citizenship the person holds (ADR-0039). */
 export const DocumentGuideView = z.object({
   country: countryCodeSchema,
-  onlineUrl: z.url().max(2000).nullable(),
+  onlineUrl: z
+    .url({ protocol: /^https$/ })
+    .max(2000)
+    .nullable(),
   /** In the issuing country's currency, as units. */
   cost: z.object({ min: unitsMoney, max: unitsMoney }).nullable(),
   leadTime: z
@@ -526,6 +529,8 @@ export const RouteDocuments = z.object({
       z.object({ kind: z.literal('not_covered') }),
       z.object({
         kind: z.literal('listed'),
+        /** The version's list is empty: the route asks for no documents, of anyone. */
+        asksNone: z.boolean(),
         /** The principal, then dependents, then possible dependents. */
         people: z
           .array(

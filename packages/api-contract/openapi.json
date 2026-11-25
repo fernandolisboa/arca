@@ -37616,6 +37616,9 @@
                                 "listed"
                               ]
                             },
+                            "asksNone": {
+                              "type": "boolean"
+                            },
                             "people": {
                               "type": "array",
                               "items": {
@@ -37796,7 +37799,7 @@
                                               "kept"
                                             ]
                                           },
-                                          "maxItems": 50
+                                          "maxItems": 1140
                                         },
                                         "guides": {
                                           "type": "array",
@@ -38115,7 +38118,7 @@
                                         "kept"
                                       ]
                                     },
-                                    "maxItems": 50
+                                    "maxItems": 1140
                                   },
                                   "guides": {
                                     "type": "array",
@@ -38265,6 +38268,7 @@
                           },
                           "required": [
                             "kind",
+                            "asksNone",
                             "people",
                             "unit"
                           ]

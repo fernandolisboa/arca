@@ -4,7 +4,7 @@ import {
   type DocumentItemView,
   type RouteDocuments,
 } from '@arca/api-contract/client';
-import { Button, SourceLine, StatusChip, Tabs, cardClass, tabPanelProps } from '@arca/ui';
+import { Button, StatusChip, Tabs, cardClass, tabPanelProps } from '@arca/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useId, useState } from 'react';
@@ -13,9 +13,9 @@ import { CountryFlag, FlagLead } from '../country-flag.js';
 import { textLinkClass } from '../forms/text-link.js';
 import { type KnowledgeWords, useKnowledgeWords } from '../knowledge/words.js';
 import { Page } from '../page.js';
+import { Sources } from '../results/route-detail.js';
 import { useMediaQuery } from '../use-media-query.js';
 
-/** Which route's checklist, and for which member as principal; both are opaque IDs. */
 export function documentsSearch(search: Record<string, unknown>): {
   route?: string;
   person?: string;
@@ -32,7 +32,6 @@ export const Route = createFileRoute('/family_/documents')({
   component: Documents,
 });
 
-/** A route's document checklist (spec #519): one list per person, and the family's own. */
 function Documents() {
   const words = useKnowledgeWords();
   const { t } = words;
@@ -185,7 +184,7 @@ function Checklist({
       {documents?.kind === 'listed' &&
         (items.length === 0 ? (
           <p className="max-w-prose rounded-card border border-line p-4">
-            {t('checklist.noneAsked')}
+            {t(documents.asksNone ? 'checklist.noneAsked' : 'checklist.noneApply')}
           </p>
         ) : (
           <Lists
@@ -200,9 +199,9 @@ function Checklist({
                 ? []
                 : [
                     {
-                      id: 'unit',
+                      id: unitList,
                       title: t('checklist.unitTitle'),
-                      role: 'unit' as const,
+                      role: unitList,
                       items: documents.unit,
                     },
                   ]),
@@ -223,6 +222,10 @@ interface List {
   readonly items: readonly DocumentItemView[];
 }
 
+/** Wide enough for the lists side by side. */
+const unitList = 'unit' as const;
+const sideBySideQuery = '(min-width: 48rem)';
+
 /** Side by side from a tablet up, each person a column; a tab per person on a phone. */
 function Lists({
   lists,
@@ -236,7 +239,7 @@ function Lists({
   readonly showOriginal: boolean;
 }) {
   const { t } = words;
-  const wide = useMediaQuery('(min-width: 48rem)');
+  const wide = useMediaQuery(sideBySideQuery);
   const tabsId = useId();
   const [chosen, setChosen] = useState<string>();
   const column = (list: List) => (
@@ -333,6 +336,7 @@ function Item({
 }) {
   const { t } = words;
   const titleId = useId();
+  const apostille = item.apostille === null ? 'unknown' : item.apostille ? 'yes' : 'no';
   return (
     <li aria-labelledby={titleId} className={`${cardClass} flex flex-col gap-2 p-4`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -343,6 +347,9 @@ function Item({
       </div>
       {showOriginal && item.original !== null && (
         <p className="text-small text-muted">{t('results.original', { text: item.original })}</p>
+      )}
+      {item.applies === 'unknown' && item.dependsOn.length === 0 && (
+        <p className="text-small text-muted">{t('checklist.dependsOnSource')}</p>
       )}
       {item.dependsOn.length > 0 && (
         <div className="flex flex-col gap-1 text-small">
@@ -371,11 +378,7 @@ function Item({
         </div>
       )}
       <ul className="flex flex-col gap-0.5 text-small">
-        <li>
-          {t('checklist.apostille', {
-            value: item.apostille === null ? 'unknown' : item.apostille ? 'yes' : 'no',
-          })}
-        </li>
+        <li>{t('checklist.apostille', { value: apostille })}</li>
         <li>{t('checklist.translation', { value: item.translation ?? 'unknown' })}</li>
         <li>
           {item.validity === null
@@ -447,11 +450,16 @@ function Guide({
       )}
       {guide.leadTime !== null && (
         <p>
-          {t('checklist.leadTime', {
-            min: words.duration(guide.leadTime.min),
-            max: words.duration(guide.leadTime.max),
-            business: guide.leadTime.businessDays ? 'yes' : 'no',
-          })}
+          {guide.leadTime.min === guide.leadTime.max
+            ? t('checklist.leadTimeExact', {
+                duration: words.duration(guide.leadTime.min),
+                business: guide.leadTime.businessDays ? 'yes' : 'no',
+              })
+            : t('checklist.leadTime', {
+                min: words.duration(guide.leadTime.min),
+                max: words.duration(guide.leadTime.max),
+                business: guide.leadTime.businessDays ? 'yes' : 'no',
+              })}
         </p>
       )}
       {guide.onlineUrl !== null && (
@@ -466,29 +474,5 @@ function Guide({
       )}
       <Sources sources={guide.sources} words={words} />
     </div>
-  );
-}
-
-function Sources({
-  sources,
-  words,
-}: {
-  readonly sources: readonly { readonly url: string; readonly verifiedAt: string }[];
-  readonly words: KnowledgeWords;
-}) {
-  // The placeholders go back in, so the source line puts the link and the date in their place.
-  const message = words.t('checklist.source', { host: '{host}', date: '{date}' });
-  return (
-    <>
-      {sources.map((source) => (
-        <SourceLine
-          key={source.url}
-          href={source.url}
-          verifiedOn={source.verifiedAt}
-          locale={words.language}
-          message={message}
-        />
-      ))}
-    </>
   );
 }
