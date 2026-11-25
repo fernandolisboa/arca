@@ -156,6 +156,7 @@ function filesWith(entries: readonly CatalogEntry[], states: DecisionStates): Ca
     today: () => new Date('2026-11-06T12:00:00Z'),
     countries: { countries: ['BR', 'PT'], formerCountries: [] },
     occupations: [],
+    studyFields: [],
     evaluation: {
       rules: () =>
         Promise.resolve({

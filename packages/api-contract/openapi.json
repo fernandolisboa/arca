@@ -39401,9 +39401,11 @@
                                                   "citizenships",
                                                   "residenceCountry",
                                                   "educationLevel",
+                                                  "qualifications",
                                                   "studying",
                                                   "languages",
                                                   "workPeriods",
+                                                  "registrations",
                                                   "jobOffers",
                                                   "incomes",
                                                   "dependsOn",
@@ -39428,7 +39430,7 @@
                                               "kept"
                                             ]
                                           },
-                                          "maxItems": 1140
+                                          "maxItems": 1260
                                         },
                                         "guides": {
                                           "type": "array",
@@ -39720,9 +39722,11 @@
                                             "citizenships",
                                             "residenceCountry",
                                             "educationLevel",
+                                            "qualifications",
                                             "studying",
                                             "languages",
                                             "workPeriods",
+                                            "registrations",
                                             "jobOffers",
                                             "incomes",
                                             "dependsOn",
@@ -39747,7 +39751,7 @@
                                         "kept"
                                       ]
                                     },
-                                    "maxItems": 1140
+                                    "maxItems": 1260
                                   },
                                   "guides": {
                                     "type": "array",
